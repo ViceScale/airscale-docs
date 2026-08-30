@@ -1100,8 +1100,9 @@ test("profile and reverse lookup pages follow the endpoint content system", () =
           universalName: String,
           description: String,
           website: String,
+          followers: null,
           foundedYear: Number,
-          staff: { total: Number },
+          staff: { total: Number, range: null },
           locations: { headquarter: { country: String, city: String } },
           industries: Array
         },
@@ -1132,6 +1133,10 @@ test("profile and reverse lookup pages follow the endpoint content system", () =
         "normalized-only default response": (source) => source.replace(
           "A successful `p1` response remains a top-level object but may use different field names.",
           "All successful responses use the normalized fields shown below."
+        ),
+        "non-null P3-only field": (source) => source.replace(
+          '"followers": null',
+          '"followers": 250'
         )
       }
     },
