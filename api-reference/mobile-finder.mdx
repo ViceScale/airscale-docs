@@ -1,0 +1,139 @@
+---
+title: "Mobile Finder"
+---
+
+Use this endpoint to find the phone number from a linkedin profile URL
+
+### Endpoint
+
+```text
+POST https://api.airscale.io/v1/phone
+```
+
+### Headers
+
+| Key | Value | Required |
+| --- | --- | --- |
+| Content-Type | application/json | Yes |
+| Authorization | Bearer &lt;YOUR_API_KEY&gt; | Yes |
+
+### Request Body
+
+```json
+{
+     "linkedin_profile_url": "https://www.linkedin.com/in/vdetraz"
+}
+```
+
+| Field | Type | Required |
+| --- | --- | --- |
+| linkedin_profile_url | string | Yes |
+
+### Response
+
+**Successful Response (200)**
+
+```json
+{
+ "status": "success",
+  "linkedin_profile_url": "https://www.linkedin.com/in/vdetraz",
+  "phone_numbers": "+33610607076",
+  "provider": "RocketReach"
+}
+```
+
+### Example Usage
+
+**cURL**
+
+```bash
+curl -X POST "https://api.airscale.io/v1/phone" \
+     -H "Authorization: Bearer YOUR_API_KEY" \
+     -H "Content-Type: application/json" \
+     -d '{
+           "linkedin_profile_url": "https://www.linkedin.com/in/vdetraz"
+         }'
+```
+
+**Python**
+
+```python
+import requests
+
+url = "https://api.airscale.io/v1/phone"
+headers = {
+    "Authorization": "Bearer YOUR_API_KEY",
+    "Content-Type": "application/json"
+}
+data = {
+    "linkedin_profile_url": "https://www.linkedin.com/in/vdetraz"
+}
+
+response = requests.post(url, json=data, headers=headers)
+print(response.status_code)
+print(response.json())
+```
+
+**JavaScript (Fetch)**
+
+```javascript
+fetch("https://api.airscale.io/v1/phone", {
+  method: "POST",
+  headers: {
+    "Authorization": "Bearer YOUR_API_KEY",
+    "Content-Type": "application/json"
+  },
+  body: JSON.stringify({
+    linkedin_profile_url: "https://www.linkedin.com/in/vdetraz"
+  })
+})
+  .then(response => response.json())
+  .then(data => console.log(data))
+  .catch(error => console.error("Error:", error));
+```
+
+**PHP**
+
+```php
+<
+```
+
+**GO**
+
+```go
+package main
+
+import (
+	"bytes"
+	"encoding/json"
+	"fmt"
+	"net/http"
+	"io/ioutil"
+)
+
+func main() {
+	url := "https://api.airscale.io/v1/phone"
+
+	payload := map[string]string{
+		"linkedin_profile_url": "https://www.linkedin.com/in/vdetraz",
+	}
+	body, _ := json.Marshal(payload)
+
+	req, _ := http.NewRequest("POST", url, bytes.NewBuffer(body))
+	req.Header.Set("Authorization", "Bearer YOUR_API_KEY")
+	req.Header.Set("Content-Type", "application/json")
+
+	client := &http.Client{}
+	resp, err := client.Do(req)
+	if err != nil {
+		fmt.Println("Request error:", err)
+		return
+	}
+	defer resp.Body.Close()
+
+	respBody, _ := ioutil.ReadAll(resp.Body)
+	fmt.Println("Status:", resp.Status)
+	fmt.Println("Body:", string(respBody))
+}
+```
+

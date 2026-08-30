@@ -1,0 +1,1239 @@
+---
+title: "Find companies"
+---
+
+Find up to 10,000 companies per search from several filters
+
+Search for companies matching firmographic, location, event, intent, technology, and website keyword filters.
+
+## Endpoint
+
+```text
+POST https://api.airscale.io/v1/find-companies
+GET  https://api.airscale.io/v1/find-companies/filter-values
+```
+
+## Headers
+
+| Key | Value | Required |
+| --- | --- | --- |
+| Content-Type | application/json | Yes |
+| Authorization | Bearer &lt;YOUR_API_KEY&gt; | Yes |
+
+## Rate Limit and Credits
+
+| Rule | Value |
+| --- | --- |
+| Rate limit | 6 requests per second per workspace/API key |
+| Rate-limit response | 429 Too Many Requests |
+| Credit cost | 0.1 credits per returned company |
+
+## Request Body
+
+### Minimal request
+
+```json
+{
+  "filters": {
+    "country": ["France"],
+    "industry": ["software development"],
+    "size": ["11-50"]
+  },
+  "page": 0,
+  "size": 25
+}
+```
+
+### Complete request with every filter
+
+```json
+{
+  "filters": {
+    "country": ["France", "United States"],
+    "region": ["California|US"],
+    "city": ["San Francisco|California|US"],
+    "industry": ["software development", "it services and it consulting"],
+    "size": ["11-50", "51-200"],
+    "revenue": ["1M-5M", "5M-10M"],
+    "age": ["3-6", "6-10"],
+    "techStack": ["hubspot", "salesforce"],
+    "keywords": ["lead generation", "sales automation"],
+    "topics": ["technology: chrome", "business services: gmail for business"],
+    "events": ["new_funding_round", "new_partnership"],
+    "locations": ["2-5", "6-20"],
+    "companyName": ["Airscale", "OpenAI"],
+    "eventWindow": "30 days",
+    "locationMatch": "hqOperating",
+    "hasWebsite": true,
+    "isPublicCompany": false
+  },
+  "page": 0,
+  "size": 25
+}
+```
+
+| Field | Type | Required | Notes |
+| --- | --- | --- | --- |
+| filters | object | No | Defaults to {}. At least one real filter is required. |
+| filters.country | string \| array[string] | No | Recognized country names or ISO country codes only. Example: ["France", "United States"] |
+| filters.region | string \| array[string] | No | Supported region values. Use filter-values?filter=region to discover values. Examples: ["us-ca"], ["California\|US"], or ["California"] with filters.country. |
+| filters.city | string \| array[string] | No | City values from autocomplete. Must use City\|Region\|Country. Use filter-values?filter=city. Example: ["San Francisco\|California\|US"] |
+| filters.industry | string \| array[string] | No | Supported industry values. Use filter-values?filter=industry. Example: ["software development"] |
+| filters.size | string \| array[string] | No | Company employee size range. Example: ["11-50"] |
+| filters.revenue | string \| array[string] | No | Company revenue range. Example: ["1M-5M"] |
+| filters.age | string \| array[string] | No | Company age range in years. Example: ["3-6"] |
+| filters.techStack | string \| array[string] | No | Technology values from autocomplete. Use filter-values?filter=techStack. Example: ["hubspot"] |
+| filters.keywords | string \| array[string] | No | Keywords found on the company website. Example: ["lead generation"] |
+| filters.topics | string \| array[string] | No | Supported Bombora business intent topics. Use filter-values?filter=topics. Example: ["technology: chrome"] |
+| filters.events | string \| array[string] | No | Recent company events. Example: ["new_funding_round"] |
+| filters.locations | string \| array[string] | No | Number of company locations. Example: ["2-5"] |
+| filters.companyName | string \| array[string] | No | Company names to include. Example: ["Airscale", "OpenAI"] |
+| filters.eventWindow | string | No | Strict enum: 30 days, 60 days, or 90 days. Defaults to 30 days |
+| filters.locationMatch | string | No | Strict enum: hqOnly or hqOperating. Defaults to hqOnly |
+| filters.hasWebsite | boolean \| null | No | JSON boolean or null: true, false, or null. Defaults to null |
+| filters.isPublicCompany | boolean \| null | No | JSON boolean or null: true, false, or null. Defaults to null |
+| page | integer | No | Must be &gt;= 0. Defaults to 0 |
+| size | integer | No | Must be 1..100. Defaults to 50 |
+| cursor | string | No | Opaque pagination cursor from next_cursor. When present, it is used instead of page. |
+
+### Pagination
+
+For the first request, send `page: 0` and a `size` up to `100`. If the response includes `next_cursor`, pass that value as `cursor` to fetch the next batch. Cursor pagination can retrieve up to `10,000` companies for one search, in batches of up to `100`.
+
+```json
+{
+  "filters": {
+    "country": ["France"],
+    "industry": ["software development"]
+  },
+  "size": 100
+}
+```
+
+Next request:
+
+```json
+{
+  "filters": {
+    "country": ["France"],
+    "industry": ["software development"]
+  },
+  "cursor": "fc_eyJzY29yZSI6NDIsImJ1c2luZXNzX2lkIjoiYml6LTEifQ",
+  "size": 100
+}
+```
+
+Use the same filters for each cursor request. `cursor` pagination preserves the original batch size from the cursor and is preferred over changing `page` and `size` together because it avoids skipped or duplicated offsets when clients change page size between requests.
+
+### Filter example formats
+
+| Filter group | Example |
+| --- | --- |
+| Countries | "country": ["France", "United States"] |
+| Regions | "region": ["California\|US"] |
+| Cities | "city": ["San Francisco\|California\|US"] |
+| Industries | "industry": ["software development", "it services and it consulting"] |
+| Employee size | "size": ["11-50"] |
+| Revenue | "revenue": ["1M-5M"] |
+| Company age | "age": ["3-6"] |
+| Technology stack | "techStack": ["hubspot"] |
+| Website keywords | "keywords": ["lead generation", "sales automation"] |
+| Intent topics | "topics": ["technology: chrome"] |
+| Recent events | "events": ["new_funding_round", "new_partnership"] |
+| Number of locations | "locations": ["2-5"] |
+| Company names | "companyName": ["Airscale", "OpenAI"] |
+| Event window | "eventWindow": "30 days" |
+| Location matching | "locationMatch": "hqOperating" |
+| Website presence | "hasWebsite": true |
+| Public-company status | "isPublicCompany": false |
+
+### Filter value rules
+
+Filters do not all accept values the same way. Use this table to decide whether a value should come from autocomplete, a canonical lookup list, free text, or a strict preset.
+
+| Input source | Filters | How to use it | Validation |
+| --- | --- | --- | --- |
+| Autocomplete-backed | city, region, techStack | Call GET /v1/find-companies/filter-values, then send the returned value unchanged in POST /v1/find-companies. | City and region context is validated before the provider request. Tech stack values are provider autocomplete values. |
+| Canonical lookup list | industry, topics | Call GET /v1/find-companies/filter-values, then send the returned value unchanged. | Values are matched case-insensitively and normalized. Unknown values return 400. |
+| Free text | keywords, companyName | Send plain strings. | Empty values are ignored. Non-empty strings are forwarded to the provider. |
+| Strict country list | country | Send recognized country names or ISO country codes. Examples: France, FR, United States, US. | Unknown countries return 400. |
+| Fixed presets | size, revenue, age, events, locations, eventWindow, locationMatch | Send only values listed in Preset Values. | Unsupported values return 400. |
+| Strict booleans | hasWebsite, isPublicCompany | Send JSON true, false, or null. | Strings such as "true" or "yes" return 400. |
+
+### Location discovery flow
+
+Use autocomplete for `city` and `region` values. The search endpoint validates the public value shape and location context, but it does not run a second city autocomplete lookup during search.
+
+1. Discover city values:
+
+```text
+curl "https://api.airscale.io/v1/find-companies/filter-values?filter=city&q=san&country=US&region=us-ca&limit=20" \
+  -H "Authorization: Bearer <YOUR_API_KEY>"
+```
+
+1. Send the returned `value` in the search request:
+
+```json
+{
+  "filters": {
+    "country": ["US"],
+    "region": ["us-ca"],
+    "city": ["San Francisco|California|US"]
+  }
+}
+```
+
+`city` values must use `City|Region|Country`. These examples are rejected before the provider request:
+
+```json
+{ "filters": { "city": ["San Francisco"] } }
+{ "filters": { "city": ["San Francisco|Made Up Region|US"] } }
+{ "filters": { "country": ["France"], "city": ["San Francisco|California|US"] } }
+```
+
+`region` values can be sent as the autocomplete `value`, a region code, or a bare region name when `country` disambiguates it:
+
+```json
+{ "filters": { "region": ["California|US"] } }
+{ "filters": { "region": ["us-ca"] } }
+{ "filters": { "country": ["US"], "region": ["California"] } }
+```
+
+### Tech stack discovery flow
+
+Use autocomplete for `techStack` values, then send the returned `value` unchanged in the search request.
+
+```text
+curl "https://api.airscale.io/v1/find-companies/filter-values?filter=techStack&q=hubspot&limit=20" \
+  -H "Authorization: Bearer <YOUR_API_KEY>"
+```
+
+```json
+{
+  "filters": {
+    "country": ["US"],
+    "techStack": ["hubspot"]
+  }
+}
+```
+
+## Filter Values
+
+Use the filter-values endpoint to discover accepted values for large or autocomplete-backed filters. It requires the same `Authorization` header as company search, uses the same rate limit, and does not charge credits.
+
+```text
+curl "https://api.airscale.io/v1/find-companies/filter-values?filter=city&q=san&country=US&region=us-ca&limit=20" \
+  -H "Authorization: Bearer <YOUR_API_KEY>"
+```
+
+| Query parameter | Required | Notes |
+| --- | --- | --- |
+| filter | Yes | city, region, industry, topics, or techStack |
+| q | Yes | Search text. Must be at least 2 characters. query is also accepted. |
+| limit | No | 1..100. Defaults to 20. |
+| country | No | Optional recognized country name or ISO code used to narrow location results. Example: US |
+| region | No | Optional region code or explicit region value used to narrow city results. Example: us-ca or California\|US. Bare names require country. |
+
+Example city response:
+
+```json
+{
+  "filter": "city",
+  "query": "san",
+  "values": [
+    {
+      "query": "san",
+      "label": "San Francisco",
+      "value": "San Francisco|California|US",
+      "city": "San Francisco",
+      "region": "California",
+      "regionCode": "us-ca",
+      "countryCode": "us"
+    }
+  ]
+}
+```
+
+Example industry response:
+
+```json
+{
+  "filter": "industry",
+  "query": "software development",
+  "values": [
+    {
+      "label": "it system custom software development",
+      "value": "it system custom software development"
+    },
+    {
+      "label": "software development",
+      "value": "software development"
+    }
+  ]
+}
+```
+
+Example tech stack response:
+
+```json
+{
+  "filter": "techStack",
+  "query": "hubspot",
+  "values": [
+    {
+      "query": "hubspot",
+      "label": "HubSpot",
+      "value": "hubspot"
+    }
+  ]
+}
+```
+
+## Preset Values
+
+Preset values are strict. Unsupported values return `400` before the provider request.
+
+### Event Window
+
+```text
+30 days
+60 days
+90 days
+```
+
+### Location Match
+
+```text
+hqOnly
+hqOperating
+```
+
+### Company Size
+
+```text
+1-10
+11-50
+51-200
+201-500
+501-1000
+1001-5000
+5001-10000
+10001
+```
+
+### Company Revenue
+
+```text
+0-500K
+500K-1M
+1M-5M
+5M-10M
+10M-25M
+25M-75M
+75M-200M
+200M-500M
+500M-1B
+1B-10B
+10B-100B
+100B-1T
+1T-10T
+10T
+```
+
+### Company Age
+
+```text
+0-3
+3-6
+6-10
+10-20
+20
+```
+
+### Number of Locations
+
+```text
+0-1
+2-5
+6-20
+21-50
+51-100
+101-1000
+1001
+```
+
+### Company Events
+
+```text
+increase_in_customer_service_department
+hiring_in_finance_department
+hiring_in_support_department
+increase_in_engineering_department
+decrease_in_customer_service_department
+hiring_in_operations_department
+hiring_in_creative_department
+decrease_in_engineering_department
+hiring_in_sales_department
+increase_in_operations_department
+hiring_in_trade_department
+decrease_in_marketing_department
+increase_in_marketing_department
+hiring_in_marketing_department
+hiring_in_health_department
+hiring_in_education_department
+increase_in_all_departments
+decrease_in_all_departments
+decrease_in_sales_department
+decrease_in_operations_department
+hiring_in_professional_service_department
+hiring_in_human_resources_department
+increase_in_sales_department
+hiring_in_legal_department
+hiring_in_unknown_department
+hiring_in_engineering_department
+company_award
+new_product
+employee_joined_company
+merger_and_acquisitions
+lawsuits_and_legal_issues
+outages_and_security_breaches
+closing_office
+new_investment
+new_office
+new_partnership
+cost_cutting
+new_funding_round
+award
+ipo_announcement
+```
+
+### Industry
+
+The API accepts only the supported Find Companies industry values below. Values are matched case-insensitively and normalized before the provider request.
+
+```text
+abrasives and nonmetallic minerals manufacturing
+accessible architecture and design
+accessible hardware manufacturing
+accommodation and food services
+accomodation services
+accounting
+administration of justice
+administrative and support services
+advertising services
+agricultural chemical manufacturing
+agriculture, construction, mining machinery manufacturing
+air, water, and waste program management
+airlines and aviation
+alternative dispute resolution
+alternative fuel vehicle manufacturing
+alternative medicine
+ambulance services
+amusement parks and arcades
+animal feed manufacturing
+animation
+animation and post-production
+apparel & fashion
+apparel manufacturing
+appliances, electrical, and electronics manufacturing
+architectural and structural metal manufacturing
+architecture and planning
+armed forces
+artificial rubber and synthetic fiber manufacturing
+artists and writers
+arts & crafts
+arts and crafts
+audio and video equipment manufacturing
+automation machinery manufacturing
+automotive
+aviation & aerospace
+aviation and aerospace component manufacturing
+baked goods manufacturing
+banking
+bars, taverns, and nightclubs
+bed-and-breakfasts, hostels, homestays
+beverage manufacturing
+biomass electric power generation
+biotechnology
+biotechnology research
+blockchain services
+blogs
+boilers, tanks, and shipping container manufacturing
+book and periodical publishing
+book publishing
+breweries
+broadcast media production and distribution
+building construction
+building equipment contractors
+building finishing contractors
+building materials
+building structure and exterior contractors
+business consulting and services
+business content
+business intelligence platforms
+business supplies & equipment
+cable and satellite programming
+capital markets
+caterers
+central bank
+chemical manufacturing
+chemical raw materials manufacturing
+child day care services
+chiropractors
+circuses and magic shows
+civic and social organizations
+civil engineering
+claims adjusting, actuarial services
+clay and refractory products manufacturing
+climate data and analytics
+climate technology product manufacturing
+coal mining
+collection agencies
+commercial and industrial equipment rental
+commercial and industrial machinery maintenance
+commercial and service industry machinery manufacturing
+commercial real estate
+communications equipment manufacturing
+community development and urban planning
+community services
+computer and network security
+computer games
+computer hardware
+computer hardware manufacturing
+computer networking
+computer networking products
+computers and electronics manufacturing
+conservation programs
+construction
+construction hardware manufacturing
+consumer electronics
+consumer goods
+consumer goods rental
+consumer services
+correctional institutions
+cosmetics
+cosmetology and barber schools
+courts of law
+credit intermediation
+cutlery and handtool manufacturing
+dairy
+dairy product manufacturing
+dance companies
+data infrastructure and analytics
+data security software products
+death care services
+defense & space
+defense and space manufacturing
+dentists
+design
+design services
+desktop computing software products
+digital accessibility services
+distilleries
+e-learning
+e-learning providers
+economic programs
+education
+education administration programs
+education management
+electric lighting equipment manufacturing
+electric power generation
+electric power transmission, control, and distribution
+electrical equipment manufacturing
+electronic and precision equipment maintenance
+embedded software products
+emergency and relief services
+energy technology
+engineering services
+engines and power transmission equipment manufacturing
+entertainment
+entertainment providers
+environmental quality programs
+environmental services
+equipment rental services
+event services
+events services
+executive offices
+executive search services
+fabricated metal products
+facilities services
+family planning centers
+farming
+farming, ranching and fisheries
+farming, ranching, and fisheries
+farming, ranching, forestry
+farming,ranching and fisheries
+fashion accessories manufacturing
+financial services
+fine art
+fine arts schools
+fire protection
+fisheries
+fishing
+fishing club
+flight training
+food & beverages
+food and beverage manufacturing
+food and beverage retail
+food and beverage services
+food production
+footwear and leather goods repair
+footwear manufacturing
+forestry and logging
+fossil fuel electric power generation
+freight and package transportation
+fruit and vegetable preserves manufacturing
+fuel cell manufacturing
+fundraising
+funds and trusts
+funeral services
+furniture
+furniture and home furnishings manufacturing
+gambling facilities and casinos
+geothermal electric power generation
+glass product manufacturing
+glass, ceramics and concrete manufacturing
+golf courses and country clubs
+government administration
+government relations
+government relations services
+graphic design
+ground passenger transportation
+health and human services
+health, wellness & fitness
+healthcare
+higher education
+highway, street, and bridge construction
+historical sites
+holding companies
+home health care services
+horticulture
+hospitality
+hospitals
+hospitals and health care
+hotels and motels
+household and institutional furniture manufacturing
+household appliance manufacturing
+household services
+housing and community development
+housing programs
+human resources
+human resources services
+hvac and refrigeration equipment manufacturing
+hydroelectric power generation
+import & export
+individual and family services
+industrial automation
+industrial machinery manufacturing
+industry associations
+information services
+information technology & services
+insurance
+insurance agencies and brokerages
+insurance and employee benefit funds
+insurance carriers
+interior design
+international affairs
+international trade and development
+internet cafe
+internet marketplace platforms
+internet news
+internet publishing
+interurban and rural bus services
+investment advice
+investment banking
+investment management
+it services and it consulting
+it system custom software development
+it system data services
+it system design services
+it system installation and disposal
+it system operations and maintenance
+it system testing and evaluation
+it system training and support
+janitorial services
+landscaping services
+language schools
+laundry and drycleaning services
+law enforcement
+law practice
+leasing non-residential real estate
+leasing real estate
+leasing real estate agents and brokers
+leasing real estate and equipment rental services
+leasing residential real estate
+leather product manufacturing
+legal services
+legislative offices
+leisure, travel & tourism
+libraries
+lime and gypsum products manufacturing
+loan brokers
+luxury goods & jewelry
+machinery manufacturing
+magnetic and optical media manufacturing
+manufacturing
+maritime
+maritime transportation
+market research
+marketing services
+mattress and blinds manufacturing
+measuring and control instrument manufacturing
+meat products manufacturing
+mechanical or industrial engineering
+media and telecommunications
+media production
+medical and diagnostic laboratories
+medical device
+medical equipment manufacturing
+medical practices
+mental health care
+metal ore mining
+metal treatments
+metal valve, ball, and roller manufacturing
+metalworking machinery manufacturing
+military and international affairs
+mining
+mobile computing software products
+mobile food services
+mobile gaming apps
+motor vehicle manufacturing
+motor vehicle parts manufacturing
+movies and sound recording
+movies, videos and sound
+movies, videos, and sound
+museums
+museums, historical sites, and zoos
+music
+musicians
+nanotechnology research
+natural gas distribution
+natural gas extraction
+newspaper publishing
+non-profit organization management
+non-profit organizations
+nonmetallic mineral mining
+nonresidential building construction
+nuclear electric power generation
+nursing homes and residential care facilities
+office administration
+office furniture and fixtures manufacturing
+oil and coal product manufacturing
+oil and gas
+oil extraction
+oil, gas, and mining
+online and mail order retail
+online audio and video media
+online media
+operations consulting
+optometrists
+outpatient care centers
+outsourcing and offshoring consulting
+outsourcing/offshoring
+packaging & containers
+packaging and containers manufacturing
+paint, coating, and adhesive manufacturing
+paper & forest products
+paper and forest product manufacturing
+pension funds
+performing arts
+performing arts and spectator sports
+periodical publishing
+personal and laundry services
+personal care product manufacturing
+personal care services
+pet services
+pharmaceutical manufacturing
+philanthropic fundraising services
+philanthropy
+photography
+physical, occupational and speech therapists
+physicians
+pipeline transportation
+plastics and rubber product manufacturing
+plastics manufacturing
+political organizations
+postal services
+primary and secondary education
+primary metal manufacturing
+printing services
+professional organizations
+professional services
+professional training and coaching
+program development
+public assistance programs
+public health
+public policy
+public policy offices
+public relations and communications services
+public safety
+publishing
+racetracks
+radio and television broadcasting
+rail transportation
+railroad equipment manufacturing
+ranching
+ranching and fisheries
+real estate
+real estate agents and brokers
+real estate and equipment rental services
+recreational facilities
+regenerative design
+religious institutions
+renewable energy equipment manufacturing
+renewable energy power generation
+renewable energy semiconductor manufacturing
+renewables & environment
+repair and maintenance
+research
+research services
+residential building construction
+restaurants
+retail
+retail apparel and fashion
+retail appliances, electrical, and electronic equipment
+retail art dealers
+retail art supplies
+retail bicycles
+retail books and printed news
+retail building materials and garden equipment
+retail firearms
+retail fireworks
+retail florists
+retail footwear
+retail furniture and home furnishings
+retail gasoline
+retail groceries
+retail health and personal care products
+retail luxury goods and jewelry
+retail motor vehicles
+retail music instruments
+retail musical instruments
+retail office equipment
+retail office supplies and gifts
+retail pet products
+retail pet supplies
+retail pharmacies
+retail recyclable materials & used merchandise
+retail sporting goods
+retail sporting goods and bicycles
+retail telecommunications
+retail tobacco
+retail toys and games
+reupholstery and furniture repair
+robot manufacturing
+robotics engineering
+rubber products manufacturing
+satellite telecommunications
+savings institutions
+school and employee bus services
+seafood product manufacturing
+secretarial schools
+securities and commodity exchanges
+security and investigations
+security guards and patrol services
+security systems services
+semiconductor manufacturing
+semiconductors
+services for renewable energy
+services for the elderly and disabled
+sheet music publishing
+shipbuilding
+shuttles and special needs transportation services
+sightseeing transportation
+skiing facilities
+smart meter manufacturing
+soap and cleaning product manufacturing
+social networking platforms
+software development
+solar electric power generation
+sound recording
+space research and technology
+specialty trade contractors
+spectator sports
+sporting goods
+sporting goods manufacturing
+sports and recreation instruction
+sports teams and clubs
+spring and wire product manufacturing
+staffing and recruiting
+steam and air-conditioning supply
+strategic management services
+subdivision of land
+sugar and confectionery product manufacturing
+surveying and mapping services
+tailor
+taxi and limousine services
+technical and vocational training
+technology, information and internet
+technology, information and media
+telecommunications
+telecommunications carriers
+telephone call centers
+temporary help services
+textile manufacturing
+theater companies
+think tanks
+tobacco
+tobacco manufacturing
+toys
+translation and localization
+transportation equipment manufacturing
+transportation programs
+transportation, logistics, supply chain and storage
+transportation/trucking/railroad
+travel arrangements
+truck transportation
+trusts and estates
+turned products and fastener manufacturing
+urban transit services
+utilities
+utilities administration
+utility system construction
+vehicle hire
+vehicle repair and maintenance
+venture capital and private equity principals
+veterinary
+veterinary services
+vocational rehabilitation services
+warehousing
+warehousing and storage
+waste collection
+waste treatment and disposal
+water supply and irrigation systems
+water, waste, steam, and air conditioning services
+wellness and fitness services
+wholesale
+wholesale alcoholic beverages
+wholesale apparel and sewing supplies
+wholesale appliances, electrical, and electronics
+wholesale building materials
+wholesale chemical and allied products
+wholesale computer equipment
+wholesale drugs and sundries
+wholesale food and beverage
+wholesale footwear
+wholesale furniture and home furnishings
+wholesale hardware, plumbing, heating equipment
+wholesale import and export
+wholesale leather goods and jewelry
+wholesale luxury goods and jewelry
+wholesale machinery
+wholesale medical supplies
+wholesale metals and minerals
+wholesale motor vehicles and parts
+wholesale paper products
+wholesale petroleum and petroleum products
+wholesale photography equipment and supplies
+wholesale raw farm products
+wholesale recyclable materials
+wind electric power generation
+wine & spirits
+wineries
+wireless services
+women's handbag manufacturing
+wood product manufacturing
+writing and editing
+zoos and botanical gardens
+```
+
+## Response
+
+Each row is a sanitized company record. Returned fields can vary by company depending on the data available. The API removes ID-like fields such as `id`, `_id`, `uuid`, `business_id`, `*_id`, `*Id`, `*Urn`, and `*Identifier` recursively, along with raw provider, token, secret, and trace fields.
+
+### Successful Response (200)
+
+```json
+{
+  "rows": [
+    {
+      "name": "Airscale",
+      "domain": "airscale.io",
+      "logo": "https://cdn.example.com/logo.png",
+      "website": "https://airscale.io",
+      "countryName": "France",
+      "cityName": "Paris",
+      "employeeRange": "11-50",
+      "revenueRange": "1M-5M",
+      "description": "Sales intelligence and enrichment platform.",
+      "linkedinProfile": "https://www.linkedin.com/company/airscale-io"
+    }
+  ],
+  "total": 1,
+  "page": 0,
+  "size": 25,
+  "next_cursor": "fc_eyJzY29yZSI6NDIsImJ1c2luZXNzX2lkIjoiYml6LTEifQ"
+}
+```
+
+## Error Responses
+
+### Missing Authorization (401)
+
+```json
+{
+  "error": "Missing bearer token"
+}
+```
+
+### Invalid API Key (401)
+
+```json
+{
+  "error": "Invalid API key"
+}
+```
+
+### Invalid Request (400)
+
+```json
+{
+  "error": "Invalid Find Companies request",
+  "message": "size must be an integer from 1 to 100"
+}
+```
+
+### Insufficient Credits (403)
+
+```json
+{
+  "error": "Forbidden",
+  "message": "Insufficient credits"
+}
+```
+
+### Rate Limited (429)
+
+```json
+{
+  "error": "Too Many Requests",
+  "message": "Rate limit exceeded: 6 req/sec"
+}
+```
+
+### Provider Failure (502)
+
+```json
+{
+  "error": "Find Companies search failed",
+  "status": 500
+}
+```
+
+## Example Usage
+
+The examples below use the complete all-filter payload. Remove any filter keys you do not need.
+
+### cURL
+
+```text
+curl -X POST https://api.airscale.io/v1/find-companies \
+  -H "Authorization: Bearer YOUR_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "filters": {
+      "country": ["France", "United States"],
+      "region": ["California|US"],
+      "city": ["San Francisco|California|US"],
+      "industry": ["software development", "it services and it consulting"],
+      "size": ["11-50", "51-200"],
+      "revenue": ["1M-5M", "5M-10M"],
+      "age": ["3-6", "6-10"],
+      "techStack": ["hubspot", "salesforce"],
+      "keywords": ["lead generation", "sales automation"],
+      "topics": ["technology: chrome", "business services: gmail for business"],
+      "events": ["new_funding_round", "new_partnership"],
+      "locations": ["2-5", "6-20"],
+      "companyName": ["Airscale", "OpenAI"],
+      "eventWindow": "30 days",
+      "locationMatch": "hqOperating",
+      "hasWebsite": true,
+      "isPublicCompany": false
+    },
+    "page": 0,
+    "size": 25
+  }'
+```
+
+### Python
+
+```text
+import requests
+
+url = "https://api.airscale.io/v1/find-companies"
+headers = {
+    "Authorization": "Bearer YOUR_API_KEY",
+    "Content-Type": "application/json",
+}
+payload = {
+    "filters": {
+        "country": ["France", "United States"],
+        "region": ["California|US"],
+        "city": ["San Francisco|California|US"],
+        "industry": ["software development", "it services and it consulting"],
+        "size": ["11-50", "51-200"],
+        "revenue": ["1M-5M", "5M-10M"],
+        "age": ["3-6", "6-10"],
+        "techStack": ["hubspot", "salesforce"],
+        "keywords": ["lead generation", "sales automation"],
+        "topics": ["technology: chrome", "business services: gmail for business"],
+        "events": ["new_funding_round", "new_partnership"],
+        "locations": ["2-5", "6-20"],
+        "companyName": ["Airscale", "OpenAI"],
+        "eventWindow": "30 days",
+        "locationMatch": "hqOperating",
+        "hasWebsite": True,
+        "isPublicCompany": False,
+    },
+    "page": 0,
+    "size": 25,
+}
+
+response = requests.post(url, headers=headers, json=payload)
+print(response.json())
+```
+
+### JavaScript (Fetch)
+
+```text
+const url = "https://api.airscale.io/v1/find-companies";
+const headers = {
+  Authorization: "Bearer YOUR_API_KEY",
+  "Content-Type": "application/json",
+};
+const payload = {
+  filters: {
+    country: ["France", "United States"],
+    region: ["California|US"],
+    city: ["San Francisco|California|US"],
+    industry: ["software development", "it services and it consulting"],
+    size: ["11-50", "51-200"],
+    revenue: ["1M-5M", "5M-10M"],
+    age: ["3-6", "6-10"],
+    techStack: ["hubspot", "salesforce"],
+    keywords: ["lead generation", "sales automation"],
+    topics: ["technology: chrome", "business services: gmail for business"],
+    events: ["new_funding_round", "new_partnership"],
+    locations: ["2-5", "6-20"],
+    companyName: ["Airscale", "OpenAI"],
+    eventWindow: "30 days",
+    locationMatch: "hqOperating",
+    hasWebsite: true,
+    isPublicCompany: false,
+  },
+  page: 0,
+  size: 25,
+};
+
+fetch(url, {
+  method: "POST",
+  headers,
+  body: JSON.stringify(payload),
+})
+  .then((response) => response.json())
+  .then((data) => console.log(data))
+  .catch((error) => console.error("Error:", error));
+```
+
+### PHP
+
+```text
+<?php
+
+$url = 'https://api.airscale.io/v1/find-companies';
+$headers = [
+    'Authorization: Bearer YOUR_API_KEY',
+    'Content-Type: application/json'
+];
+$payload = json_encode([
+    'filters' => [
+        'country' => ['France', 'United States'],
+        'region' => ['California|US'],
+        'city' => ['San Francisco|California|US'],
+        'industry' => ['software development', 'it services and it consulting'],
+        'size' => ['11-50', '51-200'],
+        'revenue' => ['1M-5M', '5M-10M'],
+        'age' => ['3-6', '6-10'],
+        'techStack' => ['hubspot', 'salesforce'],
+        'keywords' => ['lead generation', 'sales automation'],
+        'topics' => ['technology: chrome', 'business services: gmail for business'],
+        'events' => ['new_funding_round', 'new_partnership'],
+        'locations' => ['2-5', '6-20'],
+        'companyName' => ['Airscale', 'OpenAI'],
+        'eventWindow' => '30 days',
+        'locationMatch' => 'hqOperating',
+        'hasWebsite' => true,
+        'isPublicCompany' => false
+    ],
+    'page' => 0,
+    'size' => 25
+]);
+
+$ch = curl_init($url);
+curl_setopt($ch, CURLOPT_POST, true);
+curl_setopt($ch, CURLOPT_POSTFIELDS, $payload);
+curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
+curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+
+$response = curl_exec($ch);
+curl_close($ch);
+
+echo $response;
+```
+
+### Go
+
+```text
+package main
+
+import (
+    "bytes"
+    "encoding/json"
+    "fmt"
+    "io"
+    "net/http"
+)
+
+func main() {
+    url := "https://api.airscale.io/v1/find-companies"
+
+    payload := map[string]interface{}{
+        "filters": map[string]interface{}{
+            "country":         []string{"France", "United States"},
+            "region":          []string{"California|US"},
+            "city":            []string{"San Francisco|California|US"},
+            "industry":        []string{"software development", "it services and it consulting"},
+            "size":            []string{"11-50", "51-200"},
+            "revenue":         []string{"1M-5M", "5M-10M"},
+            "age":             []string{"3-6", "6-10"},
+            "techStack":       []string{"hubspot", "salesforce"},
+            "keywords":        []string{"lead generation", "sales automation"},
+            "topics":          []string{"technology: chrome", "business services: gmail for business"},
+            "events":          []string{"new_funding_round", "new_partnership"},
+            "locations":       []string{"2-5", "6-20"},
+            "companyName":     []string{"Airscale", "OpenAI"},
+            "eventWindow":     "30 days",
+            "locationMatch":   "hqOperating",
+            "hasWebsite":      true,
+            "isPublicCompany": false,
+        },
+        "page": 0,
+        "size": 25,
+    }
+
+    jsonPayload, _ := json.Marshal(payload)
+
+    req, _ := http.NewRequest("POST", url, bytes.NewBuffer(jsonPayload))
+    req.Header.Set("Authorization", "Bearer YOUR_API_KEY")
+    req.Header.Set("Content-Type", "application/json")
+
+    client := &http.Client{}
+    resp, err := client.Do(req)
+    if err != nil {
+        panic(err)
+    }
+    defer resp.Body.Close()
+
+    body, _ := io.ReadAll(resp.Body)
+    fmt.Println(string(body
+```

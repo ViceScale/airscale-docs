@@ -1,0 +1,177 @@
+---
+title: "People URL finder"
+---
+
+Use this endpoint to find a people profile URL
+
+### Endpoint
+
+```text
+POST https://api.airscale.io/v1/url-search-people
+```
+
+### Headers
+
+| Key | Value | Required |
+| --- | --- | --- |
+| Content-Type | application/json | Yes |
+| Authorization | Bearer &lt;YOUR_API_KEY&gt; | Yes |
+
+### Request Body
+
+```json
+{
+    "first_name": "Victor",
+    "last_name": "Detraz",
+    "company_name": "Airscale"
+}
+```
+
+| Field | Type | Required |
+| --- | --- | --- |
+| first_name | string | Yes |
+| last_name | string | Yes |
+| company_name | string | Yes |
+
+### Response
+
+**Successful Response (200)**
+
+```json
+{
+   "status": "success",
+    "url": "https://www.linkedin.com/vdetraz"
+}
+```
+
+### Example Usage
+
+**cURL**
+
+```bash
+curl -X POST https://api.airscale.io/v1/url-search-people \
+  -H "Authorization: Bearer YOUR_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "first_name": "Victor",
+    "last_name": "Detraz",
+    "company_name": "Airscale"
+  }'
+```
+
+**Python**
+
+```python
+import requests
+import json
+
+url = 'https://api.airscale.io/v1/url-search-people'
+api_key = 'YOUR_API_KEY'
+
+headers = {
+    'Authorization': f'Bearer {api_key}',
+    'Content-Type': 'application/json'
+}
+
+data = {
+    'first_name': 'Victor',
+    'last_name': 'Detraz',
+    'company_name': 'Airscale'
+}
+
+response = requests.post(url, headers=headers, json=data)
+
+print(response.status_code)
+print(response.json())
+```
+
+**JavaScript (Fetch)**
+
+```javascript
+const fetch = require('node-fetch');
+
+const url = 'https://api.airscale.io/v1/url-search-people';
+const apiKey = 'YOUR_API_KEY';
+
+const data = {
+  first_name: 'Victor',
+  last_name: 'Detraz',
+  company_name: 'Airscale'
+};
+
+fetch(url, {
+  method: 'POST',
+  headers: {
+    'Authorization': `Bearer ${apiKey}`,
+    'Content-Type': 'application/json'
+  },
+  body: JSON.stringify(data)
+})
+  .then(response => response.json())
+  .then(data => console.log(data))
+  .catch(error => console.error('Error:', error));
+```
+
+**PHP**
+
+```php
+<
+```
+
+**GO**
+
+```go
+package main
+
+import (
+    "bytes"
+    "encoding/json"
+    "fmt"
+    "io/ioutil"
+    "net/http"
+)
+
+func main() {
+    url := "https://api.airscale.io/v1/url-search-people"
+    apiKey := "YOUR_API_KEY"
+
+    data := map[string]string{
+        "first_name":   "Victor",
+        "last_name":    "Detraz",
+        "company_name": "Airscale",
+    }
+
+    jsonData, err := json.Marshal(data)
+    if err != nil {
+        fmt.Println("Error marshaling JSON:", err)
+        return
+    }
+
+    req, err := http.NewRequest("POST", url, bytes.NewBuffer(jsonData))
+    if err != nil {
+        fmt.Println("Error creating request:", err)
+        return
+    }
+
+    req.Header.Set("Authorization", "Bearer "+apiKey)
+    req.Header.Set("Content-Type", "application/json")
+
+    client := &http.Client{}
+    resp, err := client.Do(req)
+    if err != nil {
+        fmt.Println("Error making request:", err)
+        return
+    }
+    defer resp.Body.Close()
+
+    body, err := ioutil.ReadAll(resp.Body)
+    if err != nil {
+        fmt.Println("Error reading response:", err)
+        return
+    }
+
+    fmt.Println("Status:", resp.Status)
+    fmt.Println("Response:", string(body))
+}
+```
+
