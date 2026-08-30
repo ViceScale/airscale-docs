@@ -22,6 +22,26 @@ const EXPECTED_PAGES = [
   "airsearch"
 ];
 
+function isRepositoryRelativePath(path) {
+  return (
+    typeof path === "string" &&
+    path.length > 0 &&
+    !path.startsWith("/") &&
+    !path.startsWith("\\") &&
+    !/^[A-Za-z]:/.test(path) &&
+    !/^[A-Za-z][A-Za-z\d+.-]*:/.test(path) &&
+    !path.split(/[\\/]/).includes("..")
+  );
+}
+
+test("repository-relative source paths reject absolute, URI, and parent paths", () => {
+  assert.equal(isRepositoryRelativePath("workers/public-api/credits.js"), true);
+
+  for (const path of ["", "/etc/file", "C:\\file", "\\\\server\\file", "https://example.com/file", "../file"]) {
+    assert.equal(isRepositoryRelativePath(path), false, `${path || "empty path"} must be rejected`);
+  }
+});
+
 test("contract evidence covers every approved page at the locked source SHA", () => {
   const manifest = JSON.parse(readFileSync("contracts/public-api-contracts.json", "utf8"));
   assert.equal(manifest.sourceRepository, "ViceScale/airscale-code");
@@ -30,7 +50,7 @@ test("contract evidence covers every approved page at the locked source SHA", ()
 
   for (const [page, evidence] of Object.entries(manifest.pages)) {
     assert.ok(evidence.sourceFiles.length > 0, `${page} must name authoritative source files`);
-    assert.ok(evidence.sourceFiles.every((path) => !path.includes("..")), `${page} source paths must stay repository-relative`);
+    assert.ok(evidence.sourceFiles.every(isRepositoryRelativePath), `${page} source paths must stay repository-relative`);
     assert.ok(Array.isArray(evidence.endpoints), `${page} endpoints must be an array`);
     for (const endpoint of evidence.endpoints) {
       assert.match(endpoint.method, /^(GET|POST)$/);
