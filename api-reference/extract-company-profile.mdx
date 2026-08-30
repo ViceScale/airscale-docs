@@ -1,156 +1,150 @@
 ---
-title: "Extract company profile"
+title: "Company profile"
+description: "Extract a structured company profile from a company profile URL."
 ---
 
-Use this endpoint to extract the company profile data
+Submit a company or school profile URL and receive normalized organization, headcount, location, and industry data.
 
-### Endpoint
+<Badge color="blue">POST</Badge> `/v1/company`
 
-```text
-POST https://api.airscale.io/v1/company
-```
+| Property | Value |
+| --- | --- |
+| Method | `POST` |
+| Endpoint | `https://api.airscale.io/v1/company` |
+| Execution | Synchronous |
+| Authentication | Bearer API key |
+| Rate limit | 3,000 requests per minute per workspace |
+| Request body limit | 256 KiB |
+| Airscale credit cost | 0.5 credits for a successful company extraction; unsuccessful requests are not charged. |
 
-### Headers
+## Request
 
-| Key | Value | Required |
-| --- | --- | --- |
-| Content-Type | application/json | Yes |
-| Authorization | Bearer &lt;YOUR_API_KEY&gt; | Yes |
+| Field | Type | Required | Description |
+| --- | --- | --- | --- |
+| `linkedin_profile_url` | string | Yes | LinkedIn company or school profile URL. Use a `/company/` or `/school/` path for this endpoint. |
+| `mode` | string | No | Extraction mode. Allowed values are `p1`, `p2`, or `p3`; omit it to use the default extraction workflow. |
 
-### Request Body
-
-```json
-{
-     "linkedin_profile_url":"https://linkedin.com/company/airscale-io"
-}
-```
-
-| Field | Type | Required |
-| --- | --- | --- |
-| linkedin_profile_url | string | Yes |
-
-### Response
-
-**Successful Response (200)**
+The URL is trimmed before validation. URLs without a scheme are accepted, and recognized LinkedIn URLs are normalized to `https://www.linkedin.com/{type}/{slug}`. Query strings and path content after the profile slug are not included in the canonical URL.
 
 ```json
 {
- "body": {
-        "url": "https://www.linkedin.com/company/airscale-io",
-        "name": "Airscale", (...)
+  "linkedin_profile_url": "https://www.linkedin.com/company/example-company-000000"
 }
 ```
 
-### Example Usage
+## Response
 
-**cURL**
+A successful extraction returns `200 OK` with the company profile object at the top level:
 
-```bash
-curl -X POST "https://api.airscale.io/v1/company" \
-  -H "Authorization: Bearer YOUR_API_KEY" \
-  -H "Content-Type: application/json" \
-  -d '{"linkedin_profile_url":"https://linkedin.com/company/airscale-io"}'
+```json
+{
+  "url": "https://www.linkedin.com/company/example-company-000000",
+  "name": "Example Company",
+  "universalName": "example-company-000000",
+  "type": "Privately Held",
+  "objectUrn": 100000000,
+  "description": "Builds example products for software teams.",
+  "phone": "+12025550147",
+  "followers": 250,
+  "website": "https://example.com",
+  "logo": "https://cdn.example.com/companies/example-company.png",
+  "tagline": "Example products for modern teams",
+  "foundedYear": 2024,
+  "staff": {
+    "total": 42,
+    "range": "11-50"
+  },
+  "locations": {
+    "headquarter": {
+      "country": "United States",
+      "geographicArea": "CA",
+      "city": "Example City",
+      "postalCode": "00000",
+      "line1": "1 Example Street",
+      "line2": null,
+      "isPrimary": true
+    },
+    "other": []
+  },
+  "fundingData": null,
+  "specialities": ["Example software"],
+  "industries": ["Software Development"],
+  "hashtags": ["example"]
+}
 ```
 
-**Python**
+| Field | Type | Description |
+| --- | --- | --- |
+| `url` | string or null | Canonical company or school profile URL. |
+| `name` | string or null | Organization name. |
+| `universalName` | string or null | Public organization slug when available. |
+| `description` | string or null | Organization description. |
+| `website` | string or null | Organization website. |
+| `foundedYear` | number or null | Founding year when available. |
+| `staff` | object | Staff total and size range. |
+| `locations` | object | Headquarters and other normalized locations. |
+| `industries` | array or null | Industry labels. |
+| `specialities` | array or null | Organization specialties, using the response field's source spelling. |
 
-```python
+The endpoint returns errors rather than a `200 OK` no-result envelope when a company profile cannot be extracted. These unsuccessful requests are not charged.
+
+## Errors
+
+| Status | Cause | Recovery |
+| --- | --- | --- |
+| `400 Bad Request` | The JSON is invalid, `linkedin_profile_url` is missing or malformed, `mode` is not `p1`, `p2`, or `p3`, or the upstream source identifies an invalid profile. | Send valid JSON with a LinkedIn `/company/` or `/school/` URL and omit `mode` unless you need a supported extraction mode. |
+| `401 Unauthorized` | The Bearer token is missing or invalid. | Add the current workspace API key to the `Authorization` header. |
+| `403 Forbidden` | The workspace cannot cover the 0.5-credit cost. | Add credits, then retry the request. |
+| `404 Not Found` | The profile could not be extracted after the available lookup paths completed. | Confirm that the public organization profile URL is current. |
+| `413 Content Too Large` | The request body exceeds 256 KiB. | Remove unrelated fields and resend the request. |
+| `429 Too Many Requests` | The workspace reached 3,000 requests in the current minute. | Retry after the minute window with bounded exponential backoff. |
+| `502 Bad Gateway` | API-key validation or upstream configuration is temporarily unavailable. | Confirm the API key, then retry with bounded backoff. |
+| `503 Service Unavailable` | The selected extraction path or credit settlement service is temporarily unavailable. | Retry the same URL with bounded backoff; omit `mode` if you do not require a specific mode. |
+| `500 Internal Server Error` | An unexpected worker error occurred. | Retry once with bounded backoff, then contact support with the timestamp. |
+
+## Examples
+
+<CodeGroup>
+```bash cURL
+curl --request POST \
+  --url https://api.airscale.io/v1/company \
+  --header "Authorization: Bearer $AIRSCALE_API_KEY" \
+  --header "Content-Type: application/json" \
+  --data '{"linkedin_profile_url":"https://www.linkedin.com/company/example-company-000000"}'
+```
+
+```python Python
+import os
 import requests
 
-url = "https://api.airscale.io/v1/company"
-headers = {
-    "Authorization": "Bearer YOUR_API_KEY",
-    "Content-Type": "application/json",
-}
-json_body = {
-    "linkedin_profile_url": "https://linkedin.com/company/airscale-io",
-    # "webhook_url": "https://your.app/receiveProfile",  # optional
-}
-
-resp = requests.post(url, headers=headers, json=json_body, timeout=60)
-print(resp.status_code, resp.text)
-```
-
-**JavaScript (Fetch)**
-
-```javascript
-// Node 18+ has global fetch
-const url = "https://api.airscale.io/v1/company";
-
-async function run() {
-  const res = await fetch(url, {
-    method: "POST",
-    headers: {
-      "Authorization": "Bearer YOUR_API_KEY",
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({
-      linkedin_profile_url:"https://linkedin.com/company/airscale-io",
-      // webhook_url: "https://your.app/receiveProfile", // optional
-    }),
-  });
-
-  const text = await res.text();
-  console.log(res.status, text);
-}
-
-run().catch(console.error);
-```
-
-**PHP**
-
-```php
-<?php
-$apiUrl = "https://api.airscale.io/v1/company";
-$userApiKey = "YOUR_API_KEY"; // Replace with your Bearer key
-
-$payload = [
-    "linkedin_profile_url" => "https://linkedin.com/company/airscale-io"
-];
-
-$ch = curl_init($apiUrl);
-curl_setopt_array($ch, [
-    CURLOPT_POST => true,
-    CURLOPT_HTTPHEADER => [
-        "Authorization: Bearer " . $userApiKey,
-        "Content-Type: application/json"
-    ],
-    CURLOPT_POSTFIELDS => json_encode($payload),
-    CURLOPT_RETURNTRANSFER => true,
-    CURLOPT_TIMEOUT => 60
-]);
-
-$response = curl_exec($ch);
-if ($response === false) {
-    die("cURL Error: " . curl_error($ch))
-```
-
-**GO**
-
-```go
-package main
-
-import (
-	"bytes"
-	"fmt"
-	"io"
-	"net/http"
-	"time"
+response = requests.post(
+    "https://api.airscale.io/v1/company",
+    headers={"Authorization": f"Bearer {os.environ['AIRSCALE_API_KEY']}"},
+    json={"linkedin_profile_url": "https://www.linkedin.com/company/example-company-000000"},
+    timeout=60,
 )
-
-func main() {
-	body := []byte(`{"linkedin_profile_url":"https://linkedin.com/company/airscale-io"}`)
-	req, _ := http.NewRequest("POST", "https://api.airscale.io/v1/company", bytes.NewBuffer(body))
-	req.Header.Set("Authorization", "Bearer YOUR_API_KEY")
-	req.Header.Set("Content-Type", "application/json")
-
-	client := &http.Client{Timeout: 60 * time.Second}
-	res, err := client.Do(req)
-	if err != nil {
-		panic(err)
-	}
-	defer res.Body.Close()
-	b, _ := io.ReadAll(res.Body)
-	fmt.Println(res.Status, string(b))
-}
+response.raise_for_status()
+print(response.json())
 ```
+
+```javascript Node.js
+const apiKey = process.env.AIRSCALE_API_KEY;
+const response = await fetch("https://api.airscale.io/v1/company", {
+  method: "POST",
+  headers: {
+    Authorization: `Bearer ${apiKey}`,
+    "Content-Type": "application/json",
+  },
+  body: JSON.stringify({
+    linkedin_profile_url: "https://www.linkedin.com/company/example-company-000000",
+  }),
+});
+
+if (!response.ok) throw new Error(`Company extraction failed with HTTP ${response.status}`);
+console.log(await response.json());
+```
+</CodeGroup>
+
+## Next step
+
+Use [Reverse email](/api-reference/reverse-email) when an email address is the identifier you have for a person.

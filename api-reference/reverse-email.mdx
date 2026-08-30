@@ -1,184 +1,122 @@
 ---
 title: "Reverse email"
+description: "Find a person profile from an email address."
 ---
 
-Use this endpoint to find and enrich people profile URL from a professional email
+Submit an email address and receive the matching person profile when one can be resolved.
 
-### Endpoint
+<Badge color="blue">POST</Badge> `/v1/reverse-email`
 
-```text
-POST https://api.airscale.io/v1/reverse-email
-```
+| Property | Value |
+| --- | --- |
+| Method | `POST` |
+| Endpoint | `https://api.airscale.io/v1/reverse-email` |
+| Execution | Synchronous |
+| Authentication | Bearer API key |
+| Rate limit | 25 requests per second per workspace |
+| Request body limit | 256 KiB |
+| Airscale credit cost | 2 credits only when a profile is returned; `"not found"` and errors are not charged. |
 
-### Headers
+## Request
 
-| Key | Value | Required |
-| --- | --- | --- |
-| Content-Type | application/json | Yes |
-| Authorization | Bearer &lt;YOUR_API_KEY&gt; | Yes |
+| Field | Type | Required | Description |
+| --- | --- | --- | --- |
+| `email` | string | Yes | Email address to resolve. |
 
-### Request Body
-
-```json
-{
-     "email": "victor@airscale.io"
-}
-```
-
-| Field | Type | Required |
-| --- | --- | --- |
-| email | string | Yes |
-
-### Response
-
-**Successful Response (200)
-
-Important:**
-The entire profile enriched is returned, not only the profile URL.
+The email is trimmed and converted to lowercase. It must contain a non-empty local part, an `@`, and a domain with at least one dot.
 
 ```json
 {
- "body": {
-        "url": "https://www.linkedin.com/in/vdetraz",
-        "identifier": "vdetraz", (...)
+  "email": "example.person@example.com"
 }
 ```
 
-### Example Usage
+## Response
 
-###### **cURL**
+A successful lookup returns `200 OK` with a top-level profile object. The exact profile data depends on the information available, while `url` and `identifier` are normalized when a professional profile URL is known.
 
-```text
-curl -X POST https://api.airscale.io/v1/reverse-email \
-  -H "Authorization: Bearer YOUR_API_KEY" \
-  -H "Content-Type: application/json" \
-  -d '{"email": "victor@airscale.io"}'
+```json
+{
+  "id": "person-example-000000",
+  "identifier": "example-person-000000",
+  "profile": {
+    "fullName": "Example Person",
+    "headline": "Example role at Example Labs"
+  },
+  "link": {
+    "linkedin": "https://www.linkedin.com/in/example-person-000000"
+  },
+  "url": "https://www.linkedin.com/in/example-person-000000"
+}
 ```
 
-###### **Python**
+| Field | Type | Description |
+| --- | --- | --- |
+| `url` | string or null | Canonical professional profile URL when one is known. |
+| `identifier` | string or null | Public profile slug when one can be derived. |
+| `profile` | object, when available | Structured profile fields present in the resolved record. |
+| Additional profile fields | varies | Other top-level person fields returned with the available record. |
 
-```text
+When no profile matches, the endpoint returns `200 OK` with the JSON string `"not found"`. This is not an object with a `status` field, and the lookup does not charge credits.
+
+```json
+"not found"
+```
+
+## Errors
+
+| Status | Cause | Recovery |
+| --- | --- | --- |
+| `400 Bad Request` | The JSON is invalid or `email` is missing or invalid. | Send a syntactically valid email such as `example.person@example.com`. |
+| `401 Unauthorized` | The Bearer token is missing or invalid. | Add the current workspace API key to the `Authorization` header. |
+| `403 Forbidden` | The workspace has fewer than 2 credits, or the balance cannot cover settlement. | Add credits before retrying. |
+| `413 Content Too Large` | The request body exceeds 256 KiB. | Remove unrelated fields and resend the request. |
+| `429 Too Many Requests` | The workspace reached 25 requests in the current second. | Retry in a later second with bounded exponential backoff. |
+| `502 Bad Gateway` | API-key validation is temporarily unavailable. | Confirm the API key, then retry with bounded backoff. |
+| `503 Service Unavailable` | Lookup transport or credit settlement is temporarily unavailable. | Retry the same email with bounded backoff; a 503 response is not charged. |
+| `500 Internal Server Error` | Required server configuration is unavailable or an unexpected worker error occurred. | Retry once, then contact support with the timestamp if the error persists. |
+
+## Examples
+
+<CodeGroup>
+```bash cURL
+curl --request POST \
+  --url https://api.airscale.io/v1/reverse-email \
+  --header "Authorization: Bearer $AIRSCALE_API_KEY" \
+  --header "Content-Type: application/json" \
+  --data '{"email":"example.person@example.com"}'
+```
+
+```python Python
+import os
 import requests
 
-url = 'https://api.airscale.io/v1/reverse-email'
-headers = {
-    'Authorization': 'Bearer YOUR_API_KEY',
-    'Content-Type': 'application/json'
-}
-payload = {
-    'email': 'victor@airscale.io'
-}
-
-response = requests.post(url, headers=headers, json=payload)
-data = response.json()
-print(data)
+response = requests.post(
+    "https://api.airscale.io/v1/reverse-email",
+    headers={"Authorization": f"Bearer {os.environ['AIRSCALE_API_KEY']}"},
+    json={"email": "example.person@example.com"},
+    timeout=60,
+)
+response.raise_for_status()
+print(response.json())
 ```
 
-###### **JavaScript (Fetch)**
-
-```text
-const response = await fetch('https://api.airscale.io/v1/reverse-email', {
-  method: 'POST',
+```javascript Node.js
+const apiKey = process.env.AIRSCALE_API_KEY;
+const response = await fetch("https://api.airscale.io/v1/reverse-email", {
+  method: "POST",
   headers: {
-    'Authorization': 'Bearer YOUR_API_KEY',
-    'Content-Type': 'application/json'
+    Authorization: `Bearer ${apiKey}`,
+    "Content-Type": "application/json",
   },
-  body: JSON.stringify({
-    email: 'victor@airscale.io'
-  })
+  body: JSON.stringify({ email: "example.person@example.com" }),
 });
 
-const data = await response.json();
-console.log(data);
+if (!response.ok) throw new Error(`Reverse-email lookup failed with HTTP ${response.status}`);
+console.log(await response.json());
 ```
+</CodeGroup>
 
-###### **PHP**
+## Next step
 
-```text
-<?php
-
-function reverseEmailLookup($email) {
-    $url = 'https://api.airscale.io/v1/reverse-email';
-    $apiKey = 'YOUR_API_KEY';
-    
-    $data = ['email' => $email];
-    
-    $ch = curl_init($url);
-    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-    curl_setopt($ch, CURLOPT_POST, true);
-    curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($data));
-    curl_setopt($ch, CURLOPT_HTTPHEADER, [
-        'Content-Type: application/json',
-        'Authorization: Bearer ' . $apiKey
-    ]);
-    
-    $response = curl_exec($ch);
-    $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
-    curl_close($ch);
-    
-    if ($response === false) {
-```
-
-###### **GO**
-
-```text
-package main
-
-import (
-    "bytes"
-    "encoding/json"
-    "fmt"
-    "io"
-    "net/http"
-)
-
-type ReverseEmailRequest struct {
-    Email string `json:"email"`
-}
-
-func reverseEmailLookup(email string) error {
-    url := "https://api.airscale.io/v1/reverse-email"
-    
-    payload := ReverseEmailRequest{
-        Email: email,
-    }
-    
-    jsonData, err := json.Marshal(payload)
-    if err != nil {
-        return fmt.Errorf("error marshaling JSON: %w", err)
-    }
-    
-    req, err := http.NewRequest("POST", url, bytes.NewBuffer(jsonData))
-    if err != nil {
-        return fmt.Errorf("error creating request: %w", err)
-    }
-    
-    req.Header.Set("Authorization", "Bearer YOUR_API_KEY")
-    req.Header.Set("Content-Type", "application/json")
-    
-    client := &http.Client{}
-    resp, err := client.Do(req)
-    if err != nil {
-        return fmt.Errorf("error making request: %w", err)
-    }
-    defer resp.Body.Close()
-    
-    body, err := io.ReadAll(resp.Body)
-    if err != nil {
-        return fmt.Errorf("error reading response: %w", err)
-    }
-    
-    fmt.Printf("Status: %d\n", resp.StatusCode)
-    fmt.Printf("Response: %s\n", string(body))
-    
-    return nil
-}
-
-func main() {
-    err := reverseEmailLookup("victor@airscale.io")
-    if err != nil {
-        fmt.Printf("Error: %v\n", err)
-    }
-}
-```
-
+Use [Reverse phone](/api-reference/reverse-phone) when a phone number is the identifier you have for a person.

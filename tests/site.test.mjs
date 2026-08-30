@@ -237,7 +237,7 @@ function assertOrderedFragments(source, fragments, label) {
   }
 }
 
-function assertContactPageContract(source, contract, path) {
+function assertEndpointPageContract(source, contract, path) {
   const requestStart = source.indexOf("## Request");
   assert.notEqual(requestStart, -1, `${path} must have a Request section`);
   const summary = source.slice(0, requestStart);
@@ -280,6 +280,63 @@ function assertContactPageContract(source, contract, path) {
   for (const [status, fragments] of Object.entries(contract.errorCauseFragments)) {
     assertOrderedFragments(actualErrors[status], fragments, `${path} ${status} cause`);
   }
+}
+
+function assertEndpointPageContentSystem(path, contract, manifest) {
+  const { source, body, frontmatter } = readPage(path);
+  const pageName = path.replace("api-reference/", "");
+  const evidence = manifest.pages[pageName];
+
+  assert.equal(frontmatter.description, contract.description, `${path} must use the approved description`);
+  assert.ok(frontmatter.description, `${path} must have a description`);
+  assert.doesNotMatch(body, /^#\s+/m, `${path} must not repeat its title as a body H1`);
+  assert.ok(!localDocumentationLinks(source).includes(`/${path}`), `${path} must not link to itself`);
+  assert.ok(evidence, `${path} must have contract evidence`);
+  for (const endpoint of evidence.endpoints) {
+    assert.match(source, new RegExp(`\\b${endpoint.method}\\b`), `${path} must document ${endpoint.method}`);
+    assert.ok(source.includes(endpoint.path), `${path} must document ${endpoint.path}`);
+    assert.ok(
+      source.includes(`<Badge color="blue">${endpoint.method}</Badge> \`${endpoint.path}\``),
+      `${path} must show a native method badge beside the full public path`
+    );
+  }
+  assert.match(source, /^## Request$/m, `${path} must have a Request section`);
+  assert.match(source, /^## Response$/m, `${path} must have a Response section`);
+  assert.match(source, /^## Errors$/m, `${path} must have an Errors section`);
+  assert.match(source, /^## Examples$/m, `${path} must have an Examples section`);
+  assert.match(source, /^## Next step$/m, `${path} must have a Next step section`);
+  assert.match(source, /^```bash(?:\s|$)/m, `${path} must have a bash example`);
+  assert.match(source, /^```json(?:\s|$)/m, `${path} must have a JSON example`);
+  assert.match(source, /\b(?:credit|billing|charge)\b/i, `${path} must document credit behavior or link to billing guidance`);
+
+  const sectionPositions = ["Request", "Response", "Errors", "Examples", "Next step"]
+    .map((heading) => source.indexOf(`## ${heading}`));
+  assert.deepEqual(
+    sectionPositions,
+    [...sectionPositions].sort((left, right) => left - right),
+    `${path} must use the approved section order`
+  );
+  assert.match(source, /## Examples\n\n<CodeGroup>\n```bash cURL/, `${path} examples must use a CodeGroup with cURL first`);
+
+  const authorizationExamples = Array.from(source.matchAll(/^```[^\n]*\n([\s\S]*?)^```/gm), ([, code]) => code)
+    .filter((code) => /Authorization[\s\S]*Bearer/i.test(code));
+  assert.ok(authorizationExamples.length > 0, `${path} must include an authenticated code example`);
+  for (const code of authorizationExamples) {
+    assert.equal(hasUnsafeBearerAuthorization(code), false, `${path} code examples must not contain static API keys`);
+    assert.equal(
+      hasApprovedBearerCredentialSource(code),
+      true,
+      `${path} code examples must source every Bearer credential from an approved placeholder or environment reference`
+    );
+  }
+
+  assertEndpointPageContract(source, contract, path);
+  const mutatedSource = contract.mutate(source);
+  assert.notEqual(mutatedSource, source, `${path} mutation fixture must change a material contract value`);
+  assert.throws(
+    () => assertEndpointPageContract(mutatedSource, contract, `${path} mutated fixture`),
+    `${path} contract helper must reject its material-value mutation`
+  );
 }
 
 test("brand configuration and assets match Airscale", () => {
@@ -884,59 +941,231 @@ test("contact data pages follow the endpoint content system", () => {
   );
 
   for (const [path, contract] of Object.entries(contracts)) {
-    const { source, body, frontmatter } = readPage(path);
-    const pageName = path.replace("api-reference/", "");
-    const evidence = manifest.pages[pageName];
+    assertEndpointPageContentSystem(path, contract, manifest);
+  }
+});
 
-    assert.equal(frontmatter.description, contract.description, `${path} must use the approved description`);
-    assert.ok(frontmatter.description, `${path} must have a description`);
-    assert.doesNotMatch(body, /^#\s+/m, `${path} must not repeat its title as a body H1`);
-    assert.ok(!localDocumentationLinks(source).includes(`/${path}`), `${path} must not link to itself`);
-    assert.ok(evidence, `${path} must have contract evidence`);
-    for (const endpoint of evidence.endpoints) {
-      assert.match(source, new RegExp(`\\b${endpoint.method}\\b`), `${path} must document ${endpoint.method}`);
-      assert.ok(source.includes(endpoint.path), `${path} must document ${endpoint.path}`);
-      assert.ok(
-        source.includes(`<Badge color="blue">${endpoint.method}</Badge> \`${endpoint.path}\``),
-        `${path} must show a native method badge beside the full public path`
-      );
+test("profile and reverse lookup pages follow the endpoint content system", () => {
+  const contracts = {
+    "api-reference/extract-people-profile": {
+      description: "Extract a structured person profile from a professional profile URL.",
+      summaryRows: [
+        ["Rate limit", "3,000 requests per minute per workspace"],
+        ["Request body limit", "256 KiB"],
+        ["Airscale credit cost", "1 credit by default for a successful person extraction; unsuccessful requests are not charged. Workspace-specific pricing may differ."]
+      ],
+      requestRows: [
+        ["`linkedin_profile_url`", "string", "Yes"],
+        ["`mode`", "string", "No"]
+      ],
+      responseRows: [
+        ["`url`", "string or null"],
+        ["`identifier`", "string or null"],
+        ["`firstname`", "string or null"],
+        ["`lastname`", "string or null"],
+        ["`headline`", "string or null"],
+        ["`location`", "object"],
+        ["`positionGroups`", "object"],
+        ["`skills`", "object"]
+      ],
+      requestFragments: [
+        "`linkedin_profile_url`", "`mode`", "`p1`", "`p2`", "`p3`",
+        "without a scheme", "https://www.linkedin.com", "`/in/`"
+      ],
+      responseFragments: [
+        "`200 OK`", "person profile object", "`firstname`", "`positionGroups`", "`skills`"
+      ],
+      requestExamples: [
+        { label: "person profile URL", shape: { linkedin_profile_url: String }, exact: true }
+      ],
+      responseExamples: [{
+        label: "person profile",
+        shape: {
+          url: String,
+          identifier: String,
+          firstname: String,
+          lastname: String,
+          headline: String,
+          location: { country: String, city: String },
+          positionGroups: { totalElements: Number, contents: Array },
+          skills: { totalElements: Number, contents: Array }
+        },
+        exact: false
+      }],
+      errorCauseFragments: {
+        "400 Bad Request": ["JSON", "`linkedin_profile_url`", "`mode`", "invalid profile"],
+        "401 Unauthorized": ["Bearer token", "missing", "invalid"],
+        "403 Forbidden": ["standard 1-credit cost"],
+        "404 Not Found": ["profile", "could not be extracted"],
+        "413 Content Too Large": ["exceeds 256 KiB"],
+        "429 Too Many Requests": ["3,000 requests", "current minute"],
+        "502 Bad Gateway": ["API-key validation", "upstream configuration"],
+        "503 Service Unavailable": ["extraction", "credit settlement"],
+        "500 Internal Server Error": ["unexpected worker error"]
+      },
+      mutate: (source) => source.replace('"firstname": "Example"', '"first_name": "Example"')
+    },
+    "api-reference/extract-company-profile": {
+      description: "Extract a structured company profile from a company profile URL.",
+      summaryRows: [
+        ["Rate limit", "3,000 requests per minute per workspace"],
+        ["Request body limit", "256 KiB"],
+        ["Airscale credit cost", "0.5 credits for a successful company extraction; unsuccessful requests are not charged."]
+      ],
+      requestRows: [
+        ["`linkedin_profile_url`", "string", "Yes"],
+        ["`mode`", "string", "No"]
+      ],
+      responseRows: [
+        ["`url`", "string or null"],
+        ["`name`", "string or null"],
+        ["`universalName`", "string or null"],
+        ["`description`", "string or null"],
+        ["`website`", "string or null"],
+        ["`foundedYear`", "number or null"],
+        ["`staff`", "object"],
+        ["`locations`", "object"],
+        ["`industries`", "array or null"]
+      ],
+      requestFragments: [
+        "`linkedin_profile_url`", "`/company/`", "`/school/`", "`mode`", "`p1`", "`p2`", "`p3`",
+        "without a scheme", "https://www.linkedin.com"
+      ],
+      responseFragments: [
+        "`200 OK`", "company profile object", "`foundedYear`", "`staff`", "`locations`"
+      ],
+      requestExamples: [
+        { label: "company profile URL", shape: { linkedin_profile_url: String }, exact: true }
+      ],
+      responseExamples: [{
+        label: "company profile",
+        shape: {
+          url: String,
+          name: String,
+          universalName: String,
+          description: String,
+          website: String,
+          foundedYear: Number,
+          staff: { total: Number },
+          locations: { headquarter: { country: String, city: String } },
+          industries: Array
+        },
+        exact: false
+      }],
+      errorCauseFragments: {
+        "400 Bad Request": ["JSON", "`linkedin_profile_url`", "`mode`", "invalid profile"],
+        "401 Unauthorized": ["Bearer token", "missing", "invalid"],
+        "403 Forbidden": ["0.5-credit cost"],
+        "404 Not Found": ["profile", "could not be extracted"],
+        "413 Content Too Large": ["exceeds 256 KiB"],
+        "429 Too Many Requests": ["3,000 requests", "current minute"],
+        "502 Bad Gateway": ["API-key validation", "upstream configuration"],
+        "503 Service Unavailable": ["extraction", "credit settlement"],
+        "500 Internal Server Error": ["unexpected worker error"]
+      },
+      mutate: (source) => source.replace('"foundedYear": 2024', '"founded_year": 2024')
+    },
+    "api-reference/reverse-email": {
+      description: "Find a person profile from an email address.",
+      summaryRows: [
+        ["Rate limit", "25 requests per second per workspace"],
+        ["Request body limit", "256 KiB"],
+        ["Airscale credit cost", "2 credits only when a profile is returned; `\"not found\"` and errors are not charged."]
+      ],
+      requestRows: [
+        ["`email`", "string", "Yes"]
+      ],
+      responseRows: [
+        ["`url`", "string or null"],
+        ["`identifier`", "string or null"],
+        ["`profile`", "object, when available"],
+        ["Additional profile fields", "varies"]
+      ],
+      requestFragments: [
+        "`email`", "trimmed", "lowercase", "local part", "domain", "dot"
+      ],
+      responseFragments: [
+        "`200 OK`", "top-level profile object", "`url`", "`identifier`",
+        "JSON string", "`\"not found\"`", "does not charge credits"
+      ],
+      requestExamples: [
+        { label: "email address", shape: { email: String }, exact: true }
+      ],
+      responseExamples: [
+        {
+          label: "person profile",
+          shape: { url: String, identifier: String, profile: { fullName: String, headline: String } },
+          exact: false
+        },
+        { label: "not-found JSON string", shape: "not found", exact: true }
+      ],
+      errorCauseFragments: {
+        "400 Bad Request": ["JSON", "`email`", "invalid"],
+        "401 Unauthorized": ["Bearer token", "missing", "invalid"],
+        "403 Forbidden": ["fewer than 2 credits"],
+        "413 Content Too Large": ["exceeds 256 KiB"],
+        "429 Too Many Requests": ["25 requests", "current second"],
+        "502 Bad Gateway": ["API-key validation", "temporarily unavailable"],
+        "503 Service Unavailable": ["transport", "credit settlement"],
+        "500 Internal Server Error": ["configuration", "unexpected worker error"]
+      },
+      mutate: (source) => source.replace('```json\n"not found"\n```', '```json\n{"status":"not_found"}\n```')
+    },
+    "api-reference/reverse-phone": {
+      description: "Find a person profile from a phone number.",
+      summaryRows: [
+        ["Rate limit", "2,000 requests per minute per workspace"],
+        ["Request body limit", "256 KiB"],
+        ["Airscale credit cost", "10 credits only when a profile is returned; `not_found` and errors are not charged."]
+      ],
+      requestRows: [
+        ["`mobile_phone`", "string", "Yes"]
+      ],
+      responseRows: [
+        ["`url`", "string"],
+        ["`identifier`", "string, when available"],
+        ["`body`", "object"],
+        ["`status`", "string"]
+      ],
+      requestFragments: [
+        "`mobile_phone`", "non-empty string", "trimmed", "E.164-style", "not enforce E.164 validation"
+      ],
+      responseFragments: [
+        "`200 OK`", "top level", "`body`", "`url`", "`identifier`",
+        "`status: \"not_found\"`", "does not charge credits"
+      ],
+      requestExamples: [
+        { label: "phone number", shape: { mobile_phone: String }, exact: true }
+      ],
+      responseExamples: [
+        {
+          label: "person profile envelope",
+          shape: {
+            id: String,
+            url: String,
+            identifier: String,
+            body: { id: String, url: String, identifier: String }
+          },
+          exact: false
+        },
+        { label: "not-found", shape: { status: "not_found" }, exact: true }
+      ],
+      errorCauseFragments: {
+        "400 Bad Request": ["JSON", "`mobile_phone`", "missing", "empty"],
+        "401 Unauthorized": ["Bearer token", "missing", "invalid"],
+        "403 Forbidden": ["fewer than 10 credits"],
+        "413 Content Too Large": ["exceeds 256 KiB"],
+        "429 Too Many Requests": ["2,000 requests", "current minute"],
+        "502 Bad Gateway": ["API-key validation", "temporarily unavailable"],
+        "503 Service Unavailable": ["successful result", "credit settlement"],
+        "500 Internal Server Error": ["configuration", "unexpected worker error"]
+      },
+      mutate: (source) => source.replace('"body": {', '"profile": {')
     }
-    assert.match(source, /^## Request$/m, `${path} must have a Request section`);
-    assert.match(source, /^## Response$/m, `${path} must have a Response section`);
-    assert.match(source, /^## Errors$/m, `${path} must have an Errors section`);
-    assert.match(source, /^## Examples$/m, `${path} must have an Examples section`);
-    assert.match(source, /^## Next step$/m, `${path} must have a Next step section`);
-    assert.match(source, /^```bash(?:\s|$)/m, `${path} must have a bash example`);
-    assert.match(source, /^```json(?:\s|$)/m, `${path} must have a JSON example`);
-    assert.match(source, /\b(?:credit|billing|charge)\b/i, `${path} must document credit behavior or link to billing guidance`);
+  };
+  const manifest = JSON.parse(readFileSync("contracts/public-api-contracts.json", "utf8"));
 
-    const sectionPositions = ["Request", "Response", "Errors", "Examples", "Next step"]
-      .map((heading) => source.indexOf(`## ${heading}`));
-    assert.deepEqual(
-      sectionPositions,
-      [...sectionPositions].sort((left, right) => left - right),
-      `${path} must use the approved section order`
-    );
-    assert.match(source, /## Examples\n\n<CodeGroup>\n```bash cURL/, `${path} examples must use a CodeGroup with cURL first`);
-
-    const authorizationExamples = Array.from(source.matchAll(/^```[^\n]*\n([\s\S]*?)^```/gm), ([, code]) => code)
-      .filter((code) => /Authorization[\s\S]*Bearer/i.test(code));
-    assert.ok(authorizationExamples.length > 0, `${path} must include an authenticated code example`);
-    for (const code of authorizationExamples) {
-      assert.equal(hasUnsafeBearerAuthorization(code), false, `${path} code examples must not contain static API keys`);
-      assert.equal(
-        hasApprovedBearerCredentialSource(code),
-        true,
-        `${path} code examples must source every Bearer credential from an approved placeholder or environment reference`
-      );
-    }
-
-    assertContactPageContract(source, contract, path);
-    const mutatedSource = contract.mutate(source);
-    assert.notEqual(mutatedSource, source, `${path} mutation fixture must change a material contract value`);
-    assert.throws(
-      () => assertContactPageContract(mutatedSource, contract, `${path} mutated fixture`),
-      `${path} contract helper must reject its material-value mutation`
-    );
+  for (const [path, contract] of Object.entries(contracts)) {
+    assertEndpointPageContentSystem(path, contract, manifest);
   }
 });
