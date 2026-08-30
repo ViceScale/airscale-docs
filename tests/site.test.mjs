@@ -952,7 +952,7 @@ test("profile and reverse lookup pages follow the endpoint content system", () =
       summaryRows: [
         ["Rate limit", "3,000 requests per minute per workspace"],
         ["Request body limit", "256 KiB"],
-        ["Airscale credit cost", "1 credit by default for a successful person extraction; unsuccessful requests are not charged. Workspace-specific pricing may differ."]
+        ["Airscale credit cost", "URL-selected: `/in/` successes cost 1 credit by default (workspace-specific pricing may differ); `/company/` or `/school/` successes cost 0.5 credits; unsuccessful requests are not charged."]
       ],
       requestRows: [
         ["`linkedin_profile_url`", "string", "Yes"],
@@ -969,11 +969,18 @@ test("profile and reverse lookup pages follow the endpoint content system", () =
         ["`skills`", "object"]
       ],
       requestFragments: [
-        "`linkedin_profile_url`", "`mode`", "`p1`", "`p2`", "`p3`",
+        "`linkedin_profile_url`", "`/in/`", "`/company/`", "`/school/`",
+        "submitted URL", "response schema", "successful-call credit cost", "`mode`", "`p1`", "`p2`", "`p3`",
         "without a scheme", "https://www.linkedin.com", "`/in/`"
       ],
       responseFragments: [
-        "`200 OK`", "person profile object", "`firstname`", "`positionGroups`", "`skills`"
+        "`200 OK`", "person profile object", "`firstname`", "`positionGroups`", "`skills`",
+        "submitted recognized profile URL", "either profile route", "`/in/`",
+        "[Company profile](/api-reference/extract-company-profile)", "`/v1/profile`", "credit cost"
+      ],
+      forbiddenPatterns: [
+        /Use an `\/in\/` URL for this endpoint/i,
+        /(?:request route|endpoint) determines (?:the )?(?:response|entity|credit|cost)/i
       ],
       requestExamples: [
         { label: "person profile URL", shape: { linkedin_profile_url: String }, exact: true }
@@ -995,7 +1002,7 @@ test("profile and reverse lookup pages follow the endpoint content system", () =
       errorCauseFragments: {
         "400 Bad Request": ["JSON", "`linkedin_profile_url`", "`mode`", "invalid profile"],
         "401 Unauthorized": ["Bearer token", "missing", "invalid"],
-        "403 Forbidden": ["standard 1-credit cost"],
+        "403 Forbidden": ["successful-call cost", "submitted URL type"],
         "404 Not Found": ["profile", "could not be extracted"],
         "413 Content Too Large": ["exceeds 256 KiB"],
         "429 Too Many Requests": ["3,000 requests", "current minute"],
@@ -1003,14 +1010,18 @@ test("profile and reverse lookup pages follow the endpoint content system", () =
         "503 Service Unavailable": ["extraction", "credit settlement"],
         "500 Internal Server Error": ["unexpected worker error"]
       },
-      mutate: (source) => source.replace('"firstname": "Example"', '"first_name": "Example"')
+      mutate: (source) => source.replace('"firstname": "Example"', '"first_name": "Example"'),
+      selectionMutation: (source) => source.replace(
+        "The submitted recognized profile URL determines",
+        "The request route determines"
+      )
     },
     "api-reference/extract-company-profile": {
       description: "Extract a structured company profile from a company profile URL.",
       summaryRows: [
         ["Rate limit", "3,000 requests per minute per workspace"],
         ["Request body limit", "256 KiB"],
-        ["Airscale credit cost", "0.5 credits for a successful company extraction; unsuccessful requests are not charged."]
+        ["Airscale credit cost", "URL-selected: `/in/` successes cost 1 credit by default (workspace-specific pricing may differ); `/company/` or `/school/` successes cost 0.5 credits; unsuccessful requests are not charged."]
       ],
       requestRows: [
         ["`linkedin_profile_url`", "string", "Yes"],
@@ -1028,11 +1039,18 @@ test("profile and reverse lookup pages follow the endpoint content system", () =
         ["`industries`", "array or null"]
       ],
       requestFragments: [
-        "`linkedin_profile_url`", "`/company/`", "`/school/`", "`mode`", "`p1`", "`p2`", "`p3`",
+        "`linkedin_profile_url`", "`/in/`", "`/company/`", "`/school/`",
+        "submitted URL", "response schema", "successful-call credit cost", "`mode`", "`p1`", "`p2`", "`p3`",
         "without a scheme", "https://www.linkedin.com"
       ],
       responseFragments: [
-        "`200 OK`", "company profile object", "`foundedYear`", "`staff`", "`locations`"
+        "`200 OK`", "company profile object", "`foundedYear`", "`staff`", "`locations`",
+        "submitted recognized profile URL", "either profile route", "`/company/`", "`/school/`",
+        "[People profile](/api-reference/extract-people-profile)", "`/v1/company`", "credit cost"
+      ],
+      forbiddenPatterns: [
+        /Use a `\/company\/` or `\/school\/` path for this endpoint/i,
+        /(?:request route|endpoint) determines (?:the )?(?:response|entity|credit|cost)/i
       ],
       requestExamples: [
         { label: "company profile URL", shape: { linkedin_profile_url: String }, exact: true }
@@ -1055,7 +1073,7 @@ test("profile and reverse lookup pages follow the endpoint content system", () =
       errorCauseFragments: {
         "400 Bad Request": ["JSON", "`linkedin_profile_url`", "`mode`", "invalid profile"],
         "401 Unauthorized": ["Bearer token", "missing", "invalid"],
-        "403 Forbidden": ["0.5-credit cost"],
+        "403 Forbidden": ["successful-call cost", "submitted URL type"],
         "404 Not Found": ["profile", "could not be extracted"],
         "413 Content Too Large": ["exceeds 256 KiB"],
         "429 Too Many Requests": ["3,000 requests", "current minute"],
@@ -1063,7 +1081,11 @@ test("profile and reverse lookup pages follow the endpoint content system", () =
         "503 Service Unavailable": ["extraction", "credit settlement"],
         "500 Internal Server Error": ["unexpected worker error"]
       },
-      mutate: (source) => source.replace('"foundedYear": 2024', '"founded_year": 2024')
+      mutate: (source) => source.replace('"foundedYear": 2024', '"founded_year": 2024'),
+      selectionMutation: (source) => source.replace(
+        "The submitted recognized profile URL determines",
+        "The request route determines"
+      )
     },
     "api-reference/reverse-email": {
       description: "Find a person profile from an email address.",
@@ -1167,5 +1189,15 @@ test("profile and reverse lookup pages follow the endpoint content system", () =
 
   for (const [path, contract] of Object.entries(contracts)) {
     assertEndpointPageContentSystem(path, contract, manifest);
+
+    if (contract.selectionMutation) {
+      const source = readPage(path).source;
+      const mutatedSource = contract.selectionMutation(source);
+      assert.notEqual(mutatedSource, source, `${path} URL-selection mutation must change the contract`);
+      assert.throws(
+        () => assertEndpointPageContract(mutatedSource, contract, `${path} route-selected mutation`),
+        `${path} must reject route-selected response and billing behavior`
+      );
+    }
   }
 });

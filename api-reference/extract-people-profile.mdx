@@ -15,13 +15,13 @@ Submit a professional profile URL and receive normalized identity, location, exp
 | Authentication | Bearer API key |
 | Rate limit | 3,000 requests per minute per workspace |
 | Request body limit | 256 KiB |
-| Airscale credit cost | 1 credit by default for a successful person extraction; unsuccessful requests are not charged. Workspace-specific pricing may differ. |
+| Airscale credit cost | URL-selected: `/in/` successes cost 1 credit by default (workspace-specific pricing may differ); `/company/` or `/school/` successes cost 0.5 credits; unsuccessful requests are not charged. |
 
 ## Request
 
 | Field | Type | Required | Description |
 | --- | --- | --- | --- |
-| `linkedin_profile_url` | string | Yes | LinkedIn person profile URL. Use an `/in/` URL for this endpoint. |
+| `linkedin_profile_url` | string | Yes | Recognized LinkedIn `/in/`, `/company/`, or `/school/` profile URL. The submitted URL determines the response schema and successful-call credit cost; use `/in/` for the person schema shown on this page. |
 | `mode` | string | No | Extraction mode. Allowed values are `p1`, `p2`, or `p3`; omit it to use the default extraction workflow. |
 
 The URL is trimmed before validation. URLs without a scheme are accepted, and recognized LinkedIn URLs are normalized to `https://www.linkedin.com/{type}/{slug}`. For a person, use a path with one profile slug after `/in/`.
@@ -100,16 +100,18 @@ A successful extraction returns `200 OK` with the person profile object at the t
 | `positionGroups` | object | Paginated employment groups and their positions. |
 | `skills` | object | Paginated skill names. |
 
-The endpoint returns errors rather than a `200 OK` no-result envelope when a person profile cannot be extracted. These unsuccessful requests are not charged.
+The submitted recognized profile URL determines the response schema on either profile route. An `/in/` URL uses the person fields shown above. A `/company/` or `/school/` URL uses the [Company profile](/api-reference/extract-company-profile) response schema instead, even when the request is sent to `/v1/profile`. The URL type also determines the credit cost for a successful call.
+
+The endpoint returns errors rather than a `200 OK` no-result envelope when the submitted profile cannot be extracted. These unsuccessful requests are not charged.
 
 ## Errors
 
 | Status | Cause | Recovery |
 | --- | --- | --- |
-| `400 Bad Request` | The JSON is invalid, `linkedin_profile_url` is missing or malformed, `mode` is not `p1`, `p2`, or `p3`, or the upstream source identifies an invalid profile. | Send valid JSON with a LinkedIn `/in/` URL and omit `mode` unless you need a supported extraction mode. |
+| `400 Bad Request` | The JSON is invalid, `linkedin_profile_url` is missing or malformed, `mode` is not `p1`, `p2`, or `p3`, or the upstream source identifies an invalid profile. | Send valid JSON with a recognized LinkedIn `/in/`, `/company/`, or `/school/` URL, choosing the URL type for the response schema you need. |
 | `401 Unauthorized` | The Bearer token is missing or invalid. | Add the current workspace API key to the `Authorization` header. |
-| `403 Forbidden` | The workspace cannot cover the standard 1-credit cost. | Add credits, then retry the request. |
-| `404 Not Found` | The profile could not be extracted after the available lookup paths completed. | Confirm that the public profile URL is current and points to the intended person. |
+| `403 Forbidden` | The workspace cannot cover the successful-call cost selected by the submitted URL type. | Add enough credits for the selected URL type, then retry the request. |
+| `404 Not Found` | The profile could not be extracted after the available lookup paths completed. | Confirm that the public profile URL is current and uses the intended profile type. |
 | `413 Content Too Large` | The request body exceeds 256 KiB. | Remove unrelated fields and resend the request. |
 | `429 Too Many Requests` | The workspace reached 3,000 requests in the current minute. | Retry after the minute window with bounded exponential backoff. |
 | `502 Bad Gateway` | API-key validation or upstream configuration is temporarily unavailable. | Confirm the API key, then retry with bounded backoff. |
