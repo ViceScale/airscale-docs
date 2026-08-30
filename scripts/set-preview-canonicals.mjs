@@ -38,7 +38,7 @@ export function updateFrontmatterSource(path, source, previewOrigin = PREVIEW_OR
   if (canonicalIndices.length === 0) {
     nextLines = [...lines, canonical];
   } else if (canonicalIndices.length === 1) {
-    nextLines = lines;
+    nextLines = lines.map((line) => (line.startsWith("canonical:") ? canonical : line));
   } else {
     let keptCanonical = false;
     nextLines = lines.flatMap((line) => {

@@ -127,12 +127,15 @@ test("updater preserves multiline plain descriptions and appends canonical last"
   );
 });
 
-test("updater preserves the position and value of an existing single canonical", () => {
+test("updater updates one canonical in place without moving it", () => {
   const source = `---\ntitle: "Fixture"\ncanonical: "https://old.example/fixture"\ndescription: "A fixture page."\nother: true\n---\n`;
   const result = updater.updateFrontmatterSource("api-reference/fixture.mdx", source);
 
-  assert.equal(result.changed, false);
-  assert.equal(result.nextSource, source);
+  assert.equal(result.changed, true);
+  assert.equal(
+    result.nextSource,
+    `---\ntitle: "Fixture"\ncanonical: "https://airscale.mintlify.app/api-reference/fixture"\ndescription: "A fixture page."\nother: true\n---\n`
+  );
 });
 
 test("updater is idempotent and skips unchanged writes", () => {
