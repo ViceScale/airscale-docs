@@ -113,7 +113,7 @@ For a miss or timeout, `email` is `null`:
 
 | Status | Cause | Recovery |
 | --- | --- | --- |
-| `400 Bad Request` | The JSON is invalid, `inputs` is empty or over 100 items, or `webhook_url` is missing, not a string, or does not begin with `http`. | Send valid JSON with 1–100 items and a `webhook_url` string beginning with `http`. |
+| `400 Bad Request` | The JSON is invalid; `inputs` is missing, not an array, empty, or over 100 items; or `webhook_url` is missing, not a string, or does not begin with `http`. | Send valid JSON with 1–100 items and a `webhook_url` string beginning with `http`. |
 | `401 Unauthorized` | The Bearer token is missing or invalid. | Add the current workspace API key to the `Authorization` header. |
 | `403 Forbidden` | The workspace has fewer than 2 credits when the batch is submitted. | Add credits before submitting another batch. |
 | `413 Content Too Large` | The request body exceeds 256 KiB. | Reduce the batch size or remove unrelated fields. |

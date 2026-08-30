@@ -78,7 +78,7 @@ A successful lookup returns `200 OK`:
 | `provider` | string | Public source label for the result. |
 | `verifier` | string | Public verification-service label. |
 | `catch_all` | string | `yes` or `no`. |
-| `linkedin_profile_url` | string | Echoed only when it was supplied in the request. |
+| `linkedin_profile_url` | string | Echoed only when a recognized LinkedIn URL was supplied in the request. |
 
 When no verified email is found, the endpoint still returns `200 OK` and does not charge credits:
 

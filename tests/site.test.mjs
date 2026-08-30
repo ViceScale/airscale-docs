@@ -44,6 +44,59 @@ function hasUnsafeBearerAuthorization(source) {
     });
 }
 
+function unwrapJavaScriptParentheses(expression) {
+  let candidate = expression.trim();
+
+  while (candidate.startsWith("(") && candidate.endsWith(")")) {
+    let depth = 0;
+    let closesBeforeEnd = false;
+    for (let index = 0; index < candidate.length; index += 1) {
+      if (candidate[index] === "(") depth += 1;
+      if (candidate[index] === ")") depth -= 1;
+      if (depth === 0 && index < candidate.length - 1) {
+        closesBeforeEnd = true;
+        break;
+      }
+      if (depth < 0) return candidate;
+    }
+    if (depth !== 0 || closesBeforeEnd) break;
+    candidate = candidate.slice(1, -1).trim();
+  }
+
+  return candidate;
+}
+
+function isApprovedJavaScriptCredentialExpression(expression) {
+  const candidate = unwrapJavaScriptParentheses(expression);
+  if (candidate === "process.env.AIRSCALE_API_KEY") return true;
+
+  const wrapper = candidate.match(/^[A-Za-z_$][\w$]*(?:\.[A-Za-z_$][\w$]*)*\(([\s\S]*)\)$/);
+  if (!wrapper) return false;
+
+  const argument = wrapper[1].trim();
+  let depth = 0;
+  for (const character of argument) {
+    if (character === "(") depth += 1;
+    if (character === ")") depth -= 1;
+    if (depth < 0 || (character === "," && depth === 0)) return false;
+  }
+
+  return depth === 0 && isApprovedJavaScriptCredentialExpression(argument);
+}
+
+function javascriptCredentialAssignments(source, variable) {
+  const escapedVariable = variable.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  const assignment = new RegExp(
+    `(?<![.\\w$])(?:(?:const|let|var)\\s+)?${escapedVariable}\\s*(\\?\\?=|\\|\\|=|&&=|\\*\\*=|>>>=|>>=|<<=|[+\\-*/%&|^]=|=(?!=))\\s*([^;\\n]+)`,
+    "g"
+  );
+
+  return Array.from(source.matchAll(assignment), ([, operator, expression]) => ({
+    operator,
+    expression: expression.trim()
+  }));
+}
+
 function hasApprovedBearerCredentialSource(source) {
   const bearerValues = Array.from(source.matchAll(AUTHORIZATION_BEARER_VALUE), ([, value]) => value);
   if (bearerValues.length === 0) return false;
@@ -67,8 +120,10 @@ function hasApprovedBearerCredentialSource(source) {
     const javascriptVariable = strippedValue.match(/^\$\{([A-Za-z_$][\w$]*)\}$/)?.[1];
     if (!javascriptVariable) return false;
 
-    const escapedVariable = javascriptVariable.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-    return new RegExp(`\\b(?:const|let|var)\\s+${escapedVariable}\\s*=\\s*process\\.env\\.AIRSCALE_API_KEY\\s*;?`).test(source);
+    const assignments = javascriptCredentialAssignments(source, javascriptVariable);
+    return assignments.length > 0 && assignments.every(({ operator, expression }) => (
+      operator === "=" && isApprovedJavaScriptCredentialExpression(expression)
+    ));
   });
 }
 
@@ -116,6 +171,101 @@ function assertBalancedCodeFences(source, path) {
 
 function assertApprovedNavigationTabs(tabs) {
   assert.deepEqual(tabs, API_REFERENCE_TABS);
+}
+
+function sectionSource(source, heading, nextHeading) {
+  const marker = `## ${heading}`;
+  const start = source.indexOf(marker);
+  assert.notEqual(start, -1, `missing ${marker}`);
+  const contentStart = start + marker.length;
+  const end = nextHeading ? source.indexOf(`## ${nextHeading}`, contentStart) : source.length;
+  assert.notEqual(end, -1, `missing ## ${nextHeading}`);
+  return source.slice(contentStart, end);
+}
+
+function markdownTableRows(source) {
+  return source
+    .split("\n")
+    .filter((line) => /^\|.*\|$/.test(line))
+    .map((line) => line.slice(1, -1).split("|").map((cell) => cell.trim()))
+    .filter((row) => !row.every((cell) => /^:?-+:?$/.test(cell)));
+}
+
+function jsonPayloads(source, label) {
+  return Array.from(source.matchAll(/^```json\n([\s\S]*?)^```/gm), ([, json], index) => {
+    assert.doesNotThrow(() => JSON.parse(json), `${label} JSON payload ${index + 1} must parse`);
+    return JSON.parse(json);
+  });
+}
+
+function matchesJsonShape(actual, expected, exact = false) {
+  if (expected === String) return typeof actual === "string";
+  if (expected === Number) return typeof actual === "number";
+  if (expected === Boolean) return typeof actual === "boolean";
+  if (typeof expected === "function") return expected(actual);
+  if (expected === null || typeof expected !== "object") return Object.is(actual, expected);
+  if (actual === null || typeof actual !== "object" || Array.isArray(actual) !== Array.isArray(expected)) return false;
+  if (Array.isArray(expected)) {
+    return actual.length === expected.length && expected.every((value, index) => matchesJsonShape(actual[index], value, exact));
+  }
+  if (exact && !matchesJsonShape(Object.keys(actual).sort(), Object.keys(expected).sort(), true)) return false;
+  return Object.entries(expected).every(([key, value]) => matchesJsonShape(actual[key], value, exact));
+}
+
+function assertTableRows(source, rows, label) {
+  const actualRows = markdownTableRows(source);
+  for (const row of rows) {
+    assert.ok(
+      actualRows.some((actual) => matchesJsonShape(actual, row, true)),
+      `${label} must contain table row: ${row.join(" | ")}`
+    );
+  }
+}
+
+function assertContactPageContract(source, contract, path) {
+  const requestStart = source.indexOf("## Request");
+  assert.notEqual(requestStart, -1, `${path} must have a Request section`);
+  const summary = source.slice(0, requestStart);
+  const request = sectionSource(source, "Request", "Response");
+  const response = sectionSource(source, "Response", "Errors");
+  const errors = sectionSource(source, "Errors", "Examples");
+
+  assertTableRows(summary, contract.summaryRows, `${path} contract summary`);
+  assertTableRows(request, contract.requestRows, `${path} request`);
+  assertTableRows(response, contract.responseRows ?? [], `${path} response`);
+
+  for (const statement of contract.requestStatements) {
+    assert.ok(request.includes(statement), `${path} request must state: ${statement}`);
+  }
+  for (const statement of contract.responseStatements) {
+    assert.ok(response.includes(statement), `${path} response must state: ${statement}`);
+  }
+  for (const pattern of contract.forbiddenPatterns ?? []) {
+    assert.doesNotMatch(source, pattern, `${path} must not contain ${pattern}`);
+  }
+
+  const requestExamples = jsonPayloads(request, `${path} request`);
+  for (const example of contract.requestExamples) {
+    assert.ok(
+      requestExamples.some((payload) => matchesJsonShape(payload, example.shape, example.exact)),
+      `${path} must include a ${example.label} request payload`
+    );
+  }
+
+  const responseExamples = jsonPayloads(response, `${path} response`);
+  for (const example of contract.responseExamples) {
+    assert.ok(
+      responseExamples.some((payload) => matchesJsonShape(payload, example.shape, example.exact)),
+      `${path} must include a ${example.label} response payload`
+    );
+  }
+
+  const actualErrors = Object.fromEntries(
+    markdownTableRows(errors)
+      .filter(([status]) => /^`\d{3} /.test(status))
+      .map(([status, cause]) => [status.slice(1, -1), cause])
+  );
+  assert.deepEqual(actualErrors, contract.errorCauses, `${path} must document the source-backed error mappings`);
 }
 
 test("brand configuration and assets match Airscale", () => {
@@ -226,6 +376,24 @@ test("authorization bearer checks reject unsafe token formats", () => {
   assert.equal(hasUnsafeBearerAuthorization("headers = { Authorization: 'Bearer ' . $apiKey };"), false);
   assert.equal(hasUnsafeBearerAuthorization("Authorization supports Bearer authentication."), false);
   assert.equal(hasUnsafeBearerAuthorization("Use Bearer authentication for every request."), false);
+
+  assert.equal(
+    hasApprovedBearerCredentialSource([
+      "let apiKey = process.env.AIRSCALE_API_KEY;",
+      'apiKey = "live-secret-token";',
+      "const headers = { Authorization: `Bearer ${apiKey}` };"
+    ].join("\n")),
+    false,
+    "a later literal reassignment of the Bearer variable must be rejected"
+  );
+  assert.equal(
+    hasApprovedBearerCredentialSource([
+      "const apiKey = requireEnv(process.env.AIRSCALE_API_KEY);",
+      "const headers = { Authorization: `Bearer ${apiKey}` };"
+    ].join("\n")),
+    true,
+    "a Bearer variable wrapped around the approved environment source must be accepted"
+  );
 });
 
 test("code-fence validation rejects malformed indented fences", () => {
@@ -370,12 +538,266 @@ test("foundation pages teach a safe first request", () => {
 });
 
 test("contact data pages follow the endpoint content system", () => {
-  const descriptions = {
-    "api-reference/email-finder": "Find a professional email address for one person.",
-    "api-reference/email-finder-(bulk)": "Find professional email addresses for a batch of people.",
-    "api-reference/mobile-finder": "Find a mobile phone number from a professional profile.",
-    "api-reference/personal-email": "Find a personal email address from a professional profile.",
-    "api-reference/people-url-finder": "Find a professional profile URL from person and company details."
+  const contracts = {
+    "api-reference/email-finder": {
+      description: "Find a professional email address for one person.",
+      summaryRows: [
+        ["Rate limit", "3,000 requests per minute per workspace"],
+        ["Request body limit", "256 KiB"],
+        ["Airscale credit cost", "2 credits only when the response has `status: \"success\"`; `not_found` is not charged."]
+      ],
+      requestRows: [
+        ["`linkedin_profile_url`", "string", "Required for profile lookup", "LinkedIn person profile URL."],
+        ["`first_name`", "string", "Required for name lookup", "Person's first name."],
+        ["`last_name`", "string", "Required for name lookup", "Person's last name."],
+        ["`domain`", "string", "Conditional", "Company domain. Provide this or `company_name` for name lookup. URL prefixes and paths are removed."],
+        ["`company_name`", "string", "Conditional", "Company name. Provide this or `domain` for name lookup."]
+      ],
+      responseRows: [
+        ["`status`", "string", "`success` or `not_found`."],
+        ["`email`", "string or null", "Verified professional email, or `null` when no result is found."],
+        ["`linkedin_profile_url`", "string", "Echoed only when a recognized LinkedIn URL was supplied in the request."]
+      ],
+      requestStatements: [
+        "1. Set `linkedin_profile_url` to a LinkedIn person profile URL.",
+        "2. Set `first_name` and `last_name`, plus either `domain` or `company_name`."
+      ],
+      responseStatements: [
+        "A successful lookup returns `200 OK`:",
+        "When no verified email is found, the endpoint still returns `200 OK` and does not charge credits:"
+      ],
+      requestExamples: [
+        { label: "profile-identification", shape: { linkedin_profile_url: String }, exact: true },
+        { label: "name-and-company-identification", shape: { first_name: String, last_name: String, domain: String }, exact: true }
+      ],
+      responseExamples: [
+        {
+          label: "successful professional-email",
+          shape: {
+            status: "success", email: String, email_status: "valid", provider: String,
+            verifier: String, catch_all: String, linkedin_profile_url: String
+          },
+          exact: true
+        },
+        { label: "not-found", shape: { status: "not_found", email: null }, exact: true }
+      ],
+      errorCauses: {
+        "400 Bad Request": "The JSON is invalid or neither identification form is complete.",
+        "401 Unauthorized": "The Bearer token is missing or invalid.",
+        "403 Forbidden": "The workspace has fewer than 2 credits.",
+        "413 Content Too Large": "The request body exceeds 256 KiB.",
+        "429 Too Many Requests": "The workspace reached 3,000 requests in the current minute.",
+        "502 Bad Gateway": "API-key validation is temporarily unavailable.",
+        "503 Service Unavailable": "A successful result could not be settled by the credit service.",
+        "500 Internal Server Error": "An unexpected worker error occurred."
+      },
+      mutate: (source) => source.replace(
+        "2 credits only when the response has `status: \"success\"`",
+        "9 credits only when the response has `status: \"success\"`"
+      )
+    },
+    "api-reference/email-finder-(bulk)": {
+      description: "Find professional email addresses for a batch of people.",
+      summaryRows: [
+        ["Maximum batch", "100 input items per request"],
+        ["Rate limit", "3,000 input items per minute per workspace"],
+        ["Request body limit", "256 KiB"],
+        ["Airscale credit cost", "2 credits per item with `status: \"success\"`; misses and timeouts are not charged."]
+      ],
+      requestRows: [
+        ["`webhook_url`", "string", "Yes", "String beginning with `http` that receives one JSON `POST` for each item."],
+        ["`inputs`", "array", "Yes", "Between 1 and 100 person-identification objects."],
+        ["`custom_id`", "any JSON value", "No", "Any non-null JSON value is echoed unchanged. If omitted or `null`, the item's zero-based array index is used."],
+        ["`linkedin_profile_url`", "string", "Required for profile lookup", "LinkedIn person profile URL."],
+        ["`first_name`", "string", "Required for name lookup", "Person's first name."],
+        ["`last_name`", "string", "Required for name lookup", "Person's last name."],
+        ["`domain`", "string", "Conditional", "Company domain. Provide this or `company_name` for name lookup."],
+        ["`company_name`", "string", "Conditional", "Company name. Provide this or `domain` for name lookup."]
+      ],
+      responseRows: [
+        ["`status`", "string", "`accepted` when the batch has been queued."],
+        ["`count`", "number", "Number of accepted input items."],
+        ["`custom_id`", "any JSON value", "Supplied non-null value echoed unchanged; otherwise the item's zero-based array index."],
+        ["`status`", "string", "`success`, `not_found`, `timeout`, or `error`."],
+        ["`email`", "string or null", "Professional email on success; otherwise `null`."]
+      ],
+      requestStatements: [
+        "The top-level body contains the callback URL and a non-empty `inputs` array.",
+        "Each item should identify a person by `linkedin_profile_url`, or by `first_name` and `last_name` plus either `domain` or `company_name`."
+      ],
+      responseStatements: [
+        "An accepted batch returns `202 Accepted`.",
+        "For each successful item, Airscale sends:",
+        "For a miss or timeout, `email` is `null`:"
+      ],
+      forbiddenPatterns: [/valid HTTP\(S\) URL|invalid webhook URL|must be a valid URL/i],
+      requestExamples: [{
+        label: "bounded batch with both identification forms",
+        shape: {
+          webhook_url: String,
+          inputs: (inputs) => Array.isArray(inputs) && inputs.length >= 2
+            && inputs.some((item) => typeof item?.linkedin_profile_url === "string")
+            && inputs.some((item) => typeof item?.first_name === "string" && typeof item?.last_name === "string"
+              && (typeof item?.domain === "string" || typeof item?.company_name === "string"))
+        },
+        exact: true
+      }],
+      responseExamples: [
+        { label: "202 accepted", shape: { status: "accepted", count: Number }, exact: true },
+        {
+          label: "successful item webhook",
+          shape: {
+            custom_id: String, status: "success", email: String, email_status: "valid",
+            provider: String, verifier: String
+          },
+          exact: true
+        },
+        { label: "not-found item webhook", shape: { custom_id: Number, status: "not_found", email: null }, exact: true }
+      ],
+      errorCauses: {
+        "400 Bad Request": "The JSON is invalid; `inputs` is missing, not an array, empty, or over 100 items; or `webhook_url` is missing, not a string, or does not begin with `http`.",
+        "401 Unauthorized": "The Bearer token is missing or invalid.",
+        "403 Forbidden": "The workspace has fewer than 2 credits when the batch is submitted.",
+        "413 Content Too Large": "The request body exceeds 256 KiB.",
+        "429 Too Many Requests": "The batch would exceed 3,000 input items in the current minute.",
+        "502 Bad Gateway": "API-key validation is temporarily unavailable.",
+        "500 Internal Server Error": "An unexpected worker error occurred before acceptance."
+      },
+      mutate: (source) => source.replace("| Maximum batch | 100 input items per request |", "| Maximum batch | 101 input items per request |")
+    },
+    "api-reference/mobile-finder": {
+      description: "Find a mobile phone number from a professional profile.",
+      summaryRows: [
+        ["Rate limit", "3,000 requests per minute per workspace"],
+        ["Request body limit", "256 KiB"],
+        ["Airscale credit cost", "40 credits only when the response has `status: \"success\"`; `not_found` is not charged."]
+      ],
+      requestRows: [
+        ["`linkedin_profile_url`", "string", "Yes", "LinkedIn person profile URL used for the lookup."]
+      ],
+      responseRows: [
+        ["`status`", "string", "`success` or `not_found`."],
+        ["`linkedin_profile_url`", "string", "The profile URL from the request."],
+        ["`phone_numbers`", "string or null", "Phone number on success; otherwise `null`."],
+        ["`provider`", "string or null", "Public source label on success; otherwise `null`."]
+      ],
+      requestStatements: [],
+      responseStatements: [
+        "A successful lookup returns `200 OK`:",
+        "When no mobile number is found, the endpoint returns `200 OK` without charging credits:"
+      ],
+      forbiddenPatterns: [/E\.164/i],
+      requestExamples: [
+        { label: "profile-identification", shape: { linkedin_profile_url: String }, exact: true }
+      ],
+      responseExamples: [
+        {
+          label: "successful mobile",
+          shape: { status: "success", linkedin_profile_url: String, phone_numbers: String, provider: String },
+          exact: true
+        },
+        {
+          label: "not-found mobile",
+          shape: { status: "not_found", linkedin_profile_url: String, phone_numbers: null, provider: null },
+          exact: true
+        }
+      ],
+      errorCauses: {
+        "400 Bad Request": "The JSON is invalid or `linkedin_profile_url` is missing.",
+        "401 Unauthorized": "The Bearer token is missing or invalid.",
+        "403 Forbidden": "The workspace has fewer than 40 credits.",
+        "413 Content Too Large": "The request body exceeds 256 KiB.",
+        "429 Too Many Requests": "The workspace reached 3,000 requests in the current minute.",
+        "502 Bad Gateway": "API-key validation is temporarily unavailable.",
+        "503 Service Unavailable": "A successful result could not be settled by the credit service.",
+        "500 Internal Server Error": "An unexpected worker error occurred."
+      },
+      mutate: (source) => source.replace(
+        "40 credits only when the response has `status: \"success\"`",
+        "41 credits only when the response has `status: \"success\"`"
+      )
+    },
+    "api-reference/personal-email": {
+      description: "Find a personal email address from a professional profile.",
+      summaryRows: [
+        ["Rate limit", "2,000 requests per minute per workspace"],
+        ["Request body limit", "256 KiB"],
+        ["Airscale credit cost", "3–12 credits for a successful result, depending on the result source; `not_found` is not charged."]
+      ],
+      requestRows: [
+        ["`linkedin_profile_url`", "string", "Yes", "LinkedIn person profile URL. URLs without `https://` are normalized; the host must be `linkedin.com`, and the path must contain exactly one profile slug after `/in/`, with an optional trailing slash."],
+        ["`verification`", "boolean or string", "No", "Set to `true` or `\"yes\"` to require additional email verification before a result is accepted."]
+      ],
+      responseRows: [
+        ["`status`", "string", "`success` or `not_found`."],
+        ["`email`", "string or null", "Personal email on success; otherwise `null`."]
+      ],
+      requestStatements: [],
+      responseStatements: [
+        "A successful lookup returns `200 OK`:",
+        "When no personal email is found, the endpoint returns `200 OK` without charging credits:"
+      ],
+      requestExamples: [
+        { label: "profile-identification", shape: { linkedin_profile_url: String }, exact: true }
+      ],
+      responseExamples: [
+        { label: "successful personal-email", shape: { status: "success", email: String }, exact: true },
+        { label: "not-found personal-email", shape: { status: "not_found", email: null }, exact: true }
+      ],
+      errorCauses: {
+        "400 Bad Request": "The JSON is invalid, the profile URL is missing, or it is not a valid LinkedIn `/in/` URL.",
+        "401 Unauthorized": "The Bearer token is missing or invalid.",
+        "403 Forbidden": "The workspace cannot cover the 3-credit minimum or the final result cost.",
+        "413 Content Too Large": "The request body exceeds 256 KiB.",
+        "429 Too Many Requests": "The workspace reached 2,000 requests in the current minute.",
+        "502 Bad Gateway": "API-key validation or required usage recording is temporarily unavailable.",
+        "503 Service Unavailable": "A successful result could not be settled by the credit service.",
+        "500 Internal Server Error": "An unexpected worker error occurred."
+      },
+      mutate: (source) => source.replace("3–12 credits for a successful result", "3–10 credits for a successful result")
+    },
+    "api-reference/people-url-finder": {
+      description: "Find a professional profile URL from person and company details.",
+      summaryRows: [
+        ["Rate limit", "6 requests per second per workspace"],
+        ["Request body limit", "256 KiB"],
+        ["Airscale credit cost", "0.5 credits only when the response has `status: \"success\"`; `not_found` is not charged."]
+      ],
+      requestRows: [
+        ["`first_name`", "string", "Yes", "Person's first name."],
+        ["`last_name`", "string", "Yes", "Person's last name."],
+        ["`company_name`", "string", "Yes", "Current company name or company domain used to identify the person."]
+      ],
+      responseRows: [
+        ["`status`", "string", "`success` or `not_found`."],
+        ["`url`", "string", "Matched profile URL. Present only on success."]
+      ],
+      requestStatements: ["All three fields are required non-empty strings."],
+      responseStatements: [
+        "A successful match returns `200 OK`:",
+        "When no matching profile is found, the endpoint returns `200 OK` without charging credits:"
+      ],
+      requestExamples: [{
+        label: "person-and-company identification",
+        shape: { first_name: String, last_name: String, company_name: String },
+        exact: true
+      }],
+      responseExamples: [
+        { label: "successful profile match", shape: { status: "success", url: String }, exact: true },
+        { label: "not-found profile match", shape: { status: "not_found" }, exact: true }
+      ],
+      errorCauses: {
+        "400 Bad Request": "The JSON is invalid or a required field is missing or empty.",
+        "401 Unauthorized": "The Bearer token is missing or invalid.",
+        "403 Forbidden": "The workspace has fewer than 0.5 credits.",
+        "413 Content Too Large": "The request body exceeds 256 KiB.",
+        "429 Too Many Requests": "The workspace reached 6 requests in the current second.",
+        "502 Bad Gateway": "API-key validation is temporarily unavailable.",
+        "503 Service Unavailable": "The credit reservation service is temporarily unavailable.",
+        "500 Internal Server Error": "An unexpected worker error occurred."
+      },
+      mutate: (source) => source.replace("6 requests per second per workspace", "7 requests per second per workspace")
+    }
   };
   const manifest = JSON.parse(readFileSync("contracts/public-api-contracts.json", "utf8"));
 
@@ -389,12 +811,12 @@ test("contact data pages follow the endpoint content system", () => {
     "an unused environment reference must not make a literal-backed Bearer variable safe"
   );
 
-  for (const [path, description] of Object.entries(descriptions)) {
+  for (const [path, contract] of Object.entries(contracts)) {
     const { source, body, frontmatter } = readPage(path);
     const pageName = path.replace("api-reference/", "");
     const evidence = manifest.pages[pageName];
 
-    assert.equal(frontmatter.description, description, `${path} must use the approved description`);
+    assert.equal(frontmatter.description, contract.description, `${path} must use the approved description`);
     assert.ok(frontmatter.description, `${path} must have a description`);
     assert.doesNotMatch(body, /^#\s+/m, `${path} must not repeat its title as a body H1`);
     assert.ok(!localDocumentationLinks(source).includes(`/${path}`), `${path} must not link to itself`);
@@ -436,28 +858,13 @@ test("contact data pages follow the endpoint content system", () => {
         `${path} code examples must source every Bearer credential from an approved placeholder or environment reference`
       );
     }
+
+    assertContactPageContract(source, contract, path);
+    const mutatedSource = contract.mutate(source);
+    assert.notEqual(mutatedSource, source, `${path} mutation fixture must change a material contract value`);
+    assert.throws(
+      () => assertContactPageContract(mutatedSource, contract, `${path} mutated fixture`),
+      `${path} contract helper must reject its material-value mutation`
+    );
   }
-
-  const bulk = readPage("api-reference/email-finder-(bulk)").source;
-  assert.match(bulk, /\| Maximum batch \| 100 input items per request \|/);
-  assert.match(bulk, /\| `inputs` \| array \| Yes \| (?:Between 1 and 100|1–100) person-identification objects\. \|/);
-  assert.match(bulk, /`inputs` is (?:empty|not a non-empty array)/i);
-  assert.match(bulk, /\| Rate limit \| 3,000 input items per minute per workspace \|/);
-  assert.match(bulk, /required `webhook_url`|`webhook_url` \| string \| Yes/i);
-  assert.match(bulk, /string (?:that begins|beginning) with `http`/i);
-  assert.doesNotMatch(bulk, /valid HTTP\(S\) URL|invalid webhook URL|must be a valid URL/i);
-  assert.match(bulk, /\| `custom_id` \| any JSON value \| No \| Any non-null JSON value is echoed unchanged\./);
-  assert.match(bulk, /If omitted or `null`, the item's zero-based array index is used\./);
-  assert.match(bulk, /\| `custom_id` \| any JSON value \| Supplied non-null value echoed unchanged; otherwise the item's zero-based array index\. \|/);
-  assert.match(bulk, /202 Accepted/);
-  assert.match(bulk, /one (?:JSON `POST`|asynchronous professional-email result) (?:for|per) each item|one asynchronous professional-email result per item/i);
-  assert.match(bulk, /`success`, `not_found`, `timeout`, or `error`/);
-  assert.match(bulk, /2 credits per item with `status: "success"`; misses and timeouts are not charged\./);
-
-  const mobile = readPage("api-reference/mobile-finder").source;
-  assert.doesNotMatch(mobile, /E\.164/i);
-  assert.match(mobile, /\| `phone_numbers` \| string or null \| Phone number on success; otherwise `null`\. \|/);
-
-  const personalEmail = readPage("api-reference/personal-email").source;
-  assert.match(personalEmail, /path must contain exactly one profile slug after `\/in\/`/);
 });
