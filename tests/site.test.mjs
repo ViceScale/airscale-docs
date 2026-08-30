@@ -13,20 +13,23 @@ const GROUPS = [
 const PAGE_PATHS = GROUPS.flatMap(([, pages]) => pages);
 const CANONICAL_SYMBOL_PATH = "m41.368,46.100 2.600,7.900c.700,2.200,2.800,3.600,5,3.600,1.700,0,3.300-.800,4.300-2.200,1-1.400,1.200-3.200.700-4.800l-4.700-13.400-7.900,8.900Zm-26.800-7.200 9-26.600c.5-1.400,1.800-2.300,3.300-2.300s2.800.900,3.300,2.300l6.200,18.500,7.800-8.800-4.600-13.100c-1.900-5.400-7-8.900-12.600-8.900-5.700,0-10.700,3.600-12.600,8.900L.367,48.800c-.700,2.100-.400,4.300.900,6.100,1.300,1.800,3.300,2.800,5.500,2.800,1.900,0,3.700-.800,5-2.200l13.800-15.400,2.800,8.300c.200.700.700,1.300,1.200,1.800s1.200.800,1.900,1c.700.100,1.500.1,2.100-.1.700-.200,1.300-.600,1.800-1.200l21-24.300c.5-.600.900-1.400,1-2.400.200-.9.100-1.9-.1-2.600l-1.700-4.800c-.1-.4-.3-.7-.5-.8-.1-.1-.2-.2-.4-.2h-.4c-.2.1-.5.200-.8.600l-19.800,22.500-2.700-8.100c-.8-3.200-4.900-3.800-7-1.400l-9.9,10.700";
 const APPROVED_BEARER_VALUES = new Set(["YOUR_API_KEY", "$AIRSCALE_API_KEY", "<YOUR_API_KEY>"]);
-const AUTHORIZATION_BEARER_VALUE = /(?:^|[,{]\s*|(?:^|\s)-H\s+)(?:["'`]Authorization["'`]|["'`]?Authorization)\s*:\s*(?:["'`])?Bearer\s+(\$\{[A-Za-z_$][\w$]*\}|.+?)(?=(?:["'`])?(?:\s*(?:[,}\]]|$)|\s))/gim;
+const AUTHORIZATION_BEARER_VALUE = /\bAuthorization\b.{0,160}?\bBearer\s+(\S+)/gi;
 
 function hasUnsafeBearerAuthorization(source) {
-  return Array.from(source.matchAll(AUTHORIZATION_BEARER_VALUE)).some(([, value]) => {
-    const strippedValue = value
-      .trim()
-      .replace(/^```(?:[a-z][a-z0-9_-]*)?\s*/i, "")
-      .replace(/\s*```$/, "")
-      .trim()
-      .replace(/^["'`]+|["'`]+$/g, "")
-      .trim();
-    const isDynamicExpression = /^\$\{[A-Za-z_$][\w$]*\}$/.test(strippedValue);
-    return Boolean(strippedValue) && !isDynamicExpression && !APPROVED_BEARER_VALUES.has(strippedValue);
-  });
+  return source.split(/\r?\n/).some((line) =>
+    Array.from(line.matchAll(AUTHORIZATION_BEARER_VALUE)).some(([, value]) => {
+      const strippedValue = value
+        .trim()
+        .replace(/^```(?:[a-z][a-z0-9_-]*)?\s*/i, "")
+        .replace(/\s*```$/, "")
+        .trim()
+        .replace(/^&lt;(.+)&gt;$/, "<$1>")
+        .replace(/^["'`]+|[)\]"'`,;|.!?]+$/g, "")
+        .trim();
+      const isDynamicExpression = /^(?:\$\{[A-Za-z_$][\w$]*\}|\{[A-Za-z_$][\w$]*\}|\+[A-Za-z_$][\w$]*)$/.test(strippedValue);
+      return Boolean(strippedValue) && strippedValue.toLowerCase() !== "authentication" && !isDynamicExpression && !APPROVED_BEARER_VALUES.has(strippedValue);
+    })
+  );
 }
 
 function assertSafeSvgSource(source, path) {
@@ -122,7 +125,10 @@ test("authorization bearer checks reject unsafe token formats", () => {
     "Authorization: Bearer QWlyc2NhbGUvKysrL3Rva2VuKys=",
     "curl -H \"Authorization: Bearer curl-token\" https://api.airscale.io/v1/credits",
     "{ \"Authorization\": \"Bearer json-token\" }",
-    "const headers = { Authorization: `Bearer javascript-token` };"
+    "const headers = { Authorization: `Bearer javascript-token` };",
+    "req.Header.Set(\"Authorization\", \"Bearer go-static-token\")",
+    "'Authorization' => 'Bearer php-static-token'",
+    "| Authorization | Bearer table-static-token |"
   ]) {
     assert.equal(hasUnsafeBearerAuthorization(value), true, `${value} must be rejected`);
   }
@@ -137,6 +143,7 @@ test("authorization bearer checks reject unsafe token formats", () => {
 
   assert.equal(hasUnsafeBearerAuthorization("const headers = { Authorization: `Bearer ${apiKey}` };"), false);
   assert.equal(hasUnsafeBearerAuthorization("headers = { Authorization: 'Bearer ' . $apiKey };"), false);
+  assert.equal(hasUnsafeBearerAuthorization("Authorization supports Bearer authentication."), false);
   assert.equal(hasUnsafeBearerAuthorization("Use Bearer authentication for every request."), false);
 });
 
