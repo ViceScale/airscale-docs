@@ -26,15 +26,20 @@ Submit a company or school profile URL and receive normalized organization, head
 
 The URL is trimmed before validation. URLs without a scheme are accepted, and recognized LinkedIn URLs are normalized to `https://www.linkedin.com/{type}/{slug}`. Query strings and path content after the profile slug are not included in the canonical URL.
 
+Omit `mode` to use the default behavior. Its response shape follows the successful extraction mode and may vary. Set `mode` to `p2` or `p3` to request the normalized schema documented below.
+
 ```json
 {
-  "linkedin_profile_url": "https://www.linkedin.com/company/example-company-000000"
+  "linkedin_profile_url": "https://www.linkedin.com/company/example-company-000000",
+  "mode": "p3"
 }
 ```
 
 ## Response
 
-A successful extraction returns `200 OK` with the company profile object at the top level:
+Response shape follows the successful extraction mode. The detailed example and field table below show the normalized schema returned when `p2` or `p3` succeeds. A successful `p1` response remains a top-level object but may use different field names. Omitting `mode` invokes the default behavior, whose successful shape can therefore vary.
+
+A successful normalized extraction returns `200 OK` with the company profile object at the top level:
 
 ```json
 {
@@ -112,7 +117,7 @@ curl --request POST \
   --url https://api.airscale.io/v1/company \
   --header "Authorization: Bearer $AIRSCALE_API_KEY" \
   --header "Content-Type: application/json" \
-  --data '{"linkedin_profile_url":"https://www.linkedin.com/company/example-company-000000"}'
+  --data '{"linkedin_profile_url":"https://www.linkedin.com/company/example-company-000000","mode":"p3"}'
 ```
 
 ```python Python
@@ -122,7 +127,10 @@ import requests
 response = requests.post(
     "https://api.airscale.io/v1/company",
     headers={"Authorization": f"Bearer {os.environ['AIRSCALE_API_KEY']}"},
-    json={"linkedin_profile_url": "https://www.linkedin.com/company/example-company-000000"},
+    json={
+        "linkedin_profile_url": "https://www.linkedin.com/company/example-company-000000",
+        "mode": "p3",
+    },
     timeout=60,
 )
 response.raise_for_status()
@@ -139,6 +147,7 @@ const response = await fetch("https://api.airscale.io/v1/company", {
   },
   body: JSON.stringify({
     linkedin_profile_url: "https://www.linkedin.com/company/example-company-000000",
+    mode: "p3",
   }),
 });
 

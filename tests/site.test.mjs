@@ -244,6 +244,7 @@ function assertEndpointPageContract(source, contract, path) {
   const request = sectionSource(source, "Request", "Response");
   const response = sectionSource(source, "Response", "Errors");
   const errors = sectionSource(source, "Errors", "Examples");
+  const examples = sectionSource(source, "Examples", "Next step");
 
   assertTableRows(summary, contract.summaryRows, `${path} contract summary`);
   assertTableRows(request, contract.requestRows, `${path} request`);
@@ -251,6 +252,7 @@ function assertEndpointPageContract(source, contract, path) {
 
   assertOrderedFragments(request, contract.requestFragments, `${path} request`);
   assertOrderedFragments(response, contract.responseFragments, `${path} response`);
+  assertOrderedFragments(examples, contract.exampleFragments ?? [], `${path} examples`);
   for (const pattern of contract.forbiddenPatterns ?? []) {
     assert.doesNotMatch(source, pattern, `${path} must not contain ${pattern}`);
   }
@@ -271,14 +273,26 @@ function assertEndpointPageContract(source, contract, path) {
     );
   }
 
+  const actualErrorRows = markdownTableRows(errors)
+    .filter(([status]) => /^`\d{3} /.test(status));
   const actualErrors = Object.fromEntries(
-    markdownTableRows(errors)
-      .filter(([status]) => /^`\d{3} /.test(status))
-      .map(([status, cause]) => [status.slice(1, -1), cause])
+    actualErrorRows.map(([status, cause]) => [status.slice(1, -1), cause])
+  );
+  const actualRecoveries = Object.fromEntries(
+    actualErrorRows.map(([status, , recovery]) => [status.slice(1, -1), recovery])
   );
   assert.deepEqual(Object.keys(actualErrors), Object.keys(contract.errorCauseFragments), `${path} must document the source-backed error statuses`);
   for (const [status, fragments] of Object.entries(contract.errorCauseFragments)) {
     assertOrderedFragments(actualErrors[status], fragments, `${path} ${status} cause`);
+  }
+  for (const [status, expectation] of Object.entries(contract.errorRecoveryFragments ?? {})) {
+    const recovery = actualRecoveries[status];
+    assert.ok(recovery, `${path} ${status} must have a recovery action`);
+    if (typeof expectation === "function") {
+      assert.ok(expectation(recovery), `${path} ${status} recovery must satisfy its semantic contract`);
+    } else {
+      assertOrderedFragments(recovery, expectation, `${path} ${status} recovery`);
+    }
   }
 }
 
@@ -971,20 +985,26 @@ test("profile and reverse lookup pages follow the endpoint content system", () =
       requestFragments: [
         "`linkedin_profile_url`", "`/in/`", "`/company/`", "`/school/`",
         "submitted URL", "response schema", "successful-call credit cost", "`mode`", "`p1`", "`p2`", "`p3`",
-        "without a scheme", "https://www.linkedin.com", "`/in/`"
+        "without a scheme", "https://www.linkedin.com", "`/in/`",
+        "Omit `mode`", "default", "response shape", "`p2` or `p3`", "normalized"
       ],
       responseFragments: [
+        "Response shape", "successful extraction mode", "normalized", "`p2` or `p3`",
+        "`p1`", "top-level object", "different field names",
         "`200 OK`", "person profile object", "`firstname`", "`positionGroups`", "`skills`",
         "submitted recognized profile URL", "either profile route", "`/in/`",
         "[Company profile](/api-reference/extract-company-profile)", "`/v1/profile`", "credit cost"
       ],
       forbiddenPatterns: [
         /Use an `\/in\/` URL for this endpoint/i,
-        /(?:request route|endpoint) determines (?:the )?(?:response|entity|credit|cost)/i
+        /(?:request route|endpoint) determines (?:the )?(?:response|entity|credit|cost)/i,
+        /default[^.\n]*(?:always|only)[^.\n]*normalized/i,
+        /all successful responses use[^.\n]*(?:normalized|fields)/i
       ],
       requestExamples: [
-        { label: "person profile URL", shape: { linkedin_profile_url: String }, exact: true }
+        { label: "normalized person profile URL", shape: { linkedin_profile_url: String, mode: "p3" }, exact: true }
       ],
+      exampleFragments: ['"mode":"p3"', '"mode": "p3"', 'mode: "p3"'],
       responseExamples: [{
         label: "person profile",
         shape: {
@@ -1010,11 +1030,22 @@ test("profile and reverse lookup pages follow the endpoint content system", () =
         "503 Service Unavailable": ["extraction", "credit settlement"],
         "500 Internal Server Error": ["unexpected worker error"]
       },
+      errorRecoveryFragments: {
+        "400 Bad Request": ["recognized LinkedIn", "`/in/`", "`/company/`", "`/school/`", "response schema"],
+        "403 Forbidden": ["selected URL type"],
+        "404 Not Found": ["Confirm", "profile URL", "intended profile type"]
+      },
       mutate: (source) => source.replace('"firstname": "Example"', '"first_name": "Example"'),
-      selectionMutation: (source) => source.replace(
-        "The submitted recognized profile URL determines",
-        "The request route determines"
-      )
+      additionalMutations: {
+        "route-selected response and billing": (source) => source.replace(
+          "The submitted recognized profile URL determines",
+          "The request route determines"
+        ),
+        "normalized-only default response": (source) => source.replace(
+          "A successful `p1` response remains a top-level object but may use different field names.",
+          "All successful responses use the normalized fields shown below."
+        )
+      }
     },
     "api-reference/extract-company-profile": {
       description: "Extract a structured company profile from a company profile URL.",
@@ -1041,20 +1072,26 @@ test("profile and reverse lookup pages follow the endpoint content system", () =
       requestFragments: [
         "`linkedin_profile_url`", "`/in/`", "`/company/`", "`/school/`",
         "submitted URL", "response schema", "successful-call credit cost", "`mode`", "`p1`", "`p2`", "`p3`",
-        "without a scheme", "https://www.linkedin.com"
+        "without a scheme", "https://www.linkedin.com",
+        "Omit `mode`", "default", "response shape", "`p2` or `p3`", "normalized"
       ],
       responseFragments: [
+        "Response shape", "successful extraction mode", "normalized", "`p2` or `p3`",
+        "`p1`", "top-level object", "different field names",
         "`200 OK`", "company profile object", "`foundedYear`", "`staff`", "`locations`",
         "submitted recognized profile URL", "either profile route", "`/company/`", "`/school/`",
         "[People profile](/api-reference/extract-people-profile)", "`/v1/company`", "credit cost"
       ],
       forbiddenPatterns: [
         /Use a `\/company\/` or `\/school\/` path for this endpoint/i,
-        /(?:request route|endpoint) determines (?:the )?(?:response|entity|credit|cost)/i
+        /(?:request route|endpoint) determines (?:the )?(?:response|entity|credit|cost)/i,
+        /default[^.\n]*(?:always|only)[^.\n]*normalized/i,
+        /all successful responses use[^.\n]*(?:normalized|fields)/i
       ],
       requestExamples: [
-        { label: "company profile URL", shape: { linkedin_profile_url: String }, exact: true }
+        { label: "normalized company profile URL", shape: { linkedin_profile_url: String, mode: "p3" }, exact: true }
       ],
+      exampleFragments: ['"mode":"p3"', '"mode": "p3"', 'mode: "p3"'],
       responseExamples: [{
         label: "company profile",
         shape: {
@@ -1081,11 +1118,22 @@ test("profile and reverse lookup pages follow the endpoint content system", () =
         "503 Service Unavailable": ["extraction", "credit settlement"],
         "500 Internal Server Error": ["unexpected worker error"]
       },
+      errorRecoveryFragments: {
+        "400 Bad Request": ["recognized LinkedIn", "`/in/`", "`/company/`", "`/school/`", "response schema"],
+        "403 Forbidden": ["selected URL type"],
+        "404 Not Found": ["Confirm", "profile URL", "intended profile type"]
+      },
       mutate: (source) => source.replace('"foundedYear": 2024', '"founded_year": 2024'),
-      selectionMutation: (source) => source.replace(
-        "The submitted recognized profile URL determines",
-        "The request route determines"
-      )
+      additionalMutations: {
+        "route-selected response and billing": (source) => source.replace(
+          "The submitted recognized profile URL determines",
+          "The request route determines"
+        ),
+        "normalized-only default response": (source) => source.replace(
+          "A successful `p1` response remains a top-level object but may use different field names.",
+          "All successful responses use the normalized fields shown below."
+        )
+      }
     },
     "api-reference/reverse-email": {
       description: "Find a person profile from an email address.",
@@ -1131,6 +1179,11 @@ test("profile and reverse lookup pages follow the endpoint content system", () =
         "503 Service Unavailable": ["transport", "credit settlement"],
         "500 Internal Server Error": ["configuration", "unexpected worker error"]
       },
+      errorRecoveryFragments: {
+        "400 Bad Request": ["valid email", "`example.person@example.com`"],
+        "429 Too Many Requests": ["later second", "bounded exponential backoff"],
+        "503 Service Unavailable": ["same email", "bounded backoff", "not charged"]
+      },
       mutate: (source) => source.replace('```json\n"not found"\n```', '```json\n{"status":"not_found"}\n```')
     },
     "api-reference/reverse-phone": {
@@ -1144,7 +1197,7 @@ test("profile and reverse lookup pages follow the endpoint content system", () =
         ["`mobile_phone`", "string", "Yes"]
       ],
       responseRows: [
-        ["`url`", "string"],
+        ["`url`", "string, when available"],
         ["`identifier`", "string, when available"],
         ["`body`", "object"],
         ["`status`", "string"]
@@ -1153,9 +1206,11 @@ test("profile and reverse lookup pages follow the endpoint content system", () =
         "`mobile_phone`", "non-empty string", "trimmed", "E.164-style", "not enforce E.164 validation"
       ],
       responseFragments: [
-        "`200 OK`", "top level", "`body`", "`url`", "`identifier`",
-        "`status: \"not_found\"`", "does not charge credits"
+        "`200 OK`", "top level", "`body`", "`url`", "only when", "`identifier`",
+        "no lookup path", "true miss", "exhausted or failed", "`status: \"not_found\"`",
+        "does not charge credits", "one bounded-backoff retry", "verify", "`mobile_phone`"
       ],
+      forbiddenPatterns: [/always means[^.\n]*no matching profile/i],
       requestExamples: [
         { label: "phone number", shape: { mobile_phone: String }, exact: true }
       ],
@@ -1182,7 +1237,28 @@ test("profile and reverse lookup pages follow the endpoint content system", () =
         "503 Service Unavailable": ["successful result", "credit settlement"],
         "500 Internal Server Error": ["configuration", "unexpected worker error"]
       },
-      mutate: (source) => source.replace('"body": {', '"profile": {')
+      errorRecoveryFragments: {
+        "400 Bad Request": ["non-empty string", "`+12025550147`"],
+        "429 Too Many Requests": (recovery) => (
+          /minute window/i.test(recovery) && /bounded exponential backoff/i.test(recovery)
+        ),
+        "503 Service Unavailable": ["same number", "credit service", "recovers"]
+      },
+      mutate: (source) => source.replace('"body": {', '"profile": {'),
+      additionalMutations: {
+        "required success URL": (source) => source.replace(
+          "| `url` | string, when available |",
+          "| `url` | string |"
+        ),
+        "definite-miss-only no-result": (source) => source.replace(
+          "This can represent a true miss or lookup paths that were exhausted or failed.",
+          "This always means the number has no matching profile."
+        ),
+        "missing recovery action": (source) => source.replace(
+          "Retry after the minute window with bounded exponential backoff.",
+          "Try again later."
+        )
+      }
     }
   };
   const manifest = JSON.parse(readFileSync("contracts/public-api-contracts.json", "utf8"));
@@ -1190,13 +1266,13 @@ test("profile and reverse lookup pages follow the endpoint content system", () =
   for (const [path, contract] of Object.entries(contracts)) {
     assertEndpointPageContentSystem(path, contract, manifest);
 
-    if (contract.selectionMutation) {
+    for (const [mutationName, mutate] of Object.entries(contract.additionalMutations ?? {})) {
       const source = readPage(path).source;
-      const mutatedSource = contract.selectionMutation(source);
-      assert.notEqual(mutatedSource, source, `${path} URL-selection mutation must change the contract`);
+      const mutatedSource = mutate(source);
+      assert.notEqual(mutatedSource, source, `${path} ${mutationName} mutation must change the contract`);
       assert.throws(
-        () => assertEndpointPageContract(mutatedSource, contract, `${path} route-selected mutation`),
-        `${path} must reject route-selected response and billing behavior`
+        () => assertEndpointPageContract(mutatedSource, contract, `${path} ${mutationName} mutation`),
+        `${path} must reject ${mutationName}`
       );
     }
   }

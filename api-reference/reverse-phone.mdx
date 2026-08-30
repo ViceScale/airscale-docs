@@ -33,7 +33,7 @@ Submit a phone number and receive the matching person profile when one can be re
 
 ## Response
 
-A successful lookup returns `200 OK`. Available profile fields remain at the top level for compatibility and are also copied into the canonical `body` object. The response normalizes `url` and adds `identifier` when it can derive one.
+A successful lookup returns `200 OK`. Available profile fields remain at the top level for compatibility and are also copied into the canonical `body` object. The response includes `url` only when the match contains a non-empty professional profile URL, and adds `identifier` when it can derive one.
 
 ```json
 {
@@ -58,13 +58,13 @@ A successful lookup returns `200 OK`. Available profile fields remain at the top
 
 | Field | Type | Description |
 | --- | --- | --- |
-| `url` | string | Canonical professional profile URL on a successful match. |
+| `url` | string, when available | Canonical professional profile URL when the successful match includes one. |
 | `identifier` | string, when available | Existing profile identifier or identifier derived from the returned profile. |
 | `body` | object | Canonical success envelope containing the available profile fields. |
 | Additional top-level fields | varies | Available profile fields retained for compatibility. |
 | `status` | string | Present on a miss as `not_found`; it is not part of the success envelope. |
 
-When no profile matches—or the lookup budget expires before a match—the endpoint returns `200 OK` with `status: "not_found"` and does not charge credits.
+When no lookup path produces a profile, the endpoint returns `200 OK`. This can represent a true miss or lookup paths that were exhausted or failed. The response has `status: "not_found"` and does not charge credits. When a match is expected, make one bounded-backoff retry. If the result persists, verify that `mobile_phone` contains the intended normalized number before retrying again.
 
 ```json
 {
