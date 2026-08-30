@@ -902,7 +902,7 @@ test("search and discovery pages preserve their complete contracts", () => {
         ["`q`", "string", "Yes"],
         [
           "`limit`", "integer", "No",
-          "Omitted, non-numeric, or non-integer values default to `20`; integers below `1` clamp to `1`, and integers above `100` clamp to `100`."
+          "Omitted, non-numeric, or non-integer values default to `20`; an explicit empty `?limit=` converts to `0` and clamps to `1`; integers below `1` clamp to `1`, and integers above `100` clamp to `100`."
         ],
         ["`label`", "string", "Always"],
         ["`value`", "string", "Always"],
@@ -931,7 +931,8 @@ test("search and discovery pages preserve their complete contracts", () => {
         "`keywords`", "`topics`", "`events`", "`locations`", "`companyName`", "`eventWindow`", "`locationMatch`",
         "`hasWebsite`", "`isPublicCompany`", "## Filter discovery", "`city`", "`region`", "`industry`", "`topics`",
         "`techStack`", "2 to 120 characters", "`limit`", "non-numeric", "non-integer", "default to `20`",
-        "below `1`", "clamp to `1`", "above `100`", "clamp to `100`", "`label`", "Always", "`value`",
+        "explicit empty `?limit=`", "converts to `0`", "clamps to `1`", "below `1`", "clamp to `1`",
+        "above `100`", "clamp to `100`", "`label`", "Always", "`value`",
         "Autocomplete options only", "## Pagination", "10,000 companies", "`fc_`"
       ],
       responseFragments: [
@@ -1027,7 +1028,8 @@ test("search and discovery pages preserve their complete contracts", () => {
         summary: (source) => source.replace("0.1 credits per returned company", "0.2 credits per returned company"),
         response: (source) => source.replace('"total": 240', '"total": "240"'),
         errors: (source) => source.replace("`502 Bad Gateway`", "`504 Gateway Timeout`"),
-        "filter-values limit coercion": (source) => source.replace("integers below `1` clamp to `1`", "integers below `1` are rejected")
+        "filter-values limit coercion": (source) => source.replace("integers below `1` clamp to `1`", "integers below `1` are rejected"),
+        "empty filter-values limit": (source) => source.replace("an explicit empty `?limit=` converts to `0` and clamps to `1`", "an explicit empty `?limit=` defaults to `20`")
       }
     },
     "api-reference/airsearch": {
@@ -1055,7 +1057,10 @@ test("search and discovery pages preserve their complete contracts", () => {
         ["`int`", "Integer number"],
         ["`float`", "Decimal number"],
         ["`boolean`", "Boolean value"],
-        ["`date`", "Date value"],
+        [
+          "`date`", "Date value",
+          "String or null, when present; a string becomes `null` only when it neither begins with a `YYYY-MM-DD` shape nor parses as a date."
+        ],
         ["`phone`", "Phone number"]
       ],
       responseRows: [
@@ -1084,6 +1089,7 @@ test("search and discovery pages preserve their complete contracts", () => {
         /\b(?:IcyPeas|Explorium|OpenAI|RapidAPI|Serper|Jina)\b/i,
         /\b(?:provider prompt|internal prompt|cost telemetry|estimated_cost|airsearch_logs|icypeas_logs)\b/i,
         /requested schema keys? (?:is|are) always present/i,
+        /all invalid dates become null|semantic calendar validation/i,
         /\b(?:number|int|float|boolean)\b[^\n.]*(?:returns?|is returned) as (?:a )?native JSON (?:number|integer|float|boolean)\b/i
       ],
       requestExamples: [
@@ -1156,7 +1162,8 @@ test("search and discovery pages preserve their complete contracts", () => {
         summary: (source) => source.replace("1 credit only for", "2 credits only for"),
         errors: (source) => source.replace("| `504 Gateway Timeout` |", "| `408 Request Timeout` |"),
         "numeric scalar output": (source) => source.replace('"founded_year": "2024"', '"founded_year": 2024'),
-        "universal schema keys claim": (source) => source.replace("Requested schema keys may be omitted", "Requested schema keys are always present")
+        "universal schema keys claim": (source) => source.replace("Requested schema keys may be omitted", "Requested schema keys are always present"),
+        "date hint predicate": (source) => source.replace("a string becomes `null` only when it neither begins with a `YYYY-MM-DD` shape nor parses as a date", "all invalid dates become null")
       }
     }
   };

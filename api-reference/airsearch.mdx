@@ -65,7 +65,7 @@ Schema keys are your output field names. Values can use a supported keyword or a
 | `int` | Integer number | Integer-looking string or null, when present. |
 | `float` | Decimal number | Decimal-looking string or null, when present. |
 | `boolean` | Boolean value | Boolean-looking string or null, when present. |
-| `date` | Date value | String or null, when present; invalid date strings are changed to `null`. |
+| `date` | Date value | String or null, when present; a string becomes `null` only when it neither begins with a `YYYY-MM-DD` shape nor parses as a date. |
 | `phone` | Phone number | Phone-shaped string or null, when present. |
 
 For a domain-specific output, use a description such as `"funding_usd": "Total funding in USD as a number"`.

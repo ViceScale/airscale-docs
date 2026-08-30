@@ -169,7 +169,7 @@ Filter-values accepts the following query parameters:
 | --- | --- | --- | --- |
 | `filter` | string | Yes | `city`, `region`, `industry`, `topics`, or `techStack`. |
 | `q` | string | Yes | Search text from 2 to 120 characters. `query` is also accepted. |
-| `limit` | integer | No | Omitted, non-numeric, or non-integer values default to `20`; integers below `1` clamp to `1`, and integers above `100` clamp to `100`. |
+| `limit` | integer | No | Omitted, non-numeric, or non-integer values default to `20`; an explicit empty `?limit=` converts to `0` and clamps to `1`; integers below `1` clamp to `1`, and integers above `100` clamp to `100`. |
 | `country` | string | No | Repeat or comma-separate country context. |
 | `region` | string | No | Repeat or comma-separate region context. A bare region name needs country context. |
 
