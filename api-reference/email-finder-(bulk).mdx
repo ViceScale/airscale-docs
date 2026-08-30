@@ -5,6 +5,8 @@ description: "Find professional email addresses for a batch of people."
 
 Submit a batch of people and receive one asynchronous professional-email result per item at your webhook.
 
+<Badge color="blue">POST</Badge> `/v1/email-bulk`
+
 | Property | Value |
 | --- | --- |
 | Method | `POST` |
@@ -22,14 +24,14 @@ The top-level body contains the callback URL and a non-empty `inputs` array.
 
 | Field | Type | Required | Description |
 | --- | --- | --- | --- |
-| `webhook_url` | string | Yes | HTTP or HTTPS URL that receives one JSON `POST` for each item. |
+| `webhook_url` | string | Yes | String beginning with `http` that receives one JSON `POST` for each item. |
 | `inputs` | array | Yes | Between 1 and 100 person-identification objects. |
 
 Each item should identify a person by `linkedin_profile_url`, or by `first_name` and `last_name` plus either `domain` or `company_name`.
 
 | Item field | Type | Required | Description |
 | --- | --- | --- | --- |
-| `custom_id` | string | No | Your correlation identifier, echoed in the webhook. If omitted, the item's zero-based array index is used. |
+| `custom_id` | any JSON value | No | Any non-null JSON value is echoed unchanged. If omitted or `null`, the item's zero-based array index is used. |
 | `linkedin_profile_url` | string | Required for profile lookup | LinkedIn person profile URL. |
 | `first_name` | string | Required for name lookup | Person's first name. |
 | `last_name` | string | Required for name lookup | Person's last name. |
@@ -45,7 +47,7 @@ Each item should identify a person by `linkedin_profile_url`, or by `first_name`
       "linkedin_profile_url": "https://www.linkedin.com/in/example-person-000000"
     },
     {
-      "custom_id": "contact-002",
+      "custom_id": 2002,
       "first_name": "Sample",
       "last_name": "Contact",
       "domain": "example.com"
@@ -91,7 +93,7 @@ For a miss or timeout, `email` is `null`:
 
 ```json
 {
-  "custom_id": "contact-002",
+  "custom_id": 2002,
   "status": "not_found",
   "email": null
 }
@@ -99,7 +101,7 @@ For a miss or timeout, `email` is `null`:
 
 | Webhook field | Type | Description |
 | --- | --- | --- |
-| `custom_id` | string or number | Supplied identifier, or the item's array index. |
+| `custom_id` | any JSON value | Supplied non-null value echoed unchanged; otherwise the item's zero-based array index. |
 | `status` | string | `success`, `not_found`, `timeout`, or `error`. |
 | `email` | string or null | Professional email on success; otherwise `null`. |
 | `email_status` | string | `valid` on success. |
@@ -111,7 +113,7 @@ For a miss or timeout, `email` is `null`:
 
 | Status | Cause | Recovery |
 | --- | --- | --- |
-| `400 Bad Request` | The JSON is invalid, `inputs` is empty or over 100 items, or `webhook_url` is missing or invalid. | Send valid JSON with 1–100 items and an HTTP(S) webhook URL. |
+| `400 Bad Request` | The JSON is invalid, `inputs` is empty or over 100 items, or `webhook_url` is missing, not a string, or does not begin with `http`. | Send valid JSON with 1–100 items and a `webhook_url` string beginning with `http`. |
 | `401 Unauthorized` | The Bearer token is missing or invalid. | Add the current workspace API key to the `Authorization` header. |
 | `403 Forbidden` | The workspace has fewer than 2 credits when the batch is submitted. | Add credits before submitting another batch. |
 | `413 Content Too Large` | The request body exceeds 256 KiB. | Reduce the batch size or remove unrelated fields. |

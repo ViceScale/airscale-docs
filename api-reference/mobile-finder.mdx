@@ -5,6 +5,8 @@ description: "Find a mobile phone number from a professional profile."
 
 Submit a LinkedIn person profile URL and return a mobile phone number when one is found.
 
+<Badge color="blue">POST</Badge> `/v1/phone`
+
 | Property | Value |
 | --- | --- |
 | Method | `POST` |
@@ -44,7 +46,7 @@ A successful lookup returns `200 OK`:
 | --- | --- | --- |
 | `status` | string | `success` or `not_found`. |
 | `linkedin_profile_url` | string | The profile URL from the request. |
-| `phone_numbers` | string or null | One E.164-style phone number on success; otherwise `null`. |
+| `phone_numbers` | string or null | Phone number on success; otherwise `null`. |
 | `provider` | string or null | Public source label on success; otherwise `null`. |
 
 When no mobile number is found, the endpoint returns `200 OK` without charging credits:

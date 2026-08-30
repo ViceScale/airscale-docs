@@ -402,6 +402,10 @@ test("contact data pages follow the endpoint content system", () => {
     for (const endpoint of evidence.endpoints) {
       assert.match(source, new RegExp(`\\b${endpoint.method}\\b`), `${path} must document ${endpoint.method}`);
       assert.ok(source.includes(endpoint.path), `${path} must document ${endpoint.path}`);
+      assert.ok(
+        source.includes(`<Badge color="blue">${endpoint.method}</Badge> \`${endpoint.path}\``),
+        `${path} must show a native method badge beside the full public path`
+      );
     }
     assert.match(source, /^## Request$/m, `${path} must have a Request section`);
     assert.match(source, /^## Response$/m, `${path} must have a Response section`);
@@ -436,12 +440,23 @@ test("contact data pages follow the endpoint content system", () => {
 
   const bulk = readPage("api-reference/email-finder-(bulk)").source;
   assert.match(bulk, /\| Maximum batch \| 100 input items per request \|/);
+  assert.match(bulk, /\| `inputs` \| array \| Yes \| (?:Between 1 and 100|1–100) person-identification objects\. \|/);
+  assert.match(bulk, /`inputs` is (?:empty|not a non-empty array)/i);
   assert.match(bulk, /\| Rate limit \| 3,000 input items per minute per workspace \|/);
   assert.match(bulk, /required `webhook_url`|`webhook_url` \| string \| Yes/i);
+  assert.match(bulk, /string (?:that begins|beginning) with `http`/i);
+  assert.doesNotMatch(bulk, /valid HTTP\(S\) URL|invalid webhook URL|must be a valid URL/i);
+  assert.match(bulk, /\| `custom_id` \| any JSON value \| No \| Any non-null JSON value is echoed unchanged\./);
+  assert.match(bulk, /If omitted or `null`, the item's zero-based array index is used\./);
+  assert.match(bulk, /\| `custom_id` \| any JSON value \| Supplied non-null value echoed unchanged; otherwise the item's zero-based array index\. \|/);
   assert.match(bulk, /202 Accepted/);
   assert.match(bulk, /one (?:JSON `POST`|asynchronous professional-email result) (?:for|per) each item|one asynchronous professional-email result per item/i);
   assert.match(bulk, /`success`, `not_found`, `timeout`, or `error`/);
   assert.match(bulk, /2 credits per item with `status: "success"`; misses and timeouts are not charged\./);
+
+  const mobile = readPage("api-reference/mobile-finder").source;
+  assert.doesNotMatch(mobile, /E\.164/i);
+  assert.match(mobile, /\| `phone_numbers` \| string or null \| Phone number on success; otherwise `null`\. \|/);
 
   const personalEmail = readPage("api-reference/personal-email").source;
   assert.match(personalEmail, /path must contain exactly one profile slug after `\/in\/`/);
