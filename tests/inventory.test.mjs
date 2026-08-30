@@ -77,6 +77,21 @@ test("inventory is a timestamped snapshot of exactly 82 unique Framer routes", (
   assert.equal(inventory.routes[0].path, "/");
 });
 
+test("inventory preserves the complete legacy content-category denominator", () => {
+  const categoryCounts = inventory.routes.reduce((counts, { category }) => {
+    counts[category] = (counts[category] ?? 0) + 1;
+    return counts;
+  }, {});
+
+  assert.deepEqual(categoryCounts, {
+    home: 1,
+    "use-case": 8,
+    "api-reference": 21,
+    mcp: 4,
+    "product-guide": 48
+  });
+});
+
 test("every route has one complete preview disposition", () => {
   const counts = Object.fromEntries(Object.keys(expectedCounts).map((key) => [key, 0]));
 

@@ -25,6 +25,10 @@ function frontmatterValue(source, key, path) {
   return JSON.parse(matches[0].slice(key.length + 1).trim());
 }
 
+function expectedCanonical(path) {
+  return `${policy.previewOrigin}/${path.replace(/\.mdx$/, "")}`;
+}
+
 test("publication policy is preview-only and forbids live-domain mutations", () => {
   assert.deepEqual(policy, {
     previewOrigin: "https://airscale.mintlify.app",
@@ -59,9 +63,21 @@ test("every current content page declares its preview-host canonical", () => {
 
   for (const path of files) {
     const source = readFileSync(path, "utf8");
-    const route = path.replace(/\.mdx$/, "");
-    assert.equal(frontmatterValue(source, "canonical", path), `${policy.previewOrigin}/${route}`);
+    assert.equal(frontmatterValue(source, "canonical", path), expectedCanonical(path));
   }
+});
+
+test("canonical generation cannot target the live documentation origin", () => {
+  const canonical = expectedCanonical("api-reference/find-people.mdx");
+  assert.equal(canonical, "https://airscale.mintlify.app/api-reference/find-people");
+  assert.equal(canonical.startsWith(policy.liveDocumentationOrigin), false);
+});
+
+test("updater canonical generation uses the publication policy preview origin", () => {
+  assert.equal(
+    updater.canonicalFor("api-reference/find-people.mdx"),
+    expectedCanonical("api-reference/find-people.mdx")
+  );
 });
 
 test("updater inserts canonical after a single-line description", () => {
