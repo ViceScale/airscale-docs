@@ -1,7 +1,7 @@
 import { readdirSync, readFileSync, writeFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { pathToFileURL } from "node:url";
-import { isMap, isScalar, parseDocument } from "yaml";
+import { isMap, isScalar, isSeq, parseDocument } from "yaml";
 
 const publicationPolicy = JSON.parse(readFileSync("contracts/publication-policy.json", "utf8"));
 export const PREVIEW_ORIGIN = publicationPolicy.previewOrigin;
@@ -21,8 +21,8 @@ export function canonicalFor(path, previewOrigin = PREVIEW_ORIGIN) {
   return `${previewOrigin}/${path.replace(/\.mdx$/, "")}`;
 }
 
-function parseFrontmatter(path, frontmatter, phase) {
-  const document = parseDocument(frontmatter, { uniqueKeys: false });
+function parseFrontmatter(path, frontmatter, phase, options) {
+  const document = parseDocument(frontmatter, options);
   if (document.errors.length > 0) {
     throw new Error(`${path} ${phase} frontmatter must be valid YAML: ${document.errors[0].message}`);
   }
@@ -30,6 +30,31 @@ function parseFrontmatter(path, frontmatter, phase) {
     throw new Error(`${path} ${phase} frontmatter must be a top-level YAML mapping`);
   }
   return document.contents;
+}
+
+function mappingKeySignature(value) {
+  return `${typeof value}:${String(value)}`;
+}
+
+function validateUniqueKeys(path, node, root) {
+  if (isMap(node)) {
+    const seen = new Set();
+    for (const pair of node.items) {
+      if (!isScalar(pair.key) || pair.key.range === undefined) {
+        throw new Error(`${path} input frontmatter contains an unsupported complex mapping key`);
+      }
+
+      const key = pair.key.value;
+      const signature = mappingKeySignature(key);
+      if (seen.has(signature) && !(node === root && key === "canonical")) {
+        throw new Error(`${path} input frontmatter must not duplicate key "${String(key)}"`);
+      }
+      seen.add(signature);
+      validateUniqueKeys(path, pair.value, root);
+    }
+  } else if (isSeq(node)) {
+    node.items.forEach((item) => validateUniqueKeys(path, item, root));
+  }
 }
 
 function topLevelPairs(document, key) {
@@ -69,7 +94,8 @@ export function updateFrontmatterSource(path, source, previewOrigin = PREVIEW_OR
   if (!match) throw new Error(`${path} must start with YAML frontmatter`);
 
   const frontmatter = match[1];
-  const document = parseFrontmatter(path, frontmatter, "input");
+  const document = parseFrontmatter(path, frontmatter, "input", { uniqueKeys: false });
+  validateUniqueKeys(path, document, document);
   if (topLevelPairs(document, "description").length === 0) {
     throw new Error(`${path} must define description before canonical`);
   }

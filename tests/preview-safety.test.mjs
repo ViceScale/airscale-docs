@@ -34,7 +34,7 @@ function expectedCanonical(path) {
 function frontmatterDocument(source, path) {
   const match = source.match(/^---\n([\s\S]*?)\n---/);
   assert.ok(match, `${path} must start with YAML frontmatter`);
-  const document = parseDocument(match[1], { uniqueKeys: false });
+  const document = parseDocument(match[1]);
   assert.equal(document.errors.length, 0, `${path} frontmatter must parse as YAML`);
   return document;
 }
@@ -162,6 +162,35 @@ test("updater fails closed on an anchored canonical scalar", () => {
     /api-reference\/fixture\.mdx canonical must be a single-line scalar/
   );
   assert.equal(source, `---\ntitle: "Fixture"\ndescription: "A fixture page."\ncanonical: &fixture "https://old.example/fixture"\n---\n`);
+});
+
+const complexCanonicalFixtures = [
+  ["tagged", `canonical: !!str "https://old.example/fixture"`],
+  ["aliased", `anchor: &fixture "https://old.example/fixture"\ncanonical: *fixture`],
+  ["multiline quoted", `canonical: "First line\n  second line"`],
+  ["multiline plain", `canonical: First line\n  second line`]
+];
+
+for (const [name, canonicalField] of complexCanonicalFixtures) {
+  test(`updater fails closed on a ${name} canonical`, () => {
+    const source = `---\ntitle: "Fixture"\ndescription: "A fixture page."\n${canonicalField}\n---\n`;
+
+    assert.throws(
+      () => updater.updateFrontmatterSource("api-reference/fixture.mdx", source),
+      /api-reference\/fixture\.mdx canonical must be a single-line scalar/
+    );
+    assert.equal(source, `---\ntitle: "Fixture"\ndescription: "A fixture page."\n${canonicalField}\n---\n`);
+  });
+}
+
+test("updater rejects duplicate canonical keys in a nested mapping", () => {
+  const source = `---\ntitle: "Fixture"\ndescription: "A fixture page."\nmetadata:\n  canonical: "https://old.example/fixture"\n  canonical: "https://older.example/fixture"\n---\n`;
+
+  assert.throws(
+    () => updater.updateFrontmatterSource("api-reference/fixture.mdx", source),
+    /api-reference\/fixture\.mdx input frontmatter must not duplicate key "canonical"/
+  );
+  assert.equal(source, `---\ntitle: "Fixture"\ndescription: "A fixture page."\nmetadata:\n  canonical: "https://old.example/fixture"\n  canonical: "https://older.example/fixture"\n---\n`);
 });
 
 test("updater parses generated frontmatter with exactly one exact canonical", () => {
@@ -300,3 +329,34 @@ test("updater prevalidates a complex canonical before writing any earlier valid 
   assert.deepEqual(files, before);
   assert.deepEqual(writes, []);
 });
+
+for (const duplicateKey of ["title", "description"]) {
+  test(`updater prevalidates duplicate ${duplicateKey} before writing any earlier valid page`, () => {
+    const files = new Map([
+      [
+        "api-reference/01-valid.mdx",
+        `---\ntitle: "Valid"\ndescription: "A valid fixture."\n---\n`
+      ],
+      [
+        "api-reference/02-duplicate.mdx",
+        `---\ntitle: "Duplicate"\ndescription: "A duplicate fixture."\n${duplicateKey}: "again"\n---\n`
+      ]
+    ]);
+    const before = new Map(files);
+    const writes = [];
+
+    assert.throws(
+      () =>
+        updater.synchronizeFiles([...files.keys()].sort(), {
+          read: (path) => files.get(path),
+          write: (path, source) => {
+            writes.push(path);
+            files.set(path, source);
+          }
+        }),
+      new RegExp(`02-duplicate\\.mdx input frontmatter must not duplicate key "${duplicateKey}"`)
+    );
+    assert.deepEqual(files, before);
+    assert.deepEqual(writes, []);
+  });
+}
