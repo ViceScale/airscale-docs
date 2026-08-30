@@ -706,7 +706,7 @@ Run:
 node --test tests/preview-safety.test.mjs tests/inventory.test.mjs
 ```
 
-Expected: `tests 11`, `pass 11`, `fail 0`.
+Expected: `tests 30`, `pass 30`, `fail 0` (15 preview-safety + 15 inventory). Task 5's package-toolchain test brings the full suite to 50 tests.
 
 - [ ] **Step 4: Commit the fail-closed checks**
 
@@ -759,6 +759,7 @@ node --test tests/preview-safety.test.mjs
 npm test
 npm run mint:validate
 npm run validate
+npm audit --omit=dev
 npm audit
 ```
 
@@ -767,7 +768,11 @@ Expected:
 - Focused preview tests pass.
 - All Node tests pass with zero failures.
 - Both local Mint validation invocations pass using the pinned `mint@4.2.850` binary.
-- `npm audit` output is recorded, including any existing advisories; do not run `npm audit fix` as part of this gate.
+- `npm audit --omit=dev` exits 0 with zero production/runtime findings.
+- Full `npm audit` exits 1 with 14 vulnerable package entries (12 high, 2 moderate), propagated from three transitive advisory roots: `extract-zip` (`GHSA-jmr9-qjv8-65gv`), `qs` (`GHSA-q8mj-m7cp-5q26`), and `sharp` (`GHSA-f88m-g3jw-g9cj`). This is a count of vulnerable package entries, not 14 independent advisories.
+- Mint is dev-only and exact-pinned; the current repository favicon/input is controlled. Run Mint validation only on trusted changes, or in ephemeral credential-free/no-secret CI for untrusted changes; do not run `mint dev` on untrusted branches.
+- Do not use `npm audit fix --force` or unsupported dependency overrides; monitor pinned Mint releases for corrected transitive dependencies.
+- Record both audit outputs without masking unexpected results.
 
 - [ ] **Step 4: Verify the committed inventory still matches the live sitemap**
 
@@ -843,7 +848,8 @@ Report these exact outputs before starting the OpenAPI reference plan:
 - `npm ls mint --depth=0` exact version;
 - test total and failure count;
 - Mintlify validation result;
-- `npm audit` result;
+- `npm audit --omit=dev` result (expected exit 0 with zero production/runtime findings);
+- full `npm audit` result (expected exit 1 with 14 vulnerable package entries and the three advisory roots above);
 - metadata changed count;
 - inventory denominator `82` and disposition counts `60/17/3/2`;
 - exact branch HEAD SHA;
