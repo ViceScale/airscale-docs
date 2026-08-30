@@ -60,7 +60,7 @@ function readPage(path) {
 }
 
 function localDocumentationLinks(source) {
-  const markdownLinks = Array.from(source.matchAll(/\[[^\]]*\]\((\/api-reference\/[^)\s?#]+)(?:[?#][^)]*)?\)/g), ([, href]) => href);
+  const markdownLinks = Array.from(source.matchAll(/\[[^\]]*\]\((\/api-reference\/(?:[^()\s?#]+|\([^()\s?#]*\))+)(?:[?#][^)]*)?\)/g), ([, href]) => href);
   const componentLinks = Array.from(source.matchAll(/<[A-Za-z][\w.:-]*\b[^>]*\bhref=(["'])(\/api-reference\/[^"'?#]+)(?:[?#][^"']*)?\1[^>]*>/g), ([, , href]) => href);
   return [...markdownLinks, ...componentLinks];
 }
@@ -217,7 +217,8 @@ test("internal documentation links resolve", () => {
   }
 });
 
-test("local component documentation links resolve", () => {
+test("local Markdown and component documentation links resolve", () => {
+  assert.doesNotThrow(() => assertLocalDocumentationLinksResolve('[Bulk email](/api-reference/email-finder-(bulk))', "valid Markdown fixture"));
   assert.doesNotThrow(() => assertLocalDocumentationLinksResolve('<Card href="/api-reference/api-overview">Overview</Card>', "valid component fixture"));
   assert.throws(() => assertLocalDocumentationLinksResolve('<Card href="/api-reference/missing">Missing</Card>', "invalid component fixture"));
 });
