@@ -238,12 +238,16 @@ function assertOrderedFragments(source, fragments, label) {
 }
 
 function assertEndpointPageContract(source, contract, path) {
+  const responseHeading = contract.responseHeading ?? "Response";
+  const requestEndHeading = contract.requestEndHeading ?? responseHeading;
+  const responseEndHeading = contract.responseEndHeading ?? "Errors";
+  const errorsEndHeading = contract.errorsEndHeading ?? "Examples";
   const requestStart = source.indexOf("## Request");
   assert.notEqual(requestStart, -1, `${path} must have a Request section`);
   const summary = source.slice(0, requestStart);
-  const request = sectionSource(source, "Request", "Response");
-  const response = sectionSource(source, "Response", "Errors");
-  const errors = sectionSource(source, "Errors", "Examples");
+  const request = sectionSource(source, "Request", requestEndHeading);
+  const response = sectionSource(source, responseHeading, responseEndHeading);
+  const errors = sectionSource(source, "Errors", errorsEndHeading);
   const examples = sectionSource(source, "Examples", "Next step");
 
   assertTableRows(summary, contract.summaryRows, `${path} contract summary`);
@@ -315,7 +319,7 @@ function assertEndpointPageContentSystem(path, contract, manifest) {
     );
   }
   assert.match(source, /^## Request$/m, `${path} must have a Request section`);
-  assert.match(source, /^## Response$/m, `${path} must have a Response section`);
+  assert.match(source, new RegExp(`^## ${contract.responseHeading ?? "Response"}$`, "m"), `${path} must have a response section`);
   assert.match(source, /^## Errors$/m, `${path} must have an Errors section`);
   assert.match(source, /^## Examples$/m, `${path} must have an Examples section`);
   assert.match(source, /^## Next step$/m, `${path} must have a Next step section`);
@@ -323,8 +327,12 @@ function assertEndpointPageContentSystem(path, contract, manifest) {
   assert.match(source, /^```json(?:\s|$)/m, `${path} must have a JSON example`);
   assert.match(source, /\b(?:credit|billing|charge)\b/i, `${path} must document credit behavior or link to billing guidance`);
 
-  const sectionPositions = ["Request", "Response", "Errors", "Examples", "Next step"]
+  const sectionPositions = (contract.sectionOrder ?? ["Request", contract.responseHeading ?? "Response", "Errors", "Examples", "Next step"])
     .map((heading) => source.indexOf(`## ${heading}`));
+  assert.ok(
+    sectionPositions.every((position) => position >= 0),
+    `${path} must contain every required contract section`
+  );
   assert.deepEqual(
     sectionPositions,
     [...sectionPositions].sort((left, right) => left - right),
@@ -571,6 +579,37 @@ test("every page has baseline-safe MDX", () => {
   }
 });
 
+test("every page passes editorial and contract invariants", () => {
+  const manifest = JSON.parse(readFileSync("contracts/public-api-contracts.json", "utf8"));
+  assert.deepEqual(
+    Object.keys(manifest.pages).sort(),
+    PAGE_PATHS.map((path) => path.replace("api-reference/", "")).sort(),
+    "the contract manifest must cover exactly the published pages"
+  );
+
+  for (const path of PAGE_PATHS) {
+    const { source, body, frontmatter } = readPage(path);
+    const pageName = path.replace("api-reference/", "");
+    const evidence = manifest.pages[pageName];
+
+    assert.ok(frontmatter.description, `${path} must have a description`);
+    assert.doesNotMatch(body, /^#\s+/m, `${path} must not repeat its title as a body H1`);
+    assert.doesNotMatch(source, /\b(?:Authentification|Endoints)\b/, `${path} must not retain migration misspellings`);
+    assert.ok(!localDocumentationLinks(source).includes(`/${path}`), `${path} must not contain a copied source-page self-link`);
+    assert.doesNotMatch(
+      source,
+      new RegExp(`^Source:\\s*.*(?:https?:\\/\\/docs\\.airscale\\.io)?\\/${path}(?:[?#)\\s]|$)`, "mi"),
+      `${path} must not contain a copied source-page self-link`
+    );
+    assert.ok(evidence, `${path} must have contract evidence`);
+
+    for (const endpoint of evidence.endpoints) {
+      assert.match(source, new RegExp(`\\b${endpoint.method}\\b`), `${path} must document ${endpoint.method}`);
+      assert.ok(source.includes(endpoint.path), `${path} must document ${endpoint.path}`);
+    }
+  }
+});
+
 test("internal documentation links resolve", () => {
   for (const path of PAGE_PATHS) {
     const { source } = readPage(path);
@@ -671,6 +710,426 @@ test("foundation pages teach a safe first request", () => {
 
   assert.match(creditCount, /401/);
   assert.ok(localDocumentationLinks(creditCount).includes("/api-reference/find-people"));
+});
+
+test("search and discovery pages preserve their complete contracts", () => {
+  const contracts = {
+    "api-reference/find-people": {
+      description: "Search and count people using person, role, and company filters.",
+      responseHeading: "Search response",
+      requestEndHeading: "Search response",
+      responseEndHeading: "Errors",
+      errorsEndHeading: "Examples",
+      sectionOrder: [
+        "Contract summary", "Search and Count endpoint comparison", "Request", "Filter shapes",
+        "Person filters", "Current company filters", "Past experience filters", "Pagination",
+        "Search response", "Count response", "Errors", "Rate limits and credits", "Examples", "Next step"
+      ],
+      summaryRows: [
+        ["Authentication", "Bearer API key"],
+        ["Execution", "Synchronous"],
+        ["Rate limit", "6 requests per second per workspace"],
+        ["Request body limit", "256 KiB"],
+        ["Search credit cost", "0.1 credits per returned lead; no charge when no leads are returned."],
+        ["Count credit cost", "No charge; Count does not debit Airscale credits."]
+      ],
+      requestRows: [
+        ["`query`", "object", "Yes"],
+        ["`size`", "integer", "No"],
+        ["`cursor`", "string", "No"],
+        ["`firstname`", "include/exclude"],
+        ["`lastname`", "include/exclude"],
+        ["`jobTitle`", "include/exclude"],
+        ["`school`", "include/exclude"],
+        ["`languages`", "include/exclude"],
+        ["`skills`", "include/exclude"],
+        ["`location`", "include/exclude"],
+        ["`keyword`", "include/exclude"],
+        ["`totalYearsOfExperience`", "integer range"],
+        ["`timeInCurrentCompany`", "integer range"],
+        ["`currentCompanyName`", "include/exclude"],
+        ["`companyDomain`", "include/exclude"],
+        ["`companyLinkedinUrl`", "include/exclude"],
+        ["`currentCompany.type`", "include/exclude"],
+        ["`currentCompany.industry`", "include/exclude"],
+        ["`currentCompany.location`", "include/exclude"],
+        ["`currentCompany.keyword`", "include/exclude"],
+        ["`currentCompany.headcount`", "integer range"],
+        ["`currentCompany.revenue`", "integer range"],
+        ["`currentCompany.headcountGrowth`", "growth"],
+        ["`pastJobTitle`", "include/exclude"],
+        ["`pastCompanyName`", "include/exclude"],
+        ["`pastCompanyId`", "include/exclude"],
+        ["`pastCompanyWebsite`", "include/exclude"],
+        ["`pastCompanyUrn`", "include/exclude"],
+        ["`pastCompany.type`", "include/exclude"],
+        ["`pastCompany.industry`", "include/exclude"],
+        ["`pastCompany.location`", "include/exclude"],
+        ["`pastCompany.keyword`", "include/exclude"],
+        ["`pastCompany.headcount`", "integer range"],
+        ["`pastCompany.revenue`", "integer range"],
+        ["`pastCompany.headcountGrowth`", "growth"]
+      ],
+      responseRows: [
+        ["`total`", "number"],
+        ["`leads`", "array"],
+        ["`leads[].firstname`", "string, when available"],
+        ["`leads[].lastname`", "string, when available"],
+        ["`leads[].profileUrl`", "string, when available"],
+        ["`leads[].jobTitle`", "string, when available"],
+        ["`leads[].companyName`", "string, when available"],
+        ["`next_cursor`", "string or null"]
+      ],
+      requestFragments: [
+        "At least one supported filter", "`query`", "`size`", "1 to 100", "defaults to `100`", "`cursor`",
+        "`include`", "`exclude`", "200 values", "Integer range", "`>`", "`>=`", "`<`", "`<=`",
+        "growth", "`6months`", "`12months`", "`24months`", "-100", "10000",
+        "`firstname`", "`totalYearsOfExperience`", "`currentCompanyName`", "`currentCompany.headcountGrowth`",
+        "`pastJobTitle`", "`pastCompany.headcountGrowth`", "## Pagination", "`next_cursor`"
+      ],
+      responseFragments: [
+        "`200 OK`", "`total`", "`leads`", "`next_cursor`", "## Count response", "`200 OK`", "`total`"
+      ],
+      exampleFragments: [
+        "https://api.airscale.io/v1/find-people", "https://api.airscale.io/v1/find-people/count"
+      ],
+      forbiddenPatterns: [
+        /\bsame prior role\b/i,
+        /\b(?:IcyPeas|Explorium|OpenAI|RapidAPI|Serper|Jina)\b/i,
+        /\b(?:provider prompt|internal prompt|cost telemetry|estimated_cost|airsearch_logs|icypeas_logs)\b/i
+      ],
+      requestExamples: [
+        {
+          label: "minimal person search",
+          shape: { query: { jobTitle: { include: [String] } } },
+          exact: true
+        },
+        {
+          label: "complete filter-family search",
+          shape: {
+            query: {
+              firstname: { include: [String] },
+              currentCompanyName: { include: [String] },
+              "currentCompany.headcountGrowth": { min: Number, timespan: "12months" },
+              pastJobTitle: { include: [String] },
+              "pastCompany.headcountGrowth": { max: Number, timespan: "24months" }
+            },
+            size: Number
+          },
+          exact: false
+        }
+      ],
+      responseExamples: [
+        {
+          label: "search result page",
+          shape: {
+            total: Number,
+            leads: [{
+              firstname: String,
+              lastname: String,
+              profileUrl: String,
+              jobTitle: String,
+              companyName: String
+            }],
+            next_cursor: String
+          },
+          exact: false
+        },
+        { label: "count result", shape: { total: Number }, exact: true }
+      ],
+      errorCauseFragments: {
+        "400 Bad Request": ["JSON", "`query`", "unsupported filter", "filter shape", "`size`", "`cursor`"],
+        "401 Unauthorized": ["Bearer token", "missing", "invalid"],
+        "403 Forbidden": ["Search", "fewer than 0.1 credits"],
+        "404 Not Found": ["method", "path"],
+        "413 Content Too Large": ["exceeds 256 KiB"],
+        "429 Too Many Requests": ["6 requests", "current second"],
+        "502 Bad Gateway": ["search service", "unreachable"],
+        "503 Service Unavailable": ["API-key validation", "credit service"]
+      },
+      errorRecoveryFragments: {
+        "400 Bad Request": ["details", "supported filter", "valid shape"],
+        "403 Forbidden": ["Add credits", "Search", "Count"],
+        "429 Too Many Requests": ["next second", "bounded exponential backoff"],
+        "503 Service Unavailable": ["same request", "bounded backoff"]
+      },
+      mutationLayer: "summary",
+      mutate: (source) => source.replace("0.1 credits per returned lead", "0.2 credits per returned lead"),
+      additionalMutations: {
+        request: (source) => source.replace("Maximum 200 values in each array.", "Maximum 201 values in each array."),
+        response: (source) => source.replace('"next_cursor": "fp_', '"next_page": "fp_'),
+        errors: (source) => source.replace("`413 Content Too Large`", "`414 URI Too Long`")
+      }
+    },
+    "api-reference/find-companies": {
+      description: "Search companies using firmographic, location, event, intent, and technology filters.",
+      errorsEndHeading: "Examples",
+      sectionOrder: [
+        "Contract summary", "Search and Filter-values endpoint comparison", "Request", "Filter field table",
+        "Filter discovery", "Pagination", "Response", "Errors", "Rate limits and credits", "Examples", "Next step"
+      ],
+      summaryRows: [
+        ["Authentication", "Bearer API key"],
+        ["Execution", "Synchronous"],
+        ["Rate limit", "6 requests per second per workspace"],
+        ["Request body limit", "256 KiB"],
+        ["Search credit cost", "0.1 credits per returned company; no charge when no companies are returned."],
+        ["Filter-values credit cost", "No charge."]
+      ],
+      requestRows: [
+        ["`filters`", "object", "Yes"],
+        ["`page`", "integer", "No"],
+        ["`size`", "integer", "No"],
+        ["`cursor`", "string", "No"],
+        ["`country`", "string or array of strings"],
+        ["`region`", "string or array of strings"],
+        ["`city`", "string or array of strings"],
+        ["`industry`", "string or array of strings"],
+        ["`size`", "string or array of strings"],
+        ["`revenue`", "string or array of strings"],
+        ["`age`", "string or array of strings"],
+        ["`techStack`", "string or array of strings"],
+        ["`keywords`", "string or array of strings"],
+        ["`topics`", "string or array of strings"],
+        ["`events`", "string or array of strings"],
+        ["`locations`", "string or array of strings"],
+        ["`companyName`", "string or array of strings"],
+        ["`eventWindow`", "string"],
+        ["`locationMatch`", "string"],
+        ["`hasWebsite`", "boolean or null"],
+        ["`isPublicCompany`", "boolean or null"],
+        ["`filter`", "string", "Yes"],
+        ["`q`", "string", "Yes"],
+        ["`limit`", "integer", "No"]
+      ],
+      responseRows: [
+        ["`rows`", "array"],
+        ["`total`", "number"],
+        ["`page`", "number"],
+        ["`size`", "number"],
+        ["`next_cursor`", "string or null"],
+        ["`rows[].name`", "string, when available"],
+        ["`rows[].domain`", "string, when available"],
+        ["`rows[].website`", "string, when available"],
+        ["`rows[].countryName`", "string, when available"],
+        ["`rows[].cityName`", "string, when available"],
+        ["`rows[].linkedinProfile`", "string, when available"]
+      ],
+      requestFragments: [
+        "At least one real filter", "`page`", "defaults to `0`", "`size`", "1 to 100", "defaults to `50`", "`cursor`",
+        "`country`", "`region`", "`city`", "`industry`", "`size`", "`revenue`", "`age`", "`techStack`",
+        "`keywords`", "`topics`", "`events`", "`locations`", "`companyName`", "`eventWindow`", "`locationMatch`",
+        "`hasWebsite`", "`isPublicCompany`", "## Filter discovery", "`city`", "`region`", "`industry`", "`topics`",
+        "`techStack`", "2 to 120 characters", "1 to 100", "## Pagination", "10,000 companies", "`fc_`"
+      ],
+      responseFragments: [
+        "`200 OK`", "sanitized", "`rows`", "`total`", "`page`", "`size`", "`next_cursor`"
+      ],
+      exampleFragments: [
+        "https://api.airscale.io/v1/find-companies", "https://api.airscale.io/v1/find-companies/filter-values"
+      ],
+      forbiddenPatterns: [
+        /\b(?:IcyPeas|Explorium|OpenAI|RapidAPI|Serper|Jina)\b/i,
+        /\b(?:provider prompt|internal prompt|cost telemetry|estimated_cost|airsearch_logs|icypeas_logs)\b/i
+      ],
+      requestExamples: [
+        {
+          label: "minimal company search",
+          shape: { filters: { country: [String] }, size: 25 },
+          exact: true
+        },
+        {
+          label: "complete company-filter search",
+          shape: {
+            filters: {
+              country: [String], region: [String], city: [String], industry: [String], size: [String],
+              revenue: [String], age: [String], techStack: [String], keywords: [String], topics: [String],
+              events: [String], locations: [String], companyName: [String], eventWindow: "60 days",
+              locationMatch: "hqOperating", hasWebsite: true, isPublicCompany: false
+            },
+            page: 0,
+            size: 25
+          },
+          exact: true
+        }
+      ],
+      responseExamples: [
+        {
+          label: "company result page",
+          shape: {
+            rows: [{
+              name: String, domain: String, website: String, countryName: String,
+              cityName: String, linkedinProfile: String
+            }],
+            total: Number,
+            page: Number,
+            size: Number,
+            next_cursor: String
+          },
+          exact: false
+        }
+      ],
+      errorCauseFragments: {
+        "400 Bad Request": ["JSON", "unknown filter", "unsupported value", "`size`", "`cursor`", "filter-values"],
+        "401 Unauthorized": ["Bearer token", "missing", "invalid"],
+        "403 Forbidden": ["Search", "fewer than 0.1 credits", "credit settlement"],
+        "413 Content Too Large": ["exceeds 256 KiB"],
+        "429 Too Many Requests": ["6 requests", "current second"],
+        "500 Internal Server Error": ["server configuration", "unexpected worker error"],
+        "502 Bad Gateway": ["API-key validation", "Search", "Filter-values"],
+        "503 Service Unavailable": ["credit service", "successful Search"]
+      },
+      errorRecoveryFragments: {
+        "400 Bad Request": ["message", "supported filter", "documented value"],
+        "403 Forbidden": ["Add credits", "retry Search"],
+        "429 Too Many Requests": ["next second", "bounded exponential backoff"],
+        "502 Bad Gateway": ["same request", "bounded backoff"],
+        "503 Service Unavailable": ["same filters", "credit service", "recovers"]
+      },
+      mutationLayer: "request",
+      mutate: (source) => source.replace("Must be from 1 to 100; defaults to `50`.", "Must be from 1 to 200; defaults to `50`."),
+      additionalMutations: {
+        summary: (source) => source.replace("0.1 credits per returned company", "0.2 credits per returned company"),
+        response: (source) => source.replace('"total": 240', '"total": "240"'),
+        errors: (source) => source.replace("`502 Bad Gateway`", "`504 Gateway Timeout`")
+      }
+    },
+    "api-reference/airsearch": {
+      description: "Research the web and return structured answers with Airsearch.",
+      errorsEndHeading: "Examples",
+      sectionOrder: [
+        "Contract summary", "Request", "Top-level fields", "Schema types", "Response",
+        "Success and not-found cases", "Errors", "Rate limits and credits", "Examples", "Next step"
+      ],
+      summaryRows: [
+        ["Authentication", "Bearer API key"],
+        ["Execution", "Synchronous"],
+        ["Rate limit", "300 requests per minute per workspace"],
+        ["Request body limit", "256 KiB"],
+        ["Airscale credit cost", "1 credit only for `status: \"success\"`; `not_found` and `timeout` are not charged."]
+      ],
+      requestRows: [
+        ["`prompt`", "string", "Yes"],
+        ["`schema`", "object", "No"],
+        ["`string`", "Text value"],
+        ["`text`", "Text value"],
+        ["`url`", "Full HTTP or HTTPS URL"],
+        ["`email`", "Email address"],
+        ["`number`", "Numeric value"],
+        ["`int`", "Integer number"],
+        ["`float`", "Decimal number"],
+        ["`boolean`", "Boolean value"],
+        ["`date`", "Date value"],
+        ["`phone`", "Phone number"]
+      ],
+      responseRows: [
+        ["`status`", "string"],
+        ["`response`", "string or object"],
+        ["Requested schema keys", "value or null"],
+        ["`reasoning`", "string or null"],
+        ["`sources`", "array"],
+        ["`confidence_score`", "number"],
+        ["`certainty_tag`", "string"],
+        ["`duration_ms`", "number"]
+      ],
+      requestFragments: [
+        "minimal valid request", "non-empty", "`prompt`", "optional", "`schema`", "output field names",
+        "`string`", "`text`", "`url`", "`email`", "`number`", "`int`", "`float`", "`boolean`", "`date`", "`phone`"
+      ],
+      responseFragments: [
+        "`200 OK`", "`success`", "`not_found`", "`timeout`", "`response`", "Requested schema keys",
+        "`reasoning`", "`sources`", "`confidence_score`", "`certainty_tag`", "`duration_ms`",
+        "## Success and not-found cases", "`success`", "`not_found`", "not charged", "`timeout`", "not charged"
+      ],
+      exampleFragments: ["https://api.airscale.io/v1/airsearch"],
+      forbiddenPatterns: [
+        /\b(?:IcyPeas|Explorium|OpenAI|RapidAPI|Serper|Jina)\b/i,
+        /\b(?:provider prompt|internal prompt|cost telemetry|estimated_cost|airsearch_logs|icypeas_logs)\b/i
+      ],
+      requestExamples: [
+        { label: "minimal research request", shape: { prompt: String }, exact: true },
+        {
+          label: "structured research request",
+          shape: {
+            prompt: String,
+            schema: { company_name: "string", website: "url", founded_year: "int" }
+          },
+          exact: true
+        }
+      ],
+      responseExamples: [
+        {
+          label: "structured success",
+          shape: {
+            status: "success", response: String, company_name: String, website: String, founded_year: Number,
+            reasoning: String, sources: [String], confidence_score: Number, certainty_tag: "high", duration_ms: Number
+          },
+          exact: true
+        },
+        {
+          label: "not-found result",
+          shape: {
+            status: "not_found", response: "No relevant information found.", company_name: null, website: null,
+            founded_year: null, reasoning: null, sources: [], confidence_score: Number, certainty_tag: "low", duration_ms: Number
+          },
+          exact: true
+        },
+        {
+          label: "soft-timeout result",
+          shape: {
+            status: "timeout", response: "No relevant information found.", company_name: null, website: null,
+            founded_year: null, reasoning: null, sources: [], confidence_score: Number, certainty_tag: "low", duration_ms: Number
+          },
+          exact: true
+        }
+      ],
+      errorCauseFragments: {
+        "400 Bad Request": ["JSON", "missing", "empty", "`prompt`"],
+        "401 Unauthorized": ["Bearer token", "missing", "invalid"],
+        "403 Forbidden": ["fewer than 1 credit", "credit reservation"],
+        "413 Content Too Large": ["exceeds 256 KiB"],
+        "429 Too Many Requests": ["300 requests", "current minute"],
+        "500 Internal Server Error": ["Research processing", "unexpected worker error"],
+        "502 Bad Gateway": ["API-key validation", "unavailable"],
+        "503 Service Unavailable": ["credit service", "reservation"],
+        "504 Gateway Timeout": ["initial research stage", "timed out"]
+      },
+      errorRecoveryFragments: {
+        "400 Bad Request": ["valid JSON", "non-empty `prompt`"],
+        "403 Forbidden": ["Add credits", "retry"],
+        "429 Too Many Requests": ["minute window", "bounded exponential backoff"],
+        "503 Service Unavailable": ["same request", "credit service", "recovers"],
+        "504 Gateway Timeout": ["narrower prompt", "retry"]
+      },
+      mutationLayer: "response",
+      mutate: (source) => source.replace('"status": "not_found"', '"status": "empty"'),
+      additionalMutations: {
+        request: (source) => source.replace('"website": "url"', '"website": "uri"'),
+        summary: (source) => source.replace("1 credit only for", "2 credits only for"),
+        errors: (source) => source.replace("| `504 Gateway Timeout` |", "| `408 Request Timeout` |")
+      }
+    }
+  };
+  const manifest = JSON.parse(readFileSync("contracts/public-api-contracts.json", "utf8"));
+  const mutationLayers = new Set(Object.values(contracts).flatMap((contract) => [
+    contract.mutationLayer,
+    ...Object.keys(contract.additionalMutations ?? {})
+  ]));
+  assert.deepEqual([...mutationLayers].sort(), ["errors", "request", "response", "summary"]);
+
+  for (const [path, contract] of Object.entries(contracts)) {
+    assertEndpointPageContentSystem(path, contract, manifest);
+
+    for (const [mutationName, mutate] of Object.entries(contract.additionalMutations ?? {})) {
+      const source = readPage(path).source;
+      const mutatedSource = mutate(source);
+      assert.notEqual(mutatedSource, source, `${path} ${mutationName} mutation must change the contract`);
+      assert.throws(
+        () => assertEndpointPageContract(mutatedSource, contract, `${path} ${mutationName} mutation`),
+        `${path} must reject ${mutationName}`
+      );
+    }
+  }
 });
 
 test("contact data pages follow the endpoint content system", () => {
