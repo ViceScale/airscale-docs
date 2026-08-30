@@ -1,0 +1,9 @@
+{
+  "name": "airscale-docs",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "node --test tests/*.test.mjs",
+    "validate": "npm test && npx mint validate"
+  }
+}

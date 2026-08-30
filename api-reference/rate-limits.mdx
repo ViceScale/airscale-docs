@@ -1,8 +1,31 @@
 ---
 title: "Rate limits"
+description: "Understand endpoint-specific request limits and 429 responses."
 ---
 
-The API rate limit is **3000 API calls per minute**
+Airscale rate limits are endpoint-specific. Each endpoint can enforce a different request limit and time window, so use the value documented on the endpoint page you are calling.
 
-**Note** : If you’re a technology partner and want to increase your rate limit or the queue size (number of contacts handled in parallel), feel free to reach out to us
+## Handle rate-limit responses
 
+When a request exceeds an endpoint's limit, the API returns `429 Too Many Requests`. Treat the status code as the rate-limit signal; do not depend on an error field or response header unless that endpoint page documents it.
+
+Only retry when the endpoint page says the operation is safe to retry. Use bounded exponential backoff: cap both the maximum delay and the total number of attempts, then surface a persistent `429` to your application.
+
+## Check an endpoint's limit
+
+Review the request limit on the endpoint page before setting concurrency:
+
+<CardGroup cols={2}>
+  <Card title="Find people" href="/api-reference/find-people">
+    People search limits and request contract.
+  </Card>
+  <Card title="Find companies" href="/api-reference/find-companies">
+    Company search limits and request contract.
+  </Card>
+  <Card title="Email finder" href="/api-reference/email-finder">
+    Professional email lookup limits and request contract.
+  </Card>
+  <Card title="Airsearch" href="/api-reference/airsearch">
+    Airsearch limits and request contract.
+  </Card>
+</CardGroup>
