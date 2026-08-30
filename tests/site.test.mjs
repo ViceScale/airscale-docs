@@ -24,7 +24,8 @@ function hasUnsafeBearerAuthorization(source) {
   const hasUnsafeAssignment = Array.from(source.matchAll(AIRSCALE_API_KEY_ASSIGNMENT)).some(([, , quotedValue, unquotedValue]) => {
     const value = (quotedValue ?? unquotedValue ?? "").trim();
     const isDynamicShellValue = /^\$(?:[A-Za-z_][A-Za-z0-9_]*|\{[A-Za-z_][A-Za-z0-9_]*\})$/.test(value);
-    return Boolean(value) && !APPROVED_BEARER_VALUES.has(value) && !isDynamicShellValue;
+    const isDynamicEnvironmentValue = /^(?:process\.env\.AIRSCALE_API_KEY|os\.environ\[(?:"AIRSCALE_API_KEY"|'AIRSCALE_API_KEY')\])$/.test(value);
+    return Boolean(value) && !APPROVED_BEARER_VALUES.has(value) && !isDynamicShellValue && !isDynamicEnvironmentValue;
   });
   if (hasUnsafeAssignment) return true;
 
@@ -38,7 +39,7 @@ function hasUnsafeBearerAuthorization(source) {
         .replace(/["'`][)\]}>},;|.!?]*$/, "")
         .replace(/^["'`]+|[)\]"'`,;|.!?]+$/g, "")
         .trim();
-      const isDynamicExpression = /^(?:\$\{[A-Za-z_$][\w$]*\}|\{[A-Za-z_$][\w$]*(?:(?:\.[A-Za-z_$][\w$]*)|(?:\[(?:"[^"]+"|'[^']+'|[A-Za-z_$][\w$]*)\]))*\})$/.test(strippedValue) || /^["'`]\+[A-Za-z_$][\w$]*(?:[)\],;]|$)/.test(value);
+      const isDynamicExpression = /^(?:\$\{[A-Za-z_$][\w$]*\}|\{[A-Za-z_$][\w$]*(?:(?:\.[A-Za-z_$][\w$]*)|(?:\[(?:"[^"]+"|'[^']+'|[A-Za-z_$][\w$]*)\]))*\}|\{os\.getenv\((?:"AIRSCALE_API_KEY"|'AIRSCALE_API_KEY')\)\})$/.test(strippedValue) || /^["'`]\+[A-Za-z_$][\w$]*(?:[)\],;]|$)/.test(value);
       return Boolean(strippedValue) && strippedValue.toLowerCase() !== "authentication" && !isDynamicExpression && !APPROVED_BEARER_VALUES.has(strippedValue);
     });
 }
@@ -189,7 +190,10 @@ test("authorization bearer checks reject unsafe token formats", () => {
   assert.equal(hasUnsafeBearerAuthorization("const headers = { Authorization: `Bearer ${apiKey}` };"), false);
   assert.equal(hasUnsafeBearerAuthorization('export AIRSCALE_API_KEY="YOUR_API_KEY"'), false);
   assert.equal(hasUnsafeBearerAuthorization('export AIRSCALE_API_KEY="$SECRET_FROM_VAULT"'), false);
+  assert.equal(hasUnsafeBearerAuthorization("AIRSCALE_API_KEY = process.env.AIRSCALE_API_KEY"), false);
+  assert.equal(hasUnsafeBearerAuthorization('AIRSCALE_API_KEY = os.environ["AIRSCALE_API_KEY"]'), false);
   assert.equal(hasUnsafeBearerAuthorization('headers={"Authorization": f"Bearer {api_key}"}'), false);
+  assert.equal(hasUnsafeBearerAuthorization('headers={"Authorization": f"Bearer {os.getenv(\'AIRSCALE_API_KEY\')}"}'), false);
   assert.equal(hasUnsafeBearerAuthorization("req.Header.Set(\"Authorization\", \"Bearer \"+apiKey)"), false);
   assert.equal(hasUnsafeBearerAuthorization("headers = { Authorization: 'Bearer ' . $apiKey };"), false);
   assert.equal(hasUnsafeBearerAuthorization("Authorization supports Bearer authentication."), false);
