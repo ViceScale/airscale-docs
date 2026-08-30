@@ -49,24 +49,24 @@ Send JSON with `Content-Type: application/json`.
 | `prompt` | string | Yes | Non-empty research question or instruction. Surrounding whitespace is removed. |
 | `schema` | object | No | Maps output field names to type keywords or plain-language descriptions. |
 
-When `schema` is omitted, Airsearch chooses useful fields from the prompt and always returns the common response envelope. When it is present, each requested key is added at the top level of the response; an unavailable value can be `null`.
+When `schema` is omitted, Airsearch chooses useful fields from the prompt and returns the common response envelope. When it is present, requested keys can be added at the top level, but clients must treat each one as optional and nullable.
 
 ## Schema types
 
-Schema keys are your output field names. Values can use a supported type keyword or a short plain-language description.
+Schema keys are your output field names. Values can use a supported keyword or a short plain-language description. These keywords are extraction and format hints; they do not guarantee native JSON scalar types. Structured values are requested as strings and can be `null` when no valid value is available.
 
-| Type | Meaning | Validation behavior |
+| Keyword | Extraction or format hint | Returned structured value |
 | --- | --- | --- |
-| `string` | Text value | No additional format validation. |
-| `text` | Text value | Alias for free text. |
-| `url` | Full HTTP or HTTPS URL | A returned string without an HTTP scheme is changed to `null`. |
-| `email` | Email address | A returned string must contain a valid address shape. |
-| `number` | Numeric value | Requests a number. |
-| `int` | Integer number | Requests an integer. |
-| `float` | Decimal number | Requests a decimal. |
-| `boolean` | Boolean value | Requests `true` or `false`. |
-| `date` | Date value | Requests a date; ISO `YYYY-MM-DD` is preferred. |
-| `phone` | Phone number | Requests a number with country code. |
+| `string` | Text value | String or null, when present. |
+| `text` | Text value | String or null, when present. |
+| `url` | Full HTTP or HTTPS URL | String or null, when present; a string without an HTTP scheme is changed to `null`. |
+| `email` | Email address | String or null, when present; an invalid email-shaped string is changed to `null`. |
+| `number` | Numeric value | Numeric-looking string or null, when present. |
+| `int` | Integer number | Integer-looking string or null, when present. |
+| `float` | Decimal number | Decimal-looking string or null, when present. |
+| `boolean` | Boolean value | Boolean-looking string or null, when present. |
+| `date` | Date value | String or null, when present; invalid date strings are changed to `null`. |
+| `phone` | Phone number | Phone-shaped string or null, when present. |
 
 For a domain-specific output, use a description such as `"funding_usd": "Total funding in USD as a number"`.
 
@@ -78,7 +78,7 @@ A completed request returns `200 OK` with one of three result statuses: `success
 | --- | --- | --- |
 | `status` | string | `success`, `not_found`, or `timeout`. |
 | `response` | string or object | Primary answer, or structured fallback data when no narrative is available. |
-| Requested schema keys | value or null | One top-level field for each requested schema key. |
+| Requested schema keys | string or null, when present | Optional top-level fields shaped by the requested schema. |
 | `reasoning` | string or null | Concise basis for the returned answer. |
 | `sources` | array | Source URLs used for the answer. |
 | `confidence_score` | number | Overall confidence from 0 through 1. |
@@ -89,7 +89,7 @@ A completed request returns `200 OK` with one of three result statuses: `success
 
 ### Success
 
-`success` means Airsearch produced a usable result. A structured success includes the requested schema keys and costs 1 credit.
+`success` means Airsearch produced a usable result and costs 1 credit. Requested schema keys may be omitted from a successful response. When present, structured scalar values are a string or `null`; clients must explicitly parse or coerce numeric and boolean strings when native types are required.
 
 ```json
 {
@@ -97,7 +97,7 @@ A completed request returns `200 OK` with one of three result statuses: `success
   "response": "Northstar Labs builds workflow automation software.",
   "company_name": "Northstar Labs",
   "website": "https://northstar.example",
-  "founded_year": 2024,
+  "founded_year": "2024",
   "reasoning": "The company website describes the product and founding date.",
   "sources": [
     "https://northstar.example/about"
@@ -108,9 +108,26 @@ A completed request returns `200 OK` with one of three result statuses: `success
 }
 ```
 
+A successful response can omit requested keys whose values are unavailable. This example omits `website` and `founded_year` instead of inserting them:
+
+```json
+{
+  "status": "success",
+  "response": "Northstar Labs builds workflow automation software.",
+  "company_name": "Northstar Labs",
+  "reasoning": "The available source supports the company name and product category.",
+  "sources": [
+    "https://northstar.example/about"
+  ],
+  "confidence_score": 0.72,
+  "certainty_tag": "medium",
+  "duration_ms": 7910
+}
+```
+
 ### Not found
 
-`not_found` means the completed research did not produce enough usable data. It returns `200 OK` and is not charged.
+`not_found` means the completed research did not produce enough usable data. It returns `200 OK` and is not charged. Empty-result handling can include requested keys as `null`, as shown below.
 
 ```json
 {

@@ -169,11 +169,38 @@ Filter-values accepts the following query parameters:
 | --- | --- | --- | --- |
 | `filter` | string | Yes | `city`, `region`, `industry`, `topics`, or `techStack`. |
 | `q` | string | Yes | Search text from 2 to 120 characters. `query` is also accepted. |
-| `limit` | integer | No | Number of values from 1 to 100; defaults to `20`. |
+| `limit` | integer | No | Omitted, non-numeric, or non-integer values default to `20`; integers below `1` clamp to `1`, and integers above `100` clamp to `100`. |
 | `country` | string | No | Repeat or comma-separate country context. |
 | `region` | string | No | Repeat or comma-separate region context. A bare region name needs country context. |
 
-The response identifies the filter and query and returns normalized options. Location options can also include `city`, `region`, `countryCode`, and `regionCode`.
+The response identifies the filter and query and returns normalized options. Option fields depend on whether values come from a local canonical list or autocomplete.
+
+| Field | Type | Presence | Description |
+| --- | --- | --- | --- |
+| `label` | string | Always | Display text for the option. |
+| `value` | string | Always | Value to send in a Search filter. |
+| `query` | string | Autocomplete options only | Autocomplete query associated with the option. |
+| `city` | string | City options, when resolved | Parsed city name. |
+| `region` | string | City or region options, when resolved | Parsed region label. |
+| `countryCode` | string | City or region options, when resolved | Lowercase ISO alpha-2 country code. |
+| `regionCode` | string | City or region options, when resolved | Canonical region code such as `us-ca`. |
+
+Local industry and topic options contain only `label` and `value`:
+
+```json
+{
+  "filter": "industry",
+  "query": "software",
+  "values": [
+    {
+      "label": "data security software products",
+      "value": "data security software products"
+    }
+  ]
+}
+```
+
+Autocomplete location options include `query` and any location metadata that can be resolved:
 
 ```json
 {

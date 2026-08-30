@@ -262,7 +262,7 @@ function assertEndpointPageContract(source, contract, path) {
   }
 
   const requestExamples = jsonPayloads(request, `${path} request`);
-  for (const example of contract.requestExamples) {
+  for (const example of [...contract.requestExamples, ...(contract.requestSectionExamples ?? [])]) {
     assert.ok(
       requestExamples.some((payload) => matchesJsonShape(payload, example.shape, example.exact)),
       `${path} must include a ${example.label} request payload`
@@ -900,7 +900,17 @@ test("search and discovery pages preserve their complete contracts", () => {
         ["`isPublicCompany`", "boolean or null"],
         ["`filter`", "string", "Yes"],
         ["`q`", "string", "Yes"],
-        ["`limit`", "integer", "No"]
+        [
+          "`limit`", "integer", "No",
+          "Omitted, non-numeric, or non-integer values default to `20`; integers below `1` clamp to `1`, and integers above `100` clamp to `100`."
+        ],
+        ["`label`", "string", "Always"],
+        ["`value`", "string", "Always"],
+        ["`query`", "string", "Autocomplete options only"],
+        ["`city`", "string", "City options, when resolved"],
+        ["`region`", "string", "City or region options, when resolved"],
+        ["`countryCode`", "string", "City or region options, when resolved"],
+        ["`regionCode`", "string", "City or region options, when resolved"]
       ],
       responseRows: [
         ["`rows`", "array"],
@@ -920,7 +930,9 @@ test("search and discovery pages preserve their complete contracts", () => {
         "`country`", "`region`", "`city`", "`industry`", "`size`", "`revenue`", "`age`", "`techStack`",
         "`keywords`", "`topics`", "`events`", "`locations`", "`companyName`", "`eventWindow`", "`locationMatch`",
         "`hasWebsite`", "`isPublicCompany`", "## Filter discovery", "`city`", "`region`", "`industry`", "`topics`",
-        "`techStack`", "2 to 120 characters", "1 to 100", "## Pagination", "10,000 companies", "`fc_`"
+        "`techStack`", "2 to 120 characters", "`limit`", "non-numeric", "non-integer", "default to `20`",
+        "below `1`", "clamp to `1`", "above `100`", "clamp to `100`", "`label`", "Always", "`value`",
+        "Autocomplete options only", "## Pagination", "10,000 companies", "`fc_`"
       ],
       responseFragments: [
         "`200 OK`", "sanitized", "`rows`", "`total`", "`page`", "`size`", "`next_cursor`"
@@ -949,6 +961,29 @@ test("search and discovery pages preserve their complete contracts", () => {
             },
             page: 0,
             size: 25
+          },
+          exact: true
+        }
+      ],
+      requestSectionExamples: [
+        {
+          label: "local filter-value option",
+          shape: {
+            filter: "industry",
+            query: "software",
+            values: [{ label: "data security software products", value: "data security software products" }]
+          },
+          exact: true
+        },
+        {
+          label: "autocomplete location option",
+          shape: {
+            filter: "city",
+            query: "san",
+            values: [{
+              query: "san", label: "San Francisco", value: "San Francisco, CA, US",
+              city: "San Francisco", region: "CA", regionCode: "us-ca", countryCode: "us"
+            }]
           },
           exact: true
         }
@@ -991,7 +1026,8 @@ test("search and discovery pages preserve their complete contracts", () => {
       additionalMutations: {
         summary: (source) => source.replace("0.1 credits per returned company", "0.2 credits per returned company"),
         response: (source) => source.replace('"total": 240', '"total": "240"'),
-        errors: (source) => source.replace("`502 Bad Gateway`", "`504 Gateway Timeout`")
+        errors: (source) => source.replace("`502 Bad Gateway`", "`504 Gateway Timeout`"),
+        "filter-values limit coercion": (source) => source.replace("integers below `1` clamp to `1`", "integers below `1` are rejected")
       }
     },
     "api-reference/airsearch": {
@@ -1025,7 +1061,7 @@ test("search and discovery pages preserve their complete contracts", () => {
       responseRows: [
         ["`status`", "string"],
         ["`response`", "string or object"],
-        ["Requested schema keys", "value or null"],
+        ["Requested schema keys", "string or null, when present"],
         ["`reasoning`", "string or null"],
         ["`sources`", "array"],
         ["`confidence_score`", "number"],
@@ -1034,17 +1070,21 @@ test("search and discovery pages preserve their complete contracts", () => {
       ],
       requestFragments: [
         "minimal valid request", "non-empty", "`prompt`", "optional", "`schema`", "output field names",
+        "extraction and format hints", "do not guarantee native JSON scalar types",
         "`string`", "`text`", "`url`", "`email`", "`number`", "`int`", "`float`", "`boolean`", "`date`", "`phone`"
       ],
       responseFragments: [
         "`200 OK`", "`success`", "`not_found`", "`timeout`", "`response`", "Requested schema keys",
         "`reasoning`", "`sources`", "`confidence_score`", "`certainty_tag`", "`duration_ms`",
-        "## Success and not-found cases", "`success`", "`not_found`", "not charged", "`timeout`", "not charged"
+        "## Success and not-found cases", "`success`", "may be omitted", "string", "null", "parse or coerce",
+        "`not_found`", "not charged", "`timeout`", "not charged"
       ],
       exampleFragments: ["https://api.airscale.io/v1/airsearch"],
       forbiddenPatterns: [
         /\b(?:IcyPeas|Explorium|OpenAI|RapidAPI|Serper|Jina)\b/i,
-        /\b(?:provider prompt|internal prompt|cost telemetry|estimated_cost|airsearch_logs|icypeas_logs)\b/i
+        /\b(?:provider prompt|internal prompt|cost telemetry|estimated_cost|airsearch_logs|icypeas_logs)\b/i,
+        /requested schema keys? (?:is|are) always present/i,
+        /\b(?:number|int|float|boolean)\b[^\n.]*(?:returns?|is returned) as (?:a )?native JSON (?:number|integer|float|boolean)\b/i
       ],
       requestExamples: [
         { label: "minimal research request", shape: { prompt: String }, exact: true },
@@ -1061,8 +1101,16 @@ test("search and discovery pages preserve their complete contracts", () => {
         {
           label: "structured success",
           shape: {
-            status: "success", response: String, company_name: String, website: String, founded_year: Number,
+            status: "success", response: String, company_name: String, website: String, founded_year: String,
             reasoning: String, sources: [String], confidence_score: Number, certainty_tag: "high", duration_ms: Number
+          },
+          exact: true
+        },
+        {
+          label: "success with omitted requested keys",
+          shape: {
+            status: "success", response: String, company_name: String,
+            reasoning: String, sources: [String], confidence_score: Number, certainty_tag: "medium", duration_ms: Number
           },
           exact: true
         },
@@ -1106,16 +1154,19 @@ test("search and discovery pages preserve their complete contracts", () => {
       additionalMutations: {
         request: (source) => source.replace('"website": "url"', '"website": "uri"'),
         summary: (source) => source.replace("1 credit only for", "2 credits only for"),
-        errors: (source) => source.replace("| `504 Gateway Timeout` |", "| `408 Request Timeout` |")
+        errors: (source) => source.replace("| `504 Gateway Timeout` |", "| `408 Request Timeout` |"),
+        "numeric scalar output": (source) => source.replace('"founded_year": "2024"', '"founded_year": 2024'),
+        "universal schema keys claim": (source) => source.replace("Requested schema keys may be omitted", "Requested schema keys are always present")
       }
     }
   };
   const manifest = JSON.parse(readFileSync("contracts/public-api-contracts.json", "utf8"));
+  const contractLayers = ["errors", "request", "response", "summary"];
   const mutationLayers = new Set(Object.values(contracts).flatMap((contract) => [
     contract.mutationLayer,
-    ...Object.keys(contract.additionalMutations ?? {})
+    ...Object.keys(contract.additionalMutations ?? {}).filter((name) => contractLayers.includes(name))
   ]));
-  assert.deepEqual([...mutationLayers].sort(), ["errors", "request", "response", "summary"]);
+  assert.deepEqual([...mutationLayers].sort(), contractLayers);
 
   for (const [path, contract] of Object.entries(contracts)) {
     assertEndpointPageContentSystem(path, contract, manifest);
