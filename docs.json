@@ -1,0 +1,62 @@
+{
+  "$schema": "https://mintlify.com/docs.json",
+  "theme": "mint",
+  "name": "Airscale API Reference",
+  "colors": {
+    "primary": "#16A34A",
+    "light": "#07C983",
+    "dark": "#15803D"
+  },
+  "logo": {
+    "light": "https://mintlify.s3.us-west-1.amazonaws.com/airscale/logo/light.svg",
+    "dark": "https://mintlify.s3.us-west-1.amazonaws.com/airscale/logo/dark.svg"
+  },
+  "navbar": {
+    "links": [
+      {
+        "label": "Back to website",
+        "href": "https://airscale.io/"
+      }
+    ],
+    "primary": {
+      "type": "button",
+      "label": "Dashboard",
+      "href": "https://app.airscale.io/dashboard"
+    }
+  },
+  "navigation": {
+    "tabs": [
+      {
+        "tab": "API Reference",
+        "groups": [
+          {
+            "group": "Getting started",
+            "pages": [
+              "api-reference/api-overview",
+              "api-reference/authentication",
+              "api-reference/rate-limits"
+            ]
+          },
+          {
+            "group": "API Endpoints",
+            "pages": [
+              "api-reference/credit-count",
+              "api-reference/email-finder",
+              "api-reference/email-finder-(bulk)",
+              "api-reference/mobile-finder",
+              "api-reference/personal-email",
+              "api-reference/people-url-finder",
+              "api-reference/extract-people-profile",
+              "api-reference/extract-company-profile",
+              "api-reference/reverse-email",
+              "api-reference/reverse-phone",
+              "api-reference/find-people",
+              "api-reference/find-companies",
+              "api-reference/airsearch"
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}

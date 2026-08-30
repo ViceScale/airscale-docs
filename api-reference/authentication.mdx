@@ -1,0 +1,18 @@
+---
+title: "Authentication"
+---
+
+To ensure the security of your data and to authenticate requests, Airscale API uses Bearer Authentication. Each request to our API endpoints must include this authorization header
+
+Here’s how to include your API key in your request:
+
+```text
+Authorization: Bearer YOUR_API_KEY
+```
+
+Be sure to replace YOUR_API_KEY with the actual API key from your dashboard. Without a valid API key in your request, you will not be able to access the API endpoints and will receive a 401 unauthorized response
+
+Keep your API key secure and do not share it publicly
+
+If you suspect that your API key has been compromised, you should regenerate it immediately from your account dashboard to prevent unauthorized access
+

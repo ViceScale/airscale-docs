@@ -1,0 +1,264 @@
+---
+title: "Email Finder (Bulk)"
+---
+
+Use this endpoint to find the email for multiple contacts in a single request
+
+### Endpoint
+
+```text
+POST https://api.airscale.io/v1/email-bulk
+```
+
+### Headers
+
+| Key | Value | Required |
+| --- | --- | --- |
+| Content-Type | application/json | Yes |
+| Authorization | Bearer &lt;YOUR_API_KEY&gt; | Yes |
+
+### Request Body
+
+```json
+{
+  "webhook_url": "https://your-site.com/webhook",
+  "inputs": [
+    {
+      "custom_id": "contact_001",
+      "first_name": "John",
+      "last_name": "Smith",
+      "domain": "acme.com",
+      "company_name": "Acme Corp",
+      "linkedin_profile_url": "https://www.linkedin.com/in/johnsmith"
+    },
+    {
+      "custom_id": "contact_002",
+      "first_name": "Jane",
+      "last_name": "Doe",
+      "domain": "globex.com",
+      "company_name": "Globex",
+      "linkedin_profile_url": null
+    }
+  ]
+}
+```
+
+**Top-level fields**
+
+| Field | Type | Required |
+| --- | --- | --- |
+| webhook_url | string | Yes |
+| inputs | array | Yes |
+
+**Option 1: Name + Company name or Domain**
+
+| Field | Type | Required |
+| --- | --- | --- |
+| custom_id | string | No |
+| first_name | string | Yes |
+| last_name | string | Yes |
+| domain | string | Only if: company_name is empty |
+| company_name | string | Only if: domain is empty |
+| linkedin_profile_url | string | No |
+
+**Option 2: LinkedIn profile URL**
+
+| Field | Type | Required |
+| --- | --- | --- |
+| custom_id | string | No |
+| linkedin_profile_url | string | Yes |
+| first_name | string | No |
+| last_name | string | No |
+| domain | string | No |
+| company_name | string | No |
+
+### Response
+
+**Successful Immediate Response (200)**
+
+```json
+{ "status": "accepted", "count": 2 }
+```
+
+**Async Webhook (email found)**
+
+```json
+{
+  "custom_id": "contact_001",
+  "status": "success",
+  "email": "john.smith@acme.com",
+  "email_status": "valid",
+  "provider": "Prospeo",
+  "verifier": "Bounceban"
+}
+```
+
+**Async Webhook (email not found)**
+
+```json
+{
+  "custom_id": "contact_002",
+  "status": "not_found",
+  "email": null
+}
+```
+
+### Limits
+
+> Limits
+> 📦 Maximum 100 inputs / payloads per request
+> ⚠️ Maximum 3,000 inputs / payloads per minute
+
+### Example Usage
+
+**cURL**
+
+```bash
+curl -X POST "https://api.airscale.io/v1/email-bulk" \
+  -H "Authorization: Bearer YOUR_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+        "webhook_url": "https://your-site.com/webhook",
+        "inputs": [
+          {
+            "custom_id": "contact_001",
+            "first_name": "Victor",
+            "last_name": "Detraz",
+            "domain": "airscale.io",
+            "company_name": "Airscale",
+            "linkedin_profile_url": "https://www.linkedin.com/in/vdetraz/"
+          }
+        ]
+      }'
+```
+
+**Python**
+
+```python
+import requests
+
+response = requests.post(
+    "https://api.airscale.io/v1/email-bulk",
+    headers={
+        "Authorization": "Bearer YOUR_API_KEY",
+        "Content-Type": "application/json"
+    },
+    json={
+        "webhook_url": "https://your-site.com/webhook",
+        "inputs": [
+            {
+                "custom_id": "contact_001",
+                "first_name": "Victor",
+                "last_name": "Detraz",
+                "domain": "airscale.io",
+                "company_name": "Airscale",
+                "linkedin_profile_url": "https://www.linkedin.com/in/vdetraz/"
+            }
+        ]
+    }
+)
+print(response.status_code, response.json())
+```
+
+**JavaScript (Fetch)**
+
+```javascript
+fetch("https://api.airscale.io/v1/email-bulk", {
+  method: "POST",
+  headers: {
+    "Authorization": "Bearer YOUR_API_KEY",
+    "Content-Type": "application/json"
+  },
+  body: JSON.stringify({
+    webhook_url: "https://your-site.com/webhook",
+    inputs: [
+      {
+        custom_id: "contact_001",
+        first_name: "Victor",
+        last_name: "Detraz",
+        domain: "airscale.io",
+        company_name: "Airscale",
+        linkedin_profile_url: "https://www.linkedin.com/in/vdetraz/"
+      }
+    ]
+  })
+})
+  .then(res => res.json())
+  .then(data => console.log(data))
+  .catch(err => console.error("Error:", err));
+```
+
+**PHP**
+
+```php
+<?php
+$ch = curl_init("https://api.airscale.io/v1/email-bulk");
+
+curl_setopt_array($ch, [
+  CURLOPT_RETURNTRANSFER => true,
+  CURLOPT_POST           => true,
+  CURLOPT_HTTPHEADER     => [
+    "Authorization: Bearer YOUR_API_KEY",
+    "Content-Type: application/json"
+  ],
+  CURLOPT_POSTFIELDS => json_encode([
+    "webhook_url" => "https://your-site.com/webhook",
+    "inputs" => [
+      [
+        "custom_id"            => "contact_001",
+        "first_name"           => "Victor",
+        "last_name"            => "Detraz",
+        "domain"               => "airscale.io",
+        "company_name"         => "Airscale",
+        "linkedin_profile_url" => "https://www.linkedin.com/in/vdetraz/"
+      ]
+    ]
+  ])
+]);
+
+echo curl_exec($ch);
+curl_close($ch);
+```
+
+**Go**
+
+```go
+package main
+
+import (
+  "bytes"
+  "encoding/json"
+  "fmt"
+  "io/ioutil"
+  "net/http"
+)
+
+func main() {
+  payload, _ := json.Marshal(map[string]interface{}{
+    "webhook_url": "https://your-site.com/webhook",
+    "inputs": []map[string]string{
+      {
+        "custom_id":            "contact_001",
+        "first_name":           "Victor",
+        "last_name":            "Detraz",
+        "domain":               "airscale.io",
+        "company_name":         "Airscale",
+        "linkedin_profile_url": "https://www.linkedin.com/in/vdetraz/",
+      },
+    },
+  })
+
+  req, _ := http.NewRequest("POST", "https://api.airscale.io/v1/email-bulk", bytes.NewBuffer(payload))
+  req.Header.Set("Authorization", "Bearer YOUR_API_KEY")
+  req.Header.Set("Content-Type", "application/json")
+
+  resp, err := (&http.Client{}).Do(req)
+  if err != nil {
+    panic(err)
+  }
+  defer resp.Body.Close()
+
+  body, _ := ioutil.ReadAll(resp.Body)
+  fmt.Println(string(body
+```
+

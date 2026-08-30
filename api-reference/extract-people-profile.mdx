@@ -1,0 +1,156 @@
+---
+title: "Extract people profile"
+---
+
+Use this endpoint to extract the people profile data
+
+### Endpoint
+
+```text
+POST https://api.airscale.io/v1/profile
+```
+
+### Headers
+
+| Key | Value | Required |
+| --- | --- | --- |
+| Content-Type | application/json | Yes |
+| Authorization | Bearer &lt;YOUR_API_KEY&gt; | Yes |
+
+### Request Body
+
+```json
+{
+     "linkedin_profile_url": "https://www.linkedin.com/in/vdetraz"
+}
+```
+
+| Field | Type | Required |
+| --- | --- | --- |
+| linkedin_profile_url | string | Yes |
+
+### Response
+
+**Successful Response (200)**
+
+```json
+{
+ "body": {
+        "url": "https://www.linkedin.com/in/vdetraz",
+        "identifier": "vdetraz", (...)
+}
+```
+
+### Example Usage
+
+**cURL**
+
+```bash
+curl -X POST "https://api.airscale.io/v1/profile" \
+  -H "Authorization: Bearer YOUR_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{"linkedin_profile_url":"https://linkedin.com/in/vdetraz"}'
+```
+
+**Python**
+
+```python
+import requests
+
+url = "https://api.airscale.io/v1/profile"
+headers = {
+    "Authorization": "Bearer YOUR_API_KEY",
+    "Content-Type": "application/json",
+}
+json_body = {
+    "linkedin_profile_url": "https://linkedin.com/in/vdetraz",
+    # "webhook_url": "https://your.app/receiveProfile",  # optional
+}
+
+resp = requests.post(url, headers=headers, json=json_body, timeout=60)
+print(resp.status_code, resp.text)
+```
+
+**JavaScript (Fetch)**
+
+```javascript
+// Node 18+ has global fetch
+const url = "https://api.airscale.io/v1/profile";
+
+async function run() {
+  const res = await fetch(url, {
+    method: "POST",
+    headers: {
+      "Authorization": "Bearer YOUR_API_KEY",
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      linkedin_profile_url: "https://linkedin.com/in/vdetraz",
+      // webhook_url: "https://your.app/receiveProfile", // optional
+    }),
+  });
+
+  const text = await res.text();
+  console.log(res.status, text);
+}
+
+run().catch(console.error);
+```
+
+**PHP**
+
+```php
+<?php
+$apiUrl = "https://api.airscale.io/v1/profile";
+$userApiKey = "YOUR_API_KEY"; // Replace with your Bearer key
+
+$payload = [
+    "linkedin_profile_url" => "https://linkedin.com/in/vdetraz"
+];
+
+$ch = curl_init($apiUrl);
+curl_setopt_array($ch, [
+    CURLOPT_POST => true,
+    CURLOPT_HTTPHEADER => [
+        "Authorization: Bearer " . $userApiKey,
+        "Content-Type: application/json"
+    ],
+    CURLOPT_POSTFIELDS => json_encode($payload),
+    CURLOPT_RETURNTRANSFER => true,
+    CURLOPT_TIMEOUT => 60
+]);
+
+$response = curl_exec($ch);
+if ($response === false) {
+    die("cURL Error: " . curl_error($ch))
+```
+
+**GO**
+
+```go
+package main
+
+import (
+	"bytes"
+	"fmt"
+	"io"
+	"net/http"
+	"time"
+)
+
+func main() {
+	body := []byte(`{"linkedin_profile_url":"https://linkedin.com/in/vdetraz"}`)
+	req, _ := http.NewRequest("POST", "https://api.airscale.io/v1/profile", bytes.NewBuffer(body))
+	req.Header.Set("Authorization", "Bearer YOUR_API_KEY")
+	req.Header.Set("Content-Type", "application/json")
+
+	client := &http.Client{Timeout: 60 * time.Second}
+	res, err := client.Do(req)
+	if err != nil {
+		panic(err)
+	}
+	defer res.Body.Close()
+	b, _ := io.ReadAll(res.Body)
+	fmt.Println(res.Status, string(b))
+}
+```

@@ -1,0 +1,254 @@
+---
+title: "Airsearch (AI research agent)"
+---
+
+Use this endpoint to fetch anything about a company or a prospect from a prompt. This endpoint has advanced web browsing capabilities.
+
+## Endpoint
+
+```text
+POST https://api.airscale.io/v1/airsearch
+```
+
+## Headers
+
+| Key | Value | Required |
+| --- | --- | --- |
+| Content-Type | application/json | Yes |
+| Authorization | Bearer &lt;YOUR_API_KEY&gt; | Yes |
+
+## Request Body
+
+```json
+{
+  "prompt": "Who is the CEO of Airscale and what is their LinkedIn URL?",
+  "schema": {
+    "name":         "string",
+    "linkedin_url": "url",
+    "email":        "email",
+    "company":      "string",
+    "founded_year": "int"
+  }
+}
+```
+
+### Top-level fields
+
+| Field | Type | Required | Description |
+| --- | --- | --- | --- |
+| prompt | string | Yes | Natural-language research question or instruction |
+| schema | object | No | Fields to extract. Keys are output field names, values are types. If omitted, the agent infers useful fields from the prompt. |
+
+### Schema types
+
+| Type | Description |
+| --- | --- |
+| string | Text value |
+| url | Full URL starting with https:// |
+| email | Email address |
+| number | Numeric value |
+| int | Integer number |
+| float | Decimal number |
+| boolean | true or false |
+| date | Date in YYYY-MM-DD format |
+| phone | Phone number with country code |
+
+> You can also pass a free-text description instead of a type keyword — e.g. "funding": "Total funding raised in USD, as a number".
+
+## Response
+
+### `POST /v1/airsearch` — 200 Success
+
+```json
+{
+  "status": "success",
+  "response": "The CEO of Airscale is Victor Detraz.",
+  "name": "Victor Detraz",
+  "linkedin_url": "https://www.linkedin.com/in/vdetraz",
+  "email": null,
+  "company": "Airscale",
+  "founded_year": "2024",
+  "confidence_score": 0.92,
+  "certainty_tag": "high",
+  "sources": [
+    "https://www.linkedin.com/in/vdetraz",
+    "https://airscale.io"
+  ],
+  "reasoning": "LinkedIn profile confirmed identity and current role. Company website corroborated.",
+  "duration_ms": 8412
+}
+```
+
+### `POST /v1/airsearch` — 200 Not found
+
+```json
+{
+  "status": "not_found",
+  "response": "No relevant information found.",
+  "confidence_score": 0.1,
+  "certainty_tag": "low",
+  "sources": [],
+  "duration_ms": 6103
+}
+```
+
+### Response fields
+
+| Field | Type | Description |
+| --- | --- | --- |
+| status | string | success, not_found, or timeout |
+| response | string | Primary answer in plain text |
+| (schema keys) | string \| null | One field per key from your schema. null if not found. |
+| confidence_score | number | Overall confidence from 0.0 to 1.0 |
+| certainty_tag | string | high (≥0.9), medium (0.5–0.9), low (&lt;0.5) |
+| sources | array | URLs used to produce the answer |
+| reasoning | string \| null | Agent's explanation of how it reached the answer |
+| duration_ms | number | Total processing time in milliseconds |
+
+### Error responses
+
+| Status | Meaning |
+| --- | --- |
+| 400 | Missing or invalid prompt |
+| 401 | Missing or invalid API key |
+| 403 | Insufficient credits |
+| 504 | Request timed out (&gt;50s) |
+
+## Credits
+
+| Outcome | Cost |
+| --- | --- |
+| Results found / Results not found | 1 credit |
+
+## Limits
+
+- ⏱ Requests per minute: 300
+
+## Example Usage
+
+### cURL
+
+```text
+curl -X POST "https://api.airscale.io/v1/airsearch" \
+  -H "Authorization: Bearer YOUR_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "prompt": "What is the funding raised by Mistral AI and who are their investors?",
+    "schema": {
+      "total_funding": "Total funding raised in USD",
+      "latest_round":  "string",
+      "investors":     "Comma-separated list of investors"
+    }
+  }'
+```
+
+### Python
+
+```text
+import requests
+
+response = requests.post(
+    "https://api.airscale.io/v1/airsearch",
+    headers={
+        "Authorization": "Bearer YOUR_API_KEY",
+        "Content-Type":  "application/json"
+    },
+    json={
+        "prompt": "What is the funding raised by Mistral AI and who are their investors?",
+        "schema": {
+            "total_funding": "Total funding raised in USD",
+            "latest_round":  "string",
+            "investors":     "Comma-separated list of investors"
+        }
+    }
+)
+print(response.status_code, response.json())
+```
+
+### JavaScript (Fetch)
+
+```text
+fetch("https://api.airscale.io/v1/airsearch", {
+  method: "POST",
+  headers: {
+    "Authorization": "Bearer YOUR_API_KEY",
+    "Content-Type":  "application/json"
+  },
+  body: JSON.stringify({
+    prompt: "What is the funding raised by Mistral AI and who are their investors?",
+    schema: {
+      total_funding: "Total funding raised in USD",
+      latest_round:  "string",
+      investors:     "Comma-separated list of investors"
+    }
+  })
+})
+  .then(res => res.json())
+  .then(data => console.log(data))
+  .catch(err => console.error("Error:", err));
+```
+
+### PHP
+
+```text
+<?php
+$ch = curl_init("https://api.airscale.io/v1/airsearch");
+
+curl_setopt_array($ch, [
+  CURLOPT_RETURNTRANSFER => true,
+  CURLOPT_POST           => true,
+  CURLOPT_HTTPHEADER     => [
+    "Authorization: Bearer YOUR_API_KEY",
+    "Content-Type: application/json"
+  ],
+  CURLOPT_POSTFIELDS => json_encode([
+    "prompt" => "What is the funding raised by Mistral AI and who are their investors?",
+    "schema" => [
+      "total_funding" => "Total funding raised in USD",
+      "latest_round"  => "string",
+      "investors"     => "Comma-separated list of investors"
+    ]
+  ])
+]);
+
+echo curl_exec($ch);
+curl_close($ch);
+```
+
+### Go
+
+```text
+package main
+
+import (
+  "bytes"
+  "encoding/json"
+  "fmt"
+  "io/ioutil"
+  "net/http"
+)
+
+func main() {
+  payload, _ := json.Marshal(map[string]interface{}{
+    "prompt": "What is the funding raised by Mistral AI and who are their investors?",
+    "schema": map[string]interface{}{
+      "total_funding": "Total funding raised in USD",
+      "latest_round":  "string",
+      "investors":     "Comma-separated list of investors",
+    },
+  })
+
+  req, _ := http.NewRequest("POST", "https://api.airscale.io/v1/airsearch", bytes.NewBuffer(payload))
+  req.Header.Set("Authorization", "Bearer YOUR_API_KEY")
+  req.Header.Set("Content-Type", "application/json")
+
+  resp, err := (&http.Client{}).Do(req)
+  if err != nil {
+    panic(err)
+  }
+  defer resp.Body.Close()
+
+  body, _ := ioutil.ReadAll(resp.Body)
+  fmt.Println(string(body
+```
+

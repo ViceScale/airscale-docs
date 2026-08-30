@@ -1,0 +1,137 @@
+---
+title: "Personal email finder"
+---
+
+Use this endpoint to find a personal email from a LinkedIn profile URL
+
+### Endpoint
+
+```text
+POST https://api.airscale.io/v1/personal-email
+```
+
+### Headers
+
+| Key | Value | Required |
+| --- | --- | --- |
+| Content-Type | application/json | Yes |
+| Authorization | Bearer &lt;YOUR_API_KEY&gt; | Yes |
+
+### Request Body
+
+```json
+{
+     "linkedin_profile_url": "https://linkedin.com/in/vdetraz"
+}
+```
+
+| Field | Type | Required |
+| --- | --- | --- |
+| email | string | Yes |
+
+### Response
+
+**Successful Response (200)**
+
+```json
+{
+ "status": "success",
+    "email": "detrazvictor@gmail.com"
+}
+```
+
+### Example Usage
+
+###### **cURL**
+
+```text
+curl -X POST https://api.airscale.io/v1/personal-email \
+  -H "Authorization: Bearer YOUR_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{"linkedin_profile_url": "https://www.linkedin.com/in/vdetraz"}'
+```
+
+###### **Python**
+
+```text
+import requests
+
+url = "https://api.airscale.io/v1/personal-email"
+headers = {
+    "Authorization": "Bearer YOUR_API_KEY",
+    "Content-Type": "application/json"
+}
+payload = {
+    "linkedin_profile_url": "https://www.linkedin.com/in/vdetraz"
+}
+
+response = requests.post(url, headers=headers, json=payload)
+print(response.json())
+```
+
+###### **JavaScript (Fetch)**
+
+```text
+const url = 'https://api.airscale.io/v1/personal-email';
+const headers = {
+  'Authorization': 'Bearer YOUR_API_KEY',
+  'Content-Type': 'application/json'
+};
+const payload = {
+  linkedin_profile_url: 'https://www.linkedin.com/in/vdetraz'
+};
+
+fetch(url, {
+  method: 'POST',
+  headers: headers,
+  body: JSON.stringify(payload)
+})
+  .then(response => response.json())
+  .then(data => console.log(data))
+  .catch(error => console.error('Error:', error));
+```
+
+###### **PHP**
+
+```text
+<
+```
+
+###### **GO**
+
+```text
+package main
+
+import (
+    "bytes"
+    "encoding/json"
+    "fmt"
+    "io/ioutil"
+    "net/http"
+)
+
+func main() {
+    url := "https://api.airscale.io/v1/personal-email"
+    
+    payload := map[string]string{
+        "linkedin_profile_url": "https://www.linkedin.com/in/vdetraz",
+    }
+    
+    jsonPayload, _ := json.Marshal(payload)
+    
+    req, _ := http.NewRequest("POST", url, bytes.NewBuffer(jsonPayload))
+    req.Header.Set("Authorization", "Bearer YOUR_API_KEY")
+    req.Header.Set("Content-Type", "application/json")
+    
+    client := &http.Client{}
+    resp, err := client.Do(req)
+    if err != nil {
+        panic(err)
+    }
+    defer resp.Body.Close()
+    
+    body, _ := ioutil.ReadAll(resp.Body)
+    fmt.Println(string(body))
+}
+```
+

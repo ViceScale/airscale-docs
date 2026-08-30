@@ -1,0 +1,329 @@
+---
+title: "Find People"
+---
+
+Search the Airscale people dataset with person-level and current-company filters, or count matching people without retrieving lead records.
+
+# Find People
+
+Search for people matching structured filters, or count them without spending credits.
+
+Source: [docs.airscale.io/api-reference/find-people](/api-reference/find-people)
+
+## Base URL
+
+```text
+https://api.airscale.io/v1
+```
+
+## Authentication
+
+All requests use bearer authentication:
+
+```text
+Authorization: Bearer YOUR_API_KEY
+```
+
+Generate your key in the Airscale dashboard under **Settings → API key**. API access requires a paid plan.
+
+A missing or invalid key returns `401 unauthorized`.
+
+## Endpoints
+
+| Method | Path | Purpose | Execution | Cost |
+| --- | --- | --- | --- | --- |
+| POST | /v1/find-people | Return lead records matching the filters | Synchronous | 0.1 credit per lead returned |
+| POST | /v1/find-people/count | Return only the number of matching leads | Synchronous | Free |
+
+Both endpoints accept the same `query` object. Neither takes path or query-string parameters.
+
+## Request body
+
+| Name | Type | Required | Description |
+| --- | --- | --- | --- |
+| query | object | Yes | Filter set. At least one filter is required. |
+| size | integer | No | Results per page. Min 1, max 100, default 100. Search only. |
+| cursor | string | No | Pagination token returned by the previous response. Search only. |
+
+`/v1/find-people/count` does not accept `size` or `cursor`.
+
+## Filters
+
+Every filter lives inside `query`. There are three filter shapes.
+
+### Include / exclude
+
+Most filters accept an object with `include` and/or `exclude` arrays of strings. Maximum 200 values per array.
+
+```json
+{ "jobTitle": { "include": ["CEO", "Founder"], "exclude": ["Intern"] } }
+```
+
+### Integer range
+
+Range filters accept one or more of the operators `&gt;`, `&gt;=`, `&lt;`, `&lt;=`. They do not accept `include` or `exclude`.
+
+```json
+{ "currentCompany.headcount": { ">": 10, "<=": 500 } }
+```
+
+### Headcount growth
+
+Growth filters take a required `timespan` plus at least one of `min` or `max`, expressed as a percentage between `-100` and `10000`.
+
+```json
+{
+  "currentCompany.headcountGrowth": { "min": 20, "max": 100, "timespan": "12months" }
+}
+```
+
+`timespan` must be `6months`, `12months`, or `24months`.
+
+### Person filters
+
+| Filter | Shape | Description |
+| --- | --- | --- |
+| firstname | include/exclude | First name |
+| lastname | include/exclude | Last name |
+| jobTitle | include/exclude | Current job title |
+| school | include/exclude | School name |
+| languages | include/exclude | Language name or ISO alpha-2 language code |
+| skills | include/exclude | Skill name |
+| location | include/exclude | The person's location or current-job location |
+| keyword | include/exclude | Free text searched across the person's profile |
+| totalYearsOfExperience | integer range | Total years of experience |
+| timeInCurrentCompany | integer range | Years spent at the current company |
+
+### Current company filters
+
+| Filter | Shape | Description |
+| --- | --- | --- |
+| currentCompanyName | include/exclude | Current company name |
+| companyDomain | include/exclude | Current company domain |
+| companyLinkedinUrl | include/exclude | Current company LinkedIn URL |
+| currentCompany.type | include/exclude | Company type, e.g. Privately Held |
+| currentCompany.industry | include/exclude | Company industry |
+| currentCompany.location | include/exclude | Company headquarters location |
+| currentCompany.keyword | include/exclude | Free text searched across the company profile |
+| currentCompany.headcount | integer range | Employee count |
+| currentCompany.revenue | integer range | Revenue |
+| currentCompany.headcountGrowth | growth | Headcount growth over a timespan |
+
+### Past experience filters
+
+| Filter | Shape | Description |
+| --- | --- | --- |
+| pastJobTitle | include/exclude | Title held in a prior role |
+| pastCompanyName | include/exclude | Prior employer name |
+| pastCompanyId | include/exclude | Prior employer identifier |
+| pastCompanyWebsite | include/exclude | Prior employer website or domain |
+| pastCompanyUrn | include/exclude | Prior employer URN |
+| pastCompany.type | include/exclude | Prior employer type |
+| pastCompany.industry | include/exclude | Prior employer industry |
+| pastCompany.location | include/exclude | Prior employer headquarters location |
+| pastCompany.keyword | include/exclude | Free text searched across the prior employer's profile |
+| pastCompany.headcount | integer range | Prior employer employee count |
+| pastCompany.revenue | integer range | Prior employer revenue |
+| pastCompany.headcountGrowth | growth | Prior employer headcount growth over a timespan |
+
+> All past-experience filters apply to the same prior role. Combining pastJobTitle with any pastCompany* filter requires a single past experience to satisfy every one of them.
+
+`pastCompany.location` accepts the same country names and ISO alpha-2 codes as `location` and `currentCompany.location`. Country names are normalized before the query is sent.
+
+## Responses
+
+### `POST /v1/find-people`
+
+| Field | Type | Description |
+| --- | --- | --- |
+| total | number | Total number of matching leads |
+| leads | array | Returned lead objects |
+| leads[].firstname | string | First name |
+| leads[].lastname | string | Last name |
+| leads[].headline | string | Profile headline |
+| leads[].description | string | Profile description |
+| leads[].profileUrl | string | LinkedIn profile URL |
+| leads[].jobTitle | string | Current job title |
+| leads[].jobStartDate | string | Job start date, e.g. 03-2024 |
+| leads[].address | string | Person location |
+| leads[].companyName | string | Company name |
+| leads[].companyUrl | string | Company LinkedIn URL |
+| leads[].companyWebsite | string | Company website |
+| leads[].companySize | number | Company size |
+| leads[].companyIndustry | string | Company industry |
+| leads[].companyAddress | string | Company address |
+| next_cursor | string \| null | Pagination cursor. null when there are no further pages. |
+
+### `POST /v1/find-people/count`
+
+| Field | Type | Description |
+| --- | --- | --- |
+| total | number | Total number of matching leads |
+
+## Rate limits
+
+| Limit | Value |
+| --- | --- |
+| Requests per second, per workspace | 6 |
+| Global API calls per minute | 3,000 |
+| Values per include or exclude array | 200 |
+| size | 100 |
+
+## Errors
+
+The error response shape and endpoint-specific error codes are not currently documented. The common global failure is `401 unauthorized`, returned when the API key is missing or invalid.
+
+## Webhooks
+
+None. Both endpoints are synchronous.
+
+## Examples
+
+### Search — every filter family
+
+Intentionally exhaustive. In production, combine only the filters that describe the same target person, and, for past-experience filters, the same prior role.
+
+```json
+{
+  "query": {
+    "firstname": { "include": ["John"], "exclude": ["Johnny"] },
+    "lastname": { "include": ["Doe"] },
+    "jobTitle": { "include": ["CEO", "Founder"], "exclude": ["Intern"] },
+    "companyDomain": { "include": ["airscale.io"] },
+    "companyLinkedinUrl": { "include": ["https://linkedin.com/company/airscale-io"] },
+    "school": { "include": ["Stanford"] },
+    "languages": { "include": ["EN"] },
+    "skills": { "include": ["B2B SaaS"] },
+    "location": { "include": ["FR", "US"], "exclude": ["DE"] },
+    "keyword": { "include": ["B2B"] },
+    "currentCompanyName": { "include": ["Airscale"] },
+    "currentCompany.type": { "include": ["Privately Held"] },
+    "currentCompany.industry": { "include": ["Software Development"] },
+    "currentCompany.location": { "include": ["FR"] },
+    "currentCompany.keyword": { "include": ["sales intelligence"] },
+    "totalYearsOfExperience": { ">=": 5 },
+    "timeInCurrentCompany": { "<=": 2 },
+    "currentCompany.headcount": { ">": 10, "<=": 500 },
+    "currentCompany.revenue": { ">=": 1000000 },
+    "currentCompany.headcountGrowth": {
+      "min": 20,
+      "max": 100,
+      "timespan": "12months"
+    },
+    "pastJobTitle": { "include": ["Engineer"] },
+    "pastCompanyName": { "include": ["Google"] },
+    "pastCompanyId": { "include": ["google"] },
+    "pastCompanyWebsite": { "include": ["google.com"] },
+    "pastCompanyUrn": { "include": ["1441"] },
+    "pastCompany.type": { "include": ["Public Company"] },
+    "pastCompany.industry": { "include": ["Software Development"] },
+    "pastCompany.location": { "include": ["United States"] },
+    "pastCompany.keyword": { "include": ["cloud"] },
+    "pastCompany.headcount": { ">": 10, "<=": 500 },
+    "pastCompany.revenue": { ">=": 1000000 },
+    "pastCompany.headcountGrowth": {
+      "min": 20,
+      "max": 100,
+      "timespan": "12months"
+    }
+  },
+  "size": 50,
+  "cursor": "<next_cursor_from_previous_response>"
+}
+```
+
+Response:
+
+```json
+{
+  "total": 101,
+  "leads": [
+    {
+      "firstname": "Victor",
+      "lastname": "Detraz",
+      "headline": "Founder @Airscale",
+      "description": "...",
+      "profileUrl": "https://www.linkedin.com/in/vdetraz",
+      "jobTitle": "Founder",
+      "jobStartDate": "03-2024",
+      "address": "Paris, Ile-de-France, France",
+      "companyName": "Airscale",
+      "companyUrl": "https://www.linkedin.com/company/airscale-io/",
+      "companyWebsite": "https://airscale.io",
+      "companySize": 4,
+      "companyIndustry": "Technology, Information and Internet",
+      "companyAddress": "75009, Paris, France"
+    }
+  ],
+  "next_cursor": "eyJzYSI6W1syXV..."
+}
+```
+
+cURL:
+
+```bash
+curl -X POST "https://api.airscale.io/v1/find-people" \
+  -H "Authorization: Bearer YOUR_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "query": {
+      "jobTitle": { "include": ["CEO", "Founder"] },
+      "companyDomain": { "include": ["airscale.io"] },
+      "location": { "include": ["FR"] },
+      "currentCompany.industry": { "include": ["Software Development"] },
+      "currentCompany.location": { "include": ["FR"] },
+      "currentCompany.headcount": { ">": 10, "<=": 500 }
+    },
+    "size": 50
+  }'
+```
+
+### Count
+
+```bash
+{
+  "query": {
+    "jobTitle": { "include": ["CEO", "Founder"] },
+    "location": { "include": ["FR"] },
+    "currentCompany.location": { "include": ["FR"] },
+    "currentCompany.industry": { "include": ["Software Development"] },
+    "totalYearsOfExperience": { ">=": 5 },
+    "currentCompany.headcount": { ">": 10, "<=": 500 },
+    "pastJobTitle": { "include": ["Engineer"] },
+    "pastCompanyName": { "include": ["Google"] },
+    "pastCompany.location": { "include": ["United States"] },
+    "pastCompany.headcountGrowth": {
+      "min": 20,
+      "timespan": "12months"
+    }
+  }
+}
+```
+
+Response:
+
+```json
+{
+  "total": 101
+}
+```
+
+cURL:
+
+```bash
+curl -X POST "https://api.airscale.io/v1/find-people/count" \
+  -H "Authorization: Bearer YOUR_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "query": {
+      "jobTitle": { "include": ["CEO", "Founder"] },
+      "location": { "include": ["FR"] },
+      "currentCompany.location": { "include": ["FR"] },
+      "currentCompany.headcountGrowth": {
+        "min": 20,
+        "timespan": "12months"
+      }
+    }
+  }'
+```
+
