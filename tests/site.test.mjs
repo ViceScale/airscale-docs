@@ -11,13 +11,16 @@ const GROUPS = [
 ];
 
 const PAGE_PATHS = GROUPS.flatMap(([, pages]) => pages);
+const API_REFERENCE_TABS = [{
+  tab: "API Reference",
+  groups: GROUPS.map(([group, pages]) => ({ group, pages }))
+}];
 const CANONICAL_SYMBOL_PATH = "m41.368,46.100 2.600,7.900c.700,2.200,2.800,3.600,5,3.600,1.700,0,3.300-.800,4.300-2.200,1-1.400,1.200-3.200.700-4.800l-4.700-13.400-7.900,8.900Zm-26.800-7.200 9-26.600c.5-1.400,1.800-2.300,3.300-2.300s2.800.900,3.300,2.300l6.200,18.500,7.800-8.800-4.600-13.100c-1.900-5.400-7-8.900-12.600-8.900-5.700,0-10.700,3.600-12.600,8.900L.367,48.800c-.700,2.100-.400,4.300.900,6.100,1.300,1.800,3.300,2.800,5.500,2.800,1.900,0,3.700-.800,5-2.200l13.800-15.400,2.800,8.300c.200.700.700,1.300,1.200,1.800s1.200.800,1.900,1c.700.100,1.500.1,2.100-.1.700-.200,1.300-.600,1.800-1.200l21-24.300c.5-.600.900-1.400,1-2.400.200-.9.100-1.9-.1-2.600l-1.700-4.800c-.1-.4-.3-.7-.5-.8-.1-.1-.2-.2-.4-.2h-.4c-.2.1-.5.200-.8.600l-19.800,22.500-2.700-8.100c-.8-3.200-4.900-3.800-7-1.400l-9.9,10.700";
 const APPROVED_BEARER_VALUES = new Set(["YOUR_API_KEY", "$AIRSCALE_API_KEY", "<YOUR_API_KEY>"]);
-const AUTHORIZATION_BEARER_VALUE = /\bAuthorization\b.{0,160}?\bBearer\s+(\S+)/gi;
+const AUTHORIZATION_BEARER_VALUE = /\bAuthorization\b[\s:,"'`|=>(\[\]{}.-]*?\bBearer\s+(\S+)/gi;
 
 function hasUnsafeBearerAuthorization(source) {
-  return source.split(/\r?\n/).some((line) =>
-    Array.from(line.matchAll(AUTHORIZATION_BEARER_VALUE)).some(([, value]) => {
+  return Array.from(source.matchAll(AUTHORIZATION_BEARER_VALUE)).some(([, value]) => {
       const strippedValue = value
         .trim()
         .replace(/^```(?:[a-z][a-z0-9_-]*)?\s*/i, "")
@@ -26,16 +29,18 @@ function hasUnsafeBearerAuthorization(source) {
         .replace(/^&lt;(.+)&gt;$/, "<$1>")
         .replace(/^["'`]+|[)\]"'`,;|.!?]+$/g, "")
         .trim();
-      const isDynamicExpression = /^(?:\$\{[A-Za-z_$][\w$]*\}|\{[A-Za-z_$][\w$]*\}|\+[A-Za-z_$][\w$]*)$/.test(strippedValue);
+      const isDynamicExpression = /^(?:\$\{[A-Za-z_$][\w$]*\}|\{[A-Za-z_$][\w$]*\})$/.test(strippedValue) || /^["'`]\+[A-Za-z_$][\w$]*(?:[)\],;]|$)/.test(value);
       return Boolean(strippedValue) && strippedValue.toLowerCase() !== "authentication" && !isDynamicExpression && !APPROVED_BEARER_VALUES.has(strippedValue);
-    })
-  );
+    });
 }
 
 function assertSafeSvgSource(source, path) {
   const withoutSvgNamespace = source.replace(/\s+xmlns=(['"])http:\/\/www\.w3\.org\/2000\/svg\1/i, "");
 
   assert.doesNotMatch(source, /<(?:script|image)\b/i, `${path} must not contain active or raster elements`);
+  assert.doesNotMatch(source, /<foreignObject\b/i, `${path} must not contain embedded HTML`);
+  assert.doesNotMatch(source, /\bon[a-z][\w:-]*\s*=/i, `${path} must not contain event handlers`);
+  assert.doesNotMatch(source, /<style\b|\bstyle\s*=/i, `${path} must not contain styles`);
   assert.doesNotMatch(source, /\bdata:image\//i, `${path} must not contain raster data`);
   assert.doesNotMatch(source, /\b(?:xlink:)?href\s*=/i, `${path} must not contain href references`);
   assert.doesNotMatch(withoutSvgNamespace, /(?:https?:)?\/\//i, `${path} must not contain remote URLs`);
@@ -52,6 +57,22 @@ function readPage(path) {
     })
   );
   return { source, body: match[2], frontmatter };
+}
+
+function localDocumentationLinks(source) {
+  const markdownLinks = Array.from(source.matchAll(/\[[^\]]*\]\((\/api-reference\/[^)\s?#]+)(?:[?#][^)]*)?\)/g), ([, href]) => href);
+  const componentLinks = Array.from(source.matchAll(/<[A-Za-z][\w.:-]*\b[^>]*\bhref=(["'])(\/api-reference\/[^"'?#]+)(?:[?#][^"']*)?\1[^>]*>/g), ([, , href]) => href);
+  return [...markdownLinks, ...componentLinks];
+}
+
+function assertLocalDocumentationLinksResolve(source, path) {
+  for (const href of localDocumentationLinks(source)) {
+    assert.ok(existsSync(`.${href}.mdx`), `${path} link ${href} must resolve`);
+  }
+}
+
+function assertApprovedNavigationTabs(tabs) {
+  assert.deepEqual(tabs, API_REFERENCE_TABS);
 }
 
 test("brand configuration and assets match Airscale", () => {
@@ -112,7 +133,12 @@ test("SVG source safety rejects active, raster, remote, and href content", () =>
     "<svg><script>alert(1)</script></svg>",
     "<svg><image href=\"data:image/png;base64,AAAA\" /></svg>",
     "<svg><use href=\"#symbol\" /></svg>",
-    "<svg><metadata>https://example.com/logo.svg</metadata></svg>"
+    "<svg><metadata>https://example.com/logo.svg</metadata></svg>",
+    "<svg onload=\"alert(1)\" />",
+    "<svg><path onclick=\"alert(1)\" /></svg>",
+    "<svg><path style=\"fill: red\" /></svg>",
+    "<svg><style>path { fill: red; }</style></svg>",
+    "<svg><foreignObject><div>unsafe</div></foreignObject></svg>"
   ]) {
     assert.throws(() => assertSafeSvgSource(unsafeSource, "unsafe.svg"));
   }
@@ -128,7 +154,10 @@ test("authorization bearer checks reject unsafe token formats", () => {
     "const headers = { Authorization: `Bearer javascript-token` };",
     "req.Header.Set(\"Authorization\", \"Bearer go-static-token\")",
     "'Authorization' => 'Bearer php-static-token'",
-    "| Authorization | Bearer table-static-token |"
+    "| Authorization | Bearer table-static-token |",
+    "Authorization:\n  Bearer newline-static-token",
+    `Authorization:${" ".repeat(161)}Bearer long-gap-static-token`,
+    "Authorization: Bearer +secret"
   ]) {
     assert.equal(hasUnsafeBearerAuthorization(value), true, `${value} must be rejected`);
   }
@@ -142,6 +171,7 @@ test("authorization bearer checks reject unsafe token formats", () => {
   }
 
   assert.equal(hasUnsafeBearerAuthorization("const headers = { Authorization: `Bearer ${apiKey}` };"), false);
+  assert.equal(hasUnsafeBearerAuthorization("req.Header.Set(\"Authorization\", \"Bearer \"+apiKey)"), false);
   assert.equal(hasUnsafeBearerAuthorization("headers = { Authorization: 'Bearer ' . $apiKey };"), false);
   assert.equal(hasUnsafeBearerAuthorization("Authorization supports Bearer authentication."), false);
   assert.equal(hasUnsafeBearerAuthorization("Use Bearer authentication for every request."), false);
@@ -149,9 +179,15 @@ test("authorization bearer checks reject unsafe token formats", () => {
 
 test("navigation contains the five approved groups in order", () => {
   const config = JSON.parse(readFileSync("docs.json", "utf8"));
-  const groups = config.navigation.tabs[0].groups.map(({ group, pages }) => [group, pages]);
 
-  assert.deepEqual(groups, GROUPS);
+  assertApprovedNavigationTabs(config.navigation.tabs);
+});
+
+test("navigation rejects unexpected tabs", () => {
+  const extraTabs = structuredClone(API_REFERENCE_TABS);
+  extraTabs.push({ tab: "Unexpected", groups: [] });
+
+  assert.throws(() => assertApprovedNavigationTabs(extraTabs));
 });
 
 test("exactly the approved 16 pages exist", () => {
@@ -177,10 +213,11 @@ test("every page has baseline-safe MDX", () => {
 test("internal documentation links resolve", () => {
   for (const path of PAGE_PATHS) {
     const { source } = readPage(path);
-    const links = source.matchAll(/\[[^\]]*\]\((\/api-reference\/[^)\s?#]+)(?:[?#][^)]*)?\)/g);
-
-    for (const [, href] of links) {
-      assert.ok(existsSync(`.${href}.mdx`), `${path} link ${href} must resolve`);
-    }
+    assertLocalDocumentationLinksResolve(source, path);
   }
+});
+
+test("local component documentation links resolve", () => {
+  assert.doesNotThrow(() => assertLocalDocumentationLinksResolve('<Card href="/api-reference/api-overview">Overview</Card>', "valid component fixture"));
+  assert.throws(() => assertLocalDocumentationLinksResolve('<Card href="/api-reference/missing">Missing</Card>', "invalid component fixture"));
 });
