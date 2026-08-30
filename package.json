@@ -3,6 +3,8 @@
   "private": true,
   "type": "module",
   "scripts": {
+    "inventory:check": "node scripts/capture-framer-sitemap.mjs --check",
+    "inventory:refresh": "node scripts/capture-framer-sitemap.mjs --write",
     "metadata:sync": "node scripts/set-preview-canonicals.mjs",
     "test": "node --test tests/*.test.mjs",
     "validate": "npm test && npx mint validate"

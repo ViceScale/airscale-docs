@@ -1,0 +1,580 @@
+{
+  "sourceUrl": "https://docs.airscale.io/sitemap.xml",
+  "capturedAt": "2026-08-30T20:58:24.661Z",
+  "routes": [
+    {
+      "path": "/",
+      "category": "home",
+      "disposition": "rewrite",
+      "targetPath": "/",
+      "reason": "Replace the preview homepage with the approved balanced two-path gateway."
+    },
+    {
+      "path": "/usecases/quick-beginner-guide",
+      "category": "use-case",
+      "disposition": "migrate",
+      "targetPath": "/usecases/quick-beginner-guide",
+      "reason": "Preserve this public product-learning route on the separate preview host."
+    },
+    {
+      "path": "/usecases/the-basics-of-ai",
+      "category": "use-case",
+      "disposition": "migrate",
+      "targetPath": "/usecases/the-basics-of-ai",
+      "reason": "Preserve this public product-learning route on the separate preview host."
+    },
+    {
+      "path": "/usecases/using-airsearch",
+      "category": "use-case",
+      "disposition": "migrate",
+      "targetPath": "/usecases/using-airsearch",
+      "reason": "Preserve this public product-learning route on the separate preview host."
+    },
+    {
+      "path": "/usecases/templates",
+      "category": "use-case",
+      "disposition": "migrate",
+      "targetPath": "/usecases/templates",
+      "reason": "Preserve this public product-learning route on the separate preview host."
+    },
+    {
+      "path": "/usecases/turn-hiring-signals-into-high-quality-leads",
+      "category": "use-case",
+      "disposition": "migrate",
+      "targetPath": "/usecases/turn-hiring-signals-into-high-quality-leads",
+      "reason": "Preserve this public product-learning route on the separate preview host."
+    },
+    {
+      "path": "/usecases/scrape-a-linkedin-post",
+      "category": "use-case",
+      "disposition": "migrate",
+      "targetPath": "/usecases/scrape-a-linkedin-post",
+      "reason": "Preserve this public product-learning route on the separate preview host."
+    },
+    {
+      "path": "/usecases/from-google-maps-to-local-business-decision-makers",
+      "category": "use-case",
+      "disposition": "migrate",
+      "targetPath": "/usecases/from-google-maps-to-local-business-decision-makers",
+      "reason": "Preserve this public product-learning route on the separate preview host."
+    },
+    {
+      "path": "/usecases/from-intent-signals-to-personalized-outreach",
+      "category": "use-case",
+      "disposition": "migrate",
+      "targetPath": "/usecases/from-intent-signals-to-personalized-outreach",
+      "reason": "Preserve this public product-learning route on the separate preview host."
+    },
+    {
+      "path": "/api-reference/dnc-checker",
+      "category": "api-reference",
+      "disposition": "omit",
+      "targetPath": null,
+      "reason": "No approved public operation exists in the locked API contract manifest."
+    },
+    {
+      "path": "/api-reference/connect-airscale-mcp-to-chatgpt",
+      "category": "api-reference",
+      "disposition": "consolidate",
+      "targetPath": "/mcp/connect-airscale-mcp-to-chatgpt",
+      "reason": "Use the canonical MCP guide in the preview navigation instead of duplicate API-reference content."
+    },
+    {
+      "path": "/api-reference/connect-airscale-mcp-to-claude",
+      "category": "api-reference",
+      "disposition": "consolidate",
+      "targetPath": "/mcp/connect-airscale-mcp-to-claude",
+      "reason": "Use the canonical MCP guide in the preview navigation instead of duplicate API-reference content."
+    },
+    {
+      "path": "/api-reference/airscale-mcp-server",
+      "category": "api-reference",
+      "disposition": "consolidate",
+      "targetPath": "/mcp/airscale-mcp-server",
+      "reason": "Use the canonical MCP guide in the preview navigation instead of duplicate API-reference content."
+    },
+    {
+      "path": "/api-reference/leads-finder",
+      "category": "api-reference",
+      "disposition": "omit",
+      "targetPath": null,
+      "reason": "The retired Leads Finder API page is excluded from the approved public reference."
+    },
+    {
+      "path": "/api-reference/api-overview",
+      "category": "api-reference",
+      "disposition": "rewrite",
+      "targetPath": "/api-reference/api-overview",
+      "reason": "Convert the approved public API page to the OpenAPI-plus-MDX reference model."
+    },
+    {
+      "path": "/api-reference/authentication",
+      "category": "api-reference",
+      "disposition": "rewrite",
+      "targetPath": "/api-reference/authentication",
+      "reason": "Convert the approved public API page to the OpenAPI-plus-MDX reference model."
+    },
+    {
+      "path": "/api-reference/rate-limits",
+      "category": "api-reference",
+      "disposition": "rewrite",
+      "targetPath": "/api-reference/rate-limits",
+      "reason": "Convert the approved public API page to the OpenAPI-plus-MDX reference model."
+    },
+    {
+      "path": "/api-reference/credit-count",
+      "category": "api-reference",
+      "disposition": "rewrite",
+      "targetPath": "/api-reference/credit-count",
+      "reason": "Convert the approved public API page to the OpenAPI-plus-MDX reference model."
+    },
+    {
+      "path": "/api-reference/email-finder",
+      "category": "api-reference",
+      "disposition": "rewrite",
+      "targetPath": "/api-reference/email-finder",
+      "reason": "Convert the approved public API page to the OpenAPI-plus-MDX reference model."
+    },
+    {
+      "path": "/api-reference/email-finder-(bulk)",
+      "category": "api-reference",
+      "disposition": "rewrite",
+      "targetPath": "/api-reference/email-finder-(bulk)",
+      "reason": "Convert the approved public API page to the OpenAPI-plus-MDX reference model."
+    },
+    {
+      "path": "/api-reference/mobile-finder",
+      "category": "api-reference",
+      "disposition": "rewrite",
+      "targetPath": "/api-reference/mobile-finder",
+      "reason": "Convert the approved public API page to the OpenAPI-plus-MDX reference model."
+    },
+    {
+      "path": "/api-reference/personal-email",
+      "category": "api-reference",
+      "disposition": "rewrite",
+      "targetPath": "/api-reference/personal-email",
+      "reason": "Convert the approved public API page to the OpenAPI-plus-MDX reference model."
+    },
+    {
+      "path": "/api-reference/people-url-finder",
+      "category": "api-reference",
+      "disposition": "rewrite",
+      "targetPath": "/api-reference/people-url-finder",
+      "reason": "Convert the approved public API page to the OpenAPI-plus-MDX reference model."
+    },
+    {
+      "path": "/api-reference/extract-people-profile",
+      "category": "api-reference",
+      "disposition": "rewrite",
+      "targetPath": "/api-reference/extract-people-profile",
+      "reason": "Convert the approved public API page to the OpenAPI-plus-MDX reference model."
+    },
+    {
+      "path": "/api-reference/extract-company-profile",
+      "category": "api-reference",
+      "disposition": "rewrite",
+      "targetPath": "/api-reference/extract-company-profile",
+      "reason": "Convert the approved public API page to the OpenAPI-plus-MDX reference model."
+    },
+    {
+      "path": "/api-reference/reverse-email",
+      "category": "api-reference",
+      "disposition": "rewrite",
+      "targetPath": "/api-reference/reverse-email",
+      "reason": "Convert the approved public API page to the OpenAPI-plus-MDX reference model."
+    },
+    {
+      "path": "/api-reference/reverse-phone",
+      "category": "api-reference",
+      "disposition": "rewrite",
+      "targetPath": "/api-reference/reverse-phone",
+      "reason": "Convert the approved public API page to the OpenAPI-plus-MDX reference model."
+    },
+    {
+      "path": "/api-reference/find-people",
+      "category": "api-reference",
+      "disposition": "rewrite",
+      "targetPath": "/api-reference/find-people",
+      "reason": "Convert the approved public API page to the OpenAPI-plus-MDX reference model."
+    },
+    {
+      "path": "/api-reference/find-companies",
+      "category": "api-reference",
+      "disposition": "rewrite",
+      "targetPath": "/api-reference/find-companies",
+      "reason": "Convert the approved public API page to the OpenAPI-plus-MDX reference model."
+    },
+    {
+      "path": "/api-reference/airsearch",
+      "category": "api-reference",
+      "disposition": "rewrite",
+      "targetPath": "/api-reference/airsearch",
+      "reason": "Convert the approved public API page to the OpenAPI-plus-MDX reference model."
+    },
+    {
+      "path": "/mcp/how-to-use-the-airscale-mcp",
+      "category": "mcp",
+      "disposition": "migrate",
+      "targetPath": "/mcp/how-to-use-the-airscale-mcp",
+      "reason": "Preserve this public product-learning route on the separate preview host."
+    },
+    {
+      "path": "/mcp/connect-airscale-mcp-to-chatgpt",
+      "category": "mcp",
+      "disposition": "migrate",
+      "targetPath": "/mcp/connect-airscale-mcp-to-chatgpt",
+      "reason": "Preserve this public product-learning route on the separate preview host."
+    },
+    {
+      "path": "/mcp/connect-airscale-mcp-to-claude",
+      "category": "mcp",
+      "disposition": "migrate",
+      "targetPath": "/mcp/connect-airscale-mcp-to-claude",
+      "reason": "Preserve this public product-learning route on the separate preview host."
+    },
+    {
+      "path": "/mcp/airscale-mcp-server",
+      "category": "mcp",
+      "disposition": "migrate",
+      "targetPath": "/mcp/airscale-mcp-server",
+      "reason": "Preserve this public product-learning route on the separate preview host."
+    },
+    {
+      "path": "/docs/sales-navigator",
+      "category": "product-guide",
+      "disposition": "migrate",
+      "targetPath": "/docs/sales-navigator",
+      "reason": "Preserve this public product-learning route on the separate preview host."
+    },
+    {
+      "path": "/docs/likers-commenters",
+      "category": "product-guide",
+      "disposition": "migrate",
+      "targetPath": "/docs/likers-commenters",
+      "reason": "Preserve this public product-learning route on the separate preview host."
+    },
+    {
+      "path": "/docs/single-search",
+      "category": "product-guide",
+      "disposition": "migrate",
+      "targetPath": "/docs/single-search",
+      "reason": "Preserve this public product-learning route on the separate preview host."
+    },
+    {
+      "path": "/docs/leads-finder",
+      "category": "product-guide",
+      "disposition": "migrate",
+      "targetPath": "/docs/leads-finder",
+      "reason": "Preserve this public product-learning route on the separate preview host."
+    },
+    {
+      "path": "/docs/find-people",
+      "category": "product-guide",
+      "disposition": "migrate",
+      "targetPath": "/docs/find-people",
+      "reason": "Preserve this public product-learning route on the separate preview host."
+    },
+    {
+      "path": "/docs/find-companies",
+      "category": "product-guide",
+      "disposition": "migrate",
+      "targetPath": "/docs/find-companies",
+      "reason": "Preserve this public product-learning route on the separate preview host."
+    },
+    {
+      "path": "/docs/find-companies-linkedin",
+      "category": "product-guide",
+      "disposition": "migrate",
+      "targetPath": "/docs/find-companies-linkedin",
+      "reason": "Preserve this public product-learning route on the separate preview host."
+    },
+    {
+      "path": "/docs/google-maps",
+      "category": "product-guide",
+      "disposition": "migrate",
+      "targetPath": "/docs/google-maps",
+      "reason": "Preserve this public product-learning route on the separate preview host."
+    },
+    {
+      "path": "/docs/companies-hiring",
+      "category": "product-guide",
+      "disposition": "migrate",
+      "targetPath": "/docs/companies-hiring",
+      "reason": "Preserve this public product-learning route on the separate preview host."
+    },
+    {
+      "path": "/docs/import-csv",
+      "category": "product-guide",
+      "disposition": "migrate",
+      "targetPath": "/docs/import-csv",
+      "reason": "Preserve this public product-learning route on the separate preview host."
+    },
+    {
+      "path": "/docs/phone-numbers",
+      "category": "product-guide",
+      "disposition": "migrate",
+      "targetPath": "/docs/phone-numbers",
+      "reason": "Preserve this public product-learning route on the separate preview host."
+    },
+    {
+      "path": "/docs/professional-emails",
+      "category": "product-guide",
+      "disposition": "migrate",
+      "targetPath": "/docs/professional-emails",
+      "reason": "Preserve this public product-learning route on the separate preview host."
+    },
+    {
+      "path": "/docs/personal-emails",
+      "category": "product-guide",
+      "disposition": "migrate",
+      "targetPath": "/docs/personal-emails",
+      "reason": "Preserve this public product-learning route on the separate preview host."
+    },
+    {
+      "path": "/docs/verify-email",
+      "category": "product-guide",
+      "disposition": "migrate",
+      "targetPath": "/docs/verify-email",
+      "reason": "Preserve this public product-learning route on the separate preview host."
+    },
+    {
+      "path": "/docs/enrich-people-linkedin",
+      "category": "product-guide",
+      "disposition": "migrate",
+      "targetPath": "/docs/enrich-people-linkedin",
+      "reason": "Preserve this public product-learning route on the separate preview host."
+    },
+    {
+      "path": "/docs/enrich-company-linkedin",
+      "category": "product-guide",
+      "disposition": "migrate",
+      "targetPath": "/docs/enrich-company-linkedin",
+      "reason": "Preserve this public product-learning route on the separate preview host."
+    },
+    {
+      "path": "/docs/fetch-company-insights",
+      "category": "product-guide",
+      "disposition": "migrate",
+      "targetPath": "/docs/fetch-company-insights",
+      "reason": "Preserve this public product-learning route on the separate preview host."
+    },
+    {
+      "path": "/docs/job-openings-linkedin",
+      "category": "product-guide",
+      "disposition": "migrate",
+      "targetPath": "/docs/job-openings-linkedin",
+      "reason": "Preserve this public product-learning route on the separate preview host."
+    },
+    {
+      "path": "/docs/linkedin-posts-scraper",
+      "category": "product-guide",
+      "disposition": "migrate",
+      "targetPath": "/docs/linkedin-posts-scraper",
+      "reason": "Preserve this public product-learning route on the separate preview host."
+    },
+    {
+      "path": "/docs/reverse-phone",
+      "category": "product-guide",
+      "disposition": "migrate",
+      "targetPath": "/docs/reverse-phone",
+      "reason": "Preserve this public product-learning route on the separate preview host."
+    },
+    {
+      "path": "/docs/reverse-email",
+      "category": "product-guide",
+      "disposition": "migrate",
+      "targetPath": "/docs/reverse-email",
+      "reason": "Preserve this public product-learning route on the separate preview host."
+    },
+    {
+      "path": "/docs/ai-custom-prompts",
+      "category": "product-guide",
+      "disposition": "migrate",
+      "targetPath": "/docs/ai-custom-prompts",
+      "reason": "Preserve this public product-learning route on the separate preview host."
+    },
+    {
+      "path": "/docs/ai-agent-airsearch",
+      "category": "product-guide",
+      "disposition": "migrate",
+      "targetPath": "/docs/ai-agent-airsearch",
+      "reason": "Preserve this public product-learning route on the separate preview host."
+    },
+    {
+      "path": "/docs/google-searches",
+      "category": "product-guide",
+      "disposition": "migrate",
+      "targetPath": "/docs/google-searches",
+      "reason": "Preserve this public product-learning route on the separate preview host."
+    },
+    {
+      "path": "/docs/linkedin-profile-url",
+      "category": "product-guide",
+      "disposition": "migrate",
+      "targetPath": "/docs/linkedin-profile-url",
+      "reason": "Preserve this public product-learning route on the separate preview host."
+    },
+    {
+      "path": "/docs/linkedin-company-url",
+      "category": "product-guide",
+      "disposition": "migrate",
+      "targetPath": "/docs/linkedin-company-url",
+      "reason": "Preserve this public product-learning route on the separate preview host."
+    },
+    {
+      "path": "/docs/linkedin-company-url-from-a-domain",
+      "category": "product-guide",
+      "disposition": "migrate",
+      "targetPath": "/docs/linkedin-company-url-from-a-domain",
+      "reason": "Preserve this public product-learning route on the separate preview host."
+    },
+    {
+      "path": "/docs/meta-ads",
+      "category": "product-guide",
+      "disposition": "migrate",
+      "targetPath": "/docs/meta-ads",
+      "reason": "Preserve this public product-learning route on the separate preview host."
+    },
+    {
+      "path": "/docs/google-ads",
+      "category": "product-guide",
+      "disposition": "migrate",
+      "targetPath": "/docs/google-ads",
+      "reason": "Preserve this public product-learning route on the separate preview host."
+    },
+    {
+      "path": "/docs/company-domain",
+      "category": "product-guide",
+      "disposition": "migrate",
+      "targetPath": "/docs/company-domain",
+      "reason": "Preserve this public product-learning route on the separate preview host."
+    },
+    {
+      "path": "/docs/company-technologies",
+      "category": "product-guide",
+      "disposition": "migrate",
+      "targetPath": "/docs/company-technologies",
+      "reason": "Preserve this public product-learning route on the separate preview host."
+    },
+    {
+      "path": "/docs/funding-data",
+      "category": "product-guide",
+      "disposition": "migrate",
+      "targetPath": "/docs/funding-data",
+      "reason": "Preserve this public product-learning route on the separate preview host."
+    },
+    {
+      "path": "/docs/website-content",
+      "category": "product-guide",
+      "disposition": "migrate",
+      "targetPath": "/docs/website-content",
+      "reason": "Preserve this public product-learning route on the separate preview host."
+    },
+    {
+      "path": "/docs/fetch-business-intent-topics",
+      "category": "product-guide",
+      "disposition": "migrate",
+      "targetPath": "/docs/fetch-business-intent-topics",
+      "reason": "Preserve this public product-learning route on the separate preview host."
+    },
+    {
+      "path": "/docs/website-traffic",
+      "category": "product-guide",
+      "disposition": "migrate",
+      "targetPath": "/docs/website-traffic",
+      "reason": "Preserve this public product-learning route on the separate preview host."
+    },
+    {
+      "path": "/docs/lookup-hubspot",
+      "category": "product-guide",
+      "disposition": "migrate",
+      "targetPath": "/docs/lookup-hubspot",
+      "reason": "Preserve this public product-learning route on the separate preview host."
+    },
+    {
+      "path": "/docs/export-csv",
+      "category": "product-guide",
+      "disposition": "migrate",
+      "targetPath": "/docs/export-csv",
+      "reason": "Preserve this public product-learning route on the separate preview host."
+    },
+    {
+      "path": "/docs/transfer-another-table",
+      "category": "product-guide",
+      "disposition": "migrate",
+      "targetPath": "/docs/transfer-another-table",
+      "reason": "Preserve this public product-learning route on the separate preview host."
+    },
+    {
+      "path": "/docs/export-hubspot",
+      "category": "product-guide",
+      "disposition": "migrate",
+      "targetPath": "/docs/export-hubspot",
+      "reason": "Preserve this public product-learning route on the separate preview host."
+    },
+    {
+      "path": "/docs/export-instantly",
+      "category": "product-guide",
+      "disposition": "migrate",
+      "targetPath": "/docs/export-instantly",
+      "reason": "Preserve this public product-learning route on the separate preview host."
+    },
+    {
+      "path": "/docs/export-smartlead",
+      "category": "product-guide",
+      "disposition": "migrate",
+      "targetPath": "/docs/export-smartlead",
+      "reason": "Preserve this public product-learning route on the separate preview host."
+    },
+    {
+      "path": "/docs/export-lemlist",
+      "category": "product-guide",
+      "disposition": "migrate",
+      "targetPath": "/docs/export-lemlist",
+      "reason": "Preserve this public product-learning route on the separate preview host."
+    },
+    {
+      "path": "/docs/import-hubspot",
+      "category": "product-guide",
+      "disposition": "migrate",
+      "targetPath": "/docs/import-hubspot",
+      "reason": "Preserve this public product-learning route on the separate preview host."
+    },
+    {
+      "path": "/docs/hubspot-app",
+      "category": "product-guide",
+      "disposition": "migrate",
+      "targetPath": "/docs/hubspot-app",
+      "reason": "Preserve this public product-learning route on the separate preview host."
+    },
+    {
+      "path": "/docs/users-workspaces",
+      "category": "product-guide",
+      "disposition": "migrate",
+      "targetPath": "/docs/users-workspaces",
+      "reason": "Preserve this public product-learning route on the separate preview host."
+    },
+    {
+      "path": "/docs/deduplicate-leads-tables",
+      "category": "product-guide",
+      "disposition": "migrate",
+      "targetPath": "/docs/deduplicate-leads-tables",
+      "reason": "Preserve this public product-learning route on the separate preview host."
+    },
+    {
+      "path": "/docs/filer-tables",
+      "category": "product-guide",
+      "disposition": "migrate",
+      "targetPath": "/docs/filer-tables",
+      "reason": "Preserve this public product-learning route on the separate preview host."
+    },
+    {
+      "path": "/docs/transfer-content",
+      "category": "product-guide",
+      "disposition": "migrate",
+      "targetPath": "/docs/transfer-content",
+      "reason": "Preserve this public product-learning route on the separate preview host."
+    }
+  ]
+}
