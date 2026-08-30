@@ -20,39 +20,38 @@ export function canonicalFor(path, previewOrigin = PREVIEW_ORIGIN) {
   return `${previewOrigin}/${path.replace(/\.mdx$/, "")}`;
 }
 
-function descriptionEndIndex(lines, path) {
-  const descriptionIndex = lines.findIndex((line) => line.startsWith("description:"));
-  if (descriptionIndex < 0) throw new Error(`${path} must define description before canonical`);
-
-  const value = lines[descriptionIndex].slice("description:".length).trim();
-  if (!/^[|>](?:(?:[1-9][+-]?)|(?:[+-][1-9]?))?(?:\s+#.*)?$/.test(value)) {
-    return descriptionIndex + 1;
-  }
-
-  let end = descriptionIndex + 1;
-  while (end < lines.length) {
-    const line = lines[end];
-    if (line.trim() === "" || /^\s+/.test(line)) {
-      end += 1;
-    } else {
-      break;
-    }
-  }
-  return end;
-}
-
 export function updateFrontmatterSource(path, source, previewOrigin = PREVIEW_ORIGIN) {
   const match = source.match(/^---\n([\s\S]*?)\n---/);
   if (!match) throw new Error(`${path} must start with YAML frontmatter`);
 
-  const lines = match[1].split("\n").filter((line) => !line.startsWith("canonical:"));
+  const lines = match[1].split("\n");
+  if (!lines.some((line) => line.startsWith("description:"))) {
+    throw new Error(`${path} must define description before canonical`);
+  }
   const canonical = `canonical: ${JSON.stringify(canonicalFor(path, previewOrigin))}`;
-  const insertionIndex = descriptionEndIndex(lines, path);
-  lines.splice(insertionIndex, 0, canonical);
+  const canonicalIndices = lines.reduce(
+    (indices, line, index) => (line.startsWith("canonical:") ? [...indices, index] : indices),
+    []
+  );
+  let nextLines;
 
-  const nextFrontmatter = `---\n${lines.join("\n")}\n---`;
+  if (canonicalIndices.length === 0) {
+    nextLines = [...lines, canonical];
+  } else if (canonicalIndices.length === 1) {
+    nextLines = lines;
+  } else {
+    let keptCanonical = false;
+    nextLines = lines.flatMap((line) => {
+      if (!line.startsWith("canonical:")) return [line];
+      if (keptCanonical) return [];
+      keptCanonical = true;
+      return [canonical];
+    });
+  }
+
+  const nextFrontmatter = `---\n${nextLines.join("\n")}\n---`;
   const nextSource = source.replace(match[0], nextFrontmatter);
-  const canonicalCount = lines.filter((line) => line.startsWith("canonical:")).length;
+  const canonicalCount = nextLines.filter((line) => line.startsWith("canonical:")).length;
   if (canonicalCount !== 1) throw new Error(`${path} must define exactly one top-level canonical`);
   return { nextSource, changed: nextSource !== source };
 }

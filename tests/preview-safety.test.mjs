@@ -93,7 +93,7 @@ test("updater preserves a complete multiline description before canonical", () =
 
   assert.match(
     result.nextSource,
-    /description: \|-\n  First line\.\n  Second line\.\ncanonical: "https:\/\/airscale\.mintlify\.app\/api-reference\/fixture"\nother: true\n---/
+    /description: \|-\n  First line\.\n  Second line\.\nother: true\ncanonical: "https:\/\/airscale\.mintlify\.app\/api-reference\/fixture"\n---/
   );
 });
 
@@ -103,8 +103,36 @@ test("updater recognizes YAML block-scalar indentation and chomping indicators",
 
   assert.match(
     result.nextSource,
-    /description: >2-\n    First line\.\n    Second line\.\ncanonical: "https:\/\/airscale\.mintlify\.app\/api-reference\/fixture"\nother: true\n---/
+    /description: >2-\n    First line\.\n    Second line\.\nother: true\ncanonical: "https:\/\/airscale\.mintlify\.app\/api-reference\/fixture"\n---/
   );
+});
+
+test("updater preserves multiline quoted descriptions and appends canonical last", () => {
+  const source = `---\ntitle: "Fixture"\ndescription: "First line\n  second line"\nother: true\n---\n`;
+  const result = updater.updateFrontmatterSource("api-reference/fixture.mdx", source);
+
+  assert.equal(
+    result.nextSource,
+    `---\ntitle: "Fixture"\ndescription: "First line\n  second line"\nother: true\ncanonical: "https://airscale.mintlify.app/api-reference/fixture"\n---\n`
+  );
+});
+
+test("updater preserves multiline plain descriptions and appends canonical last", () => {
+  const source = `---\ntitle: "Fixture"\ndescription: First line\n  second line\nother: true\n---\n`;
+  const result = updater.updateFrontmatterSource("api-reference/fixture.mdx", source);
+
+  assert.equal(
+    result.nextSource,
+    `---\ntitle: "Fixture"\ndescription: First line\n  second line\nother: true\ncanonical: "https://airscale.mintlify.app/api-reference/fixture"\n---\n`
+  );
+});
+
+test("updater preserves the position and value of an existing single canonical", () => {
+  const source = `---\ntitle: "Fixture"\ncanonical: "https://old.example/fixture"\ndescription: "A fixture page."\nother: true\n---\n`;
+  const result = updater.updateFrontmatterSource("api-reference/fixture.mdx", source);
+
+  assert.equal(result.changed, false);
+  assert.equal(result.nextSource, source);
 });
 
 test("updater is idempotent and skips unchanged writes", () => {
