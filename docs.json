@@ -1,15 +1,35 @@
 {
   "$schema": "https://mintlify.com/docs.json",
   "theme": "mint",
-  "name": "Airscale API Reference",
+  "name": "Airscale API",
   "colors": {
-    "primary": "#16A34A",
-    "light": "#07C983",
-    "dark": "#15803D"
+    "primary": "#4079FF",
+    "light": "#4079FF",
+    "dark": "#6F9BFF"
   },
   "logo": {
-    "light": "https://mintlify.s3.us-west-1.amazonaws.com/airscale/logo/light.svg",
-    "dark": "https://mintlify.s3.us-west-1.amazonaws.com/airscale/logo/dark.svg"
+    "light": "/logo/light.svg",
+    "dark": "/logo/dark.svg",
+    "href": "https://airscale.io/"
+  },
+  "favicon": "/favicon.svg",
+  "appearance": {
+    "default": "light"
+  },
+  "fonts": {
+    "family": "Poppins"
+  },
+  "icons": {
+    "library": "lucide"
+  },
+  "styling": {
+    "eyebrows": "breadcrumbs",
+    "codeblocks": {
+      "theme": {
+        "light": "github-light",
+        "dark": "github-dark"
+      }
+    }
   },
   "navbar": {
     "links": [
@@ -20,7 +40,7 @@
     ],
     "primary": {
       "type": "button",
-      "label": "Dashboard",
+      "label": "Open dashboard",
       "href": "https://app.airscale.io/dashboard"
     }
   },
@@ -30,7 +50,7 @@
         "tab": "API Reference",
         "groups": [
           {
-            "group": "Getting started",
+            "group": "Start here",
             "pages": [
               "api-reference/api-overview",
               "api-reference/authentication",
@@ -38,21 +58,36 @@
             ]
           },
           {
-            "group": "API Endpoints",
+            "group": "Search and discovery",
             "pages": [
-              "api-reference/credit-count",
+              "api-reference/find-people",
+              "api-reference/find-companies",
+              "api-reference/airsearch"
+            ]
+          },
+          {
+            "group": "Contact data",
+            "pages": [
               "api-reference/email-finder",
               "api-reference/email-finder-(bulk)",
               "api-reference/mobile-finder",
               "api-reference/personal-email",
-              "api-reference/people-url-finder",
+              "api-reference/people-url-finder"
+            ]
+          },
+          {
+            "group": "Profiles and reverse lookup",
+            "pages": [
               "api-reference/extract-people-profile",
               "api-reference/extract-company-profile",
               "api-reference/reverse-email",
-              "api-reference/reverse-phone",
-              "api-reference/find-people",
-              "api-reference/find-companies",
-              "api-reference/airsearch"
+              "api-reference/reverse-phone"
+            ]
+          },
+          {
+            "group": "Account",
+            "pages": [
+              "api-reference/credit-count"
             ]
           }
         ]
