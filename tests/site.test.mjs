@@ -44,6 +44,34 @@ function hasUnsafeBearerAuthorization(source) {
     });
 }
 
+function hasApprovedBearerCredentialSource(source) {
+  const bearerValues = Array.from(source.matchAll(AUTHORIZATION_BEARER_VALUE), ([, value]) => value);
+  if (bearerValues.length === 0) return false;
+
+  return bearerValues.every((value) => {
+    const strippedValue = value
+      .trim()
+      .replace(/^```(?:[a-z][a-z0-9_-]*)?\s*/i, "")
+      .replace(/\s*```$/, "")
+      .trim()
+      .replace(/^&lt;(.+)&gt;$/, "<$1>")
+      .replace(/["'`][)\]}>},;|.!?]*$/, "")
+      .replace(/^["'`]+|[)\]"'`,;|.!?]+$/g, "")
+      .trim();
+
+    if (APPROVED_BEARER_VALUES.has(strippedValue)) return true;
+    if (/^\{os\.(?:environ\[(?:"AIRSCALE_API_KEY"|'AIRSCALE_API_KEY')\]|getenv\((?:"AIRSCALE_API_KEY"|'AIRSCALE_API_KEY')\))\}$/.test(strippedValue)) {
+      return true;
+    }
+
+    const javascriptVariable = strippedValue.match(/^\$\{([A-Za-z_$][\w$]*)\}$/)?.[1];
+    if (!javascriptVariable) return false;
+
+    const escapedVariable = javascriptVariable.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+    return new RegExp(`\\b(?:const|let|var)\\s+${escapedVariable}\\s*=\\s*process\\.env\\.AIRSCALE_API_KEY\\s*;?`).test(source);
+  });
+}
+
 function assertSafeSvgSource(source, path) {
   const withoutSvgNamespace = source.replace(/\s+xmlns=(['"])http:\/\/www\.w3\.org\/2000\/svg\1/i, "");
 
@@ -339,4 +367,82 @@ test("foundation pages teach a safe first request", () => {
 
   assert.match(creditCount, /401/);
   assert.ok(localDocumentationLinks(creditCount).includes("/api-reference/find-people"));
+});
+
+test("contact data pages follow the endpoint content system", () => {
+  const descriptions = {
+    "api-reference/email-finder": "Find a professional email address for one person.",
+    "api-reference/email-finder-(bulk)": "Find professional email addresses for a batch of people.",
+    "api-reference/mobile-finder": "Find a mobile phone number from a professional profile.",
+    "api-reference/personal-email": "Find a personal email address from a professional profile.",
+    "api-reference/people-url-finder": "Find a professional profile URL from person and company details."
+  };
+  const manifest = JSON.parse(readFileSync("contracts/public-api-contracts.json", "utf8"));
+
+  assert.equal(
+    hasApprovedBearerCredentialSource([
+      'const apiKey = "live-secret";',
+      "const unused = process.env.AIRSCALE_API_KEY;",
+      "const headers = { Authorization: `Bearer ${apiKey}` };"
+    ].join("\n")),
+    false,
+    "an unused environment reference must not make a literal-backed Bearer variable safe"
+  );
+
+  for (const [path, description] of Object.entries(descriptions)) {
+    const { source, body, frontmatter } = readPage(path);
+    const pageName = path.replace("api-reference/", "");
+    const evidence = manifest.pages[pageName];
+
+    assert.equal(frontmatter.description, description, `${path} must use the approved description`);
+    assert.ok(frontmatter.description, `${path} must have a description`);
+    assert.doesNotMatch(body, /^#\s+/m, `${path} must not repeat its title as a body H1`);
+    assert.ok(!localDocumentationLinks(source).includes(`/${path}`), `${path} must not link to itself`);
+    assert.ok(evidence, `${path} must have contract evidence`);
+    for (const endpoint of evidence.endpoints) {
+      assert.match(source, new RegExp(`\\b${endpoint.method}\\b`), `${path} must document ${endpoint.method}`);
+      assert.ok(source.includes(endpoint.path), `${path} must document ${endpoint.path}`);
+    }
+    assert.match(source, /^## Request$/m, `${path} must have a Request section`);
+    assert.match(source, /^## Response$/m, `${path} must have a Response section`);
+    assert.match(source, /^## Errors$/m, `${path} must have an Errors section`);
+    assert.match(source, /^## Examples$/m, `${path} must have an Examples section`);
+    assert.match(source, /^## Next step$/m, `${path} must have a Next step section`);
+    assert.match(source, /^```bash(?:\s|$)/m, `${path} must have a bash example`);
+    assert.match(source, /^```json(?:\s|$)/m, `${path} must have a JSON example`);
+    assert.match(source, /\b(?:credit|billing|charge)\b/i, `${path} must document credit behavior or link to billing guidance`);
+
+    const sectionPositions = ["Request", "Response", "Errors", "Examples", "Next step"]
+      .map((heading) => source.indexOf(`## ${heading}`));
+    assert.deepEqual(
+      sectionPositions,
+      [...sectionPositions].sort((left, right) => left - right),
+      `${path} must use the approved section order`
+    );
+    assert.match(source, /## Examples\n\n<CodeGroup>\n```bash cURL/, `${path} examples must use a CodeGroup with cURL first`);
+
+    const authorizationExamples = Array.from(source.matchAll(/^```[^\n]*\n([\s\S]*?)^```/gm), ([, code]) => code)
+      .filter((code) => /Authorization[\s\S]*Bearer/i.test(code));
+    assert.ok(authorizationExamples.length > 0, `${path} must include an authenticated code example`);
+    for (const code of authorizationExamples) {
+      assert.equal(hasUnsafeBearerAuthorization(code), false, `${path} code examples must not contain static API keys`);
+      assert.equal(
+        hasApprovedBearerCredentialSource(code),
+        true,
+        `${path} code examples must source every Bearer credential from an approved placeholder or environment reference`
+      );
+    }
+  }
+
+  const bulk = readPage("api-reference/email-finder-(bulk)").source;
+  assert.match(bulk, /\| Maximum batch \| 100 input items per request \|/);
+  assert.match(bulk, /\| Rate limit \| 3,000 input items per minute per workspace \|/);
+  assert.match(bulk, /required `webhook_url`|`webhook_url` \| string \| Yes/i);
+  assert.match(bulk, /202 Accepted/);
+  assert.match(bulk, /one (?:JSON `POST`|asynchronous professional-email result) (?:for|per) each item|one asynchronous professional-email result per item/i);
+  assert.match(bulk, /`success`, `not_found`, `timeout`, or `error`/);
+  assert.match(bulk, /2 credits per item with `status: "success"`; misses and timeouts are not charged\./);
+
+  const personalEmail = readPage("api-reference/personal-email").source;
+  assert.match(personalEmail, /path must contain exactly one profile slug after `\/in\/`/);
 });
