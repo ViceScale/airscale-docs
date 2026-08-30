@@ -2,6 +2,16 @@
   "$schema": "https://mintlify.com/docs.json",
   "theme": "mint",
   "name": "Airscale API",
+  "description": "Airscale product guides, integration workflows, MCP documentation, and public API reference.",
+  "seo": {
+    "indexing": "navigable",
+    "metatags": {
+      "robots": "noindex, follow"
+    }
+  },
+  "search": {
+    "prompt": "Search Airscale documentation..."
+  },
   "colors": {
     "primary": "#4079FF",
     "light": "#4079FF",
