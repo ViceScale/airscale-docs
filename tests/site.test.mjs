@@ -17,9 +17,17 @@ const API_REFERENCE_TABS = [{
 }];
 const CANONICAL_SYMBOL_PATH = "m41.368,46.100 2.600,7.900c.700,2.200,2.800,3.600,5,3.600,1.700,0,3.300-.800,4.300-2.200,1-1.400,1.200-3.200.700-4.800l-4.700-13.400-7.900,8.900Zm-26.800-7.200 9-26.600c.5-1.400,1.800-2.300,3.300-2.300s2.800.900,3.300,2.300l6.200,18.500,7.800-8.800-4.600-13.100c-1.900-5.400-7-8.900-12.600-8.900-5.700,0-10.700,3.600-12.600,8.900L.367,48.800c-.700,2.100-.400,4.300.900,6.100,1.300,1.800,3.300,2.800,5.500,2.800,1.900,0,3.700-.800,5-2.200l13.800-15.400,2.800,8.300c.200.700.700,1.300,1.200,1.800s1.200.800,1.900,1c.700.100,1.500.1,2.100-.1.700-.200,1.300-.600,1.800-1.200l21-24.300c.5-.600.900-1.400,1-2.400.200-.9.100-1.9-.1-2.600l-1.700-4.800c-.1-.4-.3-.7-.5-.8-.1-.1-.2-.2-.4-.2h-.4c-.2.1-.5.200-.8.600l-19.800,22.500-2.700-8.100c-.8-3.200-4.900-3.800-7-1.400l-9.9,10.700";
 const APPROVED_BEARER_VALUES = new Set(["YOUR_API_KEY", "$AIRSCALE_API_KEY", "<YOUR_API_KEY>"]);
-const AUTHORIZATION_BEARER_VALUE = /\bAuthorization\b[\s:,"'`|=>(\[\]{}.-]*?\bBearer\s+(\S+)/gi;
+const AUTHORIZATION_BEARER_VALUE = /\bAuthorization\b[\s:,"'`|=>(\[\]{}.fFrRuUbB-]*?\bBearer\s+(\S+)/gi;
+const AIRSCALE_API_KEY_ASSIGNMENT = /\bAIRSCALE_API_KEY\s*=\s*(?:(['"])([^'"\r\n]*)\1|([^\s;]+))/gi;
 
 function hasUnsafeBearerAuthorization(source) {
+  const hasUnsafeAssignment = Array.from(source.matchAll(AIRSCALE_API_KEY_ASSIGNMENT)).some(([, , quotedValue, unquotedValue]) => {
+    const value = (quotedValue ?? unquotedValue ?? "").trim();
+    const isDynamicShellValue = /^\$(?:[A-Za-z_][A-Za-z0-9_]*|\{[A-Za-z_][A-Za-z0-9_]*\})$/.test(value);
+    return Boolean(value) && !APPROVED_BEARER_VALUES.has(value) && !isDynamicShellValue;
+  });
+  if (hasUnsafeAssignment) return true;
+
   return Array.from(source.matchAll(AUTHORIZATION_BEARER_VALUE)).some(([, value]) => {
       const strippedValue = value
         .trim()
@@ -27,9 +35,10 @@ function hasUnsafeBearerAuthorization(source) {
         .replace(/\s*```$/, "")
         .trim()
         .replace(/^&lt;(.+)&gt;$/, "<$1>")
+        .replace(/["'`][)\]}>},;|.!?]*$/, "")
         .replace(/^["'`]+|[)\]"'`,;|.!?]+$/g, "")
         .trim();
-      const isDynamicExpression = /^(?:\$\{[A-Za-z_$][\w$]*\}|\{[A-Za-z_$][\w$]*\})$/.test(strippedValue) || /^["'`]\+[A-Za-z_$][\w$]*(?:[)\],;]|$)/.test(value);
+      const isDynamicExpression = /^(?:\$\{[A-Za-z_$][\w$]*\}|\{[A-Za-z_$][\w$]*(?:(?:\.[A-Za-z_$][\w$]*)|(?:\[(?:"[^"]+"|'[^']+'|[A-Za-z_$][\w$]*)\]))*\})$/.test(strippedValue) || /^["'`]\+[A-Za-z_$][\w$]*(?:[)\],;]|$)/.test(value);
       return Boolean(strippedValue) && strippedValue.toLowerCase() !== "authentication" && !isDynamicExpression && !APPROVED_BEARER_VALUES.has(strippedValue);
     });
 }
@@ -69,6 +78,11 @@ function assertLocalDocumentationLinksResolve(source, path) {
   for (const href of localDocumentationLinks(source)) {
     assert.ok(existsSync(`.${href}.mdx`), `${path} link ${href} must resolve`);
   }
+}
+
+function assertBalancedCodeFences(source, path) {
+  const fenceCount = (source.match(/^[\t ]*```/gm) ?? []).length;
+  assert.equal(fenceCount % 2, 0, `${path} must have balanced code fences`);
 }
 
 function assertApprovedNavigationTabs(tabs) {
@@ -157,7 +171,9 @@ test("authorization bearer checks reject unsafe token formats", () => {
     "| Authorization | Bearer table-static-token |",
     "Authorization:\n  Bearer newline-static-token",
     `Authorization:${" ".repeat(161)}Bearer long-gap-static-token`,
-    "Authorization: Bearer +secret"
+    "Authorization: Bearer +secret",
+    "export AIRSCALE_API_KEY=\"live-secret-token\"",
+    'headers={"Authorization": f"Bearer live-secret-token"}'
   ]) {
     assert.equal(hasUnsafeBearerAuthorization(value), true, `${value} must be rejected`);
   }
@@ -171,10 +187,19 @@ test("authorization bearer checks reject unsafe token formats", () => {
   }
 
   assert.equal(hasUnsafeBearerAuthorization("const headers = { Authorization: `Bearer ${apiKey}` };"), false);
+  assert.equal(hasUnsafeBearerAuthorization('export AIRSCALE_API_KEY="YOUR_API_KEY"'), false);
+  assert.equal(hasUnsafeBearerAuthorization('export AIRSCALE_API_KEY="$SECRET_FROM_VAULT"'), false);
+  assert.equal(hasUnsafeBearerAuthorization('headers={"Authorization": f"Bearer {api_key}"}'), false);
   assert.equal(hasUnsafeBearerAuthorization("req.Header.Set(\"Authorization\", \"Bearer \"+apiKey)"), false);
   assert.equal(hasUnsafeBearerAuthorization("headers = { Authorization: 'Bearer ' . $apiKey };"), false);
   assert.equal(hasUnsafeBearerAuthorization("Authorization supports Bearer authentication."), false);
   assert.equal(hasUnsafeBearerAuthorization("Use Bearer authentication for every request."), false);
+});
+
+test("code-fence validation rejects malformed indented fences", () => {
+  const malformedSource = "  ```bash\n  echo unclosed";
+
+  assert.throws(() => assertBalancedCodeFences(malformedSource, "indented malformed fixture"));
 });
 
 test("navigation contains the five approved groups in order", () => {
@@ -205,7 +230,7 @@ test("every page has baseline-safe MDX", () => {
     const { source, frontmatter } = readPage(path);
 
     assert.ok(frontmatter.title, `${path} must have a title`);
-    assert.equal((source.match(/^```/gm) ?? []).length % 2, 0, `${path} must have balanced code fences`);
+    assertBalancedCodeFences(source, path);
     assert.equal(hasUnsafeBearerAuthorization(source), false, `${path} must not contain a non-placeholder bearer token`);
   }
 });
@@ -276,11 +301,38 @@ test("foundation pages teach a safe first request", () => {
   assert.match(creditCount, /<CodeGroup>/);
   assert.match(creditCount, /```bash cURL/);
   assert.match(creditCount, /```python Python/);
-  assert.match(creditCount, /```javascript JavaScript/);
+  assert.match(creditCount, /```javascript (?:Node\.js|JavaScript \(Node\.js 18\+\))/);
+  assert.doesNotMatch(creditCount, /```javascript JavaScript\n/);
   assert.match(creditCount, /## Request/);
   assert.match(creditCount, /## Response/);
   assert.match(creditCount, /## Errors/);
-  assert.match(creditCount, /"status": "success"/);
+  assert.match(creditCount, /\| Airscale credit cost \| No charge; checking the balance does not debit Airscale credits\. \|/);
+
+  const invalidKeyRow = creditCount.match(/\| `401 Unauthorized` \| The API key is invalid\. \| ([^|\n]+) \|/);
+  assert.ok(invalidKeyRow, "Credit count must document invalid-key recovery");
+  const invalidKeyRecovery = invalidKeyRow[1];
+  assert.match(invalidKeyRecovery, /Copy the current key from the Airscale dashboard/i);
+  assert.match(invalidKeyRecovery, /verify it matches the deployed value/i);
+  assert.match(invalidKeyRecovery, /update your server-side secret first/i);
+  assert.match(invalidKeyRecovery, /Rotate only if the key was exposed/i);
+  const recoverySteps = ["Copy", "verify", "update", "Rotate"].map((step) => invalidKeyRecovery.indexOf(step));
+  assert.ok(recoverySteps.every((position) => position >= 0));
+  assert.deepEqual(recoverySteps, [...recoverySteps].sort((left, right) => left - right));
+
+  const assertNumericCreditBalance = (source) => {
+    const successBlock = source.match(/## Response[\s\S]*?```json\n([\s\S]*?)\n```/);
+    assert.ok(successBlock, "Credit count must contain a JSON success response");
+    const payload = JSON.parse(successBlock[1]);
+    assert.equal(typeof payload?.response?.credits, "number");
+  };
+  assertNumericCreditBalance(creditCount);
+  const stringCreditMutation = creditCount.replace(
+    /("credits"\s*:\s*)(-?(?:0|[1-9]\d*)(?:\.\d+)?(?:[eE][+-]?\d+)?)/,
+    '$1"$2"'
+  );
+  assert.notEqual(stringCreditMutation, creditCount, "Credit-count mutation fixture must modify the response");
+  assert.throws(() => assertNumericCreditBalance(stringCreditMutation));
+
   assert.match(creditCount, /401/);
   assert.ok(localDocumentationLinks(creditCount).includes("/api-reference/find-people"));
 });

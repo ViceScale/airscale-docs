@@ -14,6 +14,7 @@ POST https://api.airscale.io/v1/credits
 | Method | `POST` |
 | Authentication | Bearer API key |
 | Request body | None |
+| Airscale credit cost | No charge; checking the balance does not debit Airscale credits. |
 
 ## Request
 
@@ -39,7 +40,7 @@ response.raise_for_status()
 print(response.json())
 ```
 
-```javascript JavaScript
+```javascript Node.js
 const apiKey = process.env.AIRSCALE_API_KEY;
 const response = await fetch("https://api.airscale.io/v1/credits", {
   method: "POST",
@@ -78,7 +79,7 @@ A successful request returns `200 OK` with the remaining credit balance:
 | Status | Cause | Recovery |
 | --- | --- | --- |
 | `401 Unauthorized` | The Bearer token is missing. | Add the `Authorization` header and resend the request. |
-| `401 Unauthorized` | The API key is invalid. | Create or rotate the key in Airscale Settings, then update your server-side secret. |
+| `401 Unauthorized` | The API key is invalid. | Copy the current key from the Airscale dashboard, verify it matches the deployed value, and update your server-side secret first. Rotate only if the key was exposed. |
 
 ## Next step
 
