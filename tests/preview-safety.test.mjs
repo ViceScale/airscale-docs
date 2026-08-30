@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import { readFileSync, readdirSync } from "node:fs";
 import test from "node:test";
+import * as updater from "../scripts/set-preview-canonicals.mjs";
 
 const policy = JSON.parse(readFileSync("contracts/publication-policy.json", "utf8"));
 const config = JSON.parse(readFileSync("docs.json", "utf8"));
@@ -18,9 +19,10 @@ function mdxFiles(directory) {
 function frontmatterValue(source, key, path) {
   const match = source.match(/^---\n([\s\S]*?)\n---/);
   assert.ok(match, `${path} must start with YAML frontmatter`);
-  const line = match[1].split("\n").find((candidate) => candidate.startsWith(`${key}:`));
-  assert.ok(line, `${path} must define ${key}`);
-  return JSON.parse(line.slice(key.length + 1).trim());
+  const lines = match[1].split("\n");
+  const matches = lines.filter((candidate) => candidate.startsWith(`${key}:`));
+  assert.equal(matches.length, 1, `${path} must define exactly one ${key}`);
+  return JSON.parse(matches[0].slice(key.length + 1).trim());
 }
 
 test("publication policy is preview-only and forbids live-domain mutations", () => {
@@ -60,4 +62,94 @@ test("every current content page declares its preview-host canonical", () => {
     const route = path.replace(/\.mdx$/, "");
     assert.equal(frontmatterValue(source, "canonical", path), `${policy.previewOrigin}/${route}`);
   }
+});
+
+test("updater inserts canonical after a single-line description", () => {
+  const source = `---\ntitle: "Fixture"\ndescription: "A fixture page."\n---\n`;
+  const result = updater.updateFrontmatterSource("api-reference/fixture.mdx", source);
+
+  assert.equal(result.changed, true);
+  assert.match(
+    result.nextSource,
+    /description: "A fixture page\."\ncanonical: "https:\/\/airscale\.mintlify\.app\/api-reference\/fixture"\n---/
+  );
+});
+
+test("updater replaces duplicate stale canonicals with exactly one current value", () => {
+  const source = `---\ntitle: "Fixture"\ndescription: "A fixture page."\ncanonical: "https://old.example/fixture"\ncanonical: "https://older.example/fixture"\n---\n`;
+  const result = updater.updateFrontmatterSource("api-reference/fixture.mdx", source);
+  const frontmatter = result.nextSource.match(/^---\n([\s\S]*?)\n---/)[1];
+
+  assert.equal((frontmatter.match(/^canonical:/gm) ?? []).length, 1);
+  assert.equal(
+    frontmatterValue(result.nextSource, "canonical", "fixture"),
+    `${updater.PREVIEW_ORIGIN}/api-reference/fixture`
+  );
+});
+
+test("updater preserves a complete multiline description before canonical", () => {
+  const source = `---\ntitle: "Fixture"\ndescription: |-\n  First line.\n  Second line.\nother: true\n---\n`;
+  const result = updater.updateFrontmatterSource("api-reference/fixture.mdx", source);
+
+  assert.match(
+    result.nextSource,
+    /description: \|-\n  First line\.\n  Second line\.\ncanonical: "https:\/\/airscale\.mintlify\.app\/api-reference\/fixture"\nother: true\n---/
+  );
+});
+
+test("updater recognizes YAML block-scalar indentation and chomping indicators", () => {
+  const source = `---\ntitle: "Fixture"\ndescription: >2-\n    First line.\n    Second line.\nother: true\n---\n`;
+  const result = updater.updateFrontmatterSource("api-reference/fixture.mdx", source);
+
+  assert.match(
+    result.nextSource,
+    /description: >2-\n    First line\.\n    Second line\.\ncanonical: "https:\/\/airscale\.mintlify\.app\/api-reference\/fixture"\nother: true\n---/
+  );
+});
+
+test("updater is idempotent and skips unchanged writes", () => {
+  const files = new Map([
+    [
+      "api-reference/fixture.mdx",
+      `---\ntitle: "Fixture"\ndescription: "A fixture page."\n---\n`
+    ]
+  ]);
+  const writes = [];
+  const io = {
+    read: (path) => files.get(path),
+    write: (path, source) => {
+      writes.push(path);
+      files.set(path, source);
+    }
+  };
+
+  assert.deepEqual(updater.synchronizeFiles([...files.keys()], io), { scanned: 1, changed: 1 });
+  assert.deepEqual(updater.synchronizeFiles([...files.keys()], io), { scanned: 1, changed: 0 });
+  assert.deepEqual(writes, ["api-reference/fixture.mdx"]);
+});
+
+test("updater validates every page before writing any page", () => {
+  const files = new Map([
+    [
+      "api-reference/01-valid.mdx",
+      `---\ntitle: "Valid"\ndescription: "A valid fixture."\n---\n`
+    ],
+    ["api-reference/02-invalid.mdx", `---\ntitle: "Invalid"\n---\n`]
+  ]);
+  const before = new Map(files);
+  const writes = [];
+
+  assert.throws(
+    () =>
+      updater.synchronizeFiles([...files.keys()].sort(), {
+        read: (path) => files.get(path),
+        write: (path, source) => {
+          writes.push(path);
+          files.set(path, source);
+        }
+      }),
+    /02-invalid\.mdx must define description before canonical/
+  );
+  assert.deepEqual(files, before);
+  assert.deepEqual(writes, []);
 });
