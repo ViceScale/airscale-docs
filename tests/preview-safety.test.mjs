@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import { readFileSync, readdirSync } from "node:fs";
 import test from "node:test";
+import { parseDocument } from "yaml";
 import * as updater from "../scripts/set-preview-canonicals.mjs";
 
 const packageManifest = JSON.parse(readFileSync("package.json", "utf8"));
@@ -28,6 +29,18 @@ function frontmatterValue(source, key, path) {
 
 function expectedCanonical(path) {
   return `${policy.previewOrigin}/${path.replace(/\.mdx$/, "")}`;
+}
+
+function frontmatterDocument(source, path) {
+  const match = source.match(/^---\n([\s\S]*?)\n---/);
+  assert.ok(match, `${path} must start with YAML frontmatter`);
+  const document = parseDocument(match[1], { uniqueKeys: false });
+  assert.equal(document.errors.length, 0, `${path} frontmatter must parse as YAML`);
+  return document;
+}
+
+function topLevelCanonicalPairs(document) {
+  return document.contents?.items?.filter((pair) => pair.key?.value === "canonical") ?? [];
 }
 
 test("publication policy is preview-only and forbids live-domain mutations", () => {
@@ -58,8 +71,9 @@ test("foundation config does not declare live-domain redirects", () => {
   assert.equal(policy.liveSiteWritesAllowed, false);
 });
 
-test("package toolchain pins the local Mint validation command", () => {
+test("package toolchain pins local Mint and YAML validation dependencies", () => {
   assert.equal(packageManifest.devDependencies?.mint, "4.2.850");
+  assert.equal(packageManifest.devDependencies?.yaml, "2.9.0");
   assert.equal(packageManifest.scripts?.["mint:validate"], "mint validate");
   assert.equal(packageManifest.scripts?.validate.includes("npx"), false);
 });
@@ -71,6 +85,16 @@ test("every current content page declares its preview-host canonical", () => {
   for (const path of files) {
     const source = readFileSync(path, "utf8");
     assert.equal(frontmatterValue(source, "canonical", path), expectedCanonical(path));
+  }
+});
+
+test("every current content page is byte-idempotent under canonical synchronization", () => {
+  for (const path of mdxFiles("api-reference")) {
+    const source = readFileSync(path, "utf8");
+    const result = updater.updateFrontmatterSource(path, source);
+
+    assert.equal(result.changed, false, `${path} must not require metadata changes`);
+    assert.equal(result.nextSource, source, `${path} must remain byte-identical`);
   }
 });
 
@@ -108,6 +132,46 @@ test("updater replaces duplicate stale canonicals with exactly one current value
     frontmatterValue(result.nextSource, "canonical", "fixture"),
     `${updater.PREVIEW_ORIGIN}/api-reference/fixture`
   );
+});
+
+test("updater fails closed on a folded canonical without corrupting source", () => {
+  const source = `---\ntitle: "Fixture"\ndescription: "A fixture page."\ncanonical: >-\n  https://old.example/fixture\nother: true\n---\n`;
+
+  assert.throws(
+    () => updater.updateFrontmatterSource("api-reference/fixture.mdx", source),
+    /api-reference\/fixture\.mdx canonical must be a single-line scalar/
+  );
+  assert.equal(source, `---\ntitle: "Fixture"\ndescription: "A fixture page."\ncanonical: >-\n  https://old.example/fixture\nother: true\n---\n`);
+});
+
+test("updater fails closed when duplicate canonicals include a block scalar", () => {
+  const source = `---\ntitle: "Fixture"\ndescription: "A fixture page."\ncanonical: "https://old.example/fixture"\ncanonical: |\n  https://older.example/fixture\n---\n`;
+
+  assert.throws(
+    () => updater.updateFrontmatterSource("api-reference/fixture.mdx", source),
+    /api-reference\/fixture\.mdx canonical must be a single-line scalar/
+  );
+  assert.equal(source, `---\ntitle: "Fixture"\ndescription: "A fixture page."\ncanonical: "https://old.example/fixture"\ncanonical: |\n  https://older.example/fixture\n---\n`);
+});
+
+test("updater fails closed on an anchored canonical scalar", () => {
+  const source = `---\ntitle: "Fixture"\ndescription: "A fixture page."\ncanonical: &fixture "https://old.example/fixture"\n---\n`;
+
+  assert.throws(
+    () => updater.updateFrontmatterSource("api-reference/fixture.mdx", source),
+    /api-reference\/fixture\.mdx canonical must be a single-line scalar/
+  );
+  assert.equal(source, `---\ntitle: "Fixture"\ndescription: "A fixture page."\ncanonical: &fixture "https://old.example/fixture"\n---\n`);
+});
+
+test("updater parses generated frontmatter with exactly one exact canonical", () => {
+  const source = `---\ntitle: "Fixture"\ndescription: "A fixture page."\nother: true\n---\n`;
+  const result = updater.updateFrontmatterSource("api-reference/fixture.mdx", source);
+  const document = frontmatterDocument(result.nextSource, "api-reference/fixture.mdx");
+  const canonicals = topLevelCanonicalPairs(document);
+
+  assert.equal(canonicals.length, 1);
+  assert.equal(canonicals[0].value.value, expectedCanonical("api-reference/fixture.mdx"));
 });
 
 test("updater preserves a complete multiline description before canonical", () => {
@@ -203,6 +267,35 @@ test("updater validates every page before writing any page", () => {
         }
       }),
     /02-invalid\.mdx must define description before canonical/
+  );
+  assert.deepEqual(files, before);
+  assert.deepEqual(writes, []);
+});
+
+test("updater prevalidates a complex canonical before writing any earlier valid page", () => {
+  const files = new Map([
+    [
+      "api-reference/01-valid.mdx",
+      `---\ntitle: "Valid"\ndescription: "A valid fixture."\n---\n`
+    ],
+    [
+      "api-reference/02-complex.mdx",
+      `---\ntitle: "Complex"\ndescription: "A complex fixture."\ncanonical: >-\n  https://old.example/complex\n---\n`
+    ]
+  ]);
+  const before = new Map(files);
+  const writes = [];
+
+  assert.throws(
+    () =>
+      updater.synchronizeFiles([...files.keys()].sort(), {
+        read: (path) => files.get(path),
+        write: (path, source) => {
+          writes.push(path);
+          files.set(path, source);
+        }
+      }),
+    /02-complex\.mdx canonical must be a single-line scalar/
   );
   assert.deepEqual(files, before);
   assert.deepEqual(writes, []);
