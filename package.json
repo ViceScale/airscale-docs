@@ -7,9 +7,13 @@
     "inventory:refresh": "node scripts/capture-framer-sitemap.mjs --write",
     "metadata:sync": "node scripts/set-preview-canonicals.mjs",
     "test": "node --test tests/*.test.mjs",
-    "validate": "npm test && npx mint validate"
+    "mint:validate": "mint validate",
+    "validate": "npm test && npm run mint:validate"
   },
   "dependencies": {
     "@xmldom/xmldom": "0.9.12"
+  },
+  "devDependencies": {
+    "mint": "4.2.850"
   }
 }

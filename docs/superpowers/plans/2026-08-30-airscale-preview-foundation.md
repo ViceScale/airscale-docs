@@ -35,7 +35,9 @@ Do not begin Plan 2 until this plan is complete. The inventory created here is a
 ### Modify
 
 - `docs.json` — add site description, preview `noindex`, and a documentation search prompt.
-- `package.json` — add deterministic metadata and inventory commands.
+- `.gitignore` — ignore the local dependency install used by the reproducible docs toolchain.
+- `package.json` — add deterministic metadata and inventory commands plus the pinned Mint validation toolchain.
+- `package-lock.json` — lock the exact Mint CLI dependency and its transitive packages.
 - `api-reference/*.mdx` — add page-specific preview canonical metadata only; do not rewrite page bodies in this plan.
 
 ### Read only
@@ -145,7 +147,7 @@ Run:
 
 ```bash
 node --test tests/preview-safety.test.mjs
-npx mint validate
+npm run mint:validate
 ```
 
 Expected:
@@ -285,7 +287,7 @@ function updateFrontmatter(path) {
 
 const files = CONTENT_ROOTS.flatMap(mdxFiles);
 for (const path of files) updateFrontmatter(path);
-console.log(`Updated preview canonicals for ${files.length} MDX pages.`);
+// The hardened CLI reports: Scanned 16 MDX pages; updated 0.
 ```
 
 - [ ] **Step 4: Add the canonical command to `package.json`**
@@ -296,7 +298,8 @@ Change the scripts object to:
 "scripts": {
   "metadata:sync": "node scripts/set-preview-canonicals.mjs",
   "test": "node --test tests/*.test.mjs",
-  "validate": "npm test && npx mint validate"
+  "mint:validate": "mint validate",
+  "validate": "npm test && npm run mint:validate"
 }
 ```
 
@@ -308,7 +311,7 @@ Run:
 npm run metadata:sync
 ```
 
-Expected: `Updated preview canonicals for 16 MDX pages.`
+Expected: `Scanned 16 MDX pages; updated 0.`
 
 Verify one representative page begins with:
 
@@ -327,7 +330,7 @@ Run:
 ```bash
 node --test tests/preview-safety.test.mjs
 npm test
-npx mint validate
+npm run mint:validate
 git diff --check
 ```
 
@@ -605,7 +608,8 @@ Change the scripts object to:
   "inventory:refresh": "node scripts/capture-framer-sitemap.mjs --write",
   "metadata:sync": "node scripts/set-preview-canonicals.mjs",
   "test": "node --test tests/*.test.mjs",
-  "validate": "npm test && npx mint validate"
+  "mint:validate": "mint validate",
+  "validate": "npm test && npm run mint:validate"
 }
 ```
 
@@ -719,7 +723,20 @@ git commit -m "test: fail closed on preview host and inventory drift"
 
 - Modify only if verification exposes a defect in files owned by Tasks 1-4.
 
-- [ ] **Step 1: Verify generated metadata is idempotent**
+- [ ] **Step 1: Install and record the pinned toolchain**
+
+Run:
+
+```bash
+npm ci
+node --version
+npm --version
+npm ls mint --depth=0
+```
+
+Expected: `npm ci` succeeds, and `npm ls mint --depth=0` reports the exact `mint@4.2.850` dependency from `package-lock.json`.
+
+- [ ] **Step 2: Verify generated metadata is idempotent**
 
 Run:
 
@@ -730,10 +747,29 @@ git diff --exit-code -- api-reference
 
 Expected:
 
-- `Updated preview canonicals for 16 MDX pages.`
+- `Scanned 16 MDX pages; updated 0.`
 - `git diff --exit-code -- api-reference` exits 0 and prints no diff.
 
-- [ ] **Step 2: Verify the committed inventory still matches the live sitemap**
+- [ ] **Step 3: Run the complete local documentation gate and dependency audit**
+
+Run:
+
+```bash
+node --test tests/preview-safety.test.mjs
+npm test
+npm run mint:validate
+npm run validate
+npm audit
+```
+
+Expected:
+
+- Focused preview tests pass.
+- All Node tests pass with zero failures.
+- Both local Mint validation invocations pass using the pinned `mint@4.2.850` binary.
+- `npm audit` output is recorded, including any existing advisories; do not run `npm audit fix` as part of this gate.
+
+- [ ] **Step 4: Verify the committed inventory still matches the live sitemap**
 
 Run:
 
@@ -745,23 +781,19 @@ Expected: `Framer sitemap matches inventory (82 routes).`
 
 If the route count or paths changed, stop. Refreshing and reclassifying a changed live sitemap requires review of the new paths before updating the committed inventory.
 
-- [ ] **Step 3: Run the complete local documentation gate**
+- [ ] **Step 5: Run repository, index, and cross-base whitespace checks**
 
 Run:
 
 ```bash
-npm test
-npx mint validate
 git diff --check
+git diff --cached --check
+git diff --check origin/main...HEAD
 ```
 
-Expected:
+Expected: all three commands exit 0 and print no whitespace errors.
 
-- All Node tests pass with zero failures.
-- Mintlify validation passes.
-- `git diff --check` prints no output.
-
-- [ ] **Step 4: Verify the live DNS target was not changed**
+- [ ] **Step 6: Verify the live DNS target was not changed**
 
 Run this read-only query:
 
@@ -773,30 +805,50 @@ Expected at the time of this plan: `sites.framer.app.`
 
 Do not run any DNS mutation command even if the result differs. Report external drift instead.
 
-- [ ] **Step 5: Verify branch and commit state**
+- [ ] **Step 7: Verify branch, index, working-tree, and commit state**
 
 Run:
 
 ```bash
 git status --short --branch
-git log --oneline --decorate -5
+git diff --quiet
+git diff --cached --quiet
+git log --oneline --decorate -12
 ```
 
 Expected:
 
-- Only intentional, ignored, or explicitly documented local brainstorming artifacts may remain untracked.
+- Tracked files and the index are clean after the focused commit; five documented untracked `.superpowers/brainstorm/...` artifacts remain visible.
+- `node_modules` is ignored and does not appear in status.
 - Tasks 1-4 appear as separate commits.
-- No merge, push, PR, deployment, DNS change, or live-site write has occurred.
+- No mutating code or commands were observed during this executed plan. Current DNS remains unchanged based on the read-only lookup. Current remote branch/PR state may be checked separately with read-only GitHub queries, but this local gate does not prove historical absence of external activity.
 
-- [ ] **Step 6: Stop after the foundation checkpoint**
+- [ ] **Step 8: Record the bounded network and safety evidence**
+
+The allowed network reads for this plan are:
+
+- one bounded `GET https://docs.airscale.io/sitemap.xml` from `npm run inventory:check`;
+- DNS resolution for `docs.airscale.io` via `dig`;
+- npm dependency installation/resolution required by `npm ci` and the pinned lockfile;
+- Mint validation traffic from the local `mint validate` binary; and
+- any explicitly recorded read-only GitHub remote/PR queries (none are implied unless actually run).
+
+Record that no mutating code or commands were observed during this executed plan; no Airscale public API calls, credit spend, provider-quota use, production mutations, DNS/custom-domain/redirect changes, or live Framer writes were performed. Do not broaden that statement into a claim about all historical external activity.
+
+- [ ] **Step 9: Stop after the foundation checkpoint**
 
 Report these exact outputs before starting the OpenAPI reference plan:
 
+- Node and npm versions;
+- `npm ls mint --depth=0` exact version;
 - test total and failure count;
 - Mintlify validation result;
+- `npm audit` result;
+- metadata changed count;
 - inventory denominator `82` and disposition counts `60/17/3/2`;
 - exact branch HEAD SHA;
-- read-only DNS result; and
-- confirmation that there were zero calls to Airscale public API endpoints, zero credit spend, zero provider-quota use, zero production mutations, and zero DNS changes. The only network read in this plan is the documented GET of the public Framer sitemap plus dependency/validation traffic from the Mint CLI.
+- read-only DNS result;
+- tracked/index/working-tree status, including the five documented `.superpowers/brainstorm/...` artifacts; and
+- the bounded network and no-mutation evidence described above.
 
 Do not implement OpenAPI pages or product-guide migrations as unplanned follow-on work. Create and review Plan 2 using the completed foundation artifacts first.

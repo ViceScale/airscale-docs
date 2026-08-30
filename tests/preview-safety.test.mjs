@@ -3,6 +3,7 @@ import { readFileSync, readdirSync } from "node:fs";
 import test from "node:test";
 import * as updater from "../scripts/set-preview-canonicals.mjs";
 
+const packageManifest = JSON.parse(readFileSync("package.json", "utf8"));
 const policy = JSON.parse(readFileSync("contracts/publication-policy.json", "utf8"));
 const config = JSON.parse(readFileSync("docs.json", "utf8"));
 
@@ -55,6 +56,12 @@ test("foundation config does not declare live-domain redirects", () => {
   assert.equal(policy.dnsChangesAllowed, false);
   assert.equal(policy.liveRedirectsAllowed, false);
   assert.equal(policy.liveSiteWritesAllowed, false);
+});
+
+test("package toolchain pins the local Mint validation command", () => {
+  assert.equal(packageManifest.devDependencies?.mint, "4.2.850");
+  assert.equal(packageManifest.scripts?.["mint:validate"], "mint validate");
+  assert.equal(packageManifest.scripts?.validate.includes("npx"), false);
 });
 
 test("every current content page declares its preview-host canonical", () => {
