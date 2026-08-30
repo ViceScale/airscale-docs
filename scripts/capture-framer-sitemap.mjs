@@ -210,14 +210,19 @@ export function writeInventoryAtomic(inventory, { outputPath = OUTPUT_PATH, fsIm
   }
 }
 
-export async function run(mode, {
+export function parseCliArgs(args) {
+  if (!Array.isArray(args) || args.length !== 1 || (args[0] !== "--write" && args[0] !== "--check")) {
+    throw new Error("Use --write to refresh inventory or --check to compare without writing (exactly one argument required).");
+  }
+  return args[0];
+}
+
+export async function run(args, {
   fetchImpl = fetch,
   readFileImpl = readFileSync,
   writeInventoryImpl = writeInventoryAtomic
 } = {}) {
-  if (mode !== "--write" && mode !== "--check") {
-    throw new Error("Use --write to refresh inventory or --check to compare without writing.");
-  }
+  const mode = parseCliArgs(args);
   const paths = await fetchSitemap(fetchImpl);
   if (mode === "--write") {
     const inventory = buildInventory(paths);
@@ -235,7 +240,7 @@ export async function run(mode, {
 const isCli = process.argv[1] && fileURLToPath(import.meta.url) === resolve(process.argv[1]);
 if (isCli) {
   try {
-    await run(process.argv[2]);
+    await run(process.argv.slice(2));
   } catch (error) {
     console.error(error.stack || error);
     process.exitCode = 1;

@@ -1,5 +1,5 @@
 import assert from "node:assert/strict";
-import { existsSync, mkdtempSync, readFileSync, readdirSync } from "node:fs";
+import { existsSync, mkdtempSync, readFileSync, readdirSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import test from "node:test";
@@ -11,6 +11,7 @@ import {
   compareInventory,
   createRequestOptions,
   normalizePaths,
+  parseCliArgs,
   parsePaths,
   run,
   validateInventory,
@@ -170,8 +171,9 @@ test("normalization sorts route fixtures before classification and comparison", 
   assert.doesNotThrow(() => compareInventory(buildInventory(first), second));
 });
 
-test("atomic inventory writes leave only the final file and clean temp files on failure", () => {
+test("atomic inventory writes leave only the final file and clean temp files on failure", (t) => {
   const directory = mkdtempSync(join(tmpdir(), "airscale-inventory-"));
+  t.after(() => rmSync(directory, { recursive: true, force: true }));
   const outputPath = join(directory, "framer-routes.json");
   const sample = buildInventory(["/"], { capturedAt: "2026-01-01T00:00:00.000Z" });
 
@@ -207,7 +209,7 @@ test("atomic inventory writes leave only the final file and clean temp files on 
 test("invalid CLI mode is rejected before fetch and sitemap requests are bounded GETs", async () => {
   let fetchCalls = 0;
   await assert.rejects(
-    run("--invalid", { fetchImpl: async () => { fetchCalls += 1; } }),
+    run(["--invalid"], { fetchImpl: async () => { fetchCalls += 1; } }),
     /Use --write to refresh inventory or --check to compare without writing/
   );
   assert.equal(fetchCalls, 0);
@@ -223,10 +225,20 @@ test("invalid CLI mode is rejected before fetch and sitemap requests are bounded
 
 test("sitemap request errors identify the source URL", async () => {
   await assert.rejects(
-    run("--check", {
+    run(["--check"], {
       fetchImpl: async () => { throw new Error("network down"); },
       readFileImpl: () => readFileSync("inventory/framer-routes.json", "utf8")
     }),
     new RegExp(SOURCE_URL.replaceAll(".", "\\."))
   );
+});
+
+test("trailing CLI arguments are rejected before fetch", async () => {
+  let fetchCalls = 0;
+  await assert.rejects(
+    run(["--check", "--unexpected"], { fetchImpl: async () => { fetchCalls += 1; } }),
+    /exactly one argument/i
+  );
+  assert.equal(fetchCalls, 0);
+  assert.throws(() => parseCliArgs(["--check", "--unexpected"]), /exactly one argument/i);
 });
