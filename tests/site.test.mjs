@@ -222,3 +222,65 @@ test("local Markdown and component documentation links resolve", () => {
   assert.doesNotThrow(() => assertLocalDocumentationLinksResolve('<Card href="/api-reference/api-overview">Overview</Card>', "valid component fixture"));
   assert.throws(() => assertLocalDocumentationLinksResolve('<Card href="/api-reference/missing">Missing</Card>', "invalid component fixture"));
 });
+
+test("foundation pages teach a safe first request", () => {
+  const descriptions = {
+    "api-reference/api-overview": "Authenticate with Airscale and make your first API request.",
+    "api-reference/authentication": "Create, send, protect, and rotate an Airscale API key.",
+    "api-reference/rate-limits": "Understand endpoint-specific request limits and 429 responses.",
+    "api-reference/credit-count": "Check the remaining credit balance for your Airscale workspace."
+  };
+
+  for (const [path, description] of Object.entries(descriptions)) {
+    const { source, body, frontmatter } = readPage(path);
+
+    assert.equal(frontmatter.description, description, `${path} must use the approved description`);
+    assert.ok(frontmatter.description, `${path} must have a description`);
+    assert.doesNotMatch(body, /^#\s+/m, `${path} must not repeat its title as a body H1`);
+    assert.doesNotMatch(source, /\b(?:Authentification|Endoints)\b/, `${path} must not retain migration misspellings`);
+    assert.ok(!localDocumentationLinks(source).includes(`/${path}`), `${path} must not link to itself`);
+  }
+
+  const overview = readPage("api-reference/api-overview").source;
+  assert.match(overview, /<CardGroup cols=\{2\}>/);
+  assert.match(overview, /<Steps>/);
+  assert.match(overview, /POST https:\/\/api\.airscale\.io\/v1\/credits/);
+  assert.match(overview, /\$AIRSCALE_API_KEY/);
+  for (const path of [
+    "authentication",
+    "rate-limits",
+    "find-people",
+    "find-companies",
+    "email-finder",
+    "airsearch"
+  ]) {
+    assert.ok(localDocumentationLinks(overview).includes(`/api-reference/${path}`), `API overview must link to ${path}`);
+  }
+  assert.doesNotMatch(overview, /version-live|Authentification|Endoints/);
+
+  const authentication = readPage("api-reference/authentication").source;
+  assert.match(authentication, /Airscale Settings/);
+  assert.match(authentication, /Authorization: Bearer \$AIRSCALE_API_KEY/);
+  assert.match(authentication, /401 Unauthorized/);
+  assert.match(authentication, /<Warning>/);
+  assert.match(authentication, /rotate/i);
+
+  const rateLimits = readPage("api-reference/rate-limits").source;
+  assert.match(rateLimits, /endpoint-specific/i);
+  assert.match(rateLimits, /429 Too Many Requests/);
+  assert.match(rateLimits, /bounded exponential backoff/i);
+  assert.doesNotMatch(rateLimits, /3,?000/);
+
+  const creditCount = readPage("api-reference/credit-count").source;
+  assert.match(creditCount, /POST https:\/\/api\.airscale\.io\/v1\/credits/);
+  assert.match(creditCount, /<CodeGroup>/);
+  assert.match(creditCount, /```bash cURL/);
+  assert.match(creditCount, /```python Python/);
+  assert.match(creditCount, /```javascript JavaScript/);
+  assert.match(creditCount, /## Request/);
+  assert.match(creditCount, /## Response/);
+  assert.match(creditCount, /## Errors/);
+  assert.match(creditCount, /"status": "success"/);
+  assert.match(creditCount, /401/);
+  assert.ok(localDocumentationLinks(creditCount).includes("/api-reference/find-people"));
+});

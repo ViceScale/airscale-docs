@@ -1,19 +1,69 @@
 ---
 title: "API Overview"
+description: "Authenticate with Airscale and make your first API request."
 ---
 
-**Note** : you will need to be on a paid plan in order to use Airscale's API
+Use the Airscale API to search for people and companies and enrich contact data from your application.
 
-### 1. Sign into Airscale
+<CardGroup cols={2}>
+  <Card title="Make your first request" href="/api-reference/credit-count">
+    Check your workspace's remaining credits with a request that has no body.
+  </Card>
+  <Card title="Browse endpoints" href="/api-reference/find-people">
+    Start with people search, then explore company search and enrichment endpoints.
+  </Card>
+</CardGroup>
 
-- [Create an account](https://app.airscale.io/) in Airscale or [Sign in](https://app.airscale.io/)
+## Make your first request
 
-### 2. Generate your API key
+<Steps>
+  <Step title="Create an API key">
+    In Airscale, open **Settings → API key** and create a key for your server-side application.
+  </Step>
+  <Step title="Authenticate">
+    Store the key in an environment variable and send it as a Bearer token on every request.
 
-- Head over to your settings and select "API key"
-- Alternatively, if you are logged in you can directly access the page [here](https://app.airscale.io/version-live/dashboard?page=settings&tab=key)
+    ```bash
+    export AIRSCALE_API_KEY="YOUR_API_KEY"
+    ```
+  </Step>
+  <Step title="Request your credit balance">
+    Call `POST https://api.airscale.io/v1/credits` with no body.
 
-### 3. Make your first API call
+    ```bash cURL
+    curl --request POST \
+      --url https://api.airscale.io/v1/credits \
+      --header "Authorization: Bearer $AIRSCALE_API_KEY"
+    ```
+  </Step>
+</Steps>
 
-- Now that you have generated your API key, you can now start enriching your data
-- Learn more about [Authentification](/api-reference/authentication) and how to make your first successful API call via "API Endoints"
+A successful request returns the remaining workspace balance as a number:
+
+```json
+{
+  "status": "success",
+  "response": {
+    "credits": 1200
+  }
+}
+```
+
+## Popular endpoints
+
+<CardGroup cols={2}>
+  <Card title="Find people" href="/api-reference/find-people">
+    Search for people that match professional filters.
+  </Card>
+  <Card title="Find companies" href="/api-reference/find-companies">
+    Discover companies that match firmographic filters.
+  </Card>
+  <Card title="Email finder" href="/api-reference/email-finder">
+    Find a professional email address from a person's details.
+  </Card>
+  <Card title="Airsearch" href="/api-reference/airsearch">
+    Run an Airsearch request from your application.
+  </Card>
+</CardGroup>
+
+Before you build a production integration, review [Authentication](/api-reference/authentication) and [Rate limits](/api-reference/rate-limits).

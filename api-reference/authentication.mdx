@@ -1,18 +1,38 @@
 ---
 title: "Authentication"
+description: "Create, send, protect, and rotate an Airscale API key."
 ---
 
-To ensure the security of your data and to authenticate requests, Airscale API uses Bearer Authentication. Each request to our API endpoints must include this authorization header
+Airscale authenticates API requests with a workspace API key sent as a Bearer token.
 
-Here’s how to include your API key in your request:
+## Create an API key
 
-```text
-Authorization: Bearer YOUR_API_KEY
+Create the key in **Airscale Settings**: open the [Airscale dashboard](https://app.airscale.io/dashboard), choose **Settings → API key**, and generate a key for your integration.
+
+Store the value in your server's secret manager or environment configuration:
+
+```bash
+export AIRSCALE_API_KEY="YOUR_API_KEY"
 ```
 
-Be sure to replace YOUR_API_KEY with the actual API key from your dashboard. Without a valid API key in your request, you will not be able to access the API endpoints and will receive a 401 unauthorized response
+## Send the key
 
-Keep your API key secure and do not share it publicly
+Include this header on every API request:
 
-If you suspect that your API key has been compromised, you should regenerate it immediately from your account dashboard to prevent unauthorized access
+```text
+Authorization: Bearer $AIRSCALE_API_KEY
+```
 
+## Handle unauthorized requests
+
+A missing Bearer token or an invalid API key returns `401 Unauthorized`. Check that the header is present, that it starts with `Bearer`, and that your deployed secret contains the current key before retrying.
+
+<Warning>
+Keep API keys server-side. Never commit them to source control, place them in examples, or expose them in browser or mobile client bundles.
+</Warning>
+
+## Rotate a compromised key
+
+If a key is exposed, rotate it immediately in **Airscale Settings**. Update the server-side secret, deploy the new value, verify an authenticated request, and stop using the old key.
+
+Next, review [Rate limits](/api-reference/rate-limits) before adding request concurrency or retries.
