@@ -16,8 +16,19 @@ const BODYLESS_OPERATIONS = new Set([
   "POST /v1/credits"
 ]);
 const PRIVATE_IDENTITY_FIELDS = new Set(["provider", "verifier", "provider_internal"]);
-const PROVIDER_IDENTITIES = /\b(?:Prospeo|Icypeas|RapidAPI|Leadmagic|SalesQL|Limadata|ContactOut|Wiza|Forager|Bounceban|Findymail|Trykitt|Kitt|A-?Leads|HistoricalImport|EmailLogCache|Supabase|Bubble|Durable Object)\b/i;
-const DISALLOWED_EXAMPLE = /(sk_live|pk_live|Bearer\s+(?!\$AIRSCALE_API_KEY(?:\b|$)|YOUR_API_KEY(?:\b|$)|<YOUR_API_KEY>(?:\s|$))|@gmail\.com|@yahoo\.com|@googlemail\.com)/i;
+const PROVIDER_IDENTITIES = /\b(?:Prospeo|Icypeas|RapidAPI|Leadmagic|SalesQL|Limadata|ContactOut|Wiza|Forager|Bounceban|Findymail|Trykitt|Kitt|A-?Leads|Explorium|OpenAI|Serper|Jina|HistoricalImport|EmailLogCache|Supabase|Bubble|Durable Object)\b/i;
+const DISALLOWED_EXAMPLE = /(sk_live|pk_live|Bearer\s+|@gmail\.com|@yahoo\.com|@googlemail\.com)/i;
+const APPROVED_BEARER_PLACEHOLDERS = new Set([
+  "Bearer $AIRSCALE_API_KEY",
+  "Bearer YOUR_API_KEY",
+  "Bearer <YOUR_API_KEY>"
+]);
+const APPROVED_CREDENTIAL_PLACEHOLDERS = new Set([
+  "$AIRSCALE_API_KEY",
+  "YOUR_API_KEY",
+  "<YOUR_API_KEY>",
+  ...APPROVED_BEARER_PLACEHOLDERS
+]);
 const APPROVED_PHONE = "+12025550147";
 
 function assertValid(schema, value, label) {
@@ -188,8 +199,21 @@ function isApprovedExampleEmailHost(hostname) {
   return /(?:^|\.)example\.(?:com|org)$/i.test(hostname);
 }
 
-function assertSyntheticLinkedIn(value, label) {
-  const parsed = new URL(/^https?:\/\//i.test(value) ? value : `https://${value}`);
+function isLinkedInHostname(hostname) {
+  const normalized = hostname.toLowerCase().replace(/\.$/, "");
+  return normalized === "linkedin.com" || normalized.endsWith(".linkedin.com");
+}
+
+function parseLinkedInUrl(value) {
+  try {
+    const parsed = new URL(/^https?:\/\//i.test(value) ? value : `https://${value}`);
+    return isLinkedInHostname(parsed.hostname) ? parsed : null;
+  } catch {
+    return null;
+  }
+}
+
+function assertSyntheticLinkedIn(parsed, label) {
   assert.match(parsed.pathname, /(?:^|[-_/])example(?:[-_/]|$)/i, `${label}: LinkedIn URL needs a synthetic example slug`);
 }
 
@@ -212,7 +236,9 @@ function assertSafeExampleValue(value, label, key = "") {
   }
   if (typeof value !== "string") return;
 
-  assert.doesNotMatch(value, DISALLOWED_EXAMPLE, `${label}: credential or consumer-domain value is forbidden`);
+  if (!APPROVED_BEARER_PLACEHOLDERS.has(value)) {
+    assert.doesNotMatch(value, DISALLOWED_EXAMPLE, `${label}: credential or consumer-domain value is forbidden`);
+  }
   assert.doesNotMatch(value, PROVIDER_IDENTITIES, `${label}: provider/internal identity is forbidden`);
 
   for (const match of value.matchAll(/[A-Z0-9._%+-]+@([A-Z0-9.-]+\.[A-Z]{2,})/gi)) {
@@ -224,8 +250,9 @@ function assertSafeExampleValue(value, label, key = "") {
     assert.equal(value, APPROVED_PHONE, `${label}: phone must use the approved non-routable fixture`);
   }
 
-  if (/linkedin\.com/i.test(value)) {
-    assertSyntheticLinkedIn(value, label);
+  const linkedInUrl = parseLinkedInUrl(value);
+  if (linkedInUrl) {
+    assertSyntheticLinkedIn(linkedInUrl, label);
     return;
   }
 
@@ -240,7 +267,7 @@ function assertSafeExampleValue(value, label, key = "") {
 
   if (/^(?:authorization|apikey|accesstoken|secret|password|token)$/i.test(normalizedKey)) {
     assert.ok(
-      ["$AIRSCALE_API_KEY", "YOUR_API_KEY", "<YOUR_API_KEY>", "Bearer $AIRSCALE_API_KEY", "Bearer YOUR_API_KEY", "Bearer <YOUR_API_KEY>"].includes(value),
+      APPROVED_CREDENTIAL_PLACEHOLDERS.has(value),
       `${label}: credential examples must use an approved placeholder`
     );
   }
@@ -328,4 +355,61 @@ test("all public operation examples validate against their dereferenced schemas"
   t.diagnostic(
     `validated ${operations.length} operations, ${requestExamples} request examples, ${responseExamples} response examples, ${parameterExamples} parameter examples, and ${exampleValues.length} total authored values including schema examples`
   );
+});
+
+test("LinkedIn example detection requires an exact LinkedIn hostname", () => {
+  for (const value of [
+    "https://evil.com/linkedin.com/example-person",
+    "https://notlinkedin.com/in/example-person"
+  ]) {
+    assert.throws(
+      () => assertSafeExampleValue(value, "mutant URL"),
+      /not an approved example origin/
+    );
+  }
+  assert.doesNotThrow(() => assertSafeExampleValue(
+    "https://linkedin.com/in/example-person",
+    "exact LinkedIn host"
+  ));
+  assert.doesNotThrow(() => assertSafeExampleValue(
+    "https://www.linkedin.com/company/example-company",
+    "LinkedIn subdomain"
+  ));
+  assert.throws(
+    () => assertSafeExampleValue("https://linkedin.com/in/real-person", "LinkedIn slug mutant"),
+    /synthetic example slug/
+  );
+});
+
+test("provider identity guard rejects every known provider without substring false positives", () => {
+  for (const provider of ["Explorium", "OpenAI", "Serper", "Jina"]) {
+    assert.throws(
+      () => assertSafeExampleValue(`Result from ${provider}`, `${provider} mutant`),
+      /provider\/internal identity is forbidden/
+    );
+  }
+  for (const safeValue of ["Exploration", "Open API", "serpentine", "jingle"]) {
+    assert.doesNotThrow(() => assertSafeExampleValue(safeValue, `${safeValue} control`));
+  }
+});
+
+test("Bearer placeholders are allowed only as exact whole-string values", () => {
+  for (const placeholder of [
+    "Bearer $AIRSCALE_API_KEY",
+    "Bearer YOUR_API_KEY",
+    "Bearer <YOUR_API_KEY>"
+  ]) {
+    assert.doesNotThrow(() => assertSafeExampleValue({ note: placeholder }, "approved Bearer placeholder"));
+  }
+  for (const value of [
+    "Bearer $AIRSCALE_API_KEY leaked",
+    "prefix Bearer YOUR_API_KEY",
+    "Bearer <YOUR_API_KEY> suffix",
+    "Bearer YOUR_API_KEY/extra"
+  ]) {
+    assert.throws(
+      () => assertSafeExampleValue({ note: value }, "Bearer mutant"),
+      /credential or consumer-domain value is forbidden/
+    );
+  }
 });
