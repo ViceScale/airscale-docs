@@ -3341,6 +3341,23 @@
         "description": "Discovers normalized values accepted by location, industry, intent-topic, and technology filters.",
         "x-airscale-rate-limit": "6 requests per second per workspace.",
         "x-airscale-credit-cost": "No charge; Filter-values does not debit Airscale credits.",
+        "x-codeSamples": [
+          {
+            "label": "cURL",
+            "lang": "bash",
+            "source": "curl --request GET \\\n  --url 'https://api.airscale.io/v1/find-companies/filter-values?filter=industry&q=example' \\\n  --header \"Authorization: Bearer $AIRSCALE_API_KEY\""
+          },
+          {
+            "label": "Node.js",
+            "lang": "javascript",
+            "source": "const url = new URL(\"https://api.airscale.io/v1/find-companies/filter-values\");\nurl.searchParams.set(\"filter\", \"industry\");\nurl.searchParams.set(\"q\", \"example\");\n\nconst response = await fetch(url, {\n  headers: {\n    Authorization: `Bearer ${process.env.AIRSCALE_API_KEY}`\n  }\n});\nconst data = await response.json();\nconsole.log(data);"
+          },
+          {
+            "label": "Python",
+            "lang": "python",
+            "source": "import os\nimport requests\n\nresponse = requests.get(\n    \"https://api.airscale.io/v1/find-companies/filter-values\",\n    headers={\"Authorization\": f'Bearer {os.environ[\"AIRSCALE_API_KEY\"]}'},\n    params={\"filter\": \"industry\", \"q\": \"example\"},\n    timeout=30,\n)\nresponse.raise_for_status()\nprint(response.json())"
+          }
+        ],
         "parameters": [
           {
             "name": "filter",

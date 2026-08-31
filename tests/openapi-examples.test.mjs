@@ -117,6 +117,7 @@ function assertAuthoredExampleShapes(openapiDocument) {
   const seenSchemas = new Set();
   for (const { method, path, operation, parameters } of operationsFrom(openapiDocument)) {
     const operationLabel = `${method} ${path}`;
+    assertCodeSampleShapes(operation, operationLabel);
     for (const [mediaType, content] of Object.entries(operation.requestBody?.content ?? {})) {
       assertExampleContainerShapes(content, `${operationLabel} request ${mediaType}`);
       assertSchemaExampleShapes(content.schema, `${operationLabel} request ${mediaType}`, seenSchemas);
@@ -336,6 +337,52 @@ function assertSafeExampleValue(value, label, key = "") {
   }
 }
 
+function assertSafeCodeSampleSource(source, label) {
+  assert.doesNotMatch(source, PROVIDER_IDENTITIES, `${label}: provider/internal identity is forbidden`);
+  assert.doesNotMatch(
+    source,
+    /(sk_live|pk_live|@gmail\.com|@yahoo\.com|@googlemail\.com)/i,
+    `${label}: credential or consumer-domain value is forbidden`
+  );
+
+  const withoutApprovedBearerValues = source
+    .replaceAll("Bearer $AIRSCALE_API_KEY", "")
+    .replaceAll("Bearer ${process.env.AIRSCALE_API_KEY}", "")
+    .replaceAll('Bearer {os.environ["AIRSCALE_API_KEY"]}', "");
+  assert.doesNotMatch(
+    withoutApprovedBearerValues,
+    /\bBearer\s+[^\s'"`]+/i,
+    `${label}: credential examples must use the AIRSCALE_API_KEY environment placeholder`
+  );
+
+  for (const match of source.matchAll(/https?:\/\/[^\s'"`]+/gi)) {
+    const parsed = new URL(match[0]);
+    assert.ok(
+      parsed.hostname === "api.airscale.io" || isReservedExampleHost(parsed.hostname),
+      `${label}: URL origin ${parsed.hostname} is not an approved code-sample origin`
+    );
+  }
+}
+
+function assertCodeSampleShapes(operation, label) {
+  if (!Object.hasOwn(operation, "x-codeSamples")) return 0;
+  const codeSamples = operation["x-codeSamples"];
+  assert.ok(Array.isArray(codeSamples), `${label}: x-codeSamples must be an array`);
+  for (const [index, codeSample] of codeSamples.entries()) {
+    const sampleLabel = `${label} x-codeSamples[${index}]`;
+    assert.ok(
+      codeSample && typeof codeSample === "object" && !Array.isArray(codeSample),
+      `${sampleLabel}: code sample must be an object`
+    );
+    assert.equal(typeof codeSample.label, "string", `${sampleLabel}: label must be a string`);
+    assert.equal(typeof codeSample.lang, "string", `${sampleLabel}: lang must be a string`);
+    assert.equal(typeof codeSample.source, "string", `${sampleLabel}: source must be a string`);
+    assert.ok(codeSample.source.length > 0, `${sampleLabel}: source must be non-empty`);
+    assertSafeCodeSampleSource(codeSample.source, sampleLabel);
+  }
+  return codeSamples.length;
+}
+
 test("all public operation examples validate against their dereferenced schemas", (t) => {
   assertAuthoredExampleShapes(rawDocument);
   const operations = operationsFrom(document);
@@ -468,6 +515,37 @@ test("Bearer placeholders are allowed only as exact whole-string values", () => 
       /credential or consumer-domain value is forbidden/
     );
   }
+});
+
+test("authored x-codeSamples enter the structural privacy and safety walk", () => {
+  const safeSource = [
+    "curl --request GET \\",
+    "  --url 'https://api.airscale.io/v1/find-companies/filter-values?filter=industry&q=example' \\",
+    '  --header "Authorization: Bearer $AIRSCALE_API_KEY"'
+  ].join("\n");
+  const fixture = (source) => ({
+    paths: {
+      "/fixture": {
+        get: {
+          "x-codeSamples": [{ label: "cURL", lang: "bash", source }]
+        }
+      }
+    }
+  });
+
+  assert.doesNotThrow(() => assertAuthoredExampleShapes(fixture(safeSource)));
+  assert.throws(
+    () => assertAuthoredExampleShapes(fixture(safeSource.replace("$AIRSCALE_API_KEY", "sk_live_example"))),
+    /credential/
+  );
+  assert.throws(
+    () => assertAuthoredExampleShapes(fixture(`${safeSource}\n# OpenAI`)),
+    /provider\/internal identity/
+  );
+  assert.throws(
+    () => assertAuthoredExampleShapes(fixture(safeSource.replace("api.airscale.io", "real-company.com"))),
+    /not an approved code-sample origin/
+  );
 });
 
 test("URL-bearing fields normalize absolute, scheme-relative, and bare-host values", () => {

@@ -1389,6 +1389,29 @@ test("Company Filter-values models alias coercion and public option metadata", (
   assert.equal(operation["x-airscale-credit-cost"], "No charge; Filter-values does not debit Airscale credits.");
   assertPublicOperationMetadata(operation);
   assert.equal(operation.requestBody, undefined);
+  assert.deepEqual(
+    operation["x-codeSamples"]?.map(({ label, lang }) => ({ label, lang })),
+    [
+      { label: "cURL", lang: "bash" },
+      { label: "Node.js", lang: "javascript" },
+      { label: "Python", lang: "python" }
+    ]
+  );
+  assert.equal(operation["x-codeSamples"]?.length, 3);
+  for (const sample of operation["x-codeSamples"] ?? []) {
+    assert.deepEqual(Object.keys(sample), ["label", "lang", "source"]);
+    assert.equal(typeof sample.source, "string");
+    assert.ok(sample.source.length > 0);
+  }
+  const [curlSample, nodeSample, pythonSample] = operation["x-codeSamples"] ?? [];
+  assert.match(curlSample?.source ?? "", /filter=industry&q=example/);
+  assert.match(curlSample?.source ?? "", /Authorization: Bearer \$AIRSCALE_API_KEY/);
+  assert.match(nodeSample?.source ?? "", /searchParams\.set\("filter", "industry"\)/);
+  assert.match(nodeSample?.source ?? "", /searchParams\.set\("q", "example"\)/);
+  assert.match(nodeSample?.source ?? "", /Bearer \$\{process\.env\.AIRSCALE_API_KEY\}/);
+  assert.match(pythonSample?.source ?? "", /"filter": "industry"/);
+  assert.match(pythonSample?.source ?? "", /"q": "example"/);
+  assert.match(pythonSample?.source ?? "", /Bearer \{os\.environ\["AIRSCALE_API_KEY"\]\}/);
   assert.deepEqual(Object.keys(parameters), ["filter", "q", "query", "limit", "country", "region"]);
   assert.equal(parameters.filter.in, "query");
   assert.equal(parameters.filter.required, true);
