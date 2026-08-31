@@ -258,7 +258,7 @@ function parseExampleUrl(value, normalizedKey, label) {
     candidate = `https:${normalizedValue}`;
   } else if (
     isUrlBearingKey(normalizedKey)
-    && /^[a-z0-9-]+(?:\.[a-z0-9-]+)*(?::[0-9]+)?(?:[/?#][^\s]*)?$/i.test(normalizedValue)
+    && /^(?:(?:[a-z0-9-]+\.)+[a-z0-9-]+|localhost)(?::[0-9]+)?(?:[/?#][^\s]*)?$/i.test(normalizedValue)
   ) {
     candidate = `https://${normalizedValue}`;
   } else {
@@ -583,4 +583,37 @@ test("reserved example hosts are accepted without suffix lookalikes", () => {
       /not an approved example origin|email must use/
     );
   }
+});
+
+test("bare URL normalization requires a dotted authority signal", () => {
+  for (const value of [
+    { source: "manual" },
+    { sources: ["website"] },
+    { link: "profile" },
+    { linkedin_status: "active" },
+    { linkedinStatus: "inactive" }
+  ]) {
+    assert.doesNotThrow(() => assertSafeExampleValue(value, "single-token metadata control"));
+  }
+  for (const value of [
+    { source: "real-source.com" },
+    { sources: ["real-source.com"] },
+    { link: "real-profile.com/path" },
+    { linkedin_status: "real-status.com" },
+    { website: "localhost" },
+    { website: "localhost:3000/path" }
+  ]) {
+    assert.throws(
+      () => assertSafeExampleValue(value, "dotted bare-origin mutant"),
+      /not an approved example origin/
+    );
+  }
+  assert.throws(
+    () => assertSafeExampleValue({ source: "https://real-source.com" }, "absolute origin mutant"),
+    /not an approved example origin/
+  );
+  assert.throws(
+    () => assertSafeExampleValue({ link: "//real-profile.com/path" }, "scheme-relative origin mutant"),
+    /not an approved example origin/
+  );
 });
