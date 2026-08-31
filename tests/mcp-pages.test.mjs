@@ -97,6 +97,7 @@ const WORKFLOW_HEADINGS = [
   "Poll status",
   "Retrieve the file"
 ];
+const SYNTHETIC_FULL_NAMES = new Set(["Jordan Example", "Taylor Example"]);
 
 function readPage(path) {
   const source = readFileSync(`${path}.mdx`, "utf8");
@@ -107,10 +108,10 @@ function readPage(path) {
   return { source, body: match[2], frontmatter: document.toJS() };
 }
 
-function exampleText(source) {
+function documentedExamples(source) {
   const fenced = Array.from(source.matchAll(/^```[^\n]*\n([\s\S]*?)^```/gm), ([, content]) => content);
   const prompts = Array.from(source.matchAll(/^>\s+(.+)$/gm), ([, content]) => content);
-  return [...fenced, ...prompts].join("\n");
+  return [...fenced, ...prompts];
 }
 
 function documentedToolCalls(source) {
@@ -118,17 +119,77 @@ function documentedToolCalls(source) {
     .filter((value) => value && typeof value === "object" && "tool" in value);
 }
 
-function assertReservedExampleData(source, path) {
-  const examples = exampleText(source);
-  assert.match(examples, /\bExample\b/, `${path} examples must name a synthetic Example identity`);
+function identityValues(value) {
+  if (typeof value === "string") return [value];
+  if (Array.isArray(value)) return value.flatMap(identityValues);
+  if (!value || typeof value !== "object") return [];
+  return Object.values(value).flatMap(identityValues);
+}
 
-  for (const domain of examples.match(/\b(?:[a-z0-9-]+\.)+[a-z]{2,}\b/gi) ?? []) {
-    if (domain.toLowerCase() === "mcp.airscale.io") continue;
-    assert.match(
-      domain.toLowerCase(),
-      /(?:^|\.)example\.(?:com|net|org)$|(?:^|\.)[a-z0-9-]+\.(?:test|example)$/,
-      `${path} example domain ${domain} must be reserved`
+function assertJsonIdentitiesAreSynthetic(value, path, exampleIndex) {
+  if (!value || typeof value !== "object") return;
+  if (Array.isArray(value)) {
+    for (const nested of value) assertJsonIdentitiesAreSynthetic(nested, path, exampleIndex);
+    return;
+  }
+
+  const entries = Object.entries(value);
+  const firstEntry = entries.find(([key]) => /^(?:first_?name|firstname)$/i.test(key));
+  const lastEntry = entries.find(([key]) => /^(?:last_?name|lastname)$/i.test(key));
+  if (firstEntry && lastEntry) {
+    const firstNames = identityValues(firstEntry[1]);
+    const lastNames = identityValues(lastEntry[1]);
+    for (const firstName of firstNames) {
+      for (const lastName of lastNames) {
+        const fullName = `${firstName} ${lastName}`;
+        assert.ok(
+          SYNTHETIC_FULL_NAMES.has(fullName),
+          `${path} example ${exampleIndex} identity ${fullName} must be explicitly synthetic`
+        );
+      }
+    }
+  }
+
+  for (const [, nested] of entries) assertJsonIdentitiesAreSynthetic(nested, path, exampleIndex);
+}
+
+function assertExamplesUseSyntheticData(source, path) {
+  const examples = documentedExamples(source);
+  assert.ok(examples.length > 0, `${path} must contain at least one documented example`);
+
+  for (const [index, example] of examples.entries()) {
+    for (const domain of example.match(/\b(?:[a-z0-9-]+\.)+[a-z]{2,}\b/gi) ?? []) {
+      if (domain.toLowerCase() === "mcp.airscale.io") continue;
+      assert.match(
+        domain.toLowerCase(),
+        /(?:^|\.)example\.(?:com|net|org)$|(?:^|\.)[a-z0-9-]+\.(?:test|example)$/,
+        `${path} example ${index} domain ${domain} must be reserved`
+      );
+    }
+
+    assert.doesNotMatch(
+      example,
+      /(?:\+\d[\d\s().-]{6,}\d|\b\d{3}[-. ]\d{3}[-. ]\d{4}\b)/,
+      `${path} example ${index} must not contain a phone number`
     );
+
+    const promptIdentities = new Set();
+    for (const pattern of [
+      /\bnamed\s+([A-Z][A-Za-z'-]+)\s+([A-Z][A-Za-z'-]+)\b/g,
+      /\b(?:find|enrich|resolve|research|contact)\s+(?:someone\s+)?(?:named\s+)?([A-Z][A-Za-z'-]+)\s+([A-Z][A-Za-z'-]+)\b/g
+    ]) {
+      for (const match of example.matchAll(pattern)) promptIdentities.add(`${match[1]} ${match[2]}`);
+    }
+    for (const fullName of promptIdentities) {
+      assert.ok(
+        SYNTHETIC_FULL_NAMES.has(fullName),
+        `${path} example ${index} identity ${fullName} must be explicitly synthetic`
+      );
+    }
+
+    if (example.trimStart().startsWith("{")) {
+      assertJsonIdentitiesAreSynthetic(JSON.parse(example), path, index);
+    }
   }
 }
 
@@ -344,6 +405,22 @@ test("ChatGPT setup is browser OAuth only and never configures an API key", () =
   assert.doesNotMatch(body, /tool arguments[\s\S]{0,80}(?:api[_ -]?key|credential)/i);
 });
 
+test("ChatGPT setup follows current full-MCP plan, role, draft, and per-message rules", () => {
+  const { body } = readPage("mcp/connect-airscale-mcp-to-chatgpt");
+  assert.match(body, /ChatGPT web[\s\S]*Business[\s\S]*Enterprise\/Edu[\s\S]*full MCP/i);
+  assert.match(body, /Business[\s\S]{0,160}(?:admin|owner)[\s\S]{0,120}(?:create|creation)/i);
+  assert.match(body, /Enterprise\/Edu[\s\S]{0,180}RBAC[\s\S]{0,180}authorized developer/i);
+  assertOrdered(body, [
+    "Select **OAuth**",
+    "**Scan Tools**",
+    "complete the Airscale OAuth flow",
+    "**Create**",
+    "draft app"
+  ], "mcp/connect-airscale-mcp-to-chatgpt");
+  assert.match(body, /selection applies[\s\S]{0,100}(?:message|one message)[\s\S]{0,100}not[\s\S]{0,60}(?:conversation|entire conversation)/i);
+  assert.match(body, /https:\/\/help\.openai\.com\/en\/articles\/12584461/);
+});
+
 test("Claude setup distinguishes hosted OAuth from Claude Code header authentication", () => {
   const { body } = readPage("mcp/connect-airscale-mcp-to-claude");
   assert.match(body, /Claude (?:web|desktop)[\s\S]*remote OAuth/i);
@@ -353,6 +430,24 @@ test("Claude setup distinguishes hosted OAuth from Claude Code header authentica
   assert.match(body, /"Authorization": "Bearer \$\{AIRSCALE_API_KEY\}"/);
   assert.doesNotMatch(body, /"Authorization": "Bearer \$AIRSCALE_API_KEY"/);
   assert.match(body, /never[\s\S]{0,100}(?:tool argument|prompt)/i);
+});
+
+test("Claude setup branches individual and organization-hosted connector flows", () => {
+  const { body } = readPage("mcp/connect-airscale-mcp-to-claude");
+  assert.match(body, /Pro or Max[\s\S]{0,240}(?:add|create)[\s\S]{0,100}custom connector/i);
+  assert.match(body, /Team or Enterprise[\s\S]{0,240}(?:Owner|Primary Owner)[\s\S]{0,160}Custom[\s\S]{0,80}Web/i);
+  assert.match(body, /member[\s\S]{0,180}Connect[\s\S]{0,120}authenticate/i);
+  assert.match(body, /https:\/\/support\.claude\.com\/en\/articles\/11175166/);
+});
+
+test("Claude Code JSON is explicitly project-scoped and includes connection verification", () => {
+  const { body } = readPage("mcp/connect-airscale-mcp-to-claude");
+  assert.match(body, /project-scoped[\s\S]{0,100}`\.mcp\.json`/i);
+  assert.match(body, /project root/i);
+  assert.match(body, /```json Project \.mcp\.json[\s\S]*"mcpServers"/);
+  assert.match(body, /claude mcp list|`\/mcp`/);
+  assert.doesNotMatch(body, /user or project MCP configuration/i);
+  assert.match(body, /https:\/\/code\.claude\.com\/docs\/en\/mcp/);
 });
 
 test("workflow teaches the bounded asynchronous export lifecycle in order", () => {
@@ -372,6 +467,15 @@ test("workflow teaches the bounded asynchronous export lifecycle in order", () =
   assert.match(body, /returned[\s\S]{0,80}poll_after_seconds|poll_after_seconds[\s\S]{0,80}returned/i);
   assert.match(body, /airscale_get_export_file/);
   assert.match(body, /\[MCP tool catalog\]\(\/mcp\/tools\)/);
+});
+
+test("workflow does not claim credit balance identifies workspace and totals cumulative spend", () => {
+  const { body } = readPage("mcp/how-to-use-the-airscale-mcp");
+  assert.doesNotMatch(body, /returned workspace/i);
+  assert.match(body, /workspace[\s\S]{0,100}(?:selected|chosen)[\s\S]{0,100}(?:OAuth|configuration)/i);
+  assert.match(body, /balance[\s\S]{0,120}proves authentication[\s\S]{0,120}does not identify the workspace/i);
+  assert.match(body, /additional export[\s\S]{0,80}(?:at most|maximum|bound)[\s\S]{0,40}2 credits/i);
+  assert.match(body, /cumulative[\s\S]{0,80}(?:at most|maximum|bound)[\s\S]{0,40}2\.5 credits/i);
 });
 
 test("every illustrative workflow call uses a pinned tool and schema-valid arguments", () => {
@@ -399,8 +503,36 @@ test("every illustrative workflow call uses a pinned tool and schema-valid argum
   assert.doesNotMatch(body, /["']api_key["']/i);
 });
 
-test("connection and workflow examples use only the official endpoint and reserved synthetic data", () => {
+test("every connection and workflow example uses only the official endpoint and explicit synthetic data", () => {
   for (const path of [...CONNECT_PAGE_PATHS, "mcp/how-to-use-the-airscale-mcp"]) {
-    assertReservedExampleData(readPage(path).body, path);
+    assertExamplesUseSyntheticData(readPage(path).body, path);
   }
+});
+
+test("synthetic-data policy rejects mixed pages with a real identity or phone number", () => {
+  const { body } = readPage("mcp/connect-airscale-mcp-to-chatgpt");
+  assert.throws(
+    () => assertExamplesUseSyntheticData(
+      `${body}\n> Use Airscale MCP to find Satya Nadella at \`northstar.example\`.`,
+      "mixed identity fixture"
+    ),
+    /Satya Nadella must be explicitly synthetic/
+  );
+  assert.throws(
+    () => assertExamplesUseSyntheticData(
+      `${body}\n> Enrich the contact at +1 212 867 5309.`,
+      "mixed phone fixture"
+    ),
+    /must not contain a phone number/
+  );
+  assert.throws(
+    () => assertExamplesUseSyntheticData(
+      `${body}\n\`\`\`json\n${JSON.stringify({
+        firstname: { exclude: ["Satya"] },
+        lastname: { exclude: ["Nadella"] }
+      })}\n\`\`\``,
+      "mixed payload fixture"
+    ),
+    /Satya Nadella must be explicitly synthetic/
+  );
 });

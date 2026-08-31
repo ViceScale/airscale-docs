@@ -20,10 +20,17 @@ https://mcp.airscale.io/mcp
 
 - An Airscale account with access to the workspace you want to use.
 - API access enabled and an active workspace credential in Airscale.
-- A ChatGPT workspace that exposes custom remote MCP apps to your account.
-- Permission from your ChatGPT administrator if custom apps are managed centrally.
+- A Business or Enterprise/Edu workspace on ChatGPT web for the full Airscale MCP tool set.
+- The workspace role or developer authorization required to create a custom app.
 
-ChatGPT product availability and UI labels can change. If a label below is different, look for the area that manages apps, connectors, developer features, or custom MCP servers.
+On ChatGPT web, Business and Enterprise/Edu workspaces can use the full MCP capability, including tools that can take actions. The creation path differs by plan:
+
+- **Business:** An admin or owner must enable developer mode and create the custom app. Developer access cannot currently be delegated to an ordinary Business member.
+- **Enterprise/Edu:** Admins and owners can use RBAC to grant developer mode to an authorized developer. Admins or owners still control publication and workspace access.
+
+Pro accounts can use custom apps with read/fetch permissions, but the full MCP flow documented here requires Business or Enterprise/Edu. See OpenAI's current [developer mode and MCP apps guide](https://help.openai.com/en/articles/12584461) before setup.
+
+ChatGPT product availability and UI labels can change. If a label below differs, use the official guide to locate the corresponding developer-mode or app-creation control.
 
 ## Authentication
 
@@ -36,20 +43,23 @@ ChatGPT uses browser OAuth for this connection. The browser asks you to sign in 
 ## Connect Airscale MCP
 
 <Steps>
-  <Step title="Open ChatGPT settings">
-    Sign in to ChatGPT on the web and open settings from the profile or workspace menu.
+  <Step title="Enable developer mode for your role">
+    In Business, sign in as an admin or owner and begin from **Workspace settings → Apps → Create**. In Enterprise/Edu, use an admin/owner account or an account that has received developer-mode access through RBAC, then open **Apps → Create** from the available workspace or user settings.
   </Step>
-  <Step title="Allow custom MCP apps">
-    Open the area for apps or connectors and enable the developer or custom-MCP capability if your workspace exposes one. Review any third-party server warning before continuing.
+  <Step title="Enter the Airscale endpoint">
+    Name the app **Airscale MCP**, enter `https://mcp.airscale.io/mcp` as its MCP endpoint, and provide any other metadata the current form requires.
   </Step>
-  <Step title="Create the Airscale app">
-    Add a custom app or remote MCP server. Name it **Airscale MCP** and enter `https://mcp.airscale.io/mcp` as the server URL. Leave optional advanced fields unchanged unless your organization has a specific policy.
+  <Step title="Choose authentication">
+    Select **OAuth** as the authentication mechanism. Do not enter an API key or configure a static authorization header in ChatGPT.
   </Step>
-  <Step title="Authorize Airscale in the browser">
-    Continue to the Airscale sign-in page, choose the intended workspace, and approve access. After Airscale confirms the connection, return to ChatGPT.
+  <Step title="Scan tools and authorize Airscale">
+    Click **Scan Tools**, complete the Airscale OAuth flow in the browser, select the intended workspace, and return to ChatGPT. Wait until the tool scan finishes before continuing.
   </Step>
-  <Step title="Enable Airscale in a new conversation">
-    Start a new conversation and select Airscale MCP from the available apps, connectors, or developer tools. Confirm that its tool list is available before sending a request.
+  <Step title="Create the draft">
+    Click **Create** only after the scan succeeds. The draft app then appears in the workspace's draft-app list and as a development app in the creator's enabled apps.
+  </Step>
+  <Step title="Use Airscale for a message">
+    Open a new chat and select the draft app from the tools menu, or mention it in the prompt. The selection applies to that message, not the entire conversation; select or mention Airscale again when a follow-up needs a new tool call.
   </Step>
 </Steps>
 
@@ -59,7 +69,7 @@ Make the first request read-only and non-billable:
 
 > Use `airscale_check_credits` to show my current Airscale credit balance. Do not call another tool.
 
-If ChatGPT returns the balance for the workspace you selected, the connection is ready. This check does not debit credits.
+If ChatGPT returns a balance, tool discovery and authentication succeeded. This check does not debit credits, but the balance response does not identify the workspace; the workspace choice occurred in the OAuth flow.
 
 ## Starter prompts
 

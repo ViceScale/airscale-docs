@@ -20,8 +20,8 @@ https://mcp.airscale.io/mcp
 
 - An Airscale account with access to the workspace you want to use.
 - API access enabled and an active workspace credential in Airscale.
-- A Claude client and account that support remote MCP servers.
-- Organization approval when your Claude workspace centrally manages connectors.
+- An individual Pro or Max account, or membership in a Team or Enterprise organization, for the hosted connector flow described below.
+- An Owner or Primary Owner available to add the connector for Team or Enterprise.
 
 Claude product availability, account requirements, and UI labels can change. If the wording below differs, look for connectors, integrations, or remote MCP servers in the current client.
 
@@ -33,14 +33,16 @@ Claude Code can instead authenticate a trusted developer environment with an aut
 
 ## Connect Airscale MCP
 
-### Claude web or desktop
+### Individual Pro or Max
+
+On an individual Pro or Max plan, add the custom connector yourself:
 
 <Steps>
   <Step title="Open connector settings">
-    Sign in to Claude and open the settings or customization area that manages connectors. In an organization-managed workspace, an owner may need to add the remote connector first.
+    Sign in to Claude web or desktop and open **Customize → Connectors**. Labels can change; use the current connectors settings if this path differs.
   </Step>
   <Step title="Add a custom remote connector">
-    Create a connector named **Airscale MCP** and enter `https://mcp.airscale.io/mcp` as its remote server URL.
+    Choose the control to add a custom connector, name it **Airscale MCP**, and enter `https://mcp.airscale.io/mcp` as the remote server URL.
   </Step>
   <Step title="Authorize in the browser">
     Continue to Airscale, sign in, select the intended workspace, and approve access. Then return to Claude.
@@ -50,7 +52,25 @@ Claude Code can instead authenticate a trusted developer environment with an aut
   </Step>
 </Steps>
 
-### Claude Code
+### Team or Enterprise
+
+On Team or Enterprise, an Owner or Primary Owner must add Airscale through **Custom → Web** before members can connect:
+
+<Steps>
+  <Step title="Owner adds the organization connector">
+    Open **Organization settings → Connectors**, choose **Add**, hover over **Custom**, select **Web**, and enter `https://mcp.airscale.io/mcp`. Finish by adding the connector to the organization.
+  </Step>
+  <Step title="Member connects an individual session">
+    Each member opens **Customize → Connectors**, finds Airscale MCP, clicks **Connect**, and authenticates with their own Airscale account in the browser.
+  </Step>
+  <Step title="Member enables Airscale tools">
+    Select Airscale MCP and the tools needed for the conversation. Organization setup makes the connector available; it does not share an Owner's Airscale authorization with members.
+  </Step>
+</Steps>
+
+Review Anthropic's current [remote custom connector guide](https://support.claude.com/en/articles/11175166-get-started-with-custom-connectors-using-remote-mcp) if account availability or labels differ.
+
+### Claude Code project configuration
 
 Store the key outside the project configuration and make it available to the Claude Code process:
 
@@ -58,9 +78,9 @@ Store the key outside the project configuration and make it available to the Cla
 export AIRSCALE_API_KEY=YOUR_API_KEY
 ```
 
-Then add the remote HTTP server to a user or project MCP configuration:
+The following `mcpServers` block is specifically a project-scoped `.mcp.json` file at the project root. Project configurations may be shared through version control, so every developer must supply the environment value independently.
 
-```json
+```json Project .mcp.json
 {
   "mcpServers": {
     "airscale": {
@@ -74,7 +94,15 @@ Then add the remote HTTP server to a user or project MCP configuration:
 }
 ```
 
-The `${AIRSCALE_API_KEY}` syntax is resolved from the runtime environment. Keep the configuration out of untrusted projects, and never replace the expression with a literal credential in a committed file.
+The `${AIRSCALE_API_KEY}` syntax is resolved from the runtime environment. Never replace the expression with a literal credential in the project file.
+
+From the project root, verify that Claude Code loaded the server:
+
+```bash
+claude mcp list
+```
+
+Inside Claude Code, run `/mcp` to inspect connection status and tool count. See the official [Claude Code MCP scope documentation](https://code.claude.com/docs/en/mcp) before choosing a different scope; local and user configurations are stored in `~/.claude.json`, not in a project `.mcp.json`.
 
 ## Verify the connection for free
 
