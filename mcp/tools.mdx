@@ -452,7 +452,7 @@ Credit behavior: 2 credits per successful input.
 | Field | Type | Required | Description | Constraints |
 | --- | --- | --- | --- | --- |
 | `webhook_url` | `string` | Yes | Results are POSTed here, one payload per input | format: `uri` |
-| `inputs` | `array&lt;object&gt;` | Yes | Contacts to enrich | minimum items: 1; item type: `object` |
+| `inputs` | `array<object>` | Yes | Contacts to enrich | minimum items: 1; item type: `object` |
 
 ### Minimal `tools/call` example
 
@@ -885,7 +885,7 @@ This starts paid export work. Review the maximum possible credit spend, then set
 | `filters` | `object` | No | Same filters as airscale_find_companies. | allowed properties: `country`, `region`, `city`, `industry`, `size`, `revenue`, `age`, `techStack`, `keywords`, `topics`, `events`, `locations`, `companyName`, `eventWindow`, `locationMatch`, `hasWebsite`, `isPublicCompany`; additional properties are not allowed |
 | `max_rows` | `integer` | No | Maximum rows to export, 1..10000. Defaults to 1000. | minimum: 1; maximum: 10000 |
 | `format` | `string` | No | Export file format. Defaults to csv. | allowed values: `"csv"`, `"jsonl"` |
-| `fields` | `array&lt;string&gt;` | No | Optional top-level fields to include. | maximum items: 100; item type: `string` |
+| `fields` | `array<string>` | No | Optional top-level fields to include. | maximum items: 100; item type: `string` |
 | `confirm_credit_spend` | `boolean` | No | Must be true to start a paid fresh-row export. | — |
 
 ### Minimal `tools/call` example
@@ -946,7 +946,7 @@ This starts paid export work. Review the maximum possible credit spend, then set
 | `query` | `object` | Yes | Same query as airscale_find_people. | allowed properties: `firstname`, `lastname`, `JobTitle`, `companyDomain`, `companyLinkedinUrl`, `school`, `languages`, `skills`, `location`, `keyword`, `currentCompanyName`, `currentCompany.type`, `currentCompany.industry`, `currentCompany.location`, `currentCompany.keyword`, `totalYearsOfExperience`, `timeInCurrentCompany`, `currentCompany.headcount`, `currentCompany.revenue`, `currentCompany.headcountGrowth`; nested required fields: `currentCompany.headcountGrowth.timespan`; additional properties are not allowed |
 | `max_rows` | `integer` | No | Maximum rows to export, 1..10000. Defaults to 1000. | minimum: 1; maximum: 10000 |
 | `format` | `string` | No | Export file format. Defaults to csv. | allowed values: `"csv"`, `"jsonl"` |
-| `fields` | `array&lt;string&gt;` | No | Optional top-level fields to include. | maximum items: 100; item type: `string` |
+| `fields` | `array<string>` | No | Optional top-level fields to include. | maximum items: 100; item type: `string` |
 | `confirm_credit_spend` | `boolean` | No | Must be true to start a paid fresh-row export. | — |
 
 ### Minimal `tools/call` example
@@ -1053,7 +1053,7 @@ Credit behavior: Free; no enrichment credits charged.
 | Field | Type | Required | Description | Constraints |
 | --- | --- | --- | --- | --- |
 | `batch_id` | `string` | Yes | Batch id returned by airscale_create_contact_enrichment_batch. | minimum length: 1 |
-| `contacts` | `array&lt;object&gt;` | Yes | Contacts to add. Send uploaded CSV rows in chunks of up to 250. | minimum items: 1; maximum items: 250; item type: `object` |
+| `contacts` | `array<object>` | Yes | Contacts to add. Send uploaded CSV rows in chunks of up to 250. | minimum items: 1; maximum items: 250; item type: `object` |
 
 ### Minimal `tools/call` example
 
@@ -1114,9 +1114,9 @@ This starts paid export work. Review the maximum possible credit spend, then set
 | Field | Type | Required | Description | Constraints |
 | --- | --- | --- | --- | --- |
 | `batch_id` | `string` | Yes | Batch id to enrich. | minimum length: 1 |
-| `enrichments` | `array&lt;string&gt;` | No | Phase 1 supports only work_email. | minimum items: 1; maximum items: 1; item type: `string` |
+| `enrichments` | `array<string>` | No | Phase 1 supports only work_email. | minimum items: 1; maximum items: 1; item type: `string` |
 | `format` | `string` | No | Export file format. Defaults to csv. | allowed values: `"csv"`, `"jsonl"` |
-| `fields` | `array&lt;string&gt;` | No | Optional top-level fields to include. | maximum items: 100; item type: `string` |
+| `fields` | `array<string>` | No | Optional top-level fields to include. | maximum items: 100; item type: `string` |
 | `confirm_credit_spend` | `boolean` | No | Must be true to start paid contact enrichment. | — |
 
 ### Minimal `tools/call` example

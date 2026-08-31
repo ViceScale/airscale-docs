@@ -13,8 +13,9 @@ import {
   unlinkSync,
   writeFileSync
 } from "node:fs";
-import { basename, dirname, join, relative, resolve } from "node:path";
+import { basename, dirname, isAbsolute, join, relative, resolve, sep } from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
+import { isDeepStrictEqual } from "node:util";
 import Ajv2020 from "ajv/dist/2020.js";
 import addFormats from "ajv-formats";
 import {
@@ -295,6 +296,9 @@ const MAX_SYNTHESIS_ARRAY_ITEMS = 1_000;
 const MAX_SYNTHESIS_STRING_LENGTH = 4_096;
 const MAX_SYNTHESIS_SERIALIZED_BYTES = 16_384;
 const MAX_SYNTHESIS_VISITED_SCHEMA_NODES = 4_096;
+const MAX_SYNTHESIS_REFERENCE_EXPANSIONS = 256;
+const MAX_SYNTHESIS_CANDIDATE_WORK = 65_536;
+const MAX_SYNTHESIS_OUTPUT_STRUCTURE = 32_768;
 const SCHEMA_ANNOTATION_KEYS = new Set([
   "$defs",
   "$id",
@@ -326,8 +330,61 @@ function synthesisBudgetError(toolName, detail) {
   return new ExampleSynthesisError(toolName, "arguments", detail);
 }
 
+function consumeSynthesisBudget(context, key, limit, label, amount = 1) {
+  context.synthesisBudget[key] += amount;
+  if (context.synthesisBudget[key] > limit) {
+    throw synthesisBudgetError(context.toolName, `${label} budget of ${limit} was exceeded`);
+  }
+}
+
+function consumeCandidateWork(context, amount = 1) {
+  consumeSynthesisBudget(context, "candidateWork", MAX_SYNTHESIS_CANDIDATE_WORK, "candidate work", amount);
+}
+
+function consumeReferenceExpansion(context) {
+  consumeSynthesisBudget(
+    context,
+    "referenceExpansions",
+    MAX_SYNTHESIS_REFERENCE_EXPANSIONS,
+    "reference expansion"
+  );
+}
+
+function consumeOutputStructure(context, amount = 1) {
+  consumeSynthesisBudget(
+    context,
+    "outputStructure",
+    MAX_SYNTHESIS_OUTPUT_STRUCTURE,
+    "output structure",
+    amount
+  );
+}
+
+function cloneCandidate(value, context) {
+  const pending = [value];
+  while (pending.length > 0) {
+    const entry = pending.pop();
+    consumeOutputStructure(context);
+    if (entry && typeof entry === "object") pending.push(...Object.values(entry));
+  }
+  return clone(value);
+}
+
+function candidateStructureUnits(value) {
+  let units = 0;
+  const pending = [value];
+  while (pending.length > 0) {
+    const entry = pending.pop();
+    units += 1;
+    if (units > MAX_SYNTHESIS_OUTPUT_STRUCTURE) return units;
+    if (entry && typeof entry === "object") pending.push(...Object.values(entry));
+  }
+  return units;
+}
+
 function assertSchemaWithinSynthesisBudgets(rootSchema, toolName) {
   let visitedNodes = 0;
+  let referenceExpansions = 0;
 
   function visit(value, depth) {
     if (!value || typeof value !== "object") return;
@@ -386,6 +443,13 @@ function assertSchemaWithinSynthesisBudgets(rootSchema, toolName) {
       return;
     }
     if (typeof value.$ref === "string") {
+      referenceExpansions += 1;
+      if (referenceExpansions > MAX_SYNTHESIS_REFERENCE_EXPANSIONS) {
+        throw synthesisBudgetError(
+          toolName,
+          `reference expansion budget of ${MAX_SYNTHESIS_REFERENCE_EXPANSIONS} was exceeded`
+        );
+      }
       if (referenceStack.has(value.$ref)) {
         throw new ExampleSynthesisError(
           toolName,
@@ -477,14 +541,16 @@ function candidateValidator(schema, context) {
 
 function validCandidateValues(schema, context) {
   const validate = candidateValidator(schema, context);
-  return candidateValues(schema, context).filter((candidate) => validate(candidate));
+  const candidates = candidateValues(schema, context);
+  consumeCandidateWork(context, candidates.length);
+  return candidates.filter((candidate) => validate(candidate));
 }
 
 function isPlainObject(value) {
   return Boolean(value) && typeof value === "object" && !Array.isArray(value);
 }
 
-function cartesianMergeObjects(pools) {
+function cartesianMergeObjects(pools, context) {
   let combinations = [{}];
   let sawObjectPool = false;
   for (const pool of pools) {
@@ -494,6 +560,8 @@ function cartesianMergeObjects(pools) {
     const next = [];
     for (const combination of combinations) {
       for (const object of objects) {
+        consumeCandidateWork(context);
+        consumeOutputStructure(context);
         next.push({ ...combination, ...object });
         if (next.length >= MAX_SYNTHESIS_CANDIDATES) break;
       }
@@ -507,7 +575,7 @@ function cartesianMergeObjects(pools) {
 function conjunctiveCandidates(schemas, context) {
   const pools = schemas.map((schema) => validCandidateValues(schema, context));
   return uniqueCandidates([
-    ...cartesianMergeObjects(pools),
+    ...cartesianMergeObjects(pools, context),
     ...numericIntersectionCandidates(schemas, context),
     ...pools.flat()
   ]);
@@ -732,7 +800,9 @@ function objectCandidates(schema, context) {
     const next = [];
     for (const candidate of candidates) {
       for (const propertyCandidate of propertyCandidates) {
-        next.push({ ...candidate, [property]: clone(propertyCandidate) });
+        consumeCandidateWork(context);
+        consumeOutputStructure(context);
+        next.push({ ...candidate, [property]: cloneCandidate(propertyCandidate, context) });
         if (next.length >= MAX_SYNTHESIS_CANDIDATES) break;
       }
       if (next.length >= MAX_SYNTHESIS_CANDIDATES) break;
@@ -771,6 +841,19 @@ function arrayCandidates(schema, context) {
     if (itemCandidates.length === 0) continue;
     const variants = Math.min(itemCandidates.length, 4);
     for (let offset = 0; offset < variants; offset += 1) {
+      consumeCandidateWork(context, count + 1);
+      let materializedUnits = 1;
+      for (let index = 0; index < count; index += 1) {
+        const item = itemCandidates[schema.uniqueItems ? (index + offset) % itemCandidates.length : offset];
+        materializedUnits += candidateStructureUnits(item);
+        if (context.synthesisBudget.outputStructure + materializedUnits > MAX_SYNTHESIS_OUTPUT_STRUCTURE) {
+          throw synthesisBudgetError(
+            context.toolName,
+            `output structure budget of ${MAX_SYNTHESIS_OUTPUT_STRUCTURE} would be exceeded before array materialization`
+          );
+        }
+      }
+      consumeOutputStructure(context, materializedUnits);
       results.push(Array.from({ length: count }, (_, index) => clone(
         itemCandidates[schema.uniqueItems ? (index + offset) % itemCandidates.length : offset]
       )));
@@ -783,17 +866,19 @@ function arrayCandidates(schema, context) {
 
 function candidateValues(schema, context) {
   const { rootSchema, toolName, path } = context;
+  consumeCandidateWork(context);
   if (schema === false) return [];
   if (schema === true) return [null, false, 0, "", [], {}];
   if (!schema || typeof schema !== "object" || Array.isArray(schema)) {
     throw new ExampleSynthesisError(toolName, path.join("."), "the schema is not an object or boolean schema");
   }
 
-  if (Object.hasOwn(schema, "const")) return [clone(schema.const)];
+  if (Object.hasOwn(schema, "const")) return [cloneCandidate(schema.const, context)];
   if (Array.isArray(schema.enum)) {
-    return uniqueCandidates(schema.enum.slice(0, MAX_SYNTHESIS_ENUM_VALUES).map(clone));
+    return uniqueCandidates(schema.enum.slice(0, MAX_SYNTHESIS_ENUM_VALUES).map((value) => cloneCandidate(value, context)));
   }
   if (schema.$ref) {
+    consumeReferenceExpansion(context);
     if (context.referenceStack.has(schema.$ref)) {
       throw new ExampleSynthesisError(toolName, path.join("."), `recursive schema reference ${schema.$ref} cannot be synthesized`);
     }
@@ -857,7 +942,7 @@ function candidateValues(schema, context) {
 
 function synthesizeValue(schema, context) {
   const candidates = validCandidateValues(schema, context);
-  if (candidates.length > 0) return clone(candidates[0]);
+  if (candidates.length > 0) return cloneCandidate(candidates[0], context);
   throw new ExampleSynthesisError(
     context.toolName,
     context.path.join("."),
@@ -884,7 +969,12 @@ function synthesizeArguments(tool) {
         ajv,
         rootSchemaId,
         validatorCache: new WeakMap(),
-        referenceStack: new Set()
+        referenceStack: new Set(),
+        synthesisBudget: {
+          referenceExpansions: 0,
+          candidateWork: 0,
+          outputStructure: 0
+        }
       });
     }
     if (!argumentsValue || typeof argumentsValue !== "object" || Array.isArray(argumentsValue)) {
@@ -929,6 +1019,76 @@ function displayBound(schema, inclusiveKey, exclusiveKey) {
   return result;
 }
 
+const DISPLAY_PATTERNS_KEY = "$airscaleDisplayPatterns";
+const DISPLAY_FORMATS_KEY = "$airscaleDisplayFormats";
+const DISPLAY_MULTIPLES_KEY = "$airscaleDisplayMultiples";
+
+function uniqueDisplayValues(values) {
+  const result = [];
+  for (const value of values) {
+    if (!result.some((existing) => isDeepStrictEqual(existing, value))) result.push(clone(value));
+  }
+  return result;
+}
+
+function displayTypes(schema) {
+  if (schema?.type === undefined) return null;
+  return Array.isArray(schema.type) ? schema.type : [schema.type];
+}
+
+function intersectDisplayTypes(left, right) {
+  const leftTypes = displayTypes(left);
+  const rightTypes = displayTypes(right);
+  if (!leftTypes) return rightTypes;
+  if (!rightTypes) return leftTypes;
+  const intersection = [];
+  for (const leftType of leftTypes) {
+    for (const rightType of rightTypes) {
+      if (leftType === rightType) intersection.push(leftType);
+      else if (
+        (leftType === "number" && rightType === "integer")
+        || (leftType === "integer" && rightType === "number")
+      ) intersection.push("integer");
+    }
+  }
+  return uniqueDisplayValues(intersection);
+}
+
+function valueMatchesDisplayTypes(value, types) {
+  if (!types) return true;
+  return types.some((type) => {
+    if (type === "null") return value === null;
+    if (type === "array") return Array.isArray(value);
+    if (type === "object") return value !== null && typeof value === "object" && !Array.isArray(value);
+    if (type === "integer") return Number.isInteger(value);
+    if (type === "number") return typeof value === "number" && Number.isFinite(value);
+    return typeof value === type;
+  });
+}
+
+function allowedDisplayValues(schema) {
+  if (Object.hasOwn(schema, "const")) return [schema.const];
+  return Array.isArray(schema.enum) ? schema.enum : null;
+}
+
+function conjoinedDisplayValues(schema, keyword, displayKey) {
+  return uniqueDisplayValues([
+    ...(Array.isArray(schema?.[displayKey]) ? schema[displayKey] : []),
+    ...(schema?.[keyword] === undefined ? [] : [schema[keyword]])
+  ]);
+}
+
+function mergeLosslessDisplayKeyword(merged, left, right, keyword, displayKey) {
+  const values = uniqueDisplayValues([
+    ...conjoinedDisplayValues(left, keyword, displayKey),
+    ...conjoinedDisplayValues(right, keyword, displayKey)
+  ]);
+  delete merged[keyword];
+  delete merged[displayKey];
+  if (values.length === 1) merged[keyword] = values[0];
+  else if (values.length > 1) merged[displayKey] = values;
+}
+
 function mergeDisplaySchemas(left, right) {
   if (left === false || right === false) return false;
   if (left === true) return clone(right);
@@ -939,6 +1099,34 @@ function mergeDisplaySchemas(left, right) {
   const merged = { ...clone(left), ...clone(right) };
   delete merged.$ref;
   delete merged.allOf;
+
+  const types = intersectDisplayTypes(left, right);
+  delete merged.type;
+  if (types?.length === 0) return false;
+  if (types?.length === 1) merged.type = types[0];
+  else if (types) merged.type = types;
+
+  const leftAllowed = allowedDisplayValues(left);
+  const rightAllowed = allowedDisplayValues(right);
+  let allowed = leftAllowed ?? rightAllowed;
+  if (leftAllowed && rightAllowed) {
+    allowed = leftAllowed.filter((leftValue) => (
+      rightAllowed.some((rightValue) => isDeepStrictEqual(leftValue, rightValue))
+    ));
+  }
+  if (allowed) allowed = uniqueDisplayValues(allowed.filter((value) => valueMatchesDisplayTypes(value, types)));
+  delete merged.const;
+  delete merged.enum;
+  if (allowed?.length === 0) return false;
+  if (allowed) {
+    const constConjunction = Object.hasOwn(left, "const") || Object.hasOwn(right, "const");
+    if (constConjunction && allowed.length === 1) merged.const = allowed[0];
+    else merged.enum = allowed;
+  }
+
+  mergeLosslessDisplayKeyword(merged, left, right, "pattern", DISPLAY_PATTERNS_KEY);
+  mergeLosslessDisplayKeyword(merged, left, right, "format", DISPLAY_FORMATS_KEY);
+  mergeLosslessDisplayKeyword(merged, left, right, "multipleOf", DISPLAY_MULTIPLES_KEY);
 
   const propertyNames = [...new Set([
     ...Object.keys(left.properties ?? {}),
@@ -1049,7 +1237,11 @@ function describeType(schema, rootSchema) {
 }
 
 function codeList(values) {
-  return values.map((value) => `\`${JSON.stringify(value)}\``).join(", ");
+  return values.map((value) => renderTableInlineCode(JSON.stringify(value))).join(", ");
+}
+
+function stringCodeList(values) {
+  return values.map((value) => renderTableInlineCode(value)).join(", ");
 }
 
 function collectNestedRequirements(schema, rootSchema, prefix = "", seen = new Set()) {
@@ -1073,28 +1265,41 @@ function describeConstraints(schema, rootSchema) {
   if (!schema || typeof schema !== "object" || Array.isArray(schema)) return "—";
   schema = normalizeSchemaForDisplay(schema, rootSchema);
   const constraints = [];
-  if (schema.format) constraints.push(`format: \`${schema.format}\``);
-  if (Object.hasOwn(schema, "const")) constraints.push(`must equal \`${JSON.stringify(schema.const)}\``);
+  const formats = conjoinedDisplayValues(schema, "format", DISPLAY_FORMATS_KEY);
+  if (formats.length === 1) constraints.push(`format: ${renderTableInlineCode(formats[0])}`);
+  else if (formats.length > 1) constraints.push(`formats: ${stringCodeList(formats)}`);
+  if (Object.hasOwn(schema, "const")) {
+    constraints.push(`must equal ${renderTableInlineCode(JSON.stringify(schema.const))}`);
+  }
   if (schema.enum) constraints.push(`allowed values: ${codeList(schema.enum)}`);
   if (schema.minLength !== undefined) constraints.push(`minimum length: ${schema.minLength}`);
   if (schema.maxLength !== undefined) constraints.push(`maximum length: ${schema.maxLength}`);
-  if (schema.pattern) constraints.push(`pattern: \`${schema.pattern}\``);
+  const patterns = conjoinedDisplayValues(schema, "pattern", DISPLAY_PATTERNS_KEY);
+  if (patterns.length === 1) constraints.push(`pattern: ${renderTableInlineCode(patterns[0])}`);
+  else if (patterns.length > 1) constraints.push(`patterns: ${stringCodeList(patterns)}`);
   if (schema.minimum !== undefined) constraints.push(`minimum: ${schema.minimum}`);
   if (schema.maximum !== undefined) constraints.push(`maximum: ${schema.maximum}`);
   if (schema.exclusiveMinimum !== undefined) constraints.push(`exclusive minimum: ${schema.exclusiveMinimum}`);
   if (schema.exclusiveMaximum !== undefined) constraints.push(`exclusive maximum: ${schema.exclusiveMaximum}`);
+  const multiples = conjoinedDisplayValues(schema, "multipleOf", DISPLAY_MULTIPLES_KEY);
+  if (multiples.length === 1) constraints.push(`multiple of: ${multiples[0]}`);
+  else if (multiples.length > 1) constraints.push(`multiples of: ${multiples.join(", ")}`);
   if (schema.minItems !== undefined) constraints.push(`minimum items: ${schema.minItems}`);
   if (schema.maxItems !== undefined) constraints.push(`maximum items: ${schema.maxItems}`);
   if (schema.uniqueItems) constraints.push("items must be unique");
   if (schema.minProperties !== undefined) constraints.push(`minimum properties: ${schema.minProperties}`);
   const properties = Object.keys(schema.properties ?? {});
-  if (properties.length > 0) constraints.push(`allowed properties: ${properties.map((name) => `\`${name}\``).join(", ")}`);
+  if (properties.length > 0) {
+    constraints.push(`allowed properties: ${properties.map((name) => renderTableInlineCode(name)).join(", ")}`);
+  }
   const nestedRequirements = collectNestedRequirements(schema, rootSchema);
   if (nestedRequirements.length > 0) {
-    constraints.push(`nested required fields: ${nestedRequirements.map((name) => `\`${name}\``).join(", ")}`);
+    constraints.push(
+      `nested required fields: ${nestedRequirements.map((name) => renderTableInlineCode(name)).join(", ")}`
+    );
   }
   if (schema.additionalProperties === false) constraints.push("additional properties are not allowed");
-  if (schema.items) constraints.push(`item type: \`${describeType(schema.items, rootSchema)}\``);
+  if (schema.items) constraints.push(`item type: ${renderTableInlineCode(describeType(schema.items, rootSchema))}`);
   return constraints.join("; ") || "—";
 }
 
@@ -1115,13 +1320,13 @@ function escapeTableValue(value, { inlineCode = false } = {}) {
     if (character === "\\") escaped += "\\\\";
     else if (character === "|") escaped += "\\|";
     else if (character === "\n" || character === "\r") escaped += " ";
-    else if (character === "&") escaped += "&amp;";
-    else if (character === "{") escaped += "&#123;";
-    else if (character === "}") escaped += "&#125;";
-    else if (character === "<") escaped += "&lt;";
-    else if (character === ">") escaped += "&gt;";
-    else if (character === "[") escaped += "\\[";
-    else if (character === "]") escaped += "\\]";
+    else if (!inlineCode && character === "&") escaped += "&amp;";
+    else if (!inlineCode && character === "{") escaped += "&#123;";
+    else if (!inlineCode && character === "}") escaped += "&#125;";
+    else if (!inlineCode && character === "<") escaped += "&lt;";
+    else if (!inlineCode && character === ">") escaped += "&gt;";
+    else if (!inlineCode && character === "[") escaped += "\\[";
+    else if (!inlineCode && character === "]") escaped += "\\]";
     else if (inlineCode && character === "`") escaped += "&#96;";
     else escaped += character;
   }
@@ -1130,6 +1335,45 @@ function escapeTableValue(value, { inlineCode = false } = {}) {
 
 function escapeTableCell(value) {
   return escapeTableValue(value);
+}
+
+function renderSafeCodeElement(content) {
+  return `<code>${content
+    .replaceAll("&", "&amp;")
+    .replaceAll("\\", "&#92;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll("{", "&#123;")
+    .replaceAll("}", "&#125;")
+    .replaceAll("|", "&#124;")}</code>`;
+}
+
+function hasOddBackslashRunBeforePipe(content) {
+  for (let index = content.indexOf("|"); index !== -1; index = content.indexOf("|", index + 1)) {
+    let backslashes = 0;
+    for (let cursor = index - 1; cursor >= 0 && content[cursor] === "\\"; cursor -= 1) backslashes += 1;
+    if (backslashes % 2 === 1) return true;
+  }
+  return false;
+}
+
+function renderTableInlineCode(value) {
+  const content = String(value)
+    .replaceAll("\n", " ")
+    .replaceAll("\r", " ");
+  // GFM consumes one backslash when a table pipe is escaped inside a code
+  // span. An odd source run therefore cannot represent an odd original run
+  // immediately before a pipe. Use a safe code element for that exact case.
+  if (content === "" || /^\s+$/u.test(content) || hasOddBackslashRunBeforePipe(content)) {
+    return renderSafeCodeElement(content);
+  }
+  const escapedContent = content.replaceAll("|", "\\|");
+  const longestBacktickRun = Math.max(0, ...[...escapedContent.matchAll(/`+/gu)].map(([run]) => run.length));
+  const fence = "`".repeat(longestBacktickRun + 1);
+  const needsPadding = longestBacktickRun > 0 || /^\s|\s$/u.test(escapedContent);
+  return needsPadding
+    ? `${fence} ${escapedContent} ${fence}`
+    : `${fence}${escapedContent}${fence}`;
 }
 
 function renderInputTable(tool) {
@@ -1143,11 +1387,11 @@ function renderInputTable(tool) {
   const required = new Set(displaySchema.required ?? []);
   for (const [name, schema] of properties) {
     rows.push(`${[
-      `| \`${escapeTableValue(name, { inlineCode: true })}\``,
-      `\`${escapeTableCell(describeType(schema, tool.inputSchema))}\``,
+      `| ${renderTableInlineCode(name)}`,
+      renderTableInlineCode(describeType(schema, tool.inputSchema)),
       required.has(name) ? "Yes" : "No",
       escapeTableCell(schema.description ?? "No runtime description supplied."),
-      escapeTableCell(describeConstraints(schema, tool.inputSchema))
+      describeConstraints(schema, tool.inputSchema)
     ].join(" | ")} |`);
   }
   return rows.join("\n");
@@ -1335,6 +1579,14 @@ function sameExistingFile(left, right, io) {
   return leftStat.dev === rightStat.dev && leftStat.ino === rightStat.ino;
 }
 
+function isDescendantPath(candidate, parent) {
+  const pathFromParent = relative(parent, candidate);
+  return pathFromParent !== ""
+    && pathFromParent !== ".."
+    && !pathFromParent.startsWith(`..${sep}`)
+    && !isAbsolute(pathFromParent);
+}
+
 function validateTargetPaths(paths, io) {
   const contractPath = resolve(paths.contractPath);
   const catalogPath = resolve(paths.catalogPath);
@@ -1350,6 +1602,9 @@ function validateTargetPaths(paths, io) {
   const contractIdentity = canonicalPath(contractPath, io);
   if (catalogIdentity === publicIdentity || sameExistingFile(catalogPath, publicPath, io)) {
     throw new Error("Unsafe output targets: catalog and public manifest paths must be different files");
+  }
+  if (isDescendantPath(catalogIdentity, publicIdentity) || isDescendantPath(publicIdentity, catalogIdentity)) {
+    throw new Error("Unsafe output targets: catalog and public manifest paths must not contain one another");
   }
   if (catalogIdentity === contractIdentity || sameExistingFile(catalogPath, contractPath, io)) {
     throw new Error("Unsafe catalog output target: it would overwrite the source contract");
@@ -1368,20 +1623,28 @@ function bytesMatch(contents, artifact) {
 export async function run(argv, dependencies = {}) {
   const parsed = parseArguments(argv);
   const io = { ...defaultFileIO, ...(dependencies.fsImpl ?? {}) };
-  const paths = validateTargetPaths({
+  let paths = validateTargetPaths({
     contractPath: parsed.contract ?? DEFAULT_CONTRACT_PATH,
     catalogPath: parsed.catalog ?? DEFAULT_CATALOG_PATH,
     publicPath: parsed.public ?? DEFAULT_PUBLIC_PATH
   }, io);
   if (parsed.mode === "--check") {
-    assertNoIncompleteTransactionForCheck(paths.catalogPath, io);
+    assertNoIncompleteTransactionForCheck([paths.catalogPath, paths.publicPath], io);
   } else {
     recoverGeneratedPair([paths.catalogPath, paths.publicPath], io);
+    paths = validateTargetPaths(paths, io);
   }
   const contract = JSON.parse(io.readFileSync(paths.contractPath, "utf8"));
   const catalog = (dependencies.renderCatalogImpl ?? renderCatalog)(contract);
   const publicManifest = (dependencies.renderPublicManifestImpl ?? renderPublicManifest)(contract);
   validateRenderedPair(contract, catalog, publicManifest);
+  paths = validateTargetPaths(paths, io);
+  if (parsed.mode === "--check") {
+    assertNoIncompleteTransactionForCheck([paths.catalogPath, paths.publicPath], io);
+  } else {
+    recoverGeneratedPair([paths.catalogPath, paths.publicPath], io);
+    paths = validateTargetPaths(paths, io);
+  }
 
   if (parsed.mode === "--check") {
     if (!io.existsSync(paths.catalogPath)) throw new Error(`MCP catalog output is missing: ${basename(paths.catalogPath)}`);

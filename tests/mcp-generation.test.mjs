@@ -1,13 +1,17 @@
 import assert from "node:assert/strict";
 import { spawnSync } from "node:child_process";
+import * as fileSystem from "node:fs";
 import {
   existsSync,
+  fsyncSync,
+  lstatSync,
   mkdirSync,
   mkdtempSync,
   readFileSync,
   readdirSync,
   renameSync,
   rmSync,
+  symlinkSync,
   writeFileSync
 } from "node:fs";
 import { tmpdir } from "node:os";
@@ -15,12 +19,16 @@ import { join } from "node:path";
 import test from "node:test";
 import Ajv2020 from "ajv/dist/2020.js";
 import addFormats from "ajv-formats";
+import { fromMarkdown } from "mdast-util-from-markdown";
+import { gfmFromMarkdown } from "mdast-util-gfm";
+import { gfm } from "micromark-extension-gfm";
 import {
   ExampleSynthesisError,
   renderCatalog,
   renderPublicManifest,
   run
 } from "../scripts/build-mcp-catalog.mjs";
+import { recoverGeneratedPair, writeGeneratedPair } from "../scripts/lib/atomic-generated-pair.mjs";
 
 const CATEGORY_GROUPS = [
   {
@@ -702,6 +710,64 @@ test("example synthesis rejects deep nesting, local ref chains, and cycles", () 
   }), (error) => error instanceof ExampleSynthesisError && /recursive schema reference/i.test(error.message));
 });
 
+test("example synthesis fails closed on a depth-18 binary local-ref DAG", () => {
+  const definitions = {
+    node0: {
+      type: "object",
+      required: ["leaf"],
+      properties: { leaf: { type: "string" } },
+      additionalProperties: false
+    }
+  };
+  for (let index = 1; index <= 18; index += 1) {
+    definitions[`node${index}`] = {
+      allOf: [
+        { $ref: `#/$defs/node${index - 1}` },
+        { $ref: `#/$defs/node${index - 1}` }
+      ]
+    };
+  }
+
+  assert.throws(() => synthesizeFixtureArguments({
+    type: "object",
+    $defs: definitions,
+    required: ["value"],
+    properties: { value: { $ref: "#/$defs/node18" } },
+    additionalProperties: false
+  }), (error) => (
+    error instanceof ExampleSynthesisError
+    && /(?:reference expansion|candidate work|output structure) budget/i.test(error.message)
+  ));
+});
+
+test("example synthesis charges repeated item structure before array materialization", () => {
+  const itemProperties = Object.fromEntries(Array.from(
+    { length: 40 },
+    (_, index) => [`field_${index}`, { const: index }]
+  ));
+  assert.throws(() => synthesizeFixtureArguments({
+    type: "object",
+    required: ["items"],
+    properties: {
+      items: {
+        type: "array",
+        minItems: 1_000,
+        maxItems: 1_000,
+        items: {
+          type: "object",
+          required: Object.keys(itemProperties),
+          properties: itemProperties,
+          additionalProperties: false
+        }
+      }
+    },
+    additionalProperties: false
+  }), (error) => (
+    error instanceof ExampleSynthesisError
+    && /output structure.*before array materialization/i.test(error.message)
+  ));
+});
+
 test("example synthesis rejects arguments over the serialized byte budget", () => {
   const properties = Object.fromEntries(Array.from(
     { length: 100 },
@@ -738,6 +804,156 @@ test("input table conjoins referenced and sibling constraints", () => {
   }), [
     "| `value` | `integer` | Yes | A narrow bounded value. | minimum: 5; maximum: 10 |"
   ]);
+});
+
+test("input table intersects referenced and sibling enum assertions", () => {
+  assert.deepEqual(fixtureInputRows({
+    type: "object",
+    $defs: {
+      baseChoice: {
+        type: "integer",
+        enum: [1, 2],
+        description: "Base choice."
+      }
+    },
+    properties: {
+      choice: {
+        $ref: "#/$defs/baseChoice",
+        enum: [2, 3],
+        description: "Intersected choice."
+      }
+    },
+    additionalProperties: false
+  }), [
+    "| `choice` | `integer` | No | Intersected choice. | allowed values: `2` |"
+  ]);
+});
+
+test("input table preserves type, pattern, format, and multiple conjunctions", () => {
+  assert.deepEqual(fixtureInputRows({
+    type: "object",
+    properties: {
+      typed: {
+        allOf: [
+          { type: ["string", "number"] },
+          { type: ["integer", "boolean"] }
+        ],
+        description: "Intersected type."
+      },
+      patterned: {
+        allOf: [
+          { type: "string", pattern: "^a", format: "hostname" },
+          { type: "string", pattern: "z$", format: "uri" }
+        ],
+        description: "Conjoined string assertions."
+      },
+      stepped: {
+        allOf: [
+          { type: "integer", multipleOf: 2 },
+          { type: "integer", multipleOf: 3 }
+        ],
+        description: "Conjoined numeric assertions."
+      }
+    },
+    additionalProperties: false
+  }), [
+    "| `typed` | `integer` | No | Intersected type. | — |",
+    "| `patterned` | `string` | No | Conjoined string assertions. | formats: `hostname`, `uri`; patterns: `^a`, `z$` |",
+    "| `stepped` | `integer` | No | Conjoined numeric assertions. | multiples of: 2, 3 |"
+  ]);
+});
+
+test("input table type code spans decode to literal generic type text", () => {
+  const row = fixtureInputRows({
+    type: "object",
+    properties: {
+      values: { type: "array", items: { type: "string" }, description: "Values." }
+    },
+    additionalProperties: false
+  })[0];
+  const markdown = `| Field | Type | Required | Description | Constraints |\n| --- | --- | --- | --- | --- |\n${row}\n`;
+  const tree = fromMarkdown(markdown, {
+    extensions: [gfm()],
+    mdastExtensions: [gfmFromMarkdown()]
+  });
+  const typeCell = tree.children[0].children[1].children[1];
+  assert.deepEqual(typeCell.children.map(({ type, value }) => ({ type, value })), [
+    { type: "inlineCode", value: "array<string>" }
+  ]);
+});
+
+test("input table constraint code spans preserve backticks and backslashes in the Markdown AST", () => {
+  const rows = fixtureInputRows({
+    type: "object",
+    properties: {
+      tick_pattern: { type: "string", pattern: "^a`b$", description: "Tick pattern." },
+      slash_pattern: { type: "string", pattern: "^\\d+$", description: "Slash pattern." },
+      tick_enum: { type: "string", enum: ["a`b"], description: "Tick enum." }
+    },
+    additionalProperties: false
+  });
+  const markdown = [
+    "| Field | Type | Required | Description | Constraints |",
+    "| --- | --- | --- | --- | --- |",
+    ...rows,
+    ""
+  ].join("\n");
+  const tree = fromMarkdown(markdown, {
+    extensions: [gfm()],
+    mdastExtensions: [gfmFromMarkdown()]
+  });
+  const parsedRows = Object.fromEntries(tree.children[0].children.slice(1).map((row) => {
+    const field = row.children[0].children.find(({ type }) => type === "inlineCode")?.value;
+    const constraintCodes = row.children[4].children
+      .filter(({ type }) => type === "inlineCode")
+      .map(({ value }) => value);
+    return [field, constraintCodes];
+  }));
+  assert.deepEqual(parsedRows, {
+    tick_pattern: ["^a`b$"],
+    slash_pattern: ["^\\d+$"],
+    tick_enum: ["\"a`b\""]
+  });
+});
+
+test("input table constraint code spans preserve boundary spaces and pipes after backslashes", () => {
+  const rows = fixtureInputRows({
+    type: "object",
+    properties: {
+      spaced_pattern: { type: "string", pattern: " leading ", description: "Spaced pattern." },
+      escaped_pipe_pattern: { type: "string", pattern: "^\\|$", description: "Escaped-pipe pattern." }
+    },
+    additionalProperties: false
+  });
+  for (const row of rows) assert.equal(parseMarkdownTableRow(row).length, 5, row);
+
+  const markdown = [
+    "| Field | Type | Required | Description | Constraints |",
+    "| --- | --- | --- | --- | --- |",
+    ...rows,
+    ""
+  ].join("\n");
+  const tree = fromMarkdown(markdown, {
+    extensions: [gfm()],
+    mdastExtensions: [gfmFromMarkdown()]
+  });
+  const parsedRows = Object.fromEntries(tree.children[0].children.slice(1).map((row) => {
+    assert.equal(row.children.length, 5);
+    const field = row.children[0].children.find(({ type }) => type === "inlineCode")?.value;
+    return [field, row.children[4].children.map(({ type, value }) => ({ type, value }))];
+  }));
+  assert.deepEqual(parsedRows, {
+    spaced_pattern: [
+      { type: "text", value: "pattern: " },
+      { type: "inlineCode", value: " leading " }
+    ],
+    escaped_pipe_pattern: [
+      { type: "text", value: "pattern: " },
+      { type: "html", value: "<code>" },
+      { type: "text", value: "^\\|$" },
+      { type: "html", value: "</code>" }
+    ]
+  });
 });
 
 test("input table resolves top-level ref and allOf properties", () => {
@@ -905,6 +1121,34 @@ test("write mode creates exact files atomically and repeated writes are byte-ide
   });
 });
 
+test("write mode rejects outputs swapped to symlinks during rendering before exact-byte return", async () => {
+  await inTemporaryDirectory(async (directory) => {
+    const catalogPath = join(directory, "tools.mdx");
+    const publicPath = join(directory, "mcp-tools.json");
+    const victimCatalogPath = join(directory, "victim-tools.mdx");
+    const victimPublicPath = join(directory, "victim-mcp-tools.json");
+    writeFileSync(catalogPath, "old catalog\n");
+    writeFileSync(publicPath, "old public\n");
+    writeFileSync(victimCatalogPath, renderCatalog(readContract()));
+    writeFileSync(victimPublicPath, renderPublicManifest(readContract()));
+
+    await assert.rejects(
+      run(["--write", "--catalog", catalogPath, "--public", publicPath], {
+        renderPublicManifestImpl(contract) {
+          rmSync(catalogPath);
+          rmSync(publicPath);
+          symlinkSync(victimCatalogPath, catalogPath);
+          symlinkSync(victimPublicPath, publicPath);
+          return renderPublicManifest(contract);
+        }
+      }),
+      /unsafe .*output target.*symbolic links/i
+    );
+    assert.equal(lstatSync(catalogPath).isSymbolicLink(), true);
+    assert.equal(lstatSync(publicPath).isSymbolicLink(), true);
+  });
+});
+
 test("a later writer recovers crash-interrupted backup, install, and cleanup phases", async () => {
   await inTemporaryDirectory(async (directory) => {
     for (const phase of ["initial-journal-write", "backup", "first-install", "second-install", "cleanup"]) {
@@ -930,6 +1174,62 @@ test("a later writer recovers crash-interrupted backup, install, and cleanup pha
   });
 });
 
+test("a later writer cleans one complete temporary pair left before journal publication", async () => {
+  await inTemporaryDirectory(async (directory) => {
+    const catalogPath = join(directory, "tools.mdx");
+    const publicPath = join(directory, "mcp-tools.json");
+    writeFileSync(catalogPath, "old catalog\n");
+    writeFileSync(publicPath, "old public\n");
+
+    const crashed = crashWriterAt("temporary-files", catalogPath, publicPath);
+    assert.equal(crashed.signal, "SIGKILL", crashed.stderr);
+    assert.equal(transactionFiles(directory, ".tmp").length, 2);
+    assert.equal(readdirSync(directory).some((name) => name.includes(".mcp-pair-transaction.json")), false);
+
+    await run(["--write", "--catalog", catalogPath, "--public", publicPath]);
+    assert.equal(readFileSync(catalogPath, "utf8"), renderCatalog(readContract()));
+    assert.equal(readFileSync(publicPath, "utf8"), renderPublicManifest(readContract()));
+    assertNoTransactionFiles(directory);
+  });
+});
+
+test("pre-journal recovery preserves and refuses ambiguous temporary artifacts", async () => {
+  await inTemporaryDirectory(async (directory) => {
+    const catalogPath = join(directory, "tools.mdx");
+    const publicPath = join(directory, "mcp-tools.json");
+    const catalogTemporaryPath = `${catalogPath}.123.456.aaaa.tmp`;
+    const publicTemporaryPath = `${publicPath}.123.456.bbbb.tmp`;
+    writeFileSync(catalogPath, renderCatalog(readContract()));
+    writeFileSync(publicPath, renderPublicManifest(readContract()));
+    writeFileSync(catalogTemporaryPath, "catalog orphan\n");
+    writeFileSync(publicTemporaryPath, "public orphan\n");
+
+    await assert.rejects(
+      run(["--write", "--catalog", catalogPath, "--public", publicPath]),
+      /ambiguous.*temporary artifacts/i
+    );
+    assert.equal(readFileSync(catalogTemporaryPath, "utf8"), "catalog orphan\n");
+    assert.equal(readFileSync(publicTemporaryPath, "utf8"), "public orphan\n");
+  });
+});
+
+test("pre-journal recovery preserves a sole temporary artifact with unprovable ownership", async () => {
+  await inTemporaryDirectory(async (directory) => {
+    const catalogPath = join(directory, "tools.mdx");
+    const publicPath = join(directory, "mcp-tools.json");
+    const soleTemporaryPath = `${catalogPath}.123.456.aaaa.tmp`;
+    writeFileSync(catalogPath, renderCatalog(readContract()));
+    writeFileSync(publicPath, renderPublicManifest(readContract()));
+    writeFileSync(soleTemporaryPath, "sole orphan\n");
+
+    await assert.rejects(
+      run(["--write", "--catalog", catalogPath, "--public", publicPath]),
+      /ambiguous.*temporary artifacts/i
+    );
+    assert.equal(readFileSync(soleTemporaryPath, "utf8"), "sole orphan\n");
+  });
+});
+
 test("check mode fails closed without mutating an incomplete transaction journal", async () => {
   await inTemporaryDirectory(async (directory) => {
     const catalogPath = join(directory, "tools.mdx");
@@ -948,6 +1248,332 @@ test("check mode fails closed without mutating an incomplete transaction journal
       readdirSync(directory).map((name) => [name, readFileSync(join(directory, name))]),
       before
     );
+  });
+});
+
+test("check mode fails closed on a public-only transaction artifact without mutating it", async () => {
+  await inTemporaryDirectory(async (directory) => {
+    const catalogPath = join(directory, "tools.mdx");
+    const publicPath = join(directory, "mcp-tools.json");
+    const publicTemporaryPath = `${publicPath}.123.456.deadbeef.tmp`;
+    writeFileSync(catalogPath, renderCatalog(readContract()));
+    writeFileSync(publicPath, renderPublicManifest(readContract()));
+    writeFileSync(publicTemporaryPath, "public orphan\n");
+
+    await assert.rejects(
+      run(["--check", "--catalog", catalogPath, "--public", publicPath]),
+      /incomplete MCP output transaction/i
+    );
+    assert.equal(readFileSync(publicTemporaryPath, "utf8"), "public orphan\n");
+  });
+});
+
+test("journal recovery rejects traversal-shaped transaction tokens without touching unrelated files", async () => {
+  await inTemporaryDirectory(async (directory) => {
+    const catalogPath = join(directory, "tools.mdx");
+    const publicPath = join(directory, "mcp-tools.json");
+    const journalPath = `${catalogPath}.mcp-pair-transaction.json`;
+    const victimTemporaryPath = join(directory, "victim.tmp");
+    const victimBackupPath = join(directory, "victim.bak");
+    writeFileSync(catalogPath, renderCatalog(readContract()));
+    writeFileSync(publicPath, renderPublicManifest(readContract()));
+    writeFileSync(victimTemporaryPath, "unrelated temporary\n");
+    writeFileSync(victimBackupPath, "unrelated backup\n");
+    mkdirSync(`${catalogPath}.jump`);
+    mkdirSync(`${publicPath}.jump`);
+    const entries = [catalogPath, publicPath].map((targetPath) => ({
+      targetPath,
+      temporaryPath: `${targetPath}.jump/../victim.tmp`,
+      backupPath: `${targetPath}.jump/../victim.bak`,
+      hadTarget: true
+    }));
+    writeFileSync(journalPath, `${JSON.stringify({ version: 1, committed: true, entries }, null, 2)}\n`);
+
+    await assert.rejects(
+      run(["--write", "--catalog", catalogPath, "--public", publicPath]),
+      /transaction journal.*(?:token|path).*unsafe|unsafe.*transaction journal/i
+    );
+    assert.equal(readFileSync(victimTemporaryPath, "utf8"), "unrelated temporary\n");
+    assert.equal(readFileSync(victimBackupPath, "utf8"), "unrelated backup\n");
+    assert.equal(existsSync(journalPath), true);
+  });
+});
+
+test("journal recovery rejects symlink backups before installing either output", async () => {
+  await inTemporaryDirectory(async (directory) => {
+    const catalogPath = join(directory, "tools.mdx");
+    const publicPath = join(directory, "mcp-tools.json");
+    const journalPath = `${catalogPath}.mcp-pair-transaction.json`;
+    const token = "123.456.deadbeef";
+    const victimCatalogPath = join(directory, "victim-catalog.mdx");
+    const victimPublicPath = join(directory, "victim-public.json");
+    writeFileSync(victimCatalogPath, renderCatalog(readContract()));
+    writeFileSync(victimPublicPath, renderPublicManifest(readContract()));
+    const entries = [
+      { targetPath: catalogPath, victimPath: victimCatalogPath },
+      { targetPath: publicPath, victimPath: victimPublicPath }
+    ].map(({ targetPath, victimPath }) => {
+      const temporaryPath = `${targetPath}.${token}.tmp`;
+      const backupPath = `${targetPath}.${token}.bak`;
+      writeFileSync(temporaryPath, "new output\n");
+      symlinkSync(victimPath, backupPath);
+      return { targetPath, temporaryPath, backupPath, hadTarget: true };
+    });
+    writeFileSync(journalPath, `${JSON.stringify({ version: 1, committed: false, entries }, null, 2)}\n`);
+
+    await assert.rejects(
+      run(["--write", "--catalog", catalogPath, "--public", publicPath]),
+      /backup.*(?:symbolic link|regular file)|(?:symbolic link|regular file).*backup/i
+    );
+    assert.equal(existsSync(catalogPath), false);
+    assert.equal(existsSync(publicPath), false);
+    assert.equal(entries.every(({ backupPath }) => lstatSync(backupPath).isSymbolicLink()), true);
+    assert.equal(readFileSync(victimCatalogPath, "utf8"), renderCatalog(readContract()));
+    assert.equal(readFileSync(victimPublicPath, "utf8"), renderPublicManifest(readContract()));
+    assert.equal(existsSync(journalPath), true);
+  });
+});
+
+test("journal recovery rejects installed output symlinks before cleanup", async () => {
+  await inTemporaryDirectory(async (directory) => {
+    const catalogPath = join(directory, "tools.mdx");
+    const publicPath = join(directory, "mcp-tools.json");
+    const journalPath = `${catalogPath}.mcp-pair-transaction.json`;
+    const token = "123.456.deadbeef";
+    const victimCatalogPath = join(directory, "victim-catalog.mdx");
+    const victimPublicPath = join(directory, "victim-public.json");
+    writeFileSync(victimCatalogPath, renderCatalog(readContract()));
+    writeFileSync(victimPublicPath, renderPublicManifest(readContract()));
+    symlinkSync(victimCatalogPath, catalogPath);
+    symlinkSync(victimPublicPath, publicPath);
+    const entries = [catalogPath, publicPath].map((targetPath) => {
+      const temporaryPath = `${targetPath}.${token}.tmp`;
+      const backupPath = `${targetPath}.${token}.bak`;
+      writeFileSync(backupPath, "original output\n");
+      return { targetPath, temporaryPath, backupPath, hadTarget: true };
+    });
+    writeFileSync(journalPath, `${JSON.stringify({ version: 1, committed: true, entries }, null, 2)}\n`);
+
+    assert.throws(
+      () => recoverGeneratedPair([catalogPath, publicPath], fileSystem),
+      /output.*(?:symbolic link|regular file)|(?:symbolic link|regular file).*output/i
+    );
+    assert.equal(lstatSync(catalogPath).isSymbolicLink(), true);
+    assert.equal(lstatSync(publicPath).isSymbolicLink(), true);
+    assert.equal(entries.every(({ backupPath }) => existsSync(backupPath)), true);
+    assert.equal(existsSync(journalPath), true);
+  });
+});
+
+test("staged-journal recovery rejects temporary symlinks before cleanup", async () => {
+  await inTemporaryDirectory(async (directory) => {
+    const catalogPath = join(directory, "tools.mdx");
+    const publicPath = join(directory, "mcp-tools.json");
+    const token = "123.456.deadbeef";
+    const stagePath = `${catalogPath}.mcp-pair-transaction.json.${token}.stage`;
+    const catalogTemporaryPath = `${catalogPath}.${token}.tmp`;
+    const publicTemporaryPath = `${publicPath}.${token}.tmp`;
+    const victimPath = join(directory, "victim.txt");
+    writeFileSync(catalogPath, "old catalog\n");
+    writeFileSync(publicPath, "old public\n");
+    writeFileSync(victimPath, "unrelated victim\n");
+    symlinkSync(victimPath, catalogTemporaryPath);
+    writeFileSync(publicTemporaryPath, "temporary public\n");
+    writeFileSync(stagePath, "partial staged journal\n");
+
+    await assert.rejects(
+      run(["--write", "--catalog", catalogPath, "--public", publicPath]),
+      /temporary file.*symbolic link|symbolic link.*temporary file/i
+    );
+    assert.equal(lstatSync(catalogTemporaryPath).isSymbolicLink(), true);
+    assert.equal(readFileSync(publicTemporaryPath, "utf8"), "temporary public\n");
+    assert.equal(readFileSync(victimPath, "utf8"), "unrelated victim\n");
+    assert.equal(existsSync(stagePath), true);
+  });
+});
+
+test("staged-journal recovery preserves sole and mismatched temporary evidence", async () => {
+  await inTemporaryDirectory(async (directory) => {
+    for (const variant of ["sole", "mismatched"]) {
+      const phaseDirectory = join(directory, variant);
+      mkdirSync(phaseDirectory);
+      const catalogPath = join(phaseDirectory, "tools.mdx");
+      const publicPath = join(phaseDirectory, "mcp-tools.json");
+      const token = "123.456.deadbeef";
+      const stagePath = `${catalogPath}.mcp-pair-transaction.json.${token}.stage`;
+      const catalogTemporaryPath = `${catalogPath}.${token}.tmp`;
+      const publicTemporaryPath = variant === "sole"
+        ? null
+        : `${publicPath}.123.456.cafebabe.tmp`;
+      writeFileSync(catalogPath, "old catalog\n");
+      writeFileSync(publicPath, "old public\n");
+      writeFileSync(stagePath, "partial staged journal\n");
+      writeFileSync(catalogTemporaryPath, "temporary catalog\n");
+      if (publicTemporaryPath) writeFileSync(publicTemporaryPath, "mismatched temporary public\n");
+
+      await assert.rejects(
+        run(["--write", "--catalog", catalogPath, "--public", publicPath]),
+        /staged journal.*(?:incomplete|mismatched).*temporary|(?:incomplete|mismatched).*staged journal/i
+      );
+      assert.equal(readFileSync(stagePath, "utf8"), "partial staged journal\n");
+      assert.equal(readFileSync(catalogTemporaryPath, "utf8"), "temporary catalog\n");
+      if (publicTemporaryPath) {
+        assert.equal(readFileSync(publicTemporaryPath, "utf8"), "mismatched temporary public\n");
+      }
+    }
+  });
+});
+
+test("journal recovery rejects a symlink journal update before cleanup", async () => {
+  await inTemporaryDirectory(async (directory) => {
+    const catalogPath = join(directory, "tools.mdx");
+    const publicPath = join(directory, "mcp-tools.json");
+    const journalPath = `${catalogPath}.mcp-pair-transaction.json`;
+    const updatePath = `${journalPath}.next`;
+    const token = "123.456.deadbeef";
+    const victimPath = join(directory, "victim.txt");
+    writeFileSync(catalogPath, renderCatalog(readContract()));
+    writeFileSync(publicPath, renderPublicManifest(readContract()));
+    writeFileSync(victimPath, "unrelated victim\n");
+    symlinkSync(victimPath, updatePath);
+    const entries = [catalogPath, publicPath].map((targetPath) => ({
+      targetPath,
+      temporaryPath: `${targetPath}.${token}.tmp`,
+      backupPath: `${targetPath}.${token}.bak`,
+      hadTarget: true
+    }));
+    writeFileSync(journalPath, `${JSON.stringify({ version: 1, committed: true, entries }, null, 2)}\n`);
+
+    assert.throws(
+      () => recoverGeneratedPair([catalogPath, publicPath], fileSystem),
+      /journal update.*symbolic link|symbolic link.*journal update/i
+    );
+    assert.equal(lstatSync(updatePath).isSymbolicLink(), true);
+    assert.equal(readFileSync(victimPath, "utf8"), "unrelated victim\n");
+    assert.equal(existsSync(journalPath), true);
+  });
+});
+
+test("check and write reject an orphan symlink journal update without mutating it", async () => {
+  await inTemporaryDirectory(async (directory) => {
+    for (const mode of ["--check", "--write"]) {
+      const phaseDirectory = join(directory, mode.slice(2));
+      mkdirSync(phaseDirectory);
+      const catalogPath = join(phaseDirectory, "tools.mdx");
+      const publicPath = join(phaseDirectory, "mcp-tools.json");
+      const updatePath = `${catalogPath}.mcp-pair-transaction.json.next`;
+      const victimPath = join(phaseDirectory, "victim.txt");
+      writeFileSync(catalogPath, renderCatalog(readContract()));
+      writeFileSync(publicPath, renderPublicManifest(readContract()));
+      writeFileSync(victimPath, "unrelated victim\n");
+      symlinkSync(victimPath, updatePath);
+
+      await assert.rejects(
+        run([mode, "--catalog", catalogPath, "--public", publicPath]),
+        /journal update.*symbolic link|symbolic link.*journal update/i
+      );
+      assert.equal(lstatSync(updatePath).isSymbolicLink(), true);
+      assert.equal(readFileSync(victimPath, "utf8"), "unrelated victim\n");
+    }
+  });
+});
+
+test("pre-journal writer cleanup preserves a colliding artifact it did not create", async () => {
+  await inTemporaryDirectory(async (directory) => {
+    const catalogPath = join(directory, "tools.mdx");
+    const publicPath = join(directory, "mcp-tools.json");
+    const token = "123.456.deadbeef";
+    const plantedPath = `${publicPath}.${token}.tmp`;
+    const victimPath = join(directory, "victim.txt");
+    writeFileSync(catalogPath, "old catalog\n");
+    writeFileSync(publicPath, "old public\n");
+    writeFileSync(victimPath, "unrelated victim\n");
+    symlinkSync(victimPath, plantedPath);
+
+    assert.throws(
+      () => writeGeneratedPair([
+        { targetPath: catalogPath, contents: "new catalog\n" },
+        { targetPath: publicPath, contents: "new public\n" }
+      ], { io: fileSystem, transactionToken: token }),
+      /temporary file.*symbolic link|symbolic link.*temporary file/i
+    );
+    assert.equal(lstatSync(plantedPath).isSymbolicLink(), true);
+    assert.equal(readFileSync(victimPath, "utf8"), "unrelated victim\n");
+    assert.equal(readFileSync(catalogPath, "utf8"), "old catalog\n");
+    assert.equal(readFileSync(publicPath, "utf8"), "old public\n");
+  });
+});
+
+test("pre-journal writer cleanup preserves an artifact replaced after creation", async () => {
+  await inTemporaryDirectory(async (directory) => {
+    const catalogPath = join(directory, "tools.mdx");
+    const publicPath = join(directory, "mcp-tools.json");
+    const token = "123.456.deadbeef";
+    const replacedPath = `${publicPath}.${token}.tmp`;
+    const victimPath = join(directory, "victim.txt");
+    writeFileSync(catalogPath, "old catalog\n");
+    writeFileSync(publicPath, "old public\n");
+    writeFileSync(victimPath, "unrelated victim\n");
+
+    assert.throws(
+      () => writeGeneratedPair([
+        { targetPath: catalogPath, contents: "new catalog\n" },
+        { targetPath: publicPath, contents: "new public\n" }
+      ], {
+        io: fileSystem,
+        transactionToken: token,
+        transactionPhaseHook(phase) {
+          if (phase !== "temporary-files") return;
+          rmSync(replacedPath);
+          symlinkSync(victimPath, replacedPath);
+          throw new Error("post-create hook failed");
+        }
+      }),
+      (error) => error?.name === "GeneratedPairTransactionError" && /ownership.*cleanup/i.test(error.message)
+    );
+    assert.equal(lstatSync(replacedPath).isSymbolicLink(), true);
+    assert.equal(readFileSync(victimPath, "utf8"), "unrelated victim\n");
+    assert.equal(readFileSync(catalogPath, "utf8"), "old catalog\n");
+    assert.equal(readFileSync(publicPath, "utf8"), "old public\n");
+  });
+});
+
+test("journal-persisted recovery failure preserves a replaced temporary artifact", async () => {
+  await inTemporaryDirectory(async (directory) => {
+    const catalogPath = join(directory, "tools.mdx");
+    const publicPath = join(directory, "mcp-tools.json");
+    const token = "123.456.deadbeef";
+    const replacedPath = `${publicPath}.${token}.tmp`;
+    const victimPath = join(directory, "victim.txt");
+    writeFileSync(catalogPath, "old catalog\n");
+    writeFileSync(publicPath, "old public\n");
+    writeFileSync(victimPath, "unrelated victim\n");
+    let fsyncCalls = 0;
+
+    assert.throws(
+      () => writeGeneratedPair([
+        { targetPath: catalogPath, contents: "new catalog\n" },
+        { targetPath: publicPath, contents: "new public\n" }
+      ], {
+        io: {
+          ...fileSystem,
+          fsyncSync(descriptor) {
+            fsyncCalls += 1;
+            if (fsyncCalls === 5) {
+              rmSync(replacedPath);
+              symlinkSync(victimPath, replacedPath);
+              throw new Error("journal durability failed");
+            }
+            return fsyncSync(descriptor);
+          }
+        },
+        transactionToken: token
+      }),
+      (error) => error?.name === "GeneratedPairTransactionError" && /rollback.*incomplete/i.test(error.message)
+    );
+    assert.equal(lstatSync(replacedPath).isSymbolicLink(), true);
+    assert.equal(readFileSync(victimPath, "utf8"), "unrelated victim\n");
+    assert.equal(existsSync(`${catalogPath}.mcp-pair-transaction.json`), true);
   });
 });
 
@@ -976,6 +1602,49 @@ test("failed journal recovery preserves the only backup and journal", async () =
     assert.ok(backups.length >= 1);
     assert.ok(backups.some((name) => readFileSync(join(directory, name), "utf8") === "old catalog\n"));
     assert.equal(transactionFiles(directory, ".mcp-pair-transaction.json").length, 1);
+  });
+});
+
+test("every fsync fault point preserves a coherent pair recoverable by the next writer", async () => {
+  await inTemporaryDirectory(async (directory) => {
+    const expectedCatalog = renderCatalog(readContract());
+    const expectedPublic = renderPublicManifest(readContract());
+    for (let failureAt = 1; failureAt <= 12; failureAt += 1) {
+      const phaseDirectory = join(directory, `fsync-${failureAt}`);
+      mkdirSync(phaseDirectory);
+      const catalogPath = join(phaseDirectory, "tools.mdx");
+      const publicPath = join(phaseDirectory, "mcp-tools.json");
+      writeFileSync(catalogPath, "old catalog\n");
+      writeFileSync(publicPath, "old public\n");
+      let fsyncCalls = 0;
+
+      await assert.rejects(
+        run(["--write", "--catalog", catalogPath, "--public", publicPath], {
+          fsImpl: {
+            fsyncSync(descriptor) {
+              fsyncCalls += 1;
+              if (fsyncCalls === failureAt) throw new Error(`fsync fault ${failureAt}`);
+              return fsyncSync(descriptor);
+            }
+          }
+        }),
+        new RegExp(`fsync fault ${failureAt}`)
+      );
+      assert.ok(fsyncCalls >= failureAt);
+      assert.equal(lstatSync(catalogPath).isFile(), true);
+      assert.equal(lstatSync(publicPath).isFile(), true);
+      const pair = [readFileSync(catalogPath, "utf8"), readFileSync(publicPath, "utf8")];
+      assert.ok(
+        (pair[0] === "old catalog\n" && pair[1] === "old public\n")
+        || (pair[0] === expectedCatalog && pair[1] === expectedPublic),
+        `fsync ${failureAt} must not leave a mixed pair`
+      );
+
+      await run(["--write", "--catalog", catalogPath, "--public", publicPath]);
+      assert.equal(readFileSync(catalogPath, "utf8"), expectedCatalog);
+      assert.equal(readFileSync(publicPath, "utf8"), expectedPublic);
+      assertNoTransactionFiles(phaseDirectory);
+    }
   });
 });
 
@@ -1106,5 +1775,20 @@ test("malformed arguments and identical or source-overwriting targets fail befor
     assertNoTransactionFiles(directory);
     assert.equal(existsSync(catalogPath), true);
     assert.equal(existsSync(publicPath), true);
+  });
+});
+
+test("ancestor and descendant output targets fail before directory mutation", async () => {
+  await inTemporaryDirectory(async (directory) => {
+    const catalogPath = join(directory, "nested-output");
+    const publicPath = join(catalogPath, "manifest.json");
+
+    await assert.rejects(
+      run(["--write", "--catalog", catalogPath, "--public", publicPath]),
+      /unsafe output targets.*must not contain one another/i
+    );
+
+    assert.equal(existsSync(catalogPath), false);
+    assertNoTransactionFiles(directory);
   });
 });
