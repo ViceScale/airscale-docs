@@ -1,0 +1,654 @@
+import assert from "node:assert/strict";
+import { existsSync, readFileSync, readdirSync } from "node:fs";
+import test from "node:test";
+import Ajv from "ajv";
+import { parseDocument } from "yaml";
+import {
+  assertBalancedCodeFences,
+  assertLocalDocumentationLinksResolve,
+  assertNoStaticCredentials,
+  hasUnsafeBearerAuthorization
+} from "./helpers/content-safety.mjs";
+
+const API_REFERENCE_TAB = {
+  tab: "API Reference",
+  groups: [
+    {
+      group: "Start here",
+      pages: [
+        "api-reference/api-overview",
+        "api-reference/authentication",
+        "api-reference/rate-limits"
+      ]
+    },
+    {
+      group: "Search and discovery",
+      pages: [
+        "api-reference/find-people",
+        "api-reference/find-people/count",
+        "api-reference/find-companies",
+        "api-reference/find-companies/filter-values",
+        "api-reference/airsearch"
+      ]
+    },
+    {
+      group: "Contact data",
+      pages: [
+        "api-reference/email-finder",
+        "api-reference/email-finder-(bulk)",
+        "api-reference/mobile-finder",
+        "api-reference/personal-email",
+        "api-reference/people-url-finder"
+      ]
+    },
+    {
+      group: "Profiles and reverse lookup",
+      pages: [
+        "api-reference/extract-people-profile",
+        "api-reference/extract-company-profile",
+        "api-reference/reverse-email",
+        "api-reference/reverse-phone"
+      ]
+    },
+    {
+      group: "Account",
+      pages: ["api-reference/credit-count"]
+    }
+  ]
+};
+
+const MCP_GROUPS = [
+  { group: "Start", pages: ["mcp/airscale-mcp-server", "mcp/tools"] },
+  {
+    group: "Connect",
+    pages: ["mcp/connect-airscale-mcp-to-chatgpt", "mcp/connect-airscale-mcp-to-claude"]
+  },
+  { group: "Use", pages: ["mcp/how-to-use-the-airscale-mcp"] },
+  { group: "For agents", pages: ["mcp/agent-resources"] }
+];
+
+const MCP_PAGE_PATHS = MCP_GROUPS.flatMap(({ pages }) => pages);
+const MCP_TOOLS = new Map(
+  JSON.parse(readFileSync("contracts/mcp-tools.json", "utf8")).tools.map((tool) => [tool.name, tool])
+);
+const CONNECT_PAGE_PATHS = [
+  "mcp/connect-airscale-mcp-to-chatgpt",
+  "mcp/connect-airscale-mcp-to-claude"
+];
+const CONNECT_PAGE_HEADINGS = [
+  "What this enables",
+  "Server URL",
+  "Prerequisites",
+  "Authentication",
+  "Connect Airscale MCP",
+  "Verify the connection for free",
+  "Starter prompts",
+  "Credits and approval",
+  "Troubleshooting",
+  "Next steps"
+];
+const WORKFLOW_HEADINGS = [
+  "Verify the connection for free",
+  "Count or discover filters",
+  "Run a narrow sample",
+  "Refine the request",
+  "Review the maximum spend",
+  "Start the export",
+  "Poll status",
+  "Retrieve the file"
+];
+const SYNTHETIC_FULL_NAMES = new Set(["Jordan Example", "Taylor Example"]);
+
+function readPage(path) {
+  const source = readFileSync(`${path}.mdx`, "utf8");
+  const match = source.match(/^---\n([\s\S]*?)\n---\n([\s\S]*)$/);
+  assert.ok(match, `${path} must have YAML frontmatter`);
+  const document = parseDocument(match[1]);
+  assert.equal(document.errors.length, 0, `${path} frontmatter must parse as YAML`);
+  return { source, body: match[2], frontmatter: document.toJS() };
+}
+
+function documentedExamples(source) {
+  const fenced = Array.from(
+    source.matchAll(/^```[^\n]*\n([\s\S]*?)^```/gm),
+    ([, content]) => ({ content, kind: "fence" })
+  );
+  const prompts = Array.from(
+    source.matchAll(/^>\s+(.+)$/gm),
+    ([, content]) => ({ content, kind: "prompt" })
+  );
+  return [...fenced, ...prompts];
+}
+
+function documentedToolCalls(source) {
+  return Array.from(source.matchAll(/^```json\n([\s\S]*?)^```/gm), ([, content]) => JSON.parse(content))
+    .filter((value) => value && typeof value === "object" && "tool" in value);
+}
+
+function identityValues(value) {
+  if (typeof value === "string") return [value];
+  if (Array.isArray(value)) return value.flatMap(identityValues);
+  if (!value || typeof value !== "object") return [];
+  return Object.values(value).flatMap(identityValues);
+}
+
+function assertJsonIdentitiesAreSynthetic(value, path, exampleIndex) {
+  if (!value || typeof value !== "object") return;
+  if (Array.isArray(value)) {
+    for (const nested of value) assertJsonIdentitiesAreSynthetic(nested, path, exampleIndex);
+    return;
+  }
+
+  const entries = Object.entries(value);
+  for (const [key, nested] of entries) {
+    if (!/^(?:full_?name|name)$/i.test(key)) continue;
+    for (const fullName of identityValues(nested)) {
+      assert.ok(
+        SYNTHETIC_FULL_NAMES.has(fullName),
+        `${path} example ${exampleIndex} identity ${fullName} must be explicitly synthetic`
+      );
+    }
+  }
+
+  const firstEntry = entries.find(([key]) => /^(?:first_?name|firstname)$/i.test(key));
+  const lastEntry = entries.find(([key]) => /^(?:last_?name|lastname)$/i.test(key));
+  if (firstEntry && lastEntry) {
+    const firstNames = identityValues(firstEntry[1]);
+    const lastNames = identityValues(lastEntry[1]);
+    for (const firstName of firstNames) {
+      for (const lastName of lastNames) {
+        const fullName = `${firstName} ${lastName}`;
+        assert.ok(
+          SYNTHETIC_FULL_NAMES.has(fullName),
+          `${path} example ${exampleIndex} identity ${fullName} must be explicitly synthetic`
+        );
+      }
+    }
+  }
+
+  for (const [, nested] of entries) assertJsonIdentitiesAreSynthetic(nested, path, exampleIndex);
+}
+
+function assertExamplesUseSyntheticData(source, path) {
+  const examples = documentedExamples(source);
+  assert.ok(examples.length > 0, `${path} must contain at least one documented example`);
+
+  for (const [index, { content: example, kind }] of examples.entries()) {
+    for (const domain of example.match(/\b(?:[a-z0-9-]+\.)+[a-z]{2,}\b/gi) ?? []) {
+      if (domain.toLowerCase() === "mcp.airscale.io") continue;
+      assert.match(
+        domain.toLowerCase(),
+        /(?:^|\.)example\.(?:com|net|org)$|(?:^|\.)[a-z0-9-]+\.(?:test|example)$/,
+        `${path} example ${index} domain ${domain} must be reserved`
+      );
+    }
+
+    for (const match of example.matchAll(/(?<![\w])\+?\d[\d\s().-]{5,}\d(?![\w])/g)) {
+      if ((match[0].match(/\d/g) ?? []).length >= 8) {
+        assert.fail(`${path} example ${index} must not contain a phone number`);
+      }
+    }
+
+    if (kind === "prompt") {
+      const prose = example.replace(/`[^`]*`/g, " ").replace(/\bAirscale MCP\b/g, " ");
+      for (const match of prose.matchAll(/\b([A-Z][a-z]+(?:['-][A-Za-z]+)?)\s+([A-Z][a-z]+(?:['-][A-Za-z]+)?)\b/g)) {
+        const fullName = `${match[1]} ${match[2]}`;
+        assert.ok(
+          SYNTHETIC_FULL_NAMES.has(fullName),
+          `${path} example ${index} identity ${fullName} must be explicitly synthetic`
+        );
+      }
+    }
+
+    if (example.trimStart().startsWith("{")) {
+      assertJsonIdentitiesAreSynthetic(JSON.parse(example), path, index);
+    }
+  }
+}
+
+function assertOrdered(source, labels, path) {
+  let previousIndex = -1;
+  for (const label of labels) {
+    const index = source.indexOf(label);
+    assert.ok(index > previousIndex, `${path} must place ${label} after the preceding section`);
+    previousIndex = index;
+  }
+}
+
+function directColumnBodies(body, path) {
+  const columns = body.trimStart().match(/^<Columns cols=\{2\}>\n([\s\S]*?)\n<\/Columns>(?:\n|$)/);
+  assert.ok(columns, `${path} must begin with a two-column Columns component`);
+  const columnMatches = Array.from(columns[1].matchAll(/<Column>\n([\s\S]*?)\n<\/Column>/g));
+  assert.equal(columnMatches.length, 2, `${path} must contain exactly two Column children`);
+  assert.equal(columns[1].replace(/<Column>\n[\s\S]*?\n<\/Column>/g, "").trim(), "", `${path} Columns must contain only Column children`);
+  return columnMatches.map((match) => match[1]);
+}
+
+test("MCP and Agents is a peer tab with exactly six pages while API Reference stays unchanged", () => {
+  const config = JSON.parse(readFileSync("docs.json", "utf8"));
+  assert.equal(config.navigation.tabs.length, 2);
+  assert.deepEqual(config.navigation.tabs[0], API_REFERENCE_TAB);
+  assert.deepEqual(config.navigation.tabs[1], { tab: "MCP & Agents", groups: MCP_GROUPS });
+  assert.equal(config.styling.eyebrows, "breadcrumbs");
+  assert.equal(config.navigation.tabs[1].groups[0].group, "Start");
+  const landing = readPage(config.navigation.tabs[1].groups[0].pages[0]);
+  assert.equal(landing.frontmatter.title, "Build with Airscale MCP");
+  assert.equal(landing.frontmatter.sidebarTitle, "Airscale MCP server");
+  assert.doesNotMatch(landing.body, /<Badge\b[^>]*>MCP & Agents<\/Badge>|^## Build with Airscale MCP$/m);
+  assert.equal(MCP_PAGE_PATHS.length, 6);
+  assert.equal(new Set(MCP_PAGE_PATHS).size, 6);
+  assert.deepEqual(
+    readdirSync("mcp").filter((name) => name.endsWith(".mdx")).map((name) => `mcp/${name.slice(0, -4)}`).sort(),
+    [...MCP_PAGE_PATHS].sort()
+  );
+});
+
+test("all six MCP pages have unique preview metadata, safe MDX, and resolving documentation links", () => {
+  const titles = new Set();
+  const descriptions = new Set();
+
+  for (const path of MCP_PAGE_PATHS) {
+    assert.ok(existsSync(`${path}.mdx`), `${path} must exist`);
+    const { source, body, frontmatter } = readPage(path);
+    assert.equal(typeof frontmatter.title, "string", `${path} must have a title`);
+    assert.ok(frontmatter.title.trim(), `${path} title must not be empty`);
+    assert.equal(typeof frontmatter.description, "string", `${path} must have a description`);
+    assert.ok(frontmatter.description.trim(), `${path} description must not be empty`);
+    assert.equal(frontmatter.canonical, `https://airscale.mintlify.app/${path}`);
+    assert.equal(titles.has(frontmatter.title.toLowerCase()), false, `${path} title must be unique`);
+    assert.equal(descriptions.has(frontmatter.description.toLowerCase()), false, `${path} description must be unique`);
+    titles.add(frontmatter.title.toLowerCase());
+    descriptions.add(frontmatter.description.toLowerCase());
+    assert.doesNotMatch(body, /^#\s+/m, `${path} must not contain a body H1`);
+    assertBalancedCodeFences(source, path);
+    assertNoStaticCredentials(source, path);
+    assertLocalDocumentationLinksResolve(source, path);
+    assert.doesNotMatch(source, /<ApiPlayground\b|<TryIt\b|https:\/\/api\.airscale\.io\/v1\b/i);
+    assert.doesNotMatch(source, /^\s*(?:curl|wget|httpie?)\b|\bfetch\s*\(|\brequests\.(?:get|post|request)\s*\(/gim);
+  }
+});
+
+test("credential checks reject static secrets while allowing only the documented environment placeholder", () => {
+  for (const unsafe of [
+    "Authorization: Bearer live-secret-token",
+    "Authorization: Bearer $WRONG_VARIABLE",
+    "Authorization: Bearer ${WRONG_VARIABLE}",
+    "AIRSCALE_API_KEY=live-secret-token",
+    "export AIRSCALE_API_KEY=live-secret-token",
+    '{ "Authorization": "Bearer json-token" }'
+  ]) {
+    assert.equal(hasUnsafeBearerAuthorization(unsafe), true, `${unsafe} must be rejected`);
+  }
+  assert.equal(hasUnsafeBearerAuthorization("export AIRSCALE_API_KEY=YOUR_API_KEY\nAuthorization: Bearer ${AIRSCALE_API_KEY}"), false);
+
+  for (const path of MCP_PAGE_PATHS) {
+    const source = readFileSync(`${path}.mdx`, "utf8");
+    for (const line of source.split("\n").filter((candidate) => candidate.includes("YOUR_API_KEY"))) {
+      assert.equal(line.trim(), "export AIRSCALE_API_KEY=YOUR_API_KEY", `${path} must use YOUR_API_KEY only as the exact environment assignment`);
+    }
+  }
+});
+
+test("MCP landing page is developer-first, complete, and non-executing", () => {
+  const source = readFileSync("mcp/airscale-mcp-server.mdx", "utf8");
+  const { body, frontmatter } = readPage("mcp/airscale-mcp-server");
+  assert.deepEqual(frontmatter, {
+    title: "Build with Airscale MCP",
+    sidebarTitle: "Airscale MCP server",
+    description: "Connect AI clients and agents to Airscale search, enrichment, research, and export tools.",
+    canonical: "https://airscale.mintlify.app/mcp/airscale-mcp-server"
+  });
+  assertOrdered(body, [
+    "<Columns cols={2}>",
+    "search, enrichment, research, and exports",
+    "https://mcp.airscale.io/mcp",
+    "### Configure your client",
+    "</Columns>",
+    "<CardGroup cols={2}>",
+    '<Card title="Tool catalog"',
+    '<Card title="Authentication"',
+    '<Card title="Credit safety"',
+    '<Card title="Agent resources"',
+    "## Supported clients",
+    "## Choose OAuth or header authentication",
+    "## Verify the connection for free",
+    "## Capability overview",
+    "## Run asynchronous exports safely",
+    "## Understand credits and approval",
+    "## Recommended workflow",
+    "## Security",
+    "## Troubleshooting"
+  ], "mcp/airscale-mcp-server");
+
+  const [overviewColumn, configurationColumn] = directColumnBodies(body, "mcp/airscale-mcp-server");
+  assert.equal((overviewColumn.match(/<Card\b/g) ?? []).length, 0);
+  assert.match(overviewColumn, /```text\nhttps:\/\/mcp\.airscale\.io\/mcp\n```/);
+  assert.match(overviewColumn, /22 typed tools/);
+  assert.doesNotMatch(overviewColumn, /<CodeGroup>/);
+  assert.match(configurationColumn, /### Configure your client[\s\S]*<CodeGroup>[\s\S]*Claude Code[\s\S]*Field mapping[\s\S]*OAuth[\s\S]*<\/CodeGroup>/);
+  assert.match(configurationColumn, /not a copy-paste configuration/i);
+  assert.doesNotMatch(configurationColumn, /Generic JSON client|"transport": "streamable-http"/);
+  assert.match(configurationColumn, /export AIRSCALE_API_KEY=YOUR_API_KEY/);
+  assert.match(configurationColumn, /"Authorization": "Bearer \$\{AIRSCALE_API_KEY\}"/);
+  assert.doesNotMatch(configurationColumn, /"Authorization": "Bearer \$AIRSCALE_API_KEY"/);
+  assert.match(source, /Authorization: Bearer \$AIRSCALE_API_KEY/);
+  assert.match(source, /airscale_check_credits/);
+  assert.match(source, /confirm_credit_spend/);
+  assert.match(source, /poll|status/i);
+  assert.match(source, /\[MCP tool catalog\]\(\/mcp\/tools\)/);
+  assert.match(source, /\/api-reference\/(?:credit-count|authentication)/);
+  assert.doesNotMatch(source, /<ApiPlayground\b|<TryIt\b|https:\/\/api\.airscale\.io\/v1\b/i);
+});
+
+test("MCP landing hero uses two direct responsive columns without cramped nested cards", () => {
+  const { body } = readPage("mcp/airscale-mcp-server");
+  const [overviewColumn, configurationColumn] = directColumnBodies(body, "mcp/airscale-mcp-server");
+  assert.match(overviewColumn, /22 typed tools[\s\S]*https:\/\/mcp\.airscale\.io\/mcp/);
+  assert.doesNotMatch(overviewColumn, /<CardGroup|<Card\b/);
+  assert.match(configurationColumn, /### Configure your client[\s\S]*<CodeGroup>/);
+  const columnsEnd = body.indexOf("</Columns>");
+  const resourceCards = body.indexOf("<CardGroup cols={2}>", columnsEnd);
+  assert.ok(columnsEnd < resourceCards);
+  assert.ok(resourceCards < body.indexOf("## Supported clients"));
+});
+
+test("landing configuration uses Claude's exact environment syntax and labels conceptual mappings", () => {
+  const source = readFileSync("mcp/airscale-mcp-server.mdx", "utf8");
+  assert.match(source, /export AIRSCALE_API_KEY=YOUR_API_KEY/);
+  assert.match(source, /"Authorization": "Bearer \$\{AIRSCALE_API_KEY\}"/);
+  assert.doesNotMatch(source, /```json Generic JSON client|"transport": "streamable-http"/);
+  assert.match(source, /```text Field mapping[\s\S]*conceptual field mapping[\s\S]*not a copy-paste configuration/i);
+});
+
+test("documentation links validate missing fragments, explicit anchors, and heading slugs", () => {
+  assert.throws(
+    () => assertLocalDocumentationLinksResolve("[Broken](/mcp/tools#missing-fragment)", "fragment fixture"),
+    /fragment.*missing-fragment/i
+  );
+  assert.doesNotThrow(() => assertLocalDocumentationLinksResolve(
+    "[Category](/mcp/tools#async-exports-and-managed-batches)\n[Tool](/mcp/tools#airscale-check-credits)",
+    "fragment fixture"
+  ));
+  assert.doesNotThrow(() => assertLocalDocumentationLinksResolve("[Tool](#airscale-check-credits)", "mcp/tools"));
+});
+
+test("API and MCP page tests import one shared credential and link safety helper", () => {
+  for (const path of ["tests/site.test.mjs", "tests/mcp-pages.test.mjs"]) {
+    const source = readFileSync(path, "utf8");
+    assert.match(source, /from "\.\/helpers\/content-safety\.mjs";/, `${path} must import the shared helper`);
+    assert.doesNotMatch(source, /function (?:hasUnsafeBearerAuthorization|localDocumentationLinks|assertLocalDocumentationLinksResolve|assertNoStaticCredentials)\b/);
+  }
+  assert.ok(existsSync("tests/helpers/content-safety.mjs"));
+});
+
+test("route shells introduce their subject without claiming unfinished walkthroughs", () => {
+  const expectations = new Map([
+    ["mcp/connect-airscale-mcp-to-chatgpt", /ChatGPT[\s\S]*OAuth/i],
+    ["mcp/connect-airscale-mcp-to-claude", /Claude[\s\S]*(?:OAuth|header)/i],
+    ["mcp/how-to-use-the-airscale-mcp", /free[\s\S]*credit[\s\S]*(?:sample|workflow)/i],
+    ["mcp/agent-resources", /agent[\s\S]*(?:machine-readable|tool catalog)/i]
+  ]);
+
+  for (const [path, expectation] of expectations) {
+    const { body } = readPage(path);
+    assert.match(body, expectation, `${path} must have meaningful introductory guidance`);
+    assert.doesNotMatch(body, /TODO|TBD|coming soon|placeholder|under construction/i);
+    assert.match(body, /\/mcp\/(?:airscale-mcp-server|tools)/, `${path} must guide readers to an existing MCP reference`);
+  }
+});
+
+test("connection guides share a complete, ordered setup template", () => {
+  for (const path of CONNECT_PAGE_PATHS) {
+    const { body } = readPage(path);
+    assertOrdered(body, CONNECT_PAGE_HEADINGS.map((heading) => `## ${heading}`), path);
+    assert.match(body, /https:\/\/mcp\.airscale\.io\/mcp/);
+    assert.match(body, /browser[\s\S]*sign[ -]?in|sign[ -]?in[\s\S]*browser/i);
+    assert.match(body, /<Steps>[\s\S]*(?:<Step\b[\s\S]*){4,}<\/Steps>/);
+    assert.match(body, /airscale_check_credits/);
+    assert.match(body, /free|does not debit credits/i);
+    assert.match(body, /Airsearch costs 2 credits per call/);
+    assert.match(body, /work-email-only/i);
+    assert.match(body, /confirm_credit_spend/);
+    assert.match(body, /\[MCP tool catalog\]\(\/mcp\/tools\)/);
+    assert.match(body, /\[safe MCP workflow\]\(\/mcp\/how-to-use-the-airscale-mcp\)/);
+    assert.doesNotMatch(body, /TODO|TBD|coming soon|placeholder|under construction/i);
+  }
+});
+
+test("ChatGPT setup is browser OAuth only and never configures an API key", () => {
+  const { body } = readPage("mcp/connect-airscale-mcp-to-chatgpt");
+  assert.match(body, /browser OAuth/i);
+  assert.match(body, /do not paste an Airscale API key/i);
+  assert.doesNotMatch(body, /AIRSCALE_API_KEY|YOUR_API_KEY|Authorization\s*:\s*Bearer|API key field|header-based/i);
+  assert.doesNotMatch(body, /tool arguments[\s\S]{0,80}(?:api[_ -]?key|credential)/i);
+});
+
+test("ChatGPT setup follows current full-MCP plan, role, draft, and per-message rules", () => {
+  const { body } = readPage("mcp/connect-airscale-mcp-to-chatgpt");
+  assert.match(body, /ChatGPT web[\s\S]*Business[\s\S]*Enterprise\/Edu[\s\S]*full MCP/i);
+  assert.match(body, /Business[\s\S]{0,160}(?:admin|owner)[\s\S]{0,120}(?:create|creation)/i);
+  assert.match(body, /Enterprise\/Edu[\s\S]{0,180}RBAC[\s\S]{0,180}authorized developer/i);
+  assertOrdered(body, [
+    "Select **OAuth**",
+    "**Scan Tools**",
+    "complete the Airscale OAuth flow",
+    "**Create**",
+    "draft app"
+  ], "mcp/connect-airscale-mcp-to-chatgpt");
+  assert.match(body, /selection applies[\s\S]{0,100}(?:message|one message)[\s\S]{0,100}not[\s\S]{0,60}(?:conversation|entire conversation)/i);
+  assert.match(body, /https:\/\/help\.openai\.com\/en\/articles\/12584461/);
+});
+
+test("Claude setup distinguishes hosted OAuth from Claude Code header authentication", () => {
+  const { body } = readPage("mcp/connect-airscale-mcp-to-claude");
+  assert.match(body, /Claude (?:web|desktop)[\s\S]*remote OAuth/i);
+  assert.match(body, /where supported/i);
+  assert.match(body, /Claude Code/);
+  assert.match(body, /export AIRSCALE_API_KEY=YOUR_API_KEY/);
+  assert.match(body, /"Authorization": "Bearer \$\{AIRSCALE_API_KEY\}"/);
+  assert.doesNotMatch(body, /"Authorization": "Bearer \$AIRSCALE_API_KEY"/);
+  assert.match(body, /never[\s\S]{0,100}(?:tool argument|prompt)/i);
+});
+
+test("Claude setup branches individual and organization-hosted connector flows", () => {
+  const { body } = readPage("mcp/connect-airscale-mcp-to-claude");
+  assert.match(body, /Free[\s\S]{0,120}Pro[\s\S]{0,80}Max/i);
+  assert.match(body, /Free[\s\S]{0,160}(?:one|1) custom connector/i);
+  assert.match(body, /Free, Pro, or Max[\s\S]{0,240}(?:add|create)[\s\S]{0,100}custom connector/i);
+  assert.match(body, /Team or Enterprise[\s\S]{0,240}(?:Owner|Primary Owner)[\s\S]{0,160}Custom[\s\S]{0,80}Web/i);
+  assert.match(body, /member[\s\S]{0,180}Connect[\s\S]{0,120}authenticate/i);
+  assert.match(body, /https:\/\/support\.claude\.com\/en\/articles\/11175166/);
+});
+
+test("Claude Code JSON is explicitly project-scoped and includes connection verification", () => {
+  const { body } = readPage("mcp/connect-airscale-mcp-to-claude");
+  assert.match(body, /project-scoped[\s\S]{0,100}`\.mcp\.json`/i);
+  assert.match(body, /project root/i);
+  assert.match(body, /```json Project \.mcp\.json[\s\S]*"mcpServers"/);
+  assert.match(body, /claude mcp list|`\/mcp`/);
+  assert.doesNotMatch(body, /user or project MCP configuration/i);
+  assert.match(body, /https:\/\/code\.claude\.com\/docs\/en\/mcp/);
+});
+
+test("workflow teaches the bounded asynchronous export lifecycle in order", () => {
+  const path = "mcp/how-to-use-the-airscale-mcp";
+  const { body } = readPage(path);
+  assertOrdered(body, WORKFLOW_HEADINGS.map((heading) => `## ${heading}`), path);
+  assert.match(body, /illustrative[\s\S]{0,80}(?:do not execute|non-executing)/i);
+  assert.match(body, /airscale_check_credits/);
+  assert.match(body, /airscale_count_find_people|airscale_find_companies_filter_values/);
+  assert.match(body, /"max_rows":\s*(?:[1-9]|1\d|20)\b/);
+  assert.match(body, /Airsearch costs 2 credits per call/);
+  assert.match(body, /managed contact enrichment[\s\S]{0,100}work-email-only/i);
+  assert.match(body, /"confirm_credit_spend":\s*true/);
+  assert.match(body, /airscale_start_(?:people|companies|contact_enrichment)_export/);
+  assert.match(body, /airscale_get_export_status/);
+  assert.match(body, /poll_after_seconds/);
+  assert.match(body, /returned[\s\S]{0,80}poll_after_seconds|poll_after_seconds[\s\S]{0,80}returned/i);
+  assert.match(body, /airscale_get_export_file/);
+  assert.match(body, /\[MCP tool catalog\]\(\/mcp\/tools\)/);
+});
+
+test("workflow does not claim credit balance identifies workspace and totals cumulative spend", () => {
+  const { body } = readPage("mcp/how-to-use-the-airscale-mcp");
+  assert.doesNotMatch(body, /returned workspace/i);
+  assert.match(body, /workspace[\s\S]{0,100}(?:selected|chosen)[\s\S]{0,100}(?:OAuth|configuration)/i);
+  assert.match(body, /balance[\s\S]{0,120}proves authentication[\s\S]{0,120}does not identify the workspace/i);
+  assert.match(body, /additional export[\s\S]{0,80}(?:at most|maximum|bound)[\s\S]{0,40}2 credits/i);
+  assert.match(body, /cumulative[\s\S]{0,80}(?:at most|maximum|bound)[\s\S]{0,40}2\.5 credits/i);
+});
+
+test("every illustrative workflow call uses a pinned tool and schema-valid arguments", () => {
+  const { body } = readPage("mcp/how-to-use-the-airscale-mcp");
+  const calls = documentedToolCalls(body);
+  assert.deepEqual(calls.map(({ tool }) => tool), [
+    "airscale_count_find_people",
+    "airscale_find_people",
+    "airscale_start_people_export",
+    "airscale_get_export_status",
+    "airscale_get_export_file"
+  ]);
+
+  const ajv = new Ajv({ allErrors: true, strict: false });
+  for (const { tool: name, arguments: argumentsValue } of calls) {
+    const tool = MCP_TOOLS.get(name);
+    assert.ok(tool, `${name} must exist in the pinned MCP contract`);
+    const validate = ajv.compile(tool.inputSchema);
+    assert.equal(
+      validate(argumentsValue),
+      true,
+      `${name} example arguments must match the pinned schema: ${ajv.errorsText(validate.errors)}`
+    );
+  }
+  assert.doesNotMatch(body, /["']api_key["']/i);
+});
+
+test("every connection and workflow example uses only the official endpoint and explicit synthetic data", () => {
+  for (const path of [...CONNECT_PAGE_PATHS, "mcp/how-to-use-the-airscale-mcp"]) {
+    assertExamplesUseSyntheticData(readPage(path).body, path);
+  }
+});
+
+test("synthetic-data policy rejects mixed pages with a real identity or phone number", () => {
+  const { body } = readPage("mcp/connect-airscale-mcp-to-chatgpt");
+  assert.throws(
+    () => assertExamplesUseSyntheticData(
+      `${body}\n> Use Airscale MCP to find Satya Nadella at \`northstar.example\`.`,
+      "mixed identity fixture"
+    ),
+    /Satya Nadella must be explicitly synthetic/
+  );
+  for (const prompt of [
+    "Look up Satya Nadella.",
+    "Search for Satya Nadella.",
+    "Get the profile for Satya Nadella."
+  ]) {
+    assert.throws(
+      () => assertExamplesUseSyntheticData(`${body}\n> ${prompt}`, "mixed prompt fixture"),
+      /Satya Nadella must be explicitly synthetic/
+    );
+  }
+  for (const payload of [
+    { full_name: "Satya Nadella" },
+    { name: "Satya Nadella" }
+  ]) {
+    assert.throws(
+      () => assertExamplesUseSyntheticData(
+        `${body}\n\`\`\`json\n${JSON.stringify(payload)}\n\`\`\``,
+        "mixed named payload fixture"
+      ),
+      /Satya Nadella must be explicitly synthetic/
+    );
+  }
+  assert.throws(
+    () => assertExamplesUseSyntheticData(
+      `${body}\n> Enrich the contact at +1 212 867 5309.`,
+      "mixed phone fixture"
+    ),
+    /must not contain a phone number/
+  );
+  for (const phone of ["33612345678", "020 7946 0958"]) {
+    assert.throws(
+      () => assertExamplesUseSyntheticData(
+        `${body}\n> Enrich the contact at ${phone}.`,
+        "mixed international phone fixture"
+      ),
+      /must not contain a phone number/
+    );
+  }
+  assert.throws(
+    () => assertExamplesUseSyntheticData(
+      `${body}\n\`\`\`json\n${JSON.stringify({
+        firstname: { exclude: ["Satya"] },
+        lastname: { exclude: ["Nadella"] }
+      })}\n\`\`\``,
+      "mixed payload fixture"
+    ),
+    /Satya Nadella must be explicitly synthetic/
+  );
+});
+
+test("agent resources distinguish the operational product server from the documentation MCP", () => {
+  const path = "mcp/agent-resources";
+  const { body, frontmatter } = readPage(path);
+  assert.deepEqual(frontmatter, {
+    title: "Agent resources",
+    description: "Find the human-readable and machine-readable Airscale references intended for AI agents.",
+    canonical: "https://airscale.mintlify.app/mcp/agent-resources"
+  });
+  assert.match(body.trimStart(), /^<Columns cols=\{2\}>/);
+  const [operationalCard, documentationCard] = directColumnBodies(body, path);
+  assert.match(operationalCard, /authenticated product server/i);
+  assert.match(operationalCard, /https:\/\/mcp\.airscale\.io\/mcp/);
+  assert.match(operationalCard, /spend Airscale credits/i);
+  assert.match(documentationCard, /read-only documentation/i);
+  assert.match(documentationCard, /https:\/\/airscale\.mintlify\.app\/mcp/);
+  assert.match(documentationCard, /does not execute Airscale product tools/i);
+
+  const resourcePaths = [
+    "https://airscale.mintlify.app/openapi.json",
+    "https://airscale.mintlify.app/mcp-tools.txt",
+    "https://airscale.mintlify.app/llms.txt",
+    "https://airscale.mintlify.app/llms-full.txt",
+    "https://airscale.mintlify.app/mcp/agent-resources.md",
+    "https://airscale.mintlify.app/skill.md",
+    "https://airscale.mintlify.app/.well-known/agent-skills/index.json",
+    "https://airscale.mintlify.app/.well-known/mcp/server-card.json",
+    "https://airscale.mintlify.app/.well-known/agent-card.json"
+  ];
+  assertOrdered(body, ["## Machine-readable resources", ...resourcePaths, "## Connect the documentation MCP"], path);
+  assert.match(body, /Accept: text\/markdown/);
+  assert.match(body, /Documentation MCP server card[\s\S]{0,220}Mintlify automatically serves/i);
+  assert.match(body, /Operational tool schemas[\s\S]{0,260}tools\/list/i);
+  assert.match(body, /Agent discovery[\s\S]{0,280}Mintlify automatically generates/i);
+  assert.match(body, /not an Airscale product-agent endpoint/i);
+  assert.doesNotMatch(body, /\.well-known\/api-catalog|A2A|HTTP\+JSON/i);
+
+  const connectionSection = body.slice(body.indexOf("## Connect the documentation MCP"));
+  assert.match(connectionSection, /https:\/\/airscale\.mintlify\.app\/mcp/);
+  assert.match(connectionSection, /Claude Code/);
+  assert.match(connectionSection, /Codex/);
+  assert.doesNotMatch(connectionSection, /https:\/\/mcp\.airscale\.io\/mcp/);
+  assert.doesNotMatch(connectionSection, /AIRSCALE_API_KEY|YOUR_API_KEY|Authorization\s*:\s*Bearer/i);
+});
+
+test("custom agent files preserve the preview and noindex trust boundary", () => {
+  const paths = [
+    "llms.txt",
+    "llms-full.txt",
+    "skill.md",
+    "mcp-tools.txt"
+  ];
+  for (const path of paths) {
+    assert.ok(existsSync(path), `${path} must exist`);
+    const source = readFileSync(path, "utf8");
+    assert.doesNotMatch(source, /https:\/\/docs\.airscale\.io/i);
+    assertNoStaticCredentials(source, path);
+  }
+  for (const unsupportedPath of ["mcp-tools.json", ".well-known/api-catalog", ".well-known/agent-card.json"]) {
+    assert.equal(existsSync(unsupportedPath), false, `${unsupportedPath} must not be authored or advertised as a static artifact`);
+  }
+  const config = JSON.parse(readFileSync("docs.json", "utf8"));
+  assert.equal(config.seo.indexing, "navigable");
+  assert.equal(config.seo.metatags.robots, "noindex, follow");
+});

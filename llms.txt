@@ -1,0 +1,61 @@
+# Airscale API
+
+> Airscale product guides, integration workflows, MCP documentation, and public API reference.
+> Preview documentation is intentionally noindex. Use only the airscale.mintlify.app links in this file.
+
+## API Reference — Start here
+
+- [API Overview](https://airscale.mintlify.app/api-reference/api-overview.md): Authenticate with Airscale and make your first API request.
+- [Authentication](https://airscale.mintlify.app/api-reference/authentication.md): Create, send, protect, and rotate an Airscale API key.
+- [Rate limits](https://airscale.mintlify.app/api-reference/rate-limits.md): Understand endpoint-specific request limits and 429 responses.
+
+## API Reference — Search and discovery
+
+- [Find people](https://airscale.mintlify.app/api-reference/find-people.md): Search people using person, role, and company filters.
+- [Count people](https://airscale.mintlify.app/api-reference/find-people/count.md): Count people matching person, role, and company filters.
+- [Find companies](https://airscale.mintlify.app/api-reference/find-companies.md): Search companies using firmographic, location, event, intent, and technology filters.
+- [Company filter values](https://airscale.mintlify.app/api-reference/find-companies/filter-values.md): Search supported values for Find Companies filters.
+- [Airsearch](https://airscale.mintlify.app/api-reference/airsearch.md): Research the web and return structured answers with Airsearch.
+
+## API Reference — Contact data
+
+- [Email finder](https://airscale.mintlify.app/api-reference/email-finder.md): Find a professional email address for one person.
+- [Bulk email finder](https://airscale.mintlify.app/api-reference/email-finder-(bulk).md): Find professional email addresses for a batch of people.
+- [Mobile finder](https://airscale.mintlify.app/api-reference/mobile-finder.md): Find a mobile phone number from a professional profile.
+- [Personal email](https://airscale.mintlify.app/api-reference/personal-email.md): Find a personal email address from a professional profile.
+- [People URL finder](https://airscale.mintlify.app/api-reference/people-url-finder.md): Find a professional profile URL from person and company details.
+
+## API Reference — Profiles and reverse lookup
+
+- [People profile](https://airscale.mintlify.app/api-reference/extract-people-profile.md): Extract a structured person profile from a professional profile URL.
+- [Company profile](https://airscale.mintlify.app/api-reference/extract-company-profile.md): Extract a structured company profile from a company profile URL.
+- [Reverse email](https://airscale.mintlify.app/api-reference/reverse-email.md): Find a person profile from an email address.
+- [Reverse phone](https://airscale.mintlify.app/api-reference/reverse-phone.md): Find a person profile from a phone number.
+
+## API Reference — Account
+
+- [Credit count](https://airscale.mintlify.app/api-reference/credit-count.md): Check the remaining credit balance for your Airscale workspace.
+
+## MCP & Agents — Start
+
+- [Build with Airscale MCP](https://airscale.mintlify.app/mcp/airscale-mcp-server.md): Connect AI clients and agents to Airscale search, enrichment, research, and export tools.
+- [MCP tool catalog](https://airscale.mintlify.app/mcp/tools.md): Browse all 22 typed tools exposed by the Airscale MCP server.
+
+## MCP & Agents — Connect
+
+- [Connect Airscale MCP to ChatGPT](https://airscale.mintlify.app/mcp/connect-airscale-mcp-to-chatgpt.md): Connect ChatGPT to Airscale through browser OAuth and validate the connection without spending credits.
+- [Connect Airscale MCP to Claude](https://airscale.mintlify.app/mcp/connect-airscale-mcp-to-claude.md): Connect Claude clients to Airscale with hosted OAuth or a protected Claude Code authorization header.
+
+## MCP & Agents — Use
+
+- [Use the Airscale MCP](https://airscale.mintlify.app/mcp/how-to-use-the-airscale-mcp.md): Follow a free-first, bounded workflow for Airscale MCP searches, enrichment, and asynchronous exports.
+
+## MCP & Agents — For agents
+
+- [Agent resources](https://airscale.mintlify.app/mcp/agent-resources.md): Find the human-readable and machine-readable Airscale references intended for AI agents.
+
+## Machine-readable contracts
+
+- [OpenAPI specification](https://airscale.mintlify.app/openapi.json): HTTP API operations, schemas, authentication, and responses.
+- [MCP tool manifest](https://airscale.mintlify.app/mcp-tools.txt): JSON-formatted names and input schemas for all 22 operational MCP tools.
+- [Agent skill](https://airscale.mintlify.app/skill.md): Capability, authentication, credit, and approval guidance for agents.

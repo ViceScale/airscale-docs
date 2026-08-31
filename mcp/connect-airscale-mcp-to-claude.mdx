@@ -1,0 +1,161 @@
+---
+title: "Connect Airscale MCP to Claude"
+description: "Connect Claude clients to Airscale with hosted OAuth or a protected Claude Code authorization header."
+canonical: "https://airscale.mintlify.app/mcp/connect-airscale-mcp-to-claude"
+---
+
+## What this enables
+
+Airscale MCP gives Claude 22 typed tools for people and company search, enrichment, profile extraction, web research, and asynchronous exports. Claude can reason about a task conversationally while the Airscale tools keep inputs and result shapes explicit.
+
+## Server URL
+
+Use the official remote MCP endpoint:
+
+```text
+https://mcp.airscale.io/mcp
+```
+
+## Prerequisites
+
+- An Airscale account with access to the workspace you want to use.
+- API access enabled and an active workspace credential in Airscale.
+- An individual Free, Pro, or Max account, or membership in a Team or Enterprise organization, for the hosted connector flow described below.
+- An Owner or Primary Owner available to add the connector for Team or Enterprise.
+
+Claude product availability, account requirements, and UI labels can change. If the wording below differs, look for connectors, integrations, or remote MCP servers in the current client.
+
+## Authentication
+
+Claude web and Claude desktop clients that expose remote OAuth can authorize Airscale in the browser where supported. Each user signs in to Airscale and authorizes a workspace; organization approval does not create one shared Airscale session.
+
+Claude Code can instead authenticate a trusted developer environment with an authorization header sourced from a local environment variable or secret manager. Never put that credential in a prompt or MCP tool argument.
+
+## Connect Airscale MCP
+
+### Individual Free, Pro, or Max
+
+On an individual Free, Pro, or Max plan, add the custom connector yourself. Free accounts are limited to one custom connector.
+
+<Steps>
+  <Step title="Open connector settings">
+    Sign in to Claude web or desktop and open **Customize → Connectors**. Labels can change; use the current connectors settings if this path differs.
+  </Step>
+  <Step title="Add a custom remote connector">
+    Choose the control to add a custom connector, name it **Airscale MCP**, and enter `https://mcp.airscale.io/mcp` as the remote server URL.
+  </Step>
+  <Step title="Authorize in the browser">
+    Continue to Airscale, sign in, select the intended workspace, and approve access. Then return to Claude.
+  </Step>
+  <Step title="Enable the connector">
+    Select Airscale MCP for a new conversation and confirm that Claude can see its tools.
+  </Step>
+</Steps>
+
+### Team or Enterprise
+
+On Team or Enterprise, an Owner or Primary Owner must add Airscale through **Custom → Web** before members can connect:
+
+<Steps>
+  <Step title="Owner adds the organization connector">
+    Open **Organization settings → Connectors**, choose **Add**, hover over **Custom**, select **Web**, and enter `https://mcp.airscale.io/mcp`. Finish by adding the connector to the organization.
+  </Step>
+  <Step title="Member connects an individual session">
+    Each member opens **Customize → Connectors**, finds Airscale MCP, clicks **Connect**, and authenticates with their own Airscale account in the browser.
+  </Step>
+  <Step title="Member enables Airscale tools">
+    Select Airscale MCP and the tools needed for the conversation. Organization setup makes the connector available; it does not share an Owner's Airscale authorization with members.
+  </Step>
+</Steps>
+
+Review Anthropic's current [remote custom connector guide](https://support.claude.com/en/articles/11175166-get-started-with-custom-connectors-using-remote-mcp) if account availability or labels differ.
+
+### Claude Code project configuration
+
+Store the key outside the project configuration and make it available to the Claude Code process:
+
+```bash
+export AIRSCALE_API_KEY=YOUR_API_KEY
+```
+
+The following `mcpServers` block is specifically a project-scoped `.mcp.json` file at the project root. Project configurations may be shared through version control, so every developer must supply the environment value independently.
+
+```json Project .mcp.json
+{
+  "mcpServers": {
+    "airscale": {
+      "type": "http",
+      "url": "https://mcp.airscale.io/mcp",
+      "headers": {
+        "Authorization": "Bearer ${AIRSCALE_API_KEY}"
+      }
+    }
+  }
+}
+```
+
+The `${AIRSCALE_API_KEY}` syntax is resolved from the runtime environment. Never replace the expression with a literal credential in the project file.
+
+From the project root, verify that Claude Code loaded the server:
+
+```bash
+claude mcp list
+```
+
+Inside Claude Code, run `/mcp` to inspect connection status and tool count. See the official [Claude Code MCP scope documentation](https://code.claude.com/docs/en/mcp) before choosing a different scope; local and user configurations are stored in `~/.claude.json`, not in a project `.mcp.json`.
+
+## Verify the connection for free
+
+Use the same first test in every Claude client:
+
+> Use `airscale_check_credits` to show my current Airscale credit balance. Do not call another tool.
+
+A returned balance confirms tool discovery and workspace authentication without debiting credits.
+
+## Starter prompts
+
+The identities and domains in these prompts are synthetic.
+
+> Use Airscale MCP to count people named Taylor Example at `northstar.example`. Do not run a paid search.
+
+> Use `airscale_find_companies_filter_values` to discover accepted technology values related to CRM. Do not call another tool.
+
+> Prepare a five-result sample search for companies matching `sample-company.test`. Show the tool and arguments, then wait for my approval.
+
+See the [safe MCP workflow](/mcp/how-to-use-the-airscale-mcp) for the complete count, sample, review, export, and retrieval sequence.
+
+## Credits and approval
+
+The credit check, people count, company filter-value discovery, export status, and export-file retrieval are free. Search and enrichment tools can consume credits; Airsearch costs 2 credits per call. Managed contact enrichment is work-email-only in its current phase.
+
+Paid export starts require a reviewed maximum cost and `confirm_credit_spend: true`. People and company exports can request up to 10,000 rows, but a smaller `max_rows` reduces the possible charge and makes mistakes easier to catch.
+
+<Warning>
+  Review Claude's proposed tool and arguments before approving any paid action. If an export has started, poll that job instead of starting another one.
+</Warning>
+
+## Troubleshooting
+
+<AccordionGroup>
+  <Accordion title="The connector controls are unavailable">
+    Confirm that the Claude client and account support remote MCP connectors. For an organization-managed workspace, ask an owner to make Airscale MCP available before each member connects their own Airscale account.
+  </Accordion>
+  <Accordion title="OAuth opens but the connection stays pending">
+    Complete the Airscale browser sign-in, wait for the authorization confirmation, and return to Claude. Reconnect while signed in to the intended workspace if the state does not update.
+  </Accordion>
+  <Accordion title="Claude Code reports an authentication error">
+    Confirm that the environment variable is available to the Claude Code process and that the configuration uses the `Bearer` scheme. Do not print the value while debugging.
+  </Accordion>
+  <Accordion title="The Airscale tools are stale or missing">
+    Verify the exact server URL, refresh or reconnect the server, and start a new conversation so the client reloads the tool list.
+  </Accordion>
+  <Accordion title="An export remains queued">
+    Continue polling `airscale_get_export_status` for the same identifier and honor the returned `poll_after_seconds`. Do not start a duplicate export.
+  </Accordion>
+</AccordionGroup>
+
+## Next steps
+
+- Review the exact schemas in the [MCP tool catalog](/mcp/tools).
+- Follow the [safe MCP workflow](/mcp/how-to-use-the-airscale-mcp) before spending credits.
+- Return to the [Airscale MCP server overview](/mcp/airscale-mcp-server) for authentication and security guidance.

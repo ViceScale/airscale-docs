@@ -1,0 +1,74 @@
+---
+title: "Agent resources"
+description: "Find the human-readable and machine-readable Airscale references intended for AI agents."
+canonical: "https://airscale.mintlify.app/mcp/agent-resources"
+---
+
+<Columns cols={2}>
+<Column>
+<Card title="Airscale MCP server" icon="sparkles">
+  **Authenticated product server**
+
+  `https://mcp.airscale.io/mcp`
+
+  Calls Airscale's 22 search, enrichment, research, batch, and export tools. It requires Airscale authentication and some tools can spend Airscale credits.
+</Card>
+</Column>
+<Column>
+<Card title="Airscale documentation MCP" icon="book-open">
+  **Read-only documentation surface**
+
+  `https://airscale.mintlify.app/mcp`
+
+  Searches and retrieves the public preview documentation. It does not execute Airscale product tools or consume Airscale credits.
+</Card>
+</Column>
+</Columns>
+
+Use the authenticated product server only when an agent should perform Airscale work. Use the documentation MCP, Markdown exports, and manifests when an agent needs grounded product context. The [MCP tool catalog](/mcp/tools) documents the operational server's exact tool names and input schemas.
+
+## Machine-readable resources
+
+| Resource | URL | Use |
+| --- | --- | --- |
+| OpenAPI specification | `https://airscale.mintlify.app/openapi.json` | HTTP operations, schemas, authentication, and responses. |
+| MCP tool manifest | `https://airscale.mintlify.app/mcp-tools.txt` | JSON-formatted, source-pinned contract for all 22 operational MCP tools, published as supported `text/plain`. |
+| Operational tool schemas | `tools/list` on `https://mcp.airscale.io/mcp` | Live authenticated MCP names and input schemas from the running product server. |
+| Compact LLM directory | `https://airscale.mintlify.app/llms.txt` | Navigable page directory with discriminating descriptions. |
+| Full LLM corpus | `https://airscale.mintlify.app/llms-full.txt` | Complete public content of every navigable preview page. |
+| Page Markdown | `https://airscale.mintlify.app/mcp/agent-resources.md` | Clean Markdown for this page; append `.md` to any documentation page URL. |
+| Markdown negotiation | `Accept: text/markdown` | Request Markdown from a documentation page without changing its path. |
+| Agent skill | `https://airscale.mintlify.app/skill.md` | Curated capability, authentication, credit, and approval guidance. |
+| Skill discovery | `https://airscale.mintlify.app/.well-known/agent-skills/index.json` | Mintlify's generated agent-skills 0.2.0 discovery index with integrity metadata. |
+| Documentation MCP server card | `https://airscale.mintlify.app/.well-known/mcp/server-card.json` | Mintlify automatically serves the documentation MCP's advertised tools and read-only annotations. |
+| Agent discovery | `https://airscale.mintlify.app/.well-known/agent-card.json` | Mintlify automatically generates documentation discovery from the published skill. It is not an Airscale product-agent endpoint or an interactive API. |
+
+<Note>
+The preview remains intentionally `noindex, follow`. These resources make the documentation directly readable by agents without changing DNS or the search-indexing boundary.
+</Note>
+
+## Connect the documentation MCP
+
+These examples connect only the read-only documentation MCP. They do not configure the authenticated Airscale product server and cannot run Airscale tools or spend Airscale credits.
+
+<CodeGroup>
+```bash Claude Code
+claude mcp add --transport http airscale-docs https://airscale.mintlify.app/mcp
+```
+
+```toml Codex
+[mcp_servers.airscale_docs]
+url = "https://airscale.mintlify.app/mcp"
+```
+</CodeGroup>
+
+After connecting, ask the client to search the Airscale documentation for the relevant workflow, then retrieve the cited page as Markdown. For operational tool calls, follow the authentication and credit controls in [Build with Airscale MCP](/mcp/airscale-mcp-server).
+
+## Choose the smallest useful resource
+
+- Start with `llms.txt` when the agent needs to discover the right page.
+- Use a page's `.md` export when only one topic is needed.
+- Use `llms-full.txt` only when the agent genuinely needs the entire public corpus.
+- Use `openapi.json` for HTTP request and response contracts.
+- Use `mcp-tools.txt` for the source-pinned operational MCP snapshot, spend metadata, and API mappings; use the authenticated server's `tools/list` response when runtime freshness matters.
+- Use `skill.md` for workflow order, authentication boundaries, and approval rules.

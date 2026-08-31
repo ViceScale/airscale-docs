@@ -8,9 +8,13 @@
     "metadata:sync": "node scripts/set-preview-canonicals.mjs",
     "test": "node --test tests/*.test.mjs",
     "mint:validate": "mint validate",
-    "validate": "npm run openapi:check && npm test && npm run mint:validate",
+    "validate": "npm run openapi:check && npm run mcp:check && npm run agents:check && npm test && npm run mint:validate",
     "openapi:build": "node scripts/build-openapi.mjs --write",
-    "openapi:check": "node scripts/build-openapi.mjs --check"
+    "openapi:check": "node scripts/build-openapi.mjs --check",
+    "mcp:build": "node scripts/build-mcp-catalog.mjs --write",
+    "mcp:check": "node scripts/build-mcp-catalog.mjs --check",
+    "agents:build": "node scripts/build-agent-files.mjs --write",
+    "agents:check": "node scripts/build-agent-files.mjs --check"
   },
   "dependencies": {
     "@xmldom/xmldom": "0.9.12"
@@ -19,6 +23,9 @@
     "@apidevtools/swagger-parser": "12.1.0",
     "ajv": "8.20.0",
     "ajv-formats": "3.0.1",
+    "mdast-util-from-markdown": "2.0.2",
+    "mdast-util-gfm": "3.0.0",
+    "micromark-extension-gfm": "3.0.0",
     "mint": "4.2.850",
     "yaml": "2.9.0"
   }

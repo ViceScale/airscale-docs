@@ -1,6 +1,14 @@
 import assert from "node:assert/strict";
 import { existsSync, readdirSync, readFileSync } from "node:fs";
 import test from "node:test";
+import {
+  assertBalancedCodeFences,
+  assertLocalDocumentationLinksResolve,
+  assertNoStaticCredentials,
+  hasApprovedBearerCredentialSource,
+  hasUnsafeBearerAuthorization,
+  localDocumentationLinks
+} from "./helpers/content-safety.mjs";
 
 const GROUPS = [
   ["Start here", ["api-reference/api-overview", "api-reference/authentication", "api-reference/rate-limits"]],
@@ -29,111 +37,11 @@ const GROUPS = [
 
 const PAGE_PATHS = GROUPS.flatMap(([, pages]) => pages);
 const GUIDE_PATHS = ["api-reference/api-overview", "api-reference/authentication", "api-reference/rate-limits"];
-const EXPECTED_TABS = [{
+const EXPECTED_API_TAB = {
   tab: "API Reference",
   groups: GROUPS.map(([group, pages]) => ({ group, pages }))
-}];
+};
 const CANONICAL_SYMBOL_PATH = "m41.368,46.100 2.600,7.900c.700,2.200,2.800,3.600,5,3.600,1.700,0,3.300-.800,4.300-2.200,1-1.400,1.200-3.200.700-4.800l-4.700-13.400-7.900,8.900Zm-26.800-7.200 9-26.600c.5-1.400,1.800-2.300,3.300-2.300s2.800.900,3.300,2.300l6.200,18.500,7.800-8.800-4.600-13.100c-1.900-5.400-7-8.900-12.600-8.900-5.700,0-10.700,3.600-12.600,8.900L.367,48.800c-.700,2.100-.400,4.300.900,6.100,1.300,1.800,3.300,2.800,5.500,2.800,1.900,0,3.700-.800,5-2.200l13.800-15.400,2.800,8.300c.200.700.700,1.300,1.200,1.800s1.200.800,1.900,1c.700.100,1.500.1,2.100-.1.700-.200,1.300-.600,1.800-1.200l21-24.300c.5-.600.900-1.400,1-2.400.200-.9.100-1.9-.1-2.600l-1.700-4.800c-.1-.4-.3-.7-.5-.8-.1-.1-.2-.2-.4-.2h-.4c-.2.1-.5.200-.8.600l-19.800,22.500-2.700-8.100c-.8-3.200-4.900-3.800-7-1.400l-9.9,10.700";
-const APPROVED_BEARER_VALUES = new Set(["YOUR_API_KEY", "$AIRSCALE_API_KEY", "<YOUR_API_KEY>"]);
-const AUTHORIZATION_BEARER_VALUE = /\bAuthorization\b[\s:,"'`|=>(\[\]{}.fFrRuUbB-]*?\bBearer\s+(\S+)/gi;
-const AIRSCALE_API_KEY_WRITE_TARGET = String.raw`(?:process\.env(?:\.AIRSCALE_API_KEY|\[(?:"AIRSCALE_API_KEY"|'AIRSCALE_API_KEY')\])|os\.environ\[(?:"AIRSCALE_API_KEY"|'AIRSCALE_API_KEY')\]|\bAIRSCALE_API_KEY\b)`;
-const AIRSCALE_API_KEY_ASSIGNMENT = new RegExp(`${AIRSCALE_API_KEY_WRITE_TARGET}\\s*=(?!=)\\s*(?:(['"])([^'"\\r\\n]*)\\1|([^\\s;]+))`, "gi");
-
-function hasUnsafeBearerAuthorization(source) {
-  const hasUnsafeAssignment = Array.from(source.matchAll(AIRSCALE_API_KEY_ASSIGNMENT)).some(([, , quotedValue, unquotedValue]) => {
-    const value = (quotedValue ?? unquotedValue ?? "").trim();
-    const isDynamicShellValue = /^\$(?:[A-Za-z_][A-Za-z0-9_]*|\{[A-Za-z_][A-Za-z0-9_]*\})$/.test(value);
-    const isDynamicEnvironmentValue = /^(?:process\.env(?:\.AIRSCALE_API_KEY|\[(?:"AIRSCALE_API_KEY"|'AIRSCALE_API_KEY')\])|os\.environ\[(?:"AIRSCALE_API_KEY"|'AIRSCALE_API_KEY')\])$/.test(value);
-    return Boolean(value) && !APPROVED_BEARER_VALUES.has(value) && !isDynamicShellValue && !isDynamicEnvironmentValue;
-  });
-  if (hasUnsafeAssignment) return true;
-
-  return Array.from(source.matchAll(AUTHORIZATION_BEARER_VALUE)).some(([, value]) => {
-    const strippedValue = value
-      .trim()
-      .replace(/^```(?:[a-z][a-z0-9_-]*)?\s*/i, "")
-      .replace(/\s*```$/, "")
-      .trim()
-      .replace(/^&lt;(.+)&gt;$/, "<$1>")
-      .replace(/["'`][)\]}>},;|.!?]*$/, "")
-      .replace(/^["'`]+|[)\]"'`,;|.!?]+$/g, "")
-      .trim();
-    const isDynamicExpression = /^(?:\$\{[A-Za-z_$][\w$]*\}|\$\{process\.env(?:\.AIRSCALE_API_KEY|\[(?:"AIRSCALE_API_KEY"|'AIRSCALE_API_KEY')\])\}|\{[A-Za-z_$][\w$]*(?:(?:\.[A-Za-z_$][\w$]*)|(?:\[(?:"[^"]+"|'[^']+'|[A-Za-z_$][\w$]*)\]))*\}|\{os\.getenv\((?:"AIRSCALE_API_KEY"|'AIRSCALE_API_KEY')\)\})$/.test(strippedValue) || /^["'`]\+[A-Za-z_$][\w$]*(?:[)\],;]|$)/.test(value);
-    return Boolean(strippedValue) && strippedValue.toLowerCase() !== "authentication" && !isDynamicExpression && !APPROVED_BEARER_VALUES.has(strippedValue);
-  });
-}
-
-function unwrapJavaScriptParentheses(expression) {
-  let candidate = expression.trim();
-  while (candidate.startsWith("(") && candidate.endsWith(")")) {
-    let depth = 0;
-    let closesBeforeEnd = false;
-    for (let index = 0; index < candidate.length; index += 1) {
-      if (candidate[index] === "(") depth += 1;
-      if (candidate[index] === ")") depth -= 1;
-      if (depth === 0 && index < candidate.length - 1) {
-        closesBeforeEnd = true;
-        break;
-      }
-      if (depth < 0) return candidate;
-    }
-    if (depth !== 0 || closesBeforeEnd) break;
-    candidate = candidate.slice(1, -1).trim();
-  }
-  return candidate;
-}
-
-function isApprovedJavaScriptCredentialExpression(expression) {
-  const candidate = unwrapJavaScriptParentheses(expression);
-  if (/^process\.env(?:\.AIRSCALE_API_KEY|\[(?:"AIRSCALE_API_KEY"|'AIRSCALE_API_KEY')\])$/.test(candidate)) return true;
-  const wrapper = candidate.match(/^[A-Za-z_$][\w$]*(?:\.[A-Za-z_$][\w$]*)*\(([\s\S]*)\)$/);
-  if (!wrapper) return false;
-  const argument = wrapper[1].trim();
-  let depth = 0;
-  for (const character of argument) {
-    if (character === "(") depth += 1;
-    if (character === ")") depth -= 1;
-    if (depth < 0 || (character === "," && depth === 0)) return false;
-  }
-  return depth === 0 && isApprovedJavaScriptCredentialExpression(argument);
-}
-
-function javascriptCredentialAssignments(source, variable) {
-  const escapedVariable = variable.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-  const assignment = new RegExp(
-    `(?<![.\\w$])(?:(?:const|let|var)\\s+)?${escapedVariable}\\s*(\\?\\?=|\\|\\|=|&&=|\\*\\*=|>>>=|>>=|<<=|[+\\-*/%&|^]=|=(?!=))\\s*([^;\\n]+)`,
-    "g"
-  );
-  return Array.from(source.matchAll(assignment), ([, operator, expression]) => ({ operator, expression: expression.trim() }));
-}
-
-function hasApprovedBearerCredentialSource(source) {
-  if (hasUnsafeBearerAuthorization(source)) return false;
-  const bearerValues = Array.from(source.matchAll(AUTHORIZATION_BEARER_VALUE), ([, value]) => value);
-  if (bearerValues.length === 0) return false;
-  return bearerValues.every((value) => {
-    const strippedValue = value
-      .trim()
-      .replace(/^```(?:[a-z][a-z0-9_-]*)?\s*/i, "")
-      .replace(/\s*```$/, "")
-      .trim()
-      .replace(/^&lt;(.+)&gt;$/, "<$1>")
-      .replace(/["'`][)\]}>},;|.!?]*$/, "")
-      .replace(/^["'`]+|[)\]"'`,;|.!?]+$/g, "")
-      .trim();
-    if (APPROVED_BEARER_VALUES.has(strippedValue)) return true;
-    if (/^\{os\.(?:environ\[(?:"AIRSCALE_API_KEY"|'AIRSCALE_API_KEY')\]|getenv\((?:"AIRSCALE_API_KEY"|'AIRSCALE_API_KEY')\))\}$/.test(strippedValue)) return true;
-    const directJavaScriptExpression = strippedValue.match(/^\$\{([\s\S]+)\}$/)?.[1];
-    if (directJavaScriptExpression && isApprovedJavaScriptCredentialExpression(directJavaScriptExpression)) return true;
-    const javascriptVariable = strippedValue.match(/^\$\{([A-Za-z_$][\w$]*)\}$/)?.[1];
-    if (!javascriptVariable) return false;
-    const assignments = javascriptCredentialAssignments(source, javascriptVariable);
-    return assignments.length > 0 && assignments.every(({ operator, expression }) => (
-      operator === "=" && isApprovedJavaScriptCredentialExpression(expression)
-    ));
-  });
-}
-
 function readPage(path) {
   const source = readFileSync(`${path}.mdx`, "utf8");
   const match = source.match(/^---\n([\s\S]*?)\n---\n([\s\S]*)$/);
@@ -157,40 +65,12 @@ function mdxPagePaths(directory = "api-reference") {
     .sort();
 }
 
-function localDocumentationLinks(source) {
-  const markdownLinks = Array.from(
-    source.matchAll(/\[[^\]]*\]\((\/api-reference\/(?:[^()\s?#]+|\([^()\s?#]*\))+)(?:[?#][^)]*)?\)/g),
-    ([, href]) => href
-  );
-  const componentLinks = Array.from(
-    source.matchAll(/<[A-Za-z][\w.:-]*\b[^>]*\bhref=(["'])(\/api-reference\/[^"'?#]+)(?:[?#][^"']*)?\1[^>]*>/g),
-    ([, , href]) => href
-  );
-  return [...markdownLinks, ...componentLinks];
-}
-
-function assertLocalDocumentationLinksResolve(source, path) {
-  for (const href of localDocumentationLinks(source)) {
-    assert.ok(existsSync(`.${href}.mdx`), `${path} link ${href} must resolve`);
-  }
-}
-
-function assertBalancedCodeFences(source, path) {
-  const fenceCount = (source.match(/^[\t ]*```/gm) ?? []).length;
-  assert.equal(fenceCount % 2, 0, `${path} must have balanced code fences`);
-}
-
 function assertSafeSvgSource(source, path) {
   const withoutSvgNamespace = source.replace(/\s+xmlns=(["'])http:\/\/www\.w3\.org\/2000\/svg\1/i, "");
   assert.doesNotMatch(source, /<(?:script|image|foreignObject)\b/i, `${path} must not embed active content`);
   assert.doesNotMatch(source, /\bon[a-z][\w:-]*\s*=|<style\b|\bstyle\s*=/i, `${path} must not contain executable styles or handlers`);
   assert.doesNotMatch(source, /\bdata:image\/|\b(?:xlink:)?href\s*=/i, `${path} must not contain external references`);
   assert.doesNotMatch(withoutSvgNamespace, /(?:https?:)?\/\//i, `${path} must not contain remote URLs`);
-}
-
-function assertNoStaticCredentials(source, path) {
-  assert.doesNotMatch(source, /\b(?:sk|pk)_live_[A-Za-z0-9_-]+\b/i, `${path} must not contain live credentials`);
-  assert.equal(hasUnsafeBearerAuthorization(source), false, `${path} must not contain a static Bearer credential`);
 }
 
 test("brand configuration and assets match Airscale", () => {
@@ -267,17 +147,18 @@ test("authorization bearer checks reject unsafe token formats", () => {
   for (const value of [
     "Authorization: Bearer `YOUR_API_KEY`",
     "Authorization: Bearer '$AIRSCALE_API_KEY'",
+    "Authorization: Bearer '${AIRSCALE_API_KEY}'",
     "Authorization: Bearer ```<YOUR_API_KEY>```"
   ]) {
     assert.equal(hasUnsafeBearerAuthorization(value), false, `${value} must be allowed`);
   }
 
-  assert.equal(hasUnsafeBearerAuthorization("const headers = { Authorization: `Bearer ${apiKey}` };"), false);
+  assert.equal(hasUnsafeBearerAuthorization("const headers = { Authorization: `Bearer ${apiKey}` };"), true);
   assert.equal(hasUnsafeBearerAuthorization('export AIRSCALE_API_KEY="YOUR_API_KEY"'), false);
   assert.equal(hasUnsafeBearerAuthorization('export AIRSCALE_API_KEY="$SECRET_FROM_VAULT"'), false);
   assert.equal(hasUnsafeBearerAuthorization("AIRSCALE_API_KEY = process.env.AIRSCALE_API_KEY"), false);
   assert.equal(hasUnsafeBearerAuthorization('AIRSCALE_API_KEY = os.environ["AIRSCALE_API_KEY"]'), false);
-  assert.equal(hasUnsafeBearerAuthorization('headers={"Authorization": f"Bearer {api_key}"}'), false);
+  assert.equal(hasUnsafeBearerAuthorization('headers={"Authorization": f"Bearer {api_key}"}'), true);
   assert.equal(hasUnsafeBearerAuthorization('headers={"Authorization": f"Bearer {os.getenv(\'AIRSCALE_API_KEY\')}"}'), false);
 
   assert.equal(
@@ -317,7 +198,7 @@ test("authorization bearer checks reject unsafe token formats", () => {
 
 test("navigation contains exactly the approved 18 pages in five groups", () => {
   const config = JSON.parse(readFileSync("docs.json", "utf8"));
-  assert.deepEqual(config.navigation.tabs, EXPECTED_TABS);
+  assert.deepEqual(config.navigation.tabs[0], EXPECTED_API_TAB);
   assert.deepEqual(mdxPagePaths(), [...PAGE_PATHS].sort());
 });
 
