@@ -1,0 +1,141 @@
+{
+  "sourceRepository": "ViceScale/airscale-code",
+  "sourceSha": "8606866a5fb1f9405a94d49cfa9fbddaf4aaf431",
+  "operations": [
+    {
+      "method": "POST",
+      "path": "/v1/credits",
+      "operationId": "getCredits",
+      "page": "api-reference/credit-count",
+      "tag": "Account",
+      "sourcePage": "credit-count",
+      "sourceFiles": ["workers/public-api/credits.js", "workers/public-api/credits.test.mjs"]
+    },
+    {
+      "method": "POST",
+      "path": "/v1/email",
+      "operationId": "findProfessionalEmail",
+      "page": "api-reference/email-finder",
+      "tag": "Contact data",
+      "sourcePage": "email-finder",
+      "sourceFiles": ["workers/public-api/v2-waterfall-email.js", "workers/public-api/v2-waterfall-email.test.mjs"]
+    },
+    {
+      "method": "POST",
+      "path": "/v1/email-bulk",
+      "operationId": "findProfessionalEmailsBulk",
+      "page": "api-reference/email-finder-(bulk)",
+      "tag": "Contact data",
+      "sourcePage": "email-finder-(bulk)",
+      "sourceFiles": ["workers/public-api/v2-waterfall-email-bulk.js", "workers/public-api/v2-waterfall-email-bulk.test.mjs"]
+    },
+    {
+      "method": "POST",
+      "path": "/v1/phone",
+      "operationId": "findMobilePhone",
+      "page": "api-reference/mobile-finder",
+      "tag": "Contact data",
+      "sourcePage": "mobile-finder",
+      "sourceFiles": ["workers/public-api/v2-waterfall-mobile.js", "workers/public-api/v2-waterfall-mobile.test.mjs"]
+    },
+    {
+      "method": "POST",
+      "path": "/v1/personal-email",
+      "operationId": "findPersonalEmail",
+      "page": "api-reference/personal-email",
+      "tag": "Contact data",
+      "sourcePage": "personal-email",
+      "sourceFiles": ["workers/public-api/v2-waterfall-personal-email.js", "workers/public-api/v2-waterfall-personal-email.test.mjs"]
+    },
+    {
+      "method": "POST",
+      "path": "/v1/url-search-people",
+      "operationId": "findPeopleProfileUrl",
+      "page": "api-reference/people-url-finder",
+      "tag": "Contact data",
+      "sourcePage": "people-url-finder",
+      "sourceFiles": ["workers/public-api/url-search-people.js", "workers/public-api/url-search-people.test.mjs"]
+    },
+    {
+      "method": "POST",
+      "path": "/v1/profile",
+      "operationId": "extractPersonProfile",
+      "page": "api-reference/extract-people-profile",
+      "tag": "Profiles and reverse lookup",
+      "sourcePage": "extract-people-profile",
+      "sourceFiles": ["workers/public-api/v2-profile.js", "workers/public-api/v2-profile.url-normalization.test.mjs"]
+    },
+    {
+      "method": "POST",
+      "path": "/v1/company",
+      "operationId": "extractCompanyProfile",
+      "page": "api-reference/extract-company-profile",
+      "tag": "Profiles and reverse lookup",
+      "sourcePage": "extract-company-profile",
+      "sourceFiles": ["workers/public-api/v2-profile.js", "workers/public-api/v2-profile.url-normalization.test.mjs"]
+    },
+    {
+      "method": "POST",
+      "path": "/v1/reverse-email",
+      "operationId": "reverseEmailLookup",
+      "page": "api-reference/reverse-email",
+      "tag": "Profiles and reverse lookup",
+      "sourcePage": "reverse-email",
+      "sourceFiles": ["workers/public-api/reverse-email.js", "workers/public-api/reverse-email.test.mjs"]
+    },
+    {
+      "method": "POST",
+      "path": "/v1/reverse-phone",
+      "operationId": "reversePhoneLookup",
+      "page": "api-reference/reverse-phone",
+      "tag": "Profiles and reverse lookup",
+      "sourcePage": "reverse-phone",
+      "sourceFiles": ["workers/public-api/v2-waterfall-phone.js", "workers/public-api/v2-waterfall-phone.test.mjs"]
+    },
+    {
+      "method": "POST",
+      "path": "/v1/find-people",
+      "operationId": "findPeople",
+      "page": "api-reference/find-people",
+      "tag": "Search and discovery",
+      "sourcePage": "find-people",
+      "sourceFiles": ["workers/public-api/icypeas-find-people.js", "workers/public-api/icypeas-find-people.test.mjs"]
+    },
+    {
+      "method": "POST",
+      "path": "/v1/find-people/count",
+      "operationId": "countPeople",
+      "page": "api-reference/find-people/count",
+      "tag": "Search and discovery",
+      "sourcePage": "find-people",
+      "sourceFiles": ["workers/public-api/icypeas-find-people.js", "workers/public-api/icypeas-find-people.test.mjs"]
+    },
+    {
+      "method": "POST",
+      "path": "/v1/find-companies",
+      "operationId": "findCompanies",
+      "page": "api-reference/find-companies",
+      "tag": "Search and discovery",
+      "sourcePage": "find-companies",
+      "sourceFiles": ["workers/public-api/find-companies-worker.js", "workers/public-api/find-companies-worker.test.mjs"]
+    },
+    {
+      "method": "GET",
+      "path": "/v1/find-companies/filter-values",
+      "operationId": "listFindCompanyFilterValues",
+      "page": "api-reference/find-companies/filter-values",
+      "tag": "Search and discovery",
+      "sourcePage": "find-companies",
+      "sourceFiles": ["workers/public-api/find-companies-worker.js", "workers/public-api/find-companies-worker.test.mjs"]
+    },
+    {
+      "method": "POST",
+      "path": "/v1/airsearch",
+      "operationId": "airsearch",
+      "page": "api-reference/airsearch",
+      "tag": "Search and discovery",
+      "sourcePage": "airsearch",
+      "sourceFiles": ["workers/public-api/airsearch-worker.js", "workers/public-api/airsearch-worker.test.mjs"]
+    }
+  ]
+}

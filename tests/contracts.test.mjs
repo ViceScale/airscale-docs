@@ -3,6 +3,23 @@ import { readFileSync } from "node:fs";
 import test from "node:test";
 
 const EXPECTED_SOURCE_SHA = "8606866a5fb1f9405a94d49cfa9fbddaf4aaf431";
+const EXPECTED_OPERATIONS = [
+  ["POST", "/v1/credits", "getCredits", "api-reference/credit-count", "Account"],
+  ["POST", "/v1/email", "findProfessionalEmail", "api-reference/email-finder", "Contact data"],
+  ["POST", "/v1/email-bulk", "findProfessionalEmailsBulk", "api-reference/email-finder-(bulk)", "Contact data"],
+  ["POST", "/v1/phone", "findMobilePhone", "api-reference/mobile-finder", "Contact data"],
+  ["POST", "/v1/personal-email", "findPersonalEmail", "api-reference/personal-email", "Contact data"],
+  ["POST", "/v1/url-search-people", "findPeopleProfileUrl", "api-reference/people-url-finder", "Contact data"],
+  ["POST", "/v1/profile", "extractPersonProfile", "api-reference/extract-people-profile", "Profiles and reverse lookup"],
+  ["POST", "/v1/company", "extractCompanyProfile", "api-reference/extract-company-profile", "Profiles and reverse lookup"],
+  ["POST", "/v1/reverse-email", "reverseEmailLookup", "api-reference/reverse-email", "Profiles and reverse lookup"],
+  ["POST", "/v1/reverse-phone", "reversePhoneLookup", "api-reference/reverse-phone", "Profiles and reverse lookup"],
+  ["POST", "/v1/find-people", "findPeople", "api-reference/find-people", "Search and discovery"],
+  ["POST", "/v1/find-people/count", "countPeople", "api-reference/find-people/count", "Search and discovery"],
+  ["POST", "/v1/find-companies", "findCompanies", "api-reference/find-companies", "Search and discovery"],
+  ["GET", "/v1/find-companies/filter-values", "listFindCompanyFilterValues", "api-reference/find-companies/filter-values", "Search and discovery"],
+  ["POST", "/v1/airsearch", "airsearch", "api-reference/airsearch", "Search and discovery"]
+];
 const EXPECTED_PAGES = [
   "api-overview",
   "authentication",
@@ -140,6 +157,7 @@ test("contract evidence covers every approved page at the locked source SHA", ()
   const manifest = JSON.parse(readFileSync("contracts/public-api-contracts.json", "utf8"));
   assert.equal(manifest.sourceRepository, "ViceScale/airscale-code");
   assert.equal(manifest.sourceSha, EXPECTED_SOURCE_SHA);
+  assert.equal(manifest.operationCatalog, "contracts/public-api-operations.json");
   assert.deepEqual(Object.keys(manifest.pages).sort(), EXPECTED_PAGES.sort());
   assert.deepEqual(manifest.pages, EXPECTED_CONTRACTS);
 
@@ -151,5 +169,33 @@ test("contract evidence covers every approved page at the locked source SHA", ()
       assert.match(endpoint.method, /^(GET|POST)$/);
       assert.match(endpoint.path, /^\/v1\//);
     }
+  }
+});
+
+test("operation catalog preserves the approved operation order and routing metadata", () => {
+  const catalog = JSON.parse(readFileSync("contracts/public-api-operations.json", "utf8"));
+  assert.equal(catalog.sourceRepository, "ViceScale/airscale-code");
+  assert.equal(catalog.sourceSha, EXPECTED_SOURCE_SHA);
+  assert.equal(catalog.operations.length, 15);
+  assert.deepEqual(
+    catalog.operations.map(({ method, path, operationId, page, tag }) => [method, path, operationId, page, tag]),
+    EXPECTED_OPERATIONS
+  );
+  assert.equal(new Set(catalog.operations.map(({ method, path }) => `${method} ${path}`)).size, 15);
+  assert.equal(new Set(catalog.operations.map(({ operationId }) => operationId)).size, 15);
+  assert.equal(new Set(catalog.operations.map(({ page }) => page)).size, 15);
+});
+
+test("operation catalog links each operation to matching source-page evidence", () => {
+  const catalog = JSON.parse(readFileSync("contracts/public-api-operations.json", "utf8"));
+  const pageContracts = JSON.parse(readFileSync("contracts/public-api-contracts.json", "utf8"));
+  for (const operation of catalog.operations) {
+    const evidence = pageContracts.pages[operation.sourcePage];
+    assert.ok(evidence, `${operation.operationId} must name a source page`);
+    assert.ok(
+      evidence.endpoints.some(({ method, path }) => method === operation.method && path === operation.path),
+      `${operation.operationId} must match its source page endpoint`
+    );
+    assert.deepEqual(operation.sourceFiles, evidence.sourceFiles);
   }
 });
