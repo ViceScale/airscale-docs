@@ -525,7 +525,7 @@ git commit -m "docs: publish MCP agent resources"
 
 **Files:**
 - Modify: `package.json`
-- Modify: `tests/site.test.mjs` only if shared page discovery must include the new root.
+- Modify: `tests/preview-safety.test.mjs`
 
 - [ ] **Step 1: Add failing validation-contract assertion**
 

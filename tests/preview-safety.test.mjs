@@ -75,6 +75,10 @@ test("package toolchain pins local Mint and YAML validation dependencies", () =>
   assert.equal(packageManifest.devDependencies?.mint, "4.2.850");
   assert.equal(packageManifest.devDependencies?.yaml, "2.9.0");
   assert.equal(packageManifest.scripts?.["mint:validate"], "mint validate");
+  assert.equal(
+    packageManifest.scripts?.validate,
+    "npm run openapi:check && npm run mcp:check && npm run agents:check && npm test && npm run mint:validate"
+  );
   assert.equal(packageManifest.scripts?.validate.includes("npx"), false);
 });
 

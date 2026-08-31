@@ -302,12 +302,13 @@ test("MCP landing page is developer-first, complete, and non-executing", () => {
     "<Columns cols={2}>",
     "search, enrichment, research, and exports",
     "https://mcp.airscale.io/mcp",
-    "Tool catalog",
-    "Authentication",
-    "Credit safety",
-    "Agent resources",
-    "Configure your client",
+    "### Configure your client",
     "</Columns>",
+    "<CardGroup cols={2}>",
+    '<Card title="Tool catalog"',
+    '<Card title="Authentication"',
+    '<Card title="Credit safety"',
+    '<Card title="Agent resources"',
     "## Supported clients",
     "## Choose OAuth or header authentication",
     "## Verify the connection for free",
@@ -320,11 +321,11 @@ test("MCP landing page is developer-first, complete, and non-executing", () => {
   ], "mcp/airscale-mcp-server");
 
   const [overviewColumn, configurationColumn] = directColumnBodies(body, "mcp/airscale-mcp-server");
-  assert.equal((overviewColumn.match(/<Card\b/g) ?? []).length, 4);
+  assert.equal((overviewColumn.match(/<Card\b/g) ?? []).length, 0);
   assert.match(overviewColumn, /```text\nhttps:\/\/mcp\.airscale\.io\/mcp\n```/);
   assert.match(overviewColumn, /22 typed tools/);
   assert.doesNotMatch(overviewColumn, /<CodeGroup>/);
-  assert.match(configurationColumn, /<CodeGroup>[\s\S]*Claude Code[\s\S]*Client field mapping \(conceptual\)[\s\S]*OAuth client[\s\S]*<\/CodeGroup>/);
+  assert.match(configurationColumn, /### Configure your client[\s\S]*<CodeGroup>[\s\S]*Claude Code[\s\S]*Field mapping[\s\S]*OAuth[\s\S]*<\/CodeGroup>/);
   assert.match(configurationColumn, /not a copy-paste configuration/i);
   assert.doesNotMatch(configurationColumn, /Generic JSON client|"transport": "streamable-http"/);
   assert.match(configurationColumn, /export AIRSCALE_API_KEY=YOUR_API_KEY/);
@@ -339,12 +340,16 @@ test("MCP landing page is developer-first, complete, and non-executing", () => {
   assert.doesNotMatch(source, /<ApiPlayground\b|<TryIt\b|https:\/\/api\.airscale\.io\/v1\b/i);
 });
 
-test("MCP landing first viewport uses two direct responsive columns", () => {
+test("MCP landing hero uses two direct responsive columns without cramped nested cards", () => {
   const { body } = readPage("mcp/airscale-mcp-server");
   const [overviewColumn, configurationColumn] = directColumnBodies(body, "mcp/airscale-mcp-server");
-  assert.match(overviewColumn, /22 typed tools[\s\S]*https:\/\/mcp\.airscale\.io\/mcp[\s\S]*<CardGroup cols=\{2\}>/);
-  assert.match(configurationColumn, /Configure your client[\s\S]*<CodeGroup>/);
-  assert.ok(body.indexOf("</Columns>") < body.indexOf("## Supported clients"));
+  assert.match(overviewColumn, /22 typed tools[\s\S]*https:\/\/mcp\.airscale\.io\/mcp/);
+  assert.doesNotMatch(overviewColumn, /<CardGroup|<Card\b/);
+  assert.match(configurationColumn, /### Configure your client[\s\S]*<CodeGroup>/);
+  const columnsEnd = body.indexOf("</Columns>");
+  const resourceCards = body.indexOf("<CardGroup cols={2}>", columnsEnd);
+  assert.ok(columnsEnd < resourceCards);
+  assert.ok(resourceCards < body.indexOf("## Supported clients"));
 });
 
 test("landing configuration uses Claude's exact environment syntax and labels conceptual mappings", () => {
@@ -352,7 +357,7 @@ test("landing configuration uses Claude's exact environment syntax and labels co
   assert.match(source, /export AIRSCALE_API_KEY=YOUR_API_KEY/);
   assert.match(source, /"Authorization": "Bearer \$\{AIRSCALE_API_KEY\}"/);
   assert.doesNotMatch(source, /```json Generic JSON client|"transport": "streamable-http"/);
-  assert.match(source, /Client field mapping \(conceptual\)[\s\S]*not a copy-paste configuration/i);
+  assert.match(source, /```text Field mapping[\s\S]*conceptual field mapping[\s\S]*not a copy-paste configuration/i);
 });
 
 test("documentation links validate missing fragments, explicit anchors, and heading slugs", () => {

@@ -516,24 +516,9 @@ Connect an AI client or agent to Airscale search, enrichment, research, and expo
 ```text
 https://mcp.airscale.io/mcp
 ```
-
-<CardGroup cols={2}>
-  <Card title="Tool catalog" icon="list-tree" href="/mcp/tools">
-    Browse every typed tool, input field, credit rule, and result behavior.
-  </Card>
-  <Card title="Authentication" icon="key-round" href="/api-reference/authentication">
-    Choose browser OAuth or a server-side authorization header for your client.
-  </Card>
-  <Card title="Credit safety" icon="shield-check" href="/api-reference/credit-count">
-    Check the balance for free and approve paid exports explicitly.
-  </Card>
-  <Card title="Agent resources" icon="bot" href="/mcp/agent-resources">
-    Find the human-readable and machine-readable entry points for agents.
-  </Card>
-</CardGroup>
 </Column>
 <Column>
-**Configure your client**
+### Configure your client
 
 For a header-based client, store the key outside its configuration file. The placeholder below represents a value supplied through your local environment or secret manager; do not paste a real key into this documentation site.
 
@@ -556,13 +541,13 @@ export AIRSCALE_API_KEY=YOUR_API_KEY
 }
 ```
 
-```text Client field mapping (conceptual)
+```text Field mapping
 Server URL: https://mcp.airscale.io/mcp
 Transport: Streamable HTTP
 Authorization header: map from the AIRSCALE_API_KEY environment variable
 ```
 
-```text OAuth client
+```text OAuth
 Server URL: https://mcp.airscale.io/mcp
 Authentication: OAuth
 API key field: leave empty
@@ -574,6 +559,21 @@ The conceptual field mapping names the required values only. Client configuratio
 OAuth-capable clients open Airscale sign-in and authorization in the browser. They do not need an API key pasted into the connection form.
 </Column>
 </Columns>
+
+<CardGroup cols={2}>
+  <Card title="Tool catalog" icon="list-tree" href="/mcp/tools">
+    Browse every typed tool, input field, credit rule, and result behavior.
+  </Card>
+  <Card title="Authentication" icon="key-round" href="/api-reference/authentication">
+    Choose browser OAuth or a server-side authorization header for your client.
+  </Card>
+  <Card title="Credit safety" icon="shield-check" href="/api-reference/credit-count">
+    Check the balance for free and approve paid exports explicitly.
+  </Card>
+  <Card title="Agent resources" icon="bot" href="/mcp/agent-resources">
+    Find the human-readable and machine-readable entry points for agents.
+  </Card>
+</CardGroup>
 
 ## Supported clients
 
