@@ -3,6 +3,7 @@ import { spawnSync } from "node:child_process";
 import test from "node:test";
 import { baseSpec } from "../openapi/base.mjs";
 import { buildSpec } from "../scripts/build-openapi.mjs";
+import { outputMatchesSerialized } from "../scripts/build-openapi.mjs";
 
 const SOURCE_SHA = "8606866a5fb1f9405a94d49cfa9fbddaf4aaf431";
 
@@ -22,12 +23,19 @@ test("base spec identifies the Airscale public API", () => {
   assert.equal(baseSpec.openapi, "3.1.0");
   assert.equal(baseSpec.info.title, "Airscale Public API");
   assert.equal(baseSpec.info.version, "2026-08-30");
+  assert.equal(baseSpec.info.description, "Search, enrich, and resolve public business data with Airscale.");
   assert.equal(baseSpec.info["x-airscale-source-repository"], "ViceScale/airscale-code");
   assert.equal(baseSpec.info["x-airscale-source-sha"], SOURCE_SHA);
   assert.deepEqual(baseSpec.servers, [
     { url: "https://api.airscale.io", description: "Production" }
   ]);
   assert.deepEqual(baseSpec.security, [{ bearerAuth: [] }]);
+  assert.deepEqual(baseSpec.tags, [
+    { name: "Search and discovery", description: "Search people, companies, and the web." },
+    { name: "Contact data", description: "Find professional and personal contact data." },
+    { name: "Profiles and reverse lookup", description: "Extract profiles or resolve a person from known contact data." },
+    { name: "Account", description: "Inspect workspace account state." }
+  ]);
   assert.deepEqual(baseSpec.components.securitySchemes.bearerAuth, {
     type: "http",
     scheme: "bearer",
@@ -65,6 +73,20 @@ test("buildSpec rejects duplicate method and path entries", () => {
       ]]
     }),
     /Duplicate OpenAPI method\/path: POST \/duplicate/
+  );
+});
+
+test("buildSpec rejects case-insensitive duplicate method and path entries", () => {
+  assert.throws(
+    () => buildSpec({
+      base: { paths: {} },
+      catalog: catalog({ method: "GET", path: "/same", operationId: "firstOperation" }),
+      operationModules: [[
+        operation("GET", "/same", "firstOperation"),
+        operation("get", "/same", "secondOperation")
+      ]]
+    }),
+    /Duplicate OpenAPI method\/path: GET \/same/
   );
 });
 
@@ -142,4 +164,12 @@ test("OpenAPI check fails closed when the generated specification is absent", ()
   assert.notEqual(result.status, 0);
   assert.match(result.stderr, /Missing OpenAPI operation module entry: POST \/v1\/credits/);
   assert.equal(spawnSync("test", ["-e", "openapi.json"], { cwd: process.cwd() }).status, 1);
+});
+
+test("OpenAPI output freshness compares bytes instead of lossy UTF-8 text", () => {
+  const serialized = "\uFFFD";
+  const differentlyEncodedReplacementCharacter = Buffer.from([0xff]);
+
+  assert.equal(differentlyEncodedReplacementCharacter.toString("utf8"), serialized);
+  assert.equal(outputMatchesSerialized(serialized, differentlyEncodedReplacementCharacter), false);
 });

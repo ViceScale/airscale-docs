@@ -21,7 +21,7 @@ function clone(value) {
 }
 
 function entryKey(entry) {
-  return `${entry.method} ${entry.path}`;
+  return `${entry.method.toUpperCase()} ${entry.path}`;
 }
 
 function validateUnique(entries, label, value) {
@@ -76,6 +76,10 @@ function serializeSpec(spec) {
   return JSON.stringify(spec, null, 2) + "\n";
 }
 
+export function outputMatchesSerialized(serialized, artifact) {
+  return artifact.equals(Buffer.from(serialized, "utf8"));
+}
+
 function parseMode(argv) {
   if (argv.length === 0) throw new Error("Expected exactly one argument: --write or --check");
   if (argv.length > 1) throw new Error("Expected exactly one argument: --write or --check");
@@ -93,7 +97,9 @@ function runCli(argv) {
   }
 
   if (!existsSync(outputPath)) throw new Error("OpenAPI output is missing: openapi.json");
-  if (readFileSync(outputPath, "utf8") !== contents) throw new Error("OpenAPI output is stale: openapi.json");
+  if (!outputMatchesSerialized(contents, readFileSync(outputPath))) {
+    throw new Error("OpenAPI output is stale: openapi.json");
+  }
 }
 
 if (process.argv[1] && import.meta.url === pathToFileURL(resolve(process.argv[1])).href) {
