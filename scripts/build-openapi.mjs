@@ -1,6 +1,6 @@
-import { existsSync, readFileSync, writeFileSync } from "node:fs";
+import { closeSync, existsSync, fsyncSync, openSync, readFileSync, renameSync, unlinkSync, writeFileSync } from "node:fs";
 import { resolve } from "node:path";
-import { pathToFileURL } from "node:url";
+import { fileURLToPath, pathToFileURL } from "node:url";
 import { baseSpec } from "../openapi/base.mjs";
 import { accountOperations } from "../openapi/operations/account.mjs";
 import { contactDataOperations } from "../openapi/operations/contact-data.mjs";
@@ -14,7 +14,8 @@ const defaultOperationModules = [
   profileLookupOperations,
   searchDiscoveryOperations
 ];
-const outputPath = new URL("../openapi.json", import.meta.url);
+const defaultOutputPath = fileURLToPath(new URL("../openapi.json", import.meta.url));
+const defaultFileIO = { closeSync, existsSync, fsyncSync, openSync, readFileSync, renameSync, unlinkSync, writeFileSync };
 
 function clone(value) {
   return JSON.parse(JSON.stringify(value));
@@ -66,7 +67,7 @@ export function buildSpec({ catalog, operationModules, base } = {}) {
     if (!entry) throw new Error(`Missing OpenAPI operation module entry: ${key}`);
     if (entry.operation.operationId !== expected.operationId) throw new Error(`Operation ID drift: ${key}`);
     spec.paths[entry.path] ??= {};
-    spec.paths[entry.path][entry.method.toLowerCase()] = entry.operation;
+    spec.paths[entry.path][entry.method.toLowerCase()] = clone(entry.operation);
   }
 
   return spec;
@@ -80,6 +81,29 @@ export function outputMatchesSerialized(serialized, artifact) {
   return artifact.equals(Buffer.from(serialized, "utf8"));
 }
 
+function temporaryPathFor(outputPath) {
+  return `${outputPath}.${process.pid}.${Date.now()}.${Math.random().toString(16).slice(2)}.tmp`;
+}
+
+export function writeOpenApiAtomic(contents, { outputPath = defaultOutputPath, temporaryPath = temporaryPathFor(outputPath), fsImpl = {} } = {}) {
+  const io = { ...defaultFileIO, ...fsImpl };
+  let descriptor;
+  try {
+    io.writeFileSync(temporaryPath, contents, { encoding: "utf8", flag: "wx" });
+    descriptor = io.openSync(temporaryPath, "r+");
+    io.fsyncSync(descriptor);
+    io.closeSync(descriptor);
+    descriptor = undefined;
+    io.renameSync(temporaryPath, outputPath);
+  } catch (error) {
+    if (descriptor !== undefined) {
+      try { io.closeSync(descriptor); } catch {}
+    }
+    try { io.unlinkSync(temporaryPath); } catch {}
+    throw error;
+  }
+}
+
 function parseMode(argv) {
   if (argv.length === 0) throw new Error("Expected exactly one argument: --write or --check");
   if (argv.length > 1) throw new Error("Expected exactly one argument: --write or --check");
@@ -87,17 +111,18 @@ function parseMode(argv) {
   return argv[0];
 }
 
-function runCli(argv) {
+export function runCli(argv, { buildSpecImpl = buildSpec, outputPath: targetPath = defaultOutputPath, fsImpl = {}, writeOutputImpl = writeOpenApiAtomic } = {}) {
   const mode = parseMode(argv);
-  const contents = serializeSpec(buildSpec());
+  const contents = serializeSpec(buildSpecImpl());
+  const io = { ...defaultFileIO, ...fsImpl };
 
   if (mode === "--write") {
-    writeFileSync(outputPath, contents);
+    writeOutputImpl(contents, { outputPath: targetPath, fsImpl });
     return;
   }
 
-  if (!existsSync(outputPath)) throw new Error("OpenAPI output is missing: openapi.json");
-  if (!outputMatchesSerialized(contents, readFileSync(outputPath))) {
+  if (!io.existsSync(targetPath)) throw new Error("OpenAPI output is missing: openapi.json");
+  if (!outputMatchesSerialized(contents, io.readFileSync(targetPath))) {
     throw new Error("OpenAPI output is stale: openapi.json");
   }
 }
