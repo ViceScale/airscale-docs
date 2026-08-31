@@ -1,13 +1,12 @@
 ---
-title: "Airscale MCP server"
+title: "Build with Airscale MCP"
+sidebarTitle: "Airscale MCP server"
 description: "Connect AI clients and agents to Airscale search, enrichment, research, and export tools."
 canonical: "https://airscale.mintlify.app/mcp/airscale-mcp-server"
 ---
 
-<Badge color="blue">MCP & Agents</Badge>
-
-## Build with Airscale MCP
-
+<Columns cols={2}>
+<Column>
 Connect an AI client or agent to Airscale search, enrichment, research, and exports through 22 typed tools. Authenticate with OAuth in supported clients or configure a server-side authorization header.
 
 ```text
@@ -28,13 +27,14 @@ https://mcp.airscale.io/mcp
     Find the human-readable and machine-readable entry points for agents.
   </Card>
 </CardGroup>
-
-## Configure your client
+</Column>
+<Column>
+**Configure your client**
 
 For a header-based client, store the key outside its configuration file. The placeholder below represents a value supplied through your local environment or secret manager; do not paste a real key into this documentation site.
 
 ```bash
-AIRSCALE_API_KEY=YOUR_API_KEY
+export AIRSCALE_API_KEY=YOUR_API_KEY
 ```
 
 <CodeGroup>
@@ -45,22 +45,17 @@ AIRSCALE_API_KEY=YOUR_API_KEY
       "type": "http",
       "url": "https://mcp.airscale.io/mcp",
       "headers": {
-        "Authorization": "Bearer $AIRSCALE_API_KEY"
+        "Authorization": "Bearer ${AIRSCALE_API_KEY}"
       }
     }
   }
 }
 ```
 
-```json Generic JSON client
-{
-  "name": "airscale",
-  "transport": "streamable-http",
-  "url": "https://mcp.airscale.io/mcp",
-  "headers": {
-    "Authorization": "Bearer $AIRSCALE_API_KEY"
-  }
-}
+```text Client field mapping (conceptual)
+Server URL: https://mcp.airscale.io/mcp
+Transport: Streamable HTTP
+Authorization header: map from the AIRSCALE_API_KEY environment variable
 ```
 
 ```text OAuth client
@@ -70,7 +65,11 @@ API key field: leave empty
 ```
 </CodeGroup>
 
+The conceptual field mapping names the required values only. Client configuration syntax varies, so it is not a copy-paste configuration.
+
 OAuth-capable clients open Airscale sign-in and authorization in the browser. They do not need an API key pasted into the connection form.
+</Column>
+</Columns>
 
 ## Supported clients
 

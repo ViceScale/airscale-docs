@@ -2,6 +2,12 @@ import assert from "node:assert/strict";
 import { existsSync, readFileSync, readdirSync } from "node:fs";
 import test from "node:test";
 import { parseDocument } from "yaml";
+import {
+  assertBalancedCodeFences,
+  assertLocalDocumentationLinksResolve,
+  assertNoStaticCredentials,
+  hasUnsafeBearerAuthorization
+} from "./helpers/content-safety.mjs";
 
 const API_REFERENCE_TAB = {
   tab: "API Reference",
@@ -61,39 +67,6 @@ const MCP_GROUPS = [
 ];
 
 const MCP_PAGE_PATHS = MCP_GROUPS.flatMap(({ pages }) => pages);
-const APPROVED_BEARER_VALUES = new Set(["YOUR_API_KEY", "$AIRSCALE_API_KEY", "<YOUR_API_KEY>"]);
-const AUTHORIZATION_BEARER_VALUE = /\bAuthorization\b[\s:,"'`|=>(\[\]{}.fFrRuUbB-]*?\bBearer\s+(\S+)/gi;
-const AIRSCALE_API_KEY_WRITE_TARGET = String.raw`(?:process\.env(?:\.AIRSCALE_API_KEY|\[(?:"AIRSCALE_API_KEY"|'AIRSCALE_API_KEY')\])|os\.environ\[(?:"AIRSCALE_API_KEY"|'AIRSCALE_API_KEY')\]|\bAIRSCALE_API_KEY\b)`;
-const AIRSCALE_API_KEY_ASSIGNMENT = new RegExp(`${AIRSCALE_API_KEY_WRITE_TARGET}\\s*=(?!=)\\s*(?:(['"])([^'"\\r\\n]*)\\1|([^\\s;]+))`, "gi");
-
-function hasUnsafeBearerAuthorization(source) {
-  const hasUnsafeAssignment = Array.from(source.matchAll(AIRSCALE_API_KEY_ASSIGNMENT)).some(([, , quotedValue, unquotedValue]) => {
-    const value = (quotedValue ?? unquotedValue ?? "").trim();
-    const isDynamicShellValue = /^\$(?:[A-Za-z_][A-Za-z0-9_]*|\{[A-Za-z_][A-Za-z0-9_]*\})$/.test(value);
-    const isDynamicEnvironmentValue = /^(?:process\.env(?:\.AIRSCALE_API_KEY|\[(?:"AIRSCALE_API_KEY"|'AIRSCALE_API_KEY')\])|os\.environ\[(?:"AIRSCALE_API_KEY"|'AIRSCALE_API_KEY')\])$/.test(value);
-    return Boolean(value) && !APPROVED_BEARER_VALUES.has(value) && !isDynamicShellValue && !isDynamicEnvironmentValue;
-  });
-  if (hasUnsafeAssignment) return true;
-
-  return Array.from(source.matchAll(AUTHORIZATION_BEARER_VALUE)).some(([, value]) => {
-    const strippedValue = value
-      .trim()
-      .replace(/^```(?:[a-z][a-z0-9_-]*)?\s*/i, "")
-      .replace(/\s*```$/, "")
-      .trim()
-      .replace(/^&lt;(.+)&gt;$/, "<$1>")
-      .replace(/["'`][)\]}>},;|.!?]*$/, "")
-      .replace(/^["'`]+|[)\]"'`,;|.!?]+$/g, "")
-      .trim();
-    const isDynamicExpression = /^(?:\$\{[A-Za-z_$][\w$]*\}|\$\{process\.env(?:\.AIRSCALE_API_KEY|\[(?:"AIRSCALE_API_KEY"|'AIRSCALE_API_KEY')\])\}|\{[A-Za-z_$][\w$]*(?:(?:\.[A-Za-z_$][\w$]*)|(?:\[(?:"[^"]+"|'[^']+'|[A-Za-z_$][\w$]*)\]))*\}|\{os\.getenv\((?:"AIRSCALE_API_KEY"|'AIRSCALE_API_KEY')\)\})$/.test(strippedValue)
-      || /^["'`]\+[A-Za-z_$][\w$]*(?:[)\],;]|$)/.test(value);
-    return Boolean(strippedValue)
-      && strippedValue.toLowerCase() !== "authentication"
-      && !isDynamicExpression
-      && !APPROVED_BEARER_VALUES.has(strippedValue);
-  });
-}
-
 function readPage(path) {
   const source = readFileSync(`${path}.mdx`, "utf8");
   const match = source.match(/^---\n([\s\S]*?)\n---\n([\s\S]*)$/);
@@ -101,34 +74,6 @@ function readPage(path) {
   const document = parseDocument(match[1]);
   assert.equal(document.errors.length, 0, `${path} frontmatter must parse as YAML`);
   return { source, body: match[2], frontmatter: document.toJS() };
-}
-
-function localDocumentationLinks(source) {
-  const markdownLinks = Array.from(
-    source.matchAll(/\[[^\]]*\]\((\/(?:mcp|api-reference)\/(?:[^()\s?#]+|\([^()\s?#]*\))+)(?:[?#][^)]*)?\)/g),
-    ([, href]) => href
-  );
-  const componentLinks = Array.from(
-    source.matchAll(/<[A-Za-z][\w.:-]*\b[^>]*\bhref=(["'])(\/(?:mcp|api-reference)\/[^"'?#]+)(?:[?#][^"']*)?\1[^>]*>/g),
-    ([, , href]) => href
-  );
-  return [...markdownLinks, ...componentLinks];
-}
-
-function assertLocalDocumentationLinksResolve(source, path) {
-  for (const href of localDocumentationLinks(source)) {
-    assert.ok(existsSync(`.${href}.mdx`), `${path} link ${href} must resolve`);
-  }
-}
-
-function assertBalancedCodeFences(source, path) {
-  const fenceCount = (source.match(/^[\t ]*```/gm) ?? []).length;
-  assert.equal(fenceCount % 2, 0, `${path} must have balanced code fences`);
-}
-
-function assertNoStaticCredentials(source, path) {
-  assert.doesNotMatch(source, /\b(?:sk|pk)_live_[A-Za-z0-9_-]+\b/i, `${path} must not contain live credentials`);
-  assert.equal(hasUnsafeBearerAuthorization(source), false, `${path} must not contain a static Bearer credential`);
 }
 
 function assertOrdered(source, labels, path) {
@@ -140,11 +85,26 @@ function assertOrdered(source, labels, path) {
   }
 }
 
+function directColumnBodies(body, path) {
+  const columns = body.trimStart().match(/^<Columns cols=\{2\}>\n([\s\S]*?)\n<\/Columns>(?:\n|$)/);
+  assert.ok(columns, `${path} must begin with a two-column Columns component`);
+  const columnMatches = Array.from(columns[1].matchAll(/<Column>\n([\s\S]*?)\n<\/Column>/g));
+  assert.equal(columnMatches.length, 2, `${path} must contain exactly two Column children`);
+  assert.equal(columns[1].replace(/<Column>\n[\s\S]*?\n<\/Column>/g, "").trim(), "", `${path} Columns must contain only Column children`);
+  return columnMatches.map((match) => match[1]);
+}
+
 test("MCP and Agents is a peer tab with exactly six pages while API Reference stays unchanged", () => {
   const config = JSON.parse(readFileSync("docs.json", "utf8"));
   assert.equal(config.navigation.tabs.length, 2);
   assert.deepEqual(config.navigation.tabs[0], API_REFERENCE_TAB);
   assert.deepEqual(config.navigation.tabs[1], { tab: "MCP & Agents", groups: MCP_GROUPS });
+  assert.equal(config.styling.eyebrows, "breadcrumbs");
+  assert.equal(config.navigation.tabs[1].groups[0].group, "Start");
+  const landing = readPage(config.navigation.tabs[1].groups[0].pages[0]);
+  assert.equal(landing.frontmatter.title, "Build with Airscale MCP");
+  assert.equal(landing.frontmatter.sidebarTitle, "Airscale MCP server");
+  assert.doesNotMatch(landing.body, /<Badge\b[^>]*>MCP & Agents<\/Badge>|^## Build with Airscale MCP$/m);
   assert.equal(MCP_PAGE_PATHS.length, 6);
   assert.equal(new Set(MCP_PAGE_PATHS).size, 6);
   assert.deepEqual(
@@ -181,40 +141,43 @@ test("all six MCP pages have unique preview metadata, safe MDX, and resolving do
 test("credential checks reject static secrets while allowing only the documented environment placeholder", () => {
   for (const unsafe of [
     "Authorization: Bearer live-secret-token",
+    "Authorization: Bearer $WRONG_VARIABLE",
+    "Authorization: Bearer ${WRONG_VARIABLE}",
     "AIRSCALE_API_KEY=live-secret-token",
     "export AIRSCALE_API_KEY=live-secret-token",
     '{ "Authorization": "Bearer json-token" }'
   ]) {
     assert.equal(hasUnsafeBearerAuthorization(unsafe), true, `${unsafe} must be rejected`);
   }
-  assert.equal(hasUnsafeBearerAuthorization("AIRSCALE_API_KEY=YOUR_API_KEY\nAuthorization: Bearer $AIRSCALE_API_KEY"), false);
+  assert.equal(hasUnsafeBearerAuthorization("export AIRSCALE_API_KEY=YOUR_API_KEY\nAuthorization: Bearer ${AIRSCALE_API_KEY}"), false);
 
   for (const path of MCP_PAGE_PATHS) {
     const source = readFileSync(`${path}.mdx`, "utf8");
     for (const line of source.split("\n").filter((candidate) => candidate.includes("YOUR_API_KEY"))) {
-      assert.equal(line.trim(), "AIRSCALE_API_KEY=YOUR_API_KEY", `${path} must use YOUR_API_KEY only as the exact environment assignment`);
+      assert.equal(line.trim(), "export AIRSCALE_API_KEY=YOUR_API_KEY", `${path} must use YOUR_API_KEY only as the exact environment assignment`);
     }
   }
 });
 
 test("MCP landing page is developer-first, complete, and non-executing", () => {
   const source = readFileSync("mcp/airscale-mcp-server.mdx", "utf8");
-  const { frontmatter } = readPage("mcp/airscale-mcp-server");
+  const { body, frontmatter } = readPage("mcp/airscale-mcp-server");
   assert.deepEqual(frontmatter, {
-    title: "Airscale MCP server",
+    title: "Build with Airscale MCP",
+    sidebarTitle: "Airscale MCP server",
     description: "Connect AI clients and agents to Airscale search, enrichment, research, and export tools.",
     canonical: "https://airscale.mintlify.app/mcp/airscale-mcp-server"
   });
-  assertOrdered(source, [
-    "MCP & Agents",
-    "## Build with Airscale MCP",
+  assertOrdered(body, [
+    "<Columns cols={2}>",
     "search, enrichment, research, and exports",
     "https://mcp.airscale.io/mcp",
     "Tool catalog",
     "Authentication",
     "Credit safety",
     "Agent resources",
-    "## Configure your client",
+    "Configure your client",
+    "</Columns>",
     "## Supported clients",
     "## Choose OAuth or header authentication",
     "## Verify the connection for free",
@@ -226,12 +189,17 @@ test("MCP landing page is developer-first, complete, and non-executing", () => {
     "## Troubleshooting"
   ], "mcp/airscale-mcp-server");
 
-  const firstViewport = source.slice(0, source.indexOf("## Configure your client"));
-  assert.equal((firstViewport.match(/<Card\b/g) ?? []).length, 4);
-  assert.match(firstViewport, /```text\nhttps:\/\/mcp\.airscale\.io\/mcp\n```/);
-  assert.match(firstViewport, /22 typed tools/);
-  assert.match(source, /<CodeGroup>[\s\S]*Claude Code[\s\S]*Generic JSON client[\s\S]*OAuth client[\s\S]*<\/CodeGroup>/);
-  assert.match(source, /AIRSCALE_API_KEY=YOUR_API_KEY/);
+  const [overviewColumn, configurationColumn] = directColumnBodies(body, "mcp/airscale-mcp-server");
+  assert.equal((overviewColumn.match(/<Card\b/g) ?? []).length, 4);
+  assert.match(overviewColumn, /```text\nhttps:\/\/mcp\.airscale\.io\/mcp\n```/);
+  assert.match(overviewColumn, /22 typed tools/);
+  assert.doesNotMatch(overviewColumn, /<CodeGroup>/);
+  assert.match(configurationColumn, /<CodeGroup>[\s\S]*Claude Code[\s\S]*Client field mapping \(conceptual\)[\s\S]*OAuth client[\s\S]*<\/CodeGroup>/);
+  assert.match(configurationColumn, /not a copy-paste configuration/i);
+  assert.doesNotMatch(configurationColumn, /Generic JSON client|"transport": "streamable-http"/);
+  assert.match(configurationColumn, /export AIRSCALE_API_KEY=YOUR_API_KEY/);
+  assert.match(configurationColumn, /"Authorization": "Bearer \$\{AIRSCALE_API_KEY\}"/);
+  assert.doesNotMatch(configurationColumn, /"Authorization": "Bearer \$AIRSCALE_API_KEY"/);
   assert.match(source, /Authorization: Bearer \$AIRSCALE_API_KEY/);
   assert.match(source, /airscale_check_credits/);
   assert.match(source, /confirm_credit_spend/);
@@ -239,6 +207,43 @@ test("MCP landing page is developer-first, complete, and non-executing", () => {
   assert.match(source, /\[MCP tool catalog\]\(\/mcp\/tools\)/);
   assert.match(source, /\/api-reference\/(?:credit-count|authentication)/);
   assert.doesNotMatch(source, /<ApiPlayground\b|<TryIt\b|https:\/\/api\.airscale\.io\/v1\b/i);
+});
+
+test("MCP landing first viewport uses two direct responsive columns", () => {
+  const { body } = readPage("mcp/airscale-mcp-server");
+  const [overviewColumn, configurationColumn] = directColumnBodies(body, "mcp/airscale-mcp-server");
+  assert.match(overviewColumn, /22 typed tools[\s\S]*https:\/\/mcp\.airscale\.io\/mcp[\s\S]*<CardGroup cols=\{2\}>/);
+  assert.match(configurationColumn, /Configure your client[\s\S]*<CodeGroup>/);
+  assert.ok(body.indexOf("</Columns>") < body.indexOf("## Supported clients"));
+});
+
+test("landing configuration uses Claude's exact environment syntax and labels conceptual mappings", () => {
+  const source = readFileSync("mcp/airscale-mcp-server.mdx", "utf8");
+  assert.match(source, /export AIRSCALE_API_KEY=YOUR_API_KEY/);
+  assert.match(source, /"Authorization": "Bearer \$\{AIRSCALE_API_KEY\}"/);
+  assert.doesNotMatch(source, /```json Generic JSON client|"transport": "streamable-http"/);
+  assert.match(source, /Client field mapping \(conceptual\)[\s\S]*not a copy-paste configuration/i);
+});
+
+test("documentation links validate missing fragments, explicit anchors, and heading slugs", () => {
+  assert.throws(
+    () => assertLocalDocumentationLinksResolve("[Broken](/mcp/tools#missing-fragment)", "fragment fixture"),
+    /fragment.*missing-fragment/i
+  );
+  assert.doesNotThrow(() => assertLocalDocumentationLinksResolve(
+    "[Category](/mcp/tools#async-exports-and-managed-batches)\n[Tool](/mcp/tools#airscale-check-credits)",
+    "fragment fixture"
+  ));
+  assert.doesNotThrow(() => assertLocalDocumentationLinksResolve("[Tool](#airscale-check-credits)", "mcp/tools"));
+});
+
+test("API and MCP page tests import one shared credential and link safety helper", () => {
+  for (const path of ["tests/site.test.mjs", "tests/mcp-pages.test.mjs"]) {
+    const source = readFileSync(path, "utf8");
+    assert.match(source, /from "\.\/helpers\/content-safety\.mjs";/, `${path} must import the shared helper`);
+    assert.doesNotMatch(source, /function (?:hasUnsafeBearerAuthorization|localDocumentationLinks|assertLocalDocumentationLinksResolve|assertNoStaticCredentials)\b/);
+  }
+  assert.ok(existsSync("tests/helpers/content-safety.mjs"));
 });
 
 test("route shells introduce their subject without claiming unfinished walkthroughs", () => {
