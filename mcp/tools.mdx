@@ -119,12 +119,13 @@ Credit behavior: 0.1 credits per returned lead.
     "name": "airscale_find_people",
     "arguments": {
       "query": {
-        "firstname": {
+        "companyDomain": {
           "include": [
-            "example"
+            "example.com"
           ]
         }
-      }
+      },
+      "size": 1
     }
   }
 }
@@ -219,7 +220,7 @@ Credit behavior: 0.1 credits per returned company.
 | Field | Type | Required | Description | Constraints |
 | --- | --- | --- | --- | --- |
 | `filters` | `object` | No | At least one real filter is required by the API | allowed properties: `country`, `region`, `city`, `industry`, `size`, `revenue`, `age`, `techStack`, `keywords`, `topics`, `events`, `locations`, `companyName`, `eventWindow`, `locationMatch`, `hasWebsite`, `isPublicCompany`; additional properties are not allowed |
-| `page` | `integer` | No | Page number, >= 0. Defaults to 0 | minimum: 0 |
+| `page` | `integer` | No | Page number, &gt;= 0. Defaults to 0 | minimum: 0 |
 | `size` | `integer` | No | Companies per page, 1..100. Defaults to 50 | minimum: 1; maximum: 100 |
 | `cursor` | `string` | No | next_cursor from the previous response; used instead of page | — |
 
@@ -232,7 +233,12 @@ Credit behavior: 0.1 credits per returned company.
   "method": "tools/call",
   "params": {
     "name": "airscale_find_companies",
-    "arguments": {}
+    "arguments": {
+      "filters": {
+        "companyName": "Example Company"
+      },
+      "size": 1
+    }
   }
 }
 ```
@@ -404,7 +410,11 @@ Credit behavior: 2 credits per successful result.
   "method": "tools/call",
   "params": {
     "name": "airscale_find_email",
-    "arguments": {}
+    "arguments": {
+      "first_name": "Example",
+      "last_name": "Person",
+      "domain": "example.com"
+    }
   }
 }
 ```
@@ -442,7 +452,7 @@ Credit behavior: 2 credits per successful input.
 | Field | Type | Required | Description | Constraints |
 | --- | --- | --- | --- | --- |
 | `webhook_url` | `string` | Yes | Results are POSTed here, one payload per input | format: `uri` |
-| `inputs` | `array<object>` | Yes | Contacts to enrich | minimum items: 1; item type: `object` |
+| `inputs` | `array&lt;object&gt;` | Yes | Contacts to enrich | minimum items: 1; item type: `object` |
 
 ### Minimal `tools/call` example
 
@@ -457,7 +467,10 @@ Credit behavior: 2 credits per successful input.
       "webhook_url": "https://hooks.example.com/airscale",
       "inputs": [
         {
-          "custom_id": "example-custom-id"
+          "custom_id": "example-contact-1",
+          "first_name": "Example",
+          "last_name": "Person",
+          "domain": "example.com"
         }
       ]
     }
@@ -715,7 +728,7 @@ Credit behavior: URL-selected pricing; company or school-profile successes cost 
   "params": {
     "name": "airscale_extract_company_profile",
     "arguments": {
-      "linkedin_profile_url": "https://www.linkedin.com/in/example-person-000000"
+      "linkedin_profile_url": "https://www.linkedin.com/company/example-company"
     }
   }
 }
@@ -872,7 +885,7 @@ This starts paid export work. Review the maximum possible credit spend, then set
 | `filters` | `object` | No | Same filters as airscale_find_companies. | allowed properties: `country`, `region`, `city`, `industry`, `size`, `revenue`, `age`, `techStack`, `keywords`, `topics`, `events`, `locations`, `companyName`, `eventWindow`, `locationMatch`, `hasWebsite`, `isPublicCompany`; additional properties are not allowed |
 | `max_rows` | `integer` | No | Maximum rows to export, 1..10000. Defaults to 1000. | minimum: 1; maximum: 10000 |
 | `format` | `string` | No | Export file format. Defaults to csv. | allowed values: `"csv"`, `"jsonl"` |
-| `fields` | `array<string>` | No | Optional top-level fields to include. | maximum items: 100; item type: `string` |
+| `fields` | `array&lt;string&gt;` | No | Optional top-level fields to include. | maximum items: 100; item type: `string` |
 | `confirm_credit_spend` | `boolean` | No | Must be true to start a paid fresh-row export. | — |
 
 ### Minimal `tools/call` example
@@ -885,6 +898,11 @@ This starts paid export work. Review the maximum possible credit spend, then set
   "params": {
     "name": "airscale_start_companies_export",
     "arguments": {
+      "filters": {
+        "companyName": "Example Company"
+      },
+      "max_rows": 1,
+      "format": "csv",
       "confirm_credit_spend": true
     }
   }
@@ -928,7 +946,7 @@ This starts paid export work. Review the maximum possible credit spend, then set
 | `query` | `object` | Yes | Same query as airscale_find_people. | allowed properties: `firstname`, `lastname`, `JobTitle`, `companyDomain`, `companyLinkedinUrl`, `school`, `languages`, `skills`, `location`, `keyword`, `currentCompanyName`, `currentCompany.type`, `currentCompany.industry`, `currentCompany.location`, `currentCompany.keyword`, `totalYearsOfExperience`, `timeInCurrentCompany`, `currentCompany.headcount`, `currentCompany.revenue`, `currentCompany.headcountGrowth`; nested required fields: `currentCompany.headcountGrowth.timespan`; additional properties are not allowed |
 | `max_rows` | `integer` | No | Maximum rows to export, 1..10000. Defaults to 1000. | minimum: 1; maximum: 10000 |
 | `format` | `string` | No | Export file format. Defaults to csv. | allowed values: `"csv"`, `"jsonl"` |
-| `fields` | `array<string>` | No | Optional top-level fields to include. | maximum items: 100; item type: `string` |
+| `fields` | `array&lt;string&gt;` | No | Optional top-level fields to include. | maximum items: 100; item type: `string` |
 | `confirm_credit_spend` | `boolean` | No | Must be true to start a paid fresh-row export. | — |
 
 ### Minimal `tools/call` example
@@ -942,12 +960,14 @@ This starts paid export work. Review the maximum possible credit spend, then set
     "name": "airscale_start_people_export",
     "arguments": {
       "query": {
-        "firstname": {
+        "companyDomain": {
           "include": [
-            "example"
+            "example.com"
           ]
         }
       },
+      "max_rows": 1,
+      "format": "csv",
       "confirm_credit_spend": true
     }
   }
@@ -995,7 +1015,9 @@ Credit behavior: Free; no enrichment credits charged.
   "method": "tools/call",
   "params": {
     "name": "airscale_create_contact_enrichment_batch",
-    "arguments": {}
+    "arguments": {
+      "name": "Example contact enrichment batch"
+    }
   }
 }
 ```
@@ -1031,7 +1053,7 @@ Credit behavior: Free; no enrichment credits charged.
 | Field | Type | Required | Description | Constraints |
 | --- | --- | --- | --- | --- |
 | `batch_id` | `string` | Yes | Batch id returned by airscale_create_contact_enrichment_batch. | minimum length: 1 |
-| `contacts` | `array<object>` | Yes | Contacts to add. Send uploaded CSV rows in chunks of up to 250. | minimum items: 1; maximum items: 250; item type: `object` |
+| `contacts` | `array&lt;object&gt;` | Yes | Contacts to add. Send uploaded CSV rows in chunks of up to 250. | minimum items: 1; maximum items: 250; item type: `object` |
 
 ### Minimal `tools/call` example
 
@@ -1046,7 +1068,10 @@ Credit behavior: Free; no enrichment credits charged.
       "batch_id": "example-batch-id",
       "contacts": [
         {
-          "custom_id": "example-custom-id"
+          "custom_id": "example-contact-1",
+          "first_name": "Example",
+          "last_name": "Person",
+          "domain": "example.com"
         }
       ]
     }
@@ -1089,9 +1114,9 @@ This starts paid export work. Review the maximum possible credit spend, then set
 | Field | Type | Required | Description | Constraints |
 | --- | --- | --- | --- | --- |
 | `batch_id` | `string` | Yes | Batch id to enrich. | minimum length: 1 |
-| `enrichments` | `array<string>` | No | Phase 1 supports only work_email. | minimum items: 1; maximum items: 1; item type: `string` |
+| `enrichments` | `array&lt;string&gt;` | No | Phase 1 supports only work_email. | minimum items: 1; maximum items: 1; item type: `string` |
 | `format` | `string` | No | Export file format. Defaults to csv. | allowed values: `"csv"`, `"jsonl"` |
-| `fields` | `array<string>` | No | Optional top-level fields to include. | maximum items: 100; item type: `string` |
+| `fields` | `array&lt;string&gt;` | No | Optional top-level fields to include. | maximum items: 100; item type: `string` |
 | `confirm_credit_spend` | `boolean` | No | Must be true to start paid contact enrichment. | — |
 
 ### Minimal `tools/call` example
@@ -1105,6 +1130,10 @@ This starts paid export work. Review the maximum possible credit spend, then set
     "name": "airscale_start_contact_enrichment_export",
     "arguments": {
       "batch_id": "example-batch-id",
+      "enrichments": [
+        "work_email"
+      ],
+      "format": "csv",
       "confirm_credit_spend": true
     }
   }

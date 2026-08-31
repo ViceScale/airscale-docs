@@ -6,6 +6,7 @@ import {
   mkdirSync,
   openSync,
   readFileSync,
+  readdirSync,
   realpathSync,
   renameSync,
   statSync,
@@ -16,6 +17,11 @@ import { basename, dirname, join, relative, resolve } from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
 import Ajv2020 from "ajv/dist/2020.js";
 import addFormats from "ajv-formats";
+import {
+  assertNoIncompleteTransactionForCheck,
+  recoverGeneratedPair,
+  writeGeneratedPair
+} from "./lib/atomic-generated-pair.mjs";
 
 const DEFAULT_CONTRACT_PATH = fileURLToPath(new URL("../contracts/mcp-tools.json", import.meta.url));
 const DEFAULT_CATALOG_PATH = fileURLToPath(new URL("../mcp/tools.mdx", import.meta.url));
@@ -52,6 +58,65 @@ const RESULT_BEHAVIOR = {
   airscale_get_export_status: "Returns the export state and progress metadata, including the server-provided polling interval when present.",
   airscale_get_export_file: "Returns a download URL and MCP resource link after the export has completed."
 };
+// JSON Schema cannot express every runtime cross-field rule or a safe paid
+// request size. Keep those examples intentionally narrow and synthetic.
+const SAFE_EXAMPLE_ARGUMENTS = Object.freeze({
+  airscale_find_people: {
+    query: { companyDomain: { include: ["example.com"] } },
+    size: 1
+  },
+  airscale_find_companies: {
+    filters: { companyName: "Example Company" },
+    size: 1
+  },
+  airscale_find_email: {
+    first_name: "Example",
+    last_name: "Person",
+    domain: "example.com"
+  },
+  airscale_find_email_bulk: {
+    webhook_url: "https://hooks.example.com/airscale",
+    inputs: [{
+      custom_id: "example-contact-1",
+      first_name: "Example",
+      last_name: "Person",
+      domain: "example.com"
+    }]
+  },
+  airscale_extract_company_profile: {
+    linkedin_profile_url: "https://www.linkedin.com/company/example-company"
+  },
+  airscale_start_companies_export: {
+    filters: { companyName: "Example Company" },
+    max_rows: 1,
+    format: "csv",
+    confirm_credit_spend: true
+  },
+  airscale_start_people_export: {
+    query: { companyDomain: { include: ["example.com"] } },
+    max_rows: 1,
+    format: "csv",
+    confirm_credit_spend: true
+  },
+  airscale_create_contact_enrichment_batch: {
+    name: "Example contact enrichment batch"
+  },
+  airscale_add_contacts_to_enrichment_batch: {
+    batch_id: "example-batch-id",
+    contacts: [{
+      custom_id: "example-contact-1",
+      first_name: "Example",
+      last_name: "Person",
+      domain: "example.com"
+    }]
+  },
+  airscale_start_contact_enrichment_export: {
+    batch_id: "example-batch-id",
+    enrichments: ["work_email"],
+    format: "csv",
+    confirm_credit_spend: true
+  }
+});
 const defaultFileIO = {
   closeSync,
   existsSync,
@@ -60,6 +125,7 @@ const defaultFileIO = {
   mkdirSync,
   openSync,
   readFileSync,
+  readdirSync,
   realpathSync,
   renameSync,
   statSync,
@@ -90,6 +156,29 @@ function schemaValidator(schema) {
   return ajv.compile(clone(schema));
 }
 
+function assertSafeContractProse(value, label) {
+  if (typeof value !== "string") return;
+  if (
+    /<\s*\/?\s*[A-Za-z][^>]*>/u.test(value)
+    || /(?:javascript|vbscript|data)\s*:/iu.test(value)
+  ) {
+    throw new Error(`Unsafe contract prose in ${label}`);
+  }
+}
+
+function validateSchemaProse(value, label, seen = new Set()) {
+  if (!value || typeof value !== "object" || seen.has(value)) return;
+  seen.add(value);
+  if (Array.isArray(value)) {
+    for (const child of value) validateSchemaProse(child, label, seen);
+    return;
+  }
+  for (const [key, child] of Object.entries(value)) {
+    if (["description", "title"].includes(key)) assertSafeContractProse(child, `${label}.${key}`);
+    else validateSchemaProse(child, `${label}.${key}`, seen);
+  }
+}
+
 function validateContract(contract) {
   if (!contract || typeof contract !== "object" || Array.isArray(contract)) {
     throw new Error("MCP contract must be an object");
@@ -105,29 +194,50 @@ function validateContract(contract) {
   const anchors = new Set();
   for (const tool of contract.tools) {
     if (!tool || typeof tool !== "object") throw new Error("Each MCP tool must be an object");
-    if (typeof tool.name !== "string" || names.has(tool.name)) throw new Error(`Duplicate or invalid MCP tool name: ${tool.name}`);
-    if (typeof tool.anchor !== "string" || anchors.has(tool.anchor)) throw new Error(`Duplicate or invalid MCP anchor: ${tool.anchor}`);
+    if (typeof tool.name !== "string" || !/^airscale_[a-z0-9]+(?:_[a-z0-9]+)*$/u.test(tool.name)) {
+      throw new Error(`Invalid MCP tool name grammar: ${tool.name}`);
+    }
+    if (names.has(tool.name)) throw new Error(`Duplicate MCP tool name: ${tool.name}`);
+    if (
+      typeof tool.anchor !== "string"
+      || !/^airscale-[a-z0-9]+(?:-[a-z0-9]+)*$/u.test(tool.anchor)
+      || tool.anchor !== tool.name.replaceAll("_", "-")
+    ) {
+      throw new Error(`Invalid MCP anchor grammar: ${tool.anchor}`);
+    }
+    if (anchors.has(tool.anchor)) throw new Error(`Duplicate MCP anchor: ${tool.anchor}`);
     if (!CATEGORY_TITLES.has(tool.category)) throw new Error(`Unknown MCP tool category: ${tool.category}`);
     if (typeof tool.description !== "string" || tool.description.length === 0) throw new Error(`Missing description for ${tool.name}`);
+    assertSafeContractProse(tool.description, `${tool.name}.description`);
     if (!tool.spend || !["free", "variable", "paid_export"].includes(tool.spend.kind)) {
       throw new Error(`Invalid spend classification for ${tool.name}`);
     }
     if (typeof tool.spend.summary !== "string" || tool.spend.summary.length === 0) {
       throw new Error(`Missing spend summary for ${tool.name}`);
     }
+    assertSafeContractProse(tool.spend.summary, `${tool.name}.spend.summary`);
     if (typeof tool.asynchronous !== "boolean") throw new Error(`Invalid asynchronous flag for ${tool.name}`);
     if (!tool.inputSchema || typeof tool.inputSchema !== "object") throw new Error(`Missing input schema for ${tool.name}`);
+    validateSchemaProse(tool.inputSchema, `${tool.name}.inputSchema`);
     try {
+      assertSchemaWithinSynthesisBudgets(tool.inputSchema, tool.name);
       schemaValidator(tool.inputSchema);
     } catch (error) {
+      if (error instanceof ExampleSynthesisError) throw error;
       throw new Error(`Invalid input schema for ${tool.name}: ${error.message}`, { cause: error });
     }
 
     const hasApiOperation = typeof tool.operationId === "string" && typeof tool.apiPage === "string";
     const hasNoApiOperation = tool.operationId === null && tool.apiPage === null;
     if (!hasApiOperation && !hasNoApiOperation) throw new Error(`Incomplete API mapping for ${tool.name}`);
-    if (hasApiOperation && !tool.apiPage.startsWith("/api-reference/")) {
-      throw new Error(`Unsafe API documentation link for ${tool.name}`);
+    if (hasApiOperation && !/^[A-Za-z][A-Za-z0-9]*$/u.test(tool.operationId)) {
+      throw new Error(`Invalid operation id grammar for ${tool.name}`);
+    }
+    if (
+      hasApiOperation
+      && !/^\/api-reference\/[a-z0-9][a-z0-9()-]*(?:\/[a-z0-9][a-z0-9()-]*)*$/u.test(tool.apiPage)
+    ) {
+      throw new Error(`Invalid API page route grammar for ${tool.name}`);
     }
     if (tool.spend.kind === "paid_export") {
       const confirmationField = tool.spend.confirmationField;
@@ -177,6 +287,14 @@ function resolveLocalReference(reference, rootSchema, toolName, path) {
 }
 
 const MAX_SYNTHESIS_CANDIDATES = 128;
+const MAX_SYNTHESIS_RECURSION_DEPTH = 64;
+const MAX_SYNTHESIS_REFERENCE_DEPTH = 32;
+const MAX_SYNTHESIS_COMBINATOR_BRANCHES = 128;
+const MAX_SYNTHESIS_ENUM_VALUES = 128;
+const MAX_SYNTHESIS_ARRAY_ITEMS = 1_000;
+const MAX_SYNTHESIS_STRING_LENGTH = 4_096;
+const MAX_SYNTHESIS_SERIALIZED_BYTES = 16_384;
+const MAX_SYNTHESIS_VISITED_SCHEMA_NODES = 4_096;
 const SCHEMA_ANNOTATION_KEYS = new Set([
   "$defs",
   "$id",
@@ -202,6 +320,125 @@ function uniqueCandidates(values) {
     if (result.length >= MAX_SYNTHESIS_CANDIDATES) break;
   }
   return result;
+}
+
+function synthesisBudgetError(toolName, detail) {
+  return new ExampleSynthesisError(toolName, "arguments", detail);
+}
+
+function assertSchemaWithinSynthesisBudgets(rootSchema, toolName) {
+  let visitedNodes = 0;
+
+  function visit(value, depth) {
+    if (!value || typeof value !== "object") return;
+    if (depth > MAX_SYNTHESIS_RECURSION_DEPTH) {
+      throw synthesisBudgetError(toolName, `recursion depth budget of ${MAX_SYNTHESIS_RECURSION_DEPTH} was exceeded`);
+    }
+    visitedNodes += 1;
+    if (visitedNodes > MAX_SYNTHESIS_VISITED_SCHEMA_NODES) {
+      throw synthesisBudgetError(
+        toolName,
+        `visited schema node budget of ${MAX_SYNTHESIS_VISITED_SCHEMA_NODES} was exceeded`
+      );
+    }
+    if (Array.isArray(value)) {
+      for (const child of value) visit(child, depth + 1);
+      return;
+    }
+
+    if (Number.isInteger(value.minItems) && value.minItems > MAX_SYNTHESIS_ARRAY_ITEMS) {
+      throw synthesisBudgetError(toolName, `array item budget of ${MAX_SYNTHESIS_ARRAY_ITEMS} was exceeded`);
+    }
+    if (
+      (Number.isInteger(value.minLength) && value.minLength > MAX_SYNTHESIS_STRING_LENGTH)
+      || (Number.isInteger(value.maxLength) && value.maxLength > MAX_SYNTHESIS_STRING_LENGTH)
+    ) {
+      throw synthesisBudgetError(toolName, `string length budget of ${MAX_SYNTHESIS_STRING_LENGTH} was exceeded`);
+    }
+    if (typeof value.const === "string" && value.const.length > MAX_SYNTHESIS_STRING_LENGTH) {
+      throw synthesisBudgetError(toolName, `string length budget of ${MAX_SYNTHESIS_STRING_LENGTH} was exceeded`);
+    }
+    if (Array.isArray(value.enum)) {
+      if (value.enum.length > MAX_SYNTHESIS_ENUM_VALUES) {
+        throw synthesisBudgetError(toolName, `enum value budget of ${MAX_SYNTHESIS_ENUM_VALUES} was exceeded`);
+      }
+      if (value.enum.some((entry) => typeof entry === "string" && entry.length > MAX_SYNTHESIS_STRING_LENGTH)) {
+        throw synthesisBudgetError(toolName, `string length budget of ${MAX_SYNTHESIS_STRING_LENGTH} was exceeded`);
+      }
+    }
+    for (const keyword of ["allOf", "anyOf", "oneOf"]) {
+      if (Array.isArray(value[keyword]) && value[keyword].length > MAX_SYNTHESIS_COMBINATOR_BRANCHES) {
+        throw synthesisBudgetError(
+          toolName,
+          `combinator branch budget of ${MAX_SYNTHESIS_COMBINATOR_BRANCHES} was exceeded`
+        );
+      }
+    }
+    for (const child of Object.values(value)) visit(child, depth + 1);
+  }
+
+  visit(rootSchema, 0);
+
+  function visitReferences(value, referenceStack = new Set()) {
+    if (!value || typeof value !== "object") return;
+    if (Array.isArray(value)) {
+      for (const child of value) visitReferences(child, referenceStack);
+      return;
+    }
+    if (typeof value.$ref === "string") {
+      if (referenceStack.has(value.$ref)) {
+        throw new ExampleSynthesisError(
+          toolName,
+          "arguments",
+          `recursive schema reference ${value.$ref} cannot be synthesized`
+        );
+      }
+      if (referenceStack.size >= MAX_SYNTHESIS_REFERENCE_DEPTH) {
+        throw synthesisBudgetError(
+          toolName,
+          `reference depth budget of ${MAX_SYNTHESIS_REFERENCE_DEPTH} was exceeded`
+        );
+      }
+      const nextStack = new Set([...referenceStack, value.$ref]);
+      visitReferences(resolveLocalReference(value.$ref, rootSchema, toolName, "arguments"), nextStack);
+    }
+    for (const [key, child] of Object.entries(value)) {
+      if (key !== "$ref") visitReferences(child, referenceStack);
+    }
+  }
+
+  visitReferences(rootSchema);
+}
+
+function assertSerializedExampleWithinBudget(value, toolName) {
+  let bytes = 0;
+  const add = (count) => {
+    bytes += count;
+    if (bytes > MAX_SYNTHESIS_SERIALIZED_BYTES) {
+      throw synthesisBudgetError(
+        toolName,
+        `serialized example byte budget of ${MAX_SYNTHESIS_SERIALIZED_BYTES} was exceeded`
+      );
+    }
+  };
+  const visit = (entry) => {
+    if (Array.isArray(entry)) {
+      add(2 + Math.max(0, entry.length - 1));
+      for (const child of entry) visit(child);
+      return;
+    }
+    if (entry && typeof entry === "object") {
+      const properties = Object.entries(entry);
+      add(2 + Math.max(0, properties.length - 1));
+      for (const [key, child] of properties) {
+        add(Buffer.byteLength(JSON.stringify(key), "utf8") + 1);
+        visit(child);
+      }
+      return;
+    }
+    add(Buffer.byteLength(JSON.stringify(entry), "utf8"));
+  };
+  visit(value);
 }
 
 function assertionSiblings(schema, omittedKeyword) {
@@ -518,6 +755,9 @@ function arrayCandidates(schema, context) {
   ].filter((value) => Number.isInteger(value) && value >= 0));
   const results = [];
   for (const count of counts) {
+    if (count > MAX_SYNTHESIS_ARRAY_ITEMS) {
+      throw synthesisBudgetError(context.toolName, `array item budget of ${MAX_SYNTHESIS_ARRAY_ITEMS} was exceeded`);
+    }
     if (count === 0) {
       results.push([]);
       continue;
@@ -550,10 +790,15 @@ function candidateValues(schema, context) {
   }
 
   if (Object.hasOwn(schema, "const")) return [clone(schema.const)];
-  if (Array.isArray(schema.enum)) return uniqueCandidates(schema.enum.map(clone));
+  if (Array.isArray(schema.enum)) {
+    return uniqueCandidates(schema.enum.slice(0, MAX_SYNTHESIS_ENUM_VALUES).map(clone));
+  }
   if (schema.$ref) {
     if (context.referenceStack.has(schema.$ref)) {
       throw new ExampleSynthesisError(toolName, path.join("."), `recursive schema reference ${schema.$ref} cannot be synthesized`);
+    }
+    if (context.referenceStack.size >= MAX_SYNTHESIS_REFERENCE_DEPTH) {
+      throw synthesisBudgetError(toolName, `reference depth budget of ${MAX_SYNTHESIS_REFERENCE_DEPTH} was exceeded`);
     }
     const resolved = resolveLocalReference(schema.$ref, rootSchema, toolName, path.join("."));
     const siblings = assertionSiblings(schema, "$ref");
@@ -623,26 +868,32 @@ function synthesizeValue(schema, context) {
 function synthesizeArguments(tool) {
   let argumentsValue;
   try {
-    const ajv = new Ajv2020({ strict: false });
-    addFormats(ajv);
-    const rootSchemaId = `https://airscale.example/mcp-input/${encodeURIComponent(tool.name)}`;
-    ajv.addSchema(clone(tool.inputSchema), rootSchemaId);
-    argumentsValue = synthesizeValue(tool.inputSchema, {
-      rootSchema: tool.inputSchema,
-      toolName: tool.name,
-      path: ["arguments"],
-      preferNonEmpty: false,
-      ajv,
-      rootSchemaId,
-      validatorCache: new WeakMap(),
-      referenceStack: new Set()
-    });
+    assertSchemaWithinSynthesisBudgets(tool.inputSchema, tool.name);
+    if (Object.hasOwn(SAFE_EXAMPLE_ARGUMENTS, tool.name)) {
+      argumentsValue = clone(SAFE_EXAMPLE_ARGUMENTS[tool.name]);
+    } else {
+      const ajv = new Ajv2020({ strict: false });
+      addFormats(ajv);
+      const rootSchemaId = `https://airscale.example/mcp-input/${encodeURIComponent(tool.name)}`;
+      ajv.addSchema(clone(tool.inputSchema), rootSchemaId);
+      argumentsValue = synthesizeValue(tool.inputSchema, {
+        rootSchema: tool.inputSchema,
+        toolName: tool.name,
+        path: ["arguments"],
+        preferNonEmpty: false,
+        ajv,
+        rootSchemaId,
+        validatorCache: new WeakMap(),
+        referenceStack: new Set()
+      });
+    }
     if (!argumentsValue || typeof argumentsValue !== "object" || Array.isArray(argumentsValue)) {
       throw new ExampleSynthesisError(tool.name, "arguments", "the top-level tool input must synthesize to an object");
     }
     if (tool.spend.kind === "paid_export") {
       argumentsValue = { ...argumentsValue, [tool.spend.confirmationField]: true };
     }
+    assertSerializedExampleWithinBudget(argumentsValue, tool.name);
     const validate = schemaValidator(tool.inputSchema);
     if (!validate(argumentsValue)) {
       throw new ExampleSynthesisError(tool.name, "arguments", `generated value fails the input schema: ${JSON.stringify(validate.errors)}`);
@@ -654,16 +905,134 @@ function synthesizeArguments(tool) {
   }
 }
 
-function resolveSchemaForDisplay(schema, rootSchema) {
-  if (!schema || typeof schema !== "object" || Array.isArray(schema) || !schema.$ref) return schema;
-  return resolveLocalReference(schema.$ref, rootSchema, "catalog", "input table");
+function strongerDisplayBound(left, right, direction) {
+  if (!left) return right;
+  if (!right) return left;
+  if (direction === "lower") {
+    if (right.value > left.value || (right.value === left.value && right.exclusive)) return right;
+    return left;
+  }
+  if (right.value < left.value || (right.value === left.value && right.exclusive)) return right;
+  return left;
+}
+
+function displayBound(schema, inclusiveKey, exclusiveKey) {
+  let result;
+  if (Number.isFinite(schema?.[inclusiveKey])) result = { value: schema[inclusiveKey], exclusive: false };
+  if (Number.isFinite(schema?.[exclusiveKey])) {
+    result = strongerDisplayBound(
+      result,
+      { value: schema[exclusiveKey], exclusive: true },
+      inclusiveKey.startsWith("min") ? "lower" : "upper"
+    );
+  }
+  return result;
+}
+
+function mergeDisplaySchemas(left, right) {
+  if (left === false || right === false) return false;
+  if (left === true) return clone(right);
+  if (right === true) return clone(left);
+  if (!left || typeof left !== "object") return clone(right);
+  if (!right || typeof right !== "object") return clone(left);
+
+  const merged = { ...clone(left), ...clone(right) };
+  delete merged.$ref;
+  delete merged.allOf;
+
+  const propertyNames = [...new Set([
+    ...Object.keys(left.properties ?? {}),
+    ...Object.keys(right.properties ?? {})
+  ])];
+  if (propertyNames.length > 0) {
+    merged.properties = Object.fromEntries(propertyNames.map((name) => [
+      name,
+      Object.hasOwn(left.properties ?? {}, name) && Object.hasOwn(right.properties ?? {}, name)
+        ? mergeDisplaySchemas(left.properties[name], right.properties[name])
+        : clone((right.properties ?? {})[name] ?? left.properties[name])
+    ]));
+  }
+  const required = [...new Set([...(left.required ?? []), ...(right.required ?? [])])];
+  if (required.length > 0) merged.required = required;
+
+  const lower = strongerDisplayBound(
+    displayBound(left, "minimum", "exclusiveMinimum"),
+    displayBound(right, "minimum", "exclusiveMinimum"),
+    "lower"
+  );
+  const upper = strongerDisplayBound(
+    displayBound(left, "maximum", "exclusiveMaximum"),
+    displayBound(right, "maximum", "exclusiveMaximum"),
+    "upper"
+  );
+  delete merged.minimum;
+  delete merged.exclusiveMinimum;
+  delete merged.maximum;
+  delete merged.exclusiveMaximum;
+  if (lower) merged[lower.exclusive ? "exclusiveMinimum" : "minimum"] = lower.value;
+  if (upper) merged[upper.exclusive ? "exclusiveMaximum" : "maximum"] = upper.value;
+
+  for (const key of ["minLength", "minItems", "minProperties"]) {
+    const values = [left[key], right[key]].filter(Number.isFinite);
+    if (values.length > 0) merged[key] = Math.max(...values);
+  }
+  for (const key of ["maxLength", "maxItems", "maxProperties"]) {
+    const values = [left[key], right[key]].filter(Number.isFinite);
+    if (values.length > 0) merged[key] = Math.min(...values);
+  }
+  if (left.additionalProperties === false || right.additionalProperties === false) merged.additionalProperties = false;
+  if (left.items && right.items) merged.items = mergeDisplaySchemas(left.items, right.items);
+  return merged;
+}
+
+function normalizeSchemaForDisplay(schema, rootSchema, referenceStack = new Set()) {
+  if (schema === true || schema === false || !schema || typeof schema !== "object" || Array.isArray(schema)) {
+    return schema;
+  }
+  if (schema.$ref) {
+    if (referenceStack.has(schema.$ref)) return { ...schema, $ref: undefined };
+    const resolved = normalizeSchemaForDisplay(
+      resolveLocalReference(schema.$ref, rootSchema, "catalog", "input table"),
+      rootSchema,
+      new Set([...referenceStack, schema.$ref])
+    );
+    const siblings = { ...schema };
+    delete siblings.$ref;
+    return mergeDisplaySchemas(resolved, normalizeSchemaForDisplay(siblings, rootSchema, referenceStack));
+  }
+  if (Array.isArray(schema.allOf)) {
+    const siblings = { ...schema };
+    delete siblings.allOf;
+    return schema.allOf.reduce(
+      (combined, branch) => mergeDisplaySchemas(
+        combined,
+        normalizeSchemaForDisplay(branch, rootSchema, referenceStack)
+      ),
+      normalizeSchemaForDisplay(siblings, rootSchema, referenceStack)
+    );
+  }
+  return {
+    ...schema,
+    ...(schema.properties ? {
+      properties: Object.fromEntries(Object.entries(schema.properties).map(([name, child]) => [
+        name,
+        normalizeSchemaForDisplay(child, rootSchema, referenceStack)
+      ]))
+    } : {}),
+    ...(schema.items ? { items: normalizeSchemaForDisplay(schema.items, rootSchema, referenceStack) } : {}),
+    ...(schema.anyOf ? {
+      anyOf: schema.anyOf.map((branch) => normalizeSchemaForDisplay(branch, rootSchema, referenceStack))
+    } : {}),
+    ...(schema.oneOf ? {
+      oneOf: schema.oneOf.map((branch) => normalizeSchemaForDisplay(branch, rootSchema, referenceStack))
+    } : {})
+  };
 }
 
 function describeType(schema, rootSchema) {
   if (schema === false) return "never";
   if (schema === true) return "any JSON value";
-  const resolved = resolveSchemaForDisplay(schema, rootSchema);
-  if (resolved !== schema) return describeType(resolved, rootSchema);
+  schema = normalizeSchemaForDisplay(schema, rootSchema);
   if (Array.isArray(schema.anyOf) || Array.isArray(schema.oneOf)) {
     const branches = schema.anyOf ?? schema.oneOf;
     return [...new Set(branches.map((branch) => describeType(branch, rootSchema)))].join(" or ");
@@ -685,9 +1054,8 @@ function codeList(values) {
 
 function collectNestedRequirements(schema, rootSchema, prefix = "", seen = new Set()) {
   if (!schema || typeof schema !== "object" || Array.isArray(schema) || seen.has(schema)) return [];
+  schema = normalizeSchemaForDisplay(schema, rootSchema);
   seen.add(schema);
-  const resolved = resolveSchemaForDisplay(schema, rootSchema);
-  if (resolved !== schema) return collectNestedRequirements(resolved, rootSchema, prefix, seen);
   const requirements = [];
   for (const property of schema.required ?? []) requirements.push(prefix ? `${prefix}.${property}` : property);
   for (const [property, child] of Object.entries(schema.properties ?? {})) {
@@ -703,8 +1071,7 @@ function collectNestedRequirements(schema, rootSchema, prefix = "", seen = new S
 
 function describeConstraints(schema, rootSchema) {
   if (!schema || typeof schema !== "object" || Array.isArray(schema)) return "—";
-  const resolved = resolveSchemaForDisplay(schema, rootSchema);
-  if (resolved !== schema) return describeConstraints(resolved, rootSchema);
+  schema = normalizeSchemaForDisplay(schema, rootSchema);
   const constraints = [];
   if (schema.format) constraints.push(`format: \`${schema.format}\``);
   if (Object.hasOwn(schema, "const")) constraints.push(`must equal \`${JSON.stringify(schema.const)}\``);
@@ -731,21 +1098,52 @@ function describeConstraints(schema, rootSchema) {
   return constraints.join("; ") || "—";
 }
 
+function escapeMdxProse(value) {
+  return String(value)
+    .replaceAll("&", "&amp;")
+    .replaceAll("{", "&#123;")
+    .replaceAll("}", "&#125;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll("[", "\\[")
+    .replaceAll("]", "\\]");
+}
+
+function escapeTableValue(value, { inlineCode = false } = {}) {
+  let escaped = "";
+  for (const character of String(value)) {
+    if (character === "\\") escaped += "\\\\";
+    else if (character === "|") escaped += "\\|";
+    else if (character === "\n" || character === "\r") escaped += " ";
+    else if (character === "&") escaped += "&amp;";
+    else if (character === "{") escaped += "&#123;";
+    else if (character === "}") escaped += "&#125;";
+    else if (character === "<") escaped += "&lt;";
+    else if (character === ">") escaped += "&gt;";
+    else if (character === "[") escaped += "\\[";
+    else if (character === "]") escaped += "\\]";
+    else if (inlineCode && character === "`") escaped += "&#96;";
+    else escaped += character;
+  }
+  return escaped;
+}
+
 function escapeTableCell(value) {
-  return String(value).replaceAll("\n", " ").replaceAll("|", "\\|");
+  return escapeTableValue(value);
 }
 
 function renderInputTable(tool) {
   const rows = ["| Field | Type | Required | Description | Constraints |", "| --- | --- | --- | --- | --- |"];
-  const properties = Object.entries(tool.inputSchema.properties ?? {});
+  const displaySchema = normalizeSchemaForDisplay(tool.inputSchema, tool.inputSchema);
+  const properties = Object.entries(displaySchema.properties ?? {});
   if (properties.length === 0) {
     rows.push("| _No input fields_ | — | — | Pass an empty JSON object. | additional properties are not allowed |");
     return rows.join("\n");
   }
-  const required = new Set(tool.inputSchema.required ?? []);
+  const required = new Set(displaySchema.required ?? []);
   for (const [name, schema] of properties) {
     rows.push(`${[
-      `| \`${name}\``,
+      `| \`${escapeTableValue(name, { inlineCode: true })}\``,
       `\`${escapeTableCell(describeType(schema, tool.inputSchema))}\``,
       required.has(name) ? "Yes" : "No",
       escapeTableCell(schema.description ?? "No runtime description supplied."),
@@ -776,13 +1174,13 @@ function renderToolBlock(tool) {
     `<a id="${tool.anchor}"></a>`,
     `## \`${tool.name}\``,
     "**MCP tool**",
-    tool.description,
+    escapeMdxProse(tool.description),
     `- **Category:** ${CATEGORY_TITLES.get(tool.category)}`,
     `- **Spend classification:** ${spendClassification(tool.spend.kind)}`,
-    `- **Credit behavior:** ${tool.spend.summary}`,
+    `- **Credit behavior:** ${escapeMdxProse(tool.spend.summary)}`,
     `- **Execution:** ${execution}`,
     "- **Authentication:** Uses the credentials configured on the MCP connection; never include an API key in tool arguments.",
-    `<Note>\nCredit behavior: ${tool.spend.summary}.\n</Note>`
+    `<Note>\nCredit behavior: ${escapeMdxProse(tool.spend.summary)}.\n</Note>`
   ];
 
   if (tool.spend.kind === "paid_export") {
@@ -967,115 +1365,6 @@ function bytesMatch(contents, artifact) {
   return bytes.equals(Buffer.from(contents, "utf8"));
 }
 
-function transactionPathsFor(targetPath, token) {
-  return {
-    temporaryPath: `${targetPath}.${token}.tmp`,
-    backupPath: `${targetPath}.${token}.bak`
-  };
-}
-
-function quietly(callback) {
-  try {
-    callback();
-  } catch {}
-}
-
-function writePairAtomic(outputs, { io, transactionToken }) {
-  const entries = outputs.map(({ targetPath, contents }) => ({
-    targetPath,
-    contents,
-    ...transactionPathsFor(targetPath, transactionToken),
-    descriptor: undefined,
-    hadTarget: false,
-    backedUp: false,
-    installed: false
-  }));
-
-  try {
-    for (const entry of entries) {
-      io.writeFileSync(entry.temporaryPath, entry.contents, { encoding: "utf8", flag: "wx" });
-      entry.descriptor = io.openSync(entry.temporaryPath, "r+");
-      io.fsyncSync(entry.descriptor);
-      io.closeSync(entry.descriptor);
-      entry.descriptor = undefined;
-    }
-    for (const entry of entries) {
-      if (!io.existsSync(entry.targetPath)) continue;
-      entry.hadTarget = true;
-      io.renameSync(entry.targetPath, entry.backupPath);
-      entry.backedUp = true;
-    }
-    for (const entry of entries) {
-      io.renameSync(entry.temporaryPath, entry.targetPath);
-      entry.installed = true;
-    }
-  } catch (error) {
-    const recoveryErrors = [];
-    for (const entry of [...entries].reverse()) {
-      if (entry.descriptor !== undefined) {
-        try {
-          io.closeSync(entry.descriptor);
-        } catch (recoveryError) {
-          recoveryErrors.push(recoveryError);
-        }
-      }
-      entry.descriptor = undefined;
-    }
-    for (const entry of entries) {
-      if (entry.backedUp) {
-        try {
-          // Replacing an installed target directly avoids deleting the new file
-          // before the original backup has been restored successfully.
-          io.renameSync(entry.backupPath, entry.targetPath);
-          entry.backedUp = false;
-          entry.installed = false;
-        } catch (recoveryError) {
-          recoveryErrors.push(recoveryError);
-        }
-      } else if (entry.installed && !entry.hadTarget) {
-        try {
-          io.unlinkSync(entry.targetPath);
-          entry.installed = false;
-        } catch (recoveryError) {
-          recoveryErrors.push(recoveryError);
-        }
-      }
-    }
-    if (recoveryErrors.length > 0) {
-      throw new AggregateError(
-        [error, ...recoveryErrors],
-        `${error.message}; rollback was incomplete and recovery backups were preserved`
-      );
-    }
-    throw error;
-  } finally {
-    for (const entry of entries) {
-      if (entry.descriptor !== undefined) quietly(() => io.closeSync(entry.descriptor));
-      entry.descriptor = undefined;
-      quietly(() => io.unlinkSync(entry.temporaryPath));
-    }
-  }
-
-  // Both new outputs are installed at this commit point. Backup cleanup must
-  // never enter rollback after an earlier original has already been deleted.
-  const cleanupErrors = [];
-  for (const entry of entries) {
-    if (!entry.backedUp) continue;
-    try {
-      io.unlinkSync(entry.backupPath);
-      entry.backedUp = false;
-    } catch (error) {
-      cleanupErrors.push(error);
-    }
-  }
-  if (cleanupErrors.length > 0) {
-    throw new AggregateError(
-      cleanupErrors,
-      `backup cleanup failed after MCP outputs were committed: ${cleanupErrors[0].message}`
-    );
-  }
-}
-
 export async function run(argv, dependencies = {}) {
   const parsed = parseArguments(argv);
   const io = { ...defaultFileIO, ...(dependencies.fsImpl ?? {}) };
@@ -1084,6 +1373,11 @@ export async function run(argv, dependencies = {}) {
     catalogPath: parsed.catalog ?? DEFAULT_CATALOG_PATH,
     publicPath: parsed.public ?? DEFAULT_PUBLIC_PATH
   }, io);
+  if (parsed.mode === "--check") {
+    assertNoIncompleteTransactionForCheck(paths.catalogPath, io);
+  } else {
+    recoverGeneratedPair([paths.catalogPath, paths.publicPath], io);
+  }
   const contract = JSON.parse(io.readFileSync(paths.contractPath, "utf8"));
   const catalog = (dependencies.renderCatalogImpl ?? renderCatalog)(contract);
   const publicManifest = (dependencies.renderPublicManifestImpl ?? renderPublicManifest)(contract);
@@ -1111,10 +1405,14 @@ export async function run(argv, dependencies = {}) {
   io.mkdirSync(dirname(paths.catalogPath), { recursive: true });
   io.mkdirSync(dirname(paths.publicPath), { recursive: true });
   const transactionToken = `${process.pid}.${Date.now()}.${Math.random().toString(16).slice(2)}`;
-  writePairAtomic([
+  writeGeneratedPair([
     { targetPath: paths.catalogPath, contents: catalog },
     { targetPath: paths.publicPath, contents: publicManifest }
-  ], { io, transactionToken });
+  ], {
+    io,
+    transactionToken,
+    transactionPhaseHook: dependencies.transactionPhaseHook
+  });
 }
 
 if (process.argv[1] && import.meta.url === pathToFileURL(resolve(process.argv[1])).href) {

@@ -1,6 +1,8 @@
 import assert from "node:assert/strict";
+import { spawnSync } from "node:child_process";
 import {
   existsSync,
+  mkdirSync,
   mkdtempSync,
   readFileSync,
   readdirSync,
@@ -81,6 +83,26 @@ function occurrences(source, literal) {
   return source.split(literal).length - 1;
 }
 
+function parseMarkdownTableRow(line) {
+  assert.ok(line.startsWith("|") && line.endsWith("|"), `not a Markdown table row: ${line}`);
+  const cells = [];
+  let cell = "";
+  let backslashes = 0;
+  for (let index = 1; index < line.length - 1; index += 1) {
+    const character = line[index];
+    if (character === "|" && backslashes % 2 === 0) {
+      cells.push(cell.trim());
+      cell = "";
+      backslashes = 0;
+      continue;
+    }
+    cell += character;
+    backslashes = character === "\\" ? backslashes + 1 : 0;
+  }
+  cells.push(cell.trim());
+  return cells;
+}
+
 function toolBlock(source, tool, nextTool) {
   const start = source.indexOf(`<a id="${tool.anchor}"></a>`);
   assert.notEqual(start, -1, `${tool.name} block must exist`);
@@ -114,6 +136,41 @@ function assertSynthesizedFixture(inputSchema, expected) {
   assert.deepEqual(actual, expected);
 }
 
+function fixtureInputRows(inputSchema) {
+  const contract = readContract();
+  contract.tools[0].inputSchema = inputSchema;
+  const source = renderCatalog(contract);
+  const block = toolBlock(source, contract.tools[0], contract.tools[1]);
+  return block.split("\n").filter((line) => line.startsWith("| `"));
+}
+
+function assertDocumentationSafeArguments(toolName, argumentsValue) {
+  if (toolName === "airscale_find_companies") {
+    assert.ok(Object.keys(argumentsValue.filters ?? {}).length > 0, "find companies needs a real filter");
+    assert.equal(argumentsValue.size, 1, "find companies must minimize returned paid rows");
+  }
+  if (toolName === "airscale_find_email") {
+    const hasProfile = typeof argumentsValue.linkedin_profile_url === "string";
+    const hasNamedCompany = typeof argumentsValue.first_name === "string"
+      && typeof argumentsValue.last_name === "string"
+      && (typeof argumentsValue.domain === "string" || typeof argumentsValue.company_name === "string");
+    assert.ok(hasProfile || hasNamedCompany, "find email needs a complete supported identity");
+  }
+  if (toolName === "airscale_find_email_bulk") {
+    for (const input of argumentsValue.inputs ?? []) {
+      const identifyingKeys = ["linkedin_profile_url", "first_name", "last_name", "domain", "company_name"];
+      assert.ok(identifyingKeys.some((key) => typeof input[key] === "string"), "bulk email inputs need contact identity, not only custom_id");
+    }
+  }
+  if (["airscale_start_companies_export", "airscale_start_people_export"].includes(toolName)) {
+    assert.equal(argumentsValue.max_rows, 1, `${toolName} must cap the paid example at one row`);
+    assert.equal(argumentsValue.format, "csv");
+    assert.equal(argumentsValue.confirm_credit_spend, true);
+    const narrowInput = argumentsValue.filters ?? argumentsValue.query;
+    assert.ok(narrowInput && Object.keys(narrowInput).length > 0, `${toolName} needs one narrow query or filter`);
+  }
+}
+
 function inTemporaryDirectory(callback) {
   const directory = mkdtempSync(join(tmpdir(), "airscale-mcp-catalog-"));
   return Promise.resolve()
@@ -123,13 +180,38 @@ function inTemporaryDirectory(callback) {
 
 function assertNoTransactionFiles(directory) {
   assert.deepEqual(
-    readdirSync(directory).filter((name) => name.endsWith(".tmp") || name.endsWith(".bak")),
+    readdirSync(directory).filter((name) => (
+      name.endsWith(".tmp") || name.endsWith(".bak") || name.includes(".mcp-pair-transaction.json")
+    )),
     []
   );
 }
 
 function transactionFiles(directory, suffix) {
   return readdirSync(directory).filter((name) => name.endsWith(suffix));
+}
+
+function crashWriterAt(phase, catalogPath, publicPath) {
+  const generatorUrl = new URL("../scripts/build-mcp-catalog.mjs", import.meta.url).href;
+  const source = `
+    import { writeFileSync as realWriteFileSync } from "node:fs";
+    import { run } from ${JSON.stringify(generatorUrl)};
+    await run(${JSON.stringify(["--write", "--catalog", catalogPath, "--public", publicPath])}, {
+      fsImpl: {
+        writeFileSync(path, contents, options) {
+          if (${JSON.stringify(phase)} === "initial-journal-write" && path.endsWith(".stage")) {
+            realWriteFileSync(path, String(contents).slice(0, 24), options);
+            process.kill(process.pid, "SIGKILL");
+          }
+          return realWriteFileSync(path, contents, options);
+        }
+      },
+      transactionPhaseHook(currentPhase) {
+        if (currentPhase === ${JSON.stringify(phase)}) process.kill(process.pid, "SIGKILL");
+      }
+    });
+  `;
+  return spawnSync(process.execPath, ["--input-type=module", "--eval", source], { encoding: "utf8" });
 }
 
 test("catalog renderer emits the exact page framing, category order, headings, anchors, and summary links", () => {
@@ -242,30 +324,140 @@ test("every generated tools/call example parses, stays synthetic, and validates 
       true,
       `${tool.name}: ${ajv.errorsText(validate.errors)}`
     );
+    assertDocumentationSafeArguments(tool.name, example.params.arguments);
   }
 
   const serialized = JSON.stringify(examples);
   assert.doesNotMatch(serialized, /(?:api[_-]?key|authorization|bearer|password|secret|token)/i);
   assert.doesNotMatch(serialized, /(?:Prospeo|Icypeas|RapidAPI|Leadmagic|SalesQL|Limadata|ContactOut|Wiza|Forager|Bounceban|Findymail)/i);
   for (const value of serialized.match(/https?:\\?\/\\?\/[^"\\]+/g) ?? []) {
-    if (/linkedin\.com/i.test(value)) assert.match(value, /example-person/);
+    if (/linkedin\.com/i.test(value)) assert.match(value, /example-(?:person|company)/);
     else assert.match(value, /example\.(?:com|org|net|test)/i);
   }
 
   const examplesByTool = new Map(examples.map((example) => [example.params.name, example.params.arguments]));
   assert.deepEqual(examplesByTool.get("airscale_find_people"), {
-    query: { firstname: { include: ["example"] } }
+    query: { companyDomain: { include: ["example.com"] } },
+    size: 1
   });
-  assert.deepEqual(examplesByTool.get("airscale_add_contacts_to_enrichment_batch").contacts, [
-    { custom_id: "example-custom-id" }
-  ]);
+  assert.deepEqual(examplesByTool.get("airscale_find_companies"), {
+    filters: { companyName: "Example Company" },
+    size: 1
+  });
+  assert.deepEqual(examplesByTool.get("airscale_find_email"), {
+    first_name: "Example",
+    last_name: "Person",
+    domain: "example.com"
+  });
+  assert.deepEqual(examplesByTool.get("airscale_find_email_bulk"), {
+    webhook_url: "https://hooks.example.com/airscale",
+    inputs: [{
+      custom_id: "example-contact-1",
+      first_name: "Example",
+      last_name: "Person",
+      domain: "example.com"
+    }]
+  });
+  assert.deepEqual(examplesByTool.get("airscale_extract_company_profile"), {
+    linkedin_profile_url: "https://www.linkedin.com/company/example-company"
+  });
+  assert.deepEqual(examplesByTool.get("airscale_start_companies_export"), {
+    filters: { companyName: "Example Company" },
+    max_rows: 1,
+    format: "csv",
+    confirm_credit_spend: true
+  });
+  assert.deepEqual(examplesByTool.get("airscale_start_people_export"), {
+    query: { companyDomain: { include: ["example.com"] } },
+    max_rows: 1,
+    format: "csv",
+    confirm_credit_spend: true
+  });
+  assert.deepEqual(examplesByTool.get("airscale_create_contact_enrichment_batch"), {
+    name: "Example contact enrichment batch"
+  });
+  assert.deepEqual(examplesByTool.get("airscale_add_contacts_to_enrichment_batch"), {
+    batch_id: "example-batch-id",
+    contacts: [{
+      custom_id: "example-contact-1",
+      first_name: "Example",
+      last_name: "Person",
+      domain: "example.com"
+    }]
+  });
+  assert.deepEqual(examplesByTool.get("airscale_start_contact_enrichment_export"), {
+    batch_id: "example-batch-id",
+    enrichments: ["work_email"],
+    format: "csv",
+    confirm_credit_spend: true
+  });
 });
 
-test("rendered Markdown tables have exactly their declared columns and no trailing blank cell", () => {
+test("documentation safety invariant rejects prior empty and default-spend examples", () => {
+  assert.throws(() => assertDocumentationSafeArguments("airscale_find_companies", {}), /real filter/);
+  assert.throws(() => assertDocumentationSafeArguments("airscale_find_email", {}), /complete supported identity/);
+  assert.throws(
+    () => assertDocumentationSafeArguments("airscale_find_email_bulk", {
+      webhook_url: "https://hooks.example.com/airscale",
+      inputs: [{ custom_id: "example-custom-id" }]
+    }),
+    /contact identity/
+  );
+  assert.throws(
+    () => assertDocumentationSafeArguments("airscale_start_companies_export", { confirm_credit_spend: true }),
+    /cap the paid example/
+  );
+  assert.throws(
+    () => assertDocumentationSafeArguments("airscale_start_people_export", {
+      query: { firstname: { include: ["example"] } },
+      confirm_credit_spend: true
+    }),
+    /cap the paid example/
+  );
+});
+
+test("escaped-pipe-aware parsing proves exact input and summary table cell counts", () => {
+  assert.deepEqual(
+    parseMarkdownTableRow("| purpose with \\| delimiter | Sync |"),
+    ["purpose with \\| delimiter", "Sync"]
+  );
+
   const source = renderCatalog(readContract());
-  for (const line of source.split("\n").filter((candidate) => candidate.startsWith("|"))) {
-    assert.doesNotMatch(line, /\| \|$/, line);
+  let expectedCells = null;
+  let inputRows = 0;
+  let summaryRows = 0;
+  for (const line of source.split("\n")) {
+    if (line === "| Field | Type | Required | Description | Constraints |") expectedCells = 5;
+    else if (line === "| Tool | Purpose | Credit behavior | Execution |") expectedCells = 4;
+    else if (!line.startsWith("|")) {
+      expectedCells = null;
+      continue;
+    }
+    if (line.startsWith("|") && expectedCells !== null) {
+      assert.equal(parseMarkdownTableRow(line).length, expectedCells, line);
+      if (!line.includes("---")) {
+        if (expectedCells === 5) inputRows += 1;
+        else summaryRows += 1;
+      }
+    }
   }
+  assert.ok(inputRows > 22, "input headers and rendered field rows were parsed");
+  assert.equal(summaryRows, 26, "four category headers plus twenty-two tool summary rows were parsed");
+
+  const proseContract = readContract();
+  proseContract.tools[0].description = "Backslash \\| pipe";
+  const proseSummaryRow = renderCatalog(proseContract).split("\n")
+    .find((line) => line.startsWith("| [`airscale_check_credits`]"));
+  assert.equal(parseMarkdownTableRow(proseSummaryRow).length, 4);
+
+  const propertyRows = fixtureInputRows({
+    type: "object",
+    required: ["a|b"],
+    properties: { "a|b": { type: "string", description: "Backslash \\| pipe" } },
+    additionalProperties: false
+  });
+  assert.equal(propertyRows.length, 1);
+  assert.equal(parseMarkdownTableRow(propertyRows[0]).length, 5);
 });
 
 test("example synthesis fails closed with a named error when a required value cannot be generated", () => {
@@ -441,6 +633,148 @@ test("example synthesis explicitly covers arrays, objects, enums, consts, and fo
   });
 });
 
+test("example synthesis rejects oversized arrays and strings before allocation", () => {
+  assert.throws(() => synthesizeFixtureArguments({
+    type: "object",
+    required: ["items"],
+    properties: { items: { type: "array", minItems: 20_000, items: { type: "string" } } }
+  }), (error) => error instanceof ExampleSynthesisError && /array item budget/i.test(error.message));
+
+  assert.throws(() => synthesizeFixtureArguments({
+    type: "object",
+    required: ["value"],
+    properties: { value: { type: "string", minLength: 1_000_000 } }
+  }), (error) => error instanceof ExampleSynthesisError && /string length budget/i.test(error.message));
+
+  assert.throws(() => synthesizeFixtureArguments({
+    type: "object",
+    required: ["value"],
+    properties: { value: { type: "string", maxLength: 1_000_000_000 } }
+  }), (error) => error instanceof ExampleSynthesisError && /string length budget/i.test(error.message));
+
+  assert.throws(() => synthesizeFixtureArguments({
+    type: "object",
+    required: ["value"],
+    properties: { value: { enum: Array.from({ length: 129 }, (_, index) => index) } }
+  }), (error) => error instanceof ExampleSynthesisError && /enum value budget/i.test(error.message));
+});
+
+test("example synthesis rejects broad combinators before candidate search", () => {
+  assert.throws(() => synthesizeFixtureArguments({
+    type: "object",
+    required: ["value"],
+    properties: {
+      value: {
+        anyOf: Array.from({ length: 129 }, (_, index) => ({ const: index }))
+      }
+    }
+  }), (error) => error instanceof ExampleSynthesisError && /combinator branch budget/i.test(error.message));
+});
+
+test("example synthesis rejects deep nesting, local ref chains, and cycles", () => {
+  let nested = { type: "string" };
+  for (let index = 0; index < 80; index += 1) {
+    nested = { type: "object", required: ["next"], properties: { next: nested } };
+  }
+  assert.throws(
+    () => synthesizeFixtureArguments(nested),
+    (error) => error instanceof ExampleSynthesisError && /recursion depth budget/i.test(error.message)
+  );
+
+  const definitions = {};
+  for (let index = 0; index < 40; index += 1) {
+    definitions[`node${index}`] = index === 39
+      ? { type: "string" }
+      : { $ref: `#/$defs/node${index + 1}` };
+  }
+  assert.throws(() => synthesizeFixtureArguments({
+    type: "object",
+    $defs: definitions,
+    required: ["value"],
+    properties: { value: { $ref: "#/$defs/node0" } }
+  }), (error) => error instanceof ExampleSynthesisError && /reference depth budget/i.test(error.message));
+
+  assert.throws(() => synthesizeFixtureArguments({
+    type: "object",
+    $defs: { loop: { $ref: "#/$defs/loop" } },
+    required: ["value"],
+    properties: { value: { $ref: "#/$defs/loop" } }
+  }), (error) => error instanceof ExampleSynthesisError && /recursive schema reference/i.test(error.message));
+});
+
+test("example synthesis rejects arguments over the serialized byte budget", () => {
+  const properties = Object.fromEntries(Array.from(
+    { length: 100 },
+    (_, index) => [`field_${index}`, { type: "string", minLength: 200 }]
+  ));
+  assert.throws(() => synthesizeFixtureArguments({
+    type: "object",
+    required: Object.keys(properties),
+    properties,
+    additionalProperties: false
+  }), (error) => error instanceof ExampleSynthesisError && /serialized example byte budget/i.test(error.message));
+});
+
+test("input table conjoins referenced and sibling constraints", () => {
+  assert.deepEqual(fixtureInputRows({
+    type: "object",
+    $defs: {
+      nonnegative: {
+        type: "integer",
+        minimum: 0,
+        description: "A nonnegative integer."
+      }
+    },
+    required: ["value"],
+    properties: {
+      value: {
+        $ref: "#/$defs/nonnegative",
+        minimum: 5,
+        maximum: 10,
+        description: "A narrow bounded value."
+      }
+    },
+    additionalProperties: false
+  }), [
+    "| `value` | `integer` | Yes | A narrow bounded value. | minimum: 5; maximum: 10 |"
+  ]);
+});
+
+test("input table resolves top-level ref and allOf properties", () => {
+  assert.deepEqual(fixtureInputRows({
+    $defs: {
+      input: {
+        type: "object",
+        required: ["alpha"],
+        properties: {
+          alpha: { type: "string", minLength: 2, description: "Alpha value." }
+        },
+        additionalProperties: false
+      }
+    },
+    $ref: "#/$defs/input"
+  }), [
+    "| `alpha` | `string` | Yes | Alpha value. | minimum length: 2 |"
+  ]);
+
+  assert.deepEqual(fixtureInputRows({
+    allOf: [
+      {
+        type: "object",
+        properties: { first: { type: "boolean", description: "First flag." } }
+      },
+      {
+        type: "object",
+        required: ["limit"],
+        properties: { limit: { type: "integer", minimum: 1, description: "Row limit." } }
+      }
+    ]
+  }), [
+    "| `first` | `boolean` | No | First flag. | — |",
+    "| `limit` | `integer` | Yes | Row limit. | minimum: 1 |"
+  ]);
+});
+
 test("public manifest exposes only public metadata, exact schemas, and documentation-safe links", () => {
   const contract = readContract();
   const serialized = renderPublicManifest(contract);
@@ -484,6 +818,40 @@ test("public manifest exposes only public metadata, exact schemas, and documenta
   assert.doesNotMatch(serialized, /sourceFiles|mcp\/airscale-public-api|docs\.airscale\.io/);
   for (const tool of output.tools.filter(({ apiPage }) => apiPage !== null)) {
     assert.match(tool.apiPage, /^\/api-reference\//);
+  }
+});
+
+test("renderers reject hostile tool identifiers and API routes", () => {
+  for (const [field, value, expected] of [
+    ["name", "airscale_bad`\n<script>", /tool name grammar/i],
+    ["anchor", "airscale-good\"><script>", /anchor grammar/i],
+    ["operationId", "bad](javascript:alert(1))", /operation id grammar/i],
+    ["apiPage", "/api-reference/../../admin", /API page route grammar/i]
+  ]) {
+    const contract = readContract();
+    contract.tools[0][field] = value;
+    assert.throws(() => renderCatalog(contract), expected, field);
+    assert.throws(() => renderPublicManifest(contract), expected, field);
+  }
+});
+
+test("catalog escapes table delimiters and MDX expression delimiters in prose", () => {
+  const contract = readContract();
+  contract.tools[0].description = "Pipe | value with {synthetic} text.";
+  const source = renderCatalog(contract);
+  assert.match(source, /Pipe \\| value with &#123;synthetic&#125; text\./);
+  assert.doesNotMatch(source, /\{synthetic\}/);
+});
+
+test("renderers reject active markup and unsafe prose URLs", () => {
+  for (const value of [
+    "Safe-looking text <script>alert(1)</script>",
+    "Read [this](javascript:alert(1))."
+  ]) {
+    const contract = readContract();
+    contract.tools[0].description = value;
+    assert.throws(() => renderCatalog(contract), /unsafe contract prose/i);
+    assert.throws(() => renderPublicManifest(contract), /unsafe contract prose/i);
   }
 });
 
@@ -534,6 +902,80 @@ test("write mode creates exact files atomically and repeated writes are byte-ide
     assert.deepEqual(readFileSync(catalogPath), beforeCatalog);
     assert.deepEqual(readFileSync(publicPath), beforePublic);
     assertNoTransactionFiles(directory);
+  });
+});
+
+test("a later writer recovers crash-interrupted backup, install, and cleanup phases", async () => {
+  await inTemporaryDirectory(async (directory) => {
+    for (const phase of ["initial-journal-write", "backup", "first-install", "second-install", "cleanup"]) {
+      const phaseDirectory = join(directory, phase);
+      mkdirSync(phaseDirectory);
+      const catalogPath = join(phaseDirectory, "tools.mdx");
+      const publicPath = join(phaseDirectory, "mcp-tools.json");
+      writeFileSync(catalogPath, "old catalog\n");
+      writeFileSync(publicPath, "old public\n");
+
+      const crashed = crashWriterAt(phase, catalogPath, publicPath);
+      assert.equal(crashed.signal, "SIGKILL", `${phase}: ${crashed.stderr}`);
+      assert.ok(
+        readdirSync(phaseDirectory).some((name) => name.includes(".mcp-pair-transaction.json")),
+        `${phase} must leave a recovery journal`
+      );
+
+      await run(["--write", "--catalog", catalogPath, "--public", publicPath]);
+      assert.equal(readFileSync(catalogPath, "utf8"), renderCatalog(readContract()), phase);
+      assert.equal(readFileSync(publicPath, "utf8"), renderPublicManifest(readContract()), phase);
+      assertNoTransactionFiles(phaseDirectory);
+    }
+  });
+});
+
+test("check mode fails closed without mutating an incomplete transaction journal", async () => {
+  await inTemporaryDirectory(async (directory) => {
+    const catalogPath = join(directory, "tools.mdx");
+    const publicPath = join(directory, "mcp-tools.json");
+    const journalPath = `${catalogPath}.mcp-pair-transaction.json`;
+    writeFileSync(catalogPath, renderCatalog(readContract()));
+    writeFileSync(publicPath, renderPublicManifest(readContract()));
+    writeFileSync(journalPath, "incomplete transaction\n");
+    const before = readdirSync(directory).map((name) => [name, readFileSync(join(directory, name))]);
+
+    await assert.rejects(
+      run(["--check", "--catalog", catalogPath, "--public", publicPath]),
+      /incomplete MCP output transaction/i
+    );
+    assert.deepEqual(
+      readdirSync(directory).map((name) => [name, readFileSync(join(directory, name))]),
+      before
+    );
+  });
+});
+
+test("failed journal recovery preserves the only backup and journal", async () => {
+  await inTemporaryDirectory(async (directory) => {
+    const catalogPath = join(directory, "tools.mdx");
+    const publicPath = join(directory, "mcp-tools.json");
+    writeFileSync(catalogPath, "old catalog\n");
+    writeFileSync(publicPath, "old public\n");
+    const crashed = crashWriterAt("backup", catalogPath, publicPath);
+    assert.equal(crashed.signal, "SIGKILL", crashed.stderr);
+
+    await assert.rejects(
+      run(["--write", "--catalog", catalogPath, "--public", publicPath], {
+        fsImpl: {
+          renameSync(source, destination) {
+            if (source.endsWith(".bak") && destination === catalogPath) throw new Error("recovery restore failed");
+            return renameSync(source, destination);
+          }
+        }
+      }),
+      (error) => error?.name === "GeneratedPairTransactionError" && /recovery.*incomplete/i.test(error.message)
+    );
+
+    const backups = transactionFiles(directory, ".bak");
+    assert.ok(backups.length >= 1);
+    assert.ok(backups.some((name) => readFileSync(join(directory, name), "utf8") === "old catalog\n"));
+    assert.equal(transactionFiles(directory, ".mcp-pair-transaction.json").length, 1);
   });
 });
 
