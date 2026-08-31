@@ -2,129 +2,16 @@
 title: "People URL finder"
 description: "Find a professional profile URL from person and company details."
 canonical: "https://airscale.mintlify.app/api-reference/people-url-finder"
+openapi: "/openapi.json POST /v1/url-search-people"
 ---
 
-Identify a person by name and company, then return a matching professional profile URL when one is found.
+Identify a person by first name, last name, and company, then return a matching professional profile URL when one is found.
 
-<Badge color="blue">POST</Badge> `/v1/url-search-people`
+<Note>
+The limit is 6 requests per second per workspace. A successful result costs 0.5 credits; `not_found` is not charged.
+</Note>
 
-| Property | Value |
-| --- | --- |
-| Method | `POST` |
-| Endpoint | `https://api.airscale.io/v1/url-search-people` |
-| Execution | Synchronous |
-| Authentication | Bearer API key |
-| Rate limit | 6 requests per second per workspace |
-| Request body limit | 256 KiB |
-| Airscale credit cost | 0.5 credits only when the response has `status: "success"`; `not_found` is not charged. |
-
-## Request
-
-All three fields are required non-empty strings.
-
-| Field | Type | Required | Description |
-| --- | --- | --- | --- |
-| `first_name` | string | Yes | Person's first name. |
-| `last_name` | string | Yes | Person's last name. |
-| `company_name` | string | Yes | Current company name or company domain used to identify the person. |
-
-```json
-{
-  "first_name": "Example",
-  "last_name": "Person",
-  "company_name": "Example Labs"
-}
-```
-
-## Response
-
-A successful match returns `200 OK`:
-
-```json
-{
-  "status": "success",
-  "url": "https://www.linkedin.com/in/example-person-000000"
-}
-```
-
-| Field | Type | Description |
-| --- | --- | --- |
-| `status` | string | `success` or `not_found`. |
-| `url` | string | Matched profile URL. Present only on success. |
-
-When no matching profile is found, the endpoint returns `200 OK` without charging credits:
-
-```json
-{
-  "status": "not_found"
-}
-```
-
-## Errors
-
-| Status | Cause | Recovery |
-| --- | --- | --- |
-| `400 Bad Request` | The JSON is invalid or a required field is missing or empty. | Send non-empty `first_name`, `last_name`, and `company_name` strings. |
-| `401 Unauthorized` | The Bearer token is missing or invalid. | Add the current workspace API key to the `Authorization` header. |
-| `403 Forbidden` | The workspace has fewer than 0.5 credits. | Add credits before retrying. |
-| `413 Content Too Large` | The request body exceeds 256 KiB. | Remove unrelated fields and resend the request. |
-| `429 Too Many Requests` | The workspace reached 6 requests in the current second. | Retry in a later second with bounded exponential backoff. |
-| `502 Bad Gateway` | API-key validation is temporarily unavailable. | Retry with bounded backoff after confirming the key is current. |
-| `503 Service Unavailable` | The credit reservation service is temporarily unavailable. | Retry with the same input after the service recovers. |
-| `500 Internal Server Error` | An unexpected worker error occurred. | Retry once with bounded backoff, then contact support with the timestamp. |
-
-## Examples
-
-<CodeGroup>
-```bash cURL
-curl --request POST \
-  --url https://api.airscale.io/v1/url-search-people \
-  --header "Authorization: Bearer $AIRSCALE_API_KEY" \
-  --header "Content-Type: application/json" \
-  --data '{
-    "first_name": "Example",
-    "last_name": "Person",
-    "company_name": "Example Labs"
-  }'
-```
-
-```python Python
-import os
-import requests
-
-response = requests.post(
-    "https://api.airscale.io/v1/url-search-people",
-    headers={"Authorization": f"Bearer {os.environ['AIRSCALE_API_KEY']}"},
-    json={
-        "first_name": "Example",
-        "last_name": "Person",
-        "company_name": "Example Labs",
-    },
-    timeout=65,
-)
-response.raise_for_status()
-print(response.json())
-```
-
-```javascript Node.js
-const apiKey = process.env.AIRSCALE_API_KEY;
-const response = await fetch("https://api.airscale.io/v1/url-search-people", {
-  method: "POST",
-  headers: {
-    Authorization: `Bearer ${apiKey}`,
-    "Content-Type": "application/json",
-  },
-  body: JSON.stringify({
-    first_name: "Example",
-    last_name: "Person",
-    company_name: "Example Labs",
-  }),
-});
-
-if (!response.ok) throw new Error(`Profile URL lookup failed with HTTP ${response.status}`);
-console.log(await response.json());
-```
-</CodeGroup>
+After a `429 Too Many Requests` response, retry in a later second with bounded exponential backoff. Retry transient reservation failures with the same input only after the service recovers.
 
 ## Next step
 

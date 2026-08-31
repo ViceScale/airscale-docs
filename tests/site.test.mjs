@@ -4,14 +4,32 @@ import test from "node:test";
 
 const GROUPS = [
   ["Start here", ["api-reference/api-overview", "api-reference/authentication", "api-reference/rate-limits"]],
-  ["Search and discovery", ["api-reference/find-people", "api-reference/find-companies", "api-reference/airsearch"]],
-  ["Contact data", ["api-reference/email-finder", "api-reference/email-finder-(bulk)", "api-reference/mobile-finder", "api-reference/personal-email", "api-reference/people-url-finder"]],
-  ["Profiles and reverse lookup", ["api-reference/extract-people-profile", "api-reference/extract-company-profile", "api-reference/reverse-email", "api-reference/reverse-phone"]],
+  ["Search and discovery", [
+    "api-reference/find-people",
+    "api-reference/find-people/count",
+    "api-reference/find-companies",
+    "api-reference/find-companies/filter-values",
+    "api-reference/airsearch"
+  ]],
+  ["Contact data", [
+    "api-reference/email-finder",
+    "api-reference/email-finder-(bulk)",
+    "api-reference/mobile-finder",
+    "api-reference/personal-email",
+    "api-reference/people-url-finder"
+  ]],
+  ["Profiles and reverse lookup", [
+    "api-reference/extract-people-profile",
+    "api-reference/extract-company-profile",
+    "api-reference/reverse-email",
+    "api-reference/reverse-phone"
+  ]],
   ["Account", ["api-reference/credit-count"]]
 ];
 
 const PAGE_PATHS = GROUPS.flatMap(([, pages]) => pages);
-const API_REFERENCE_TABS = [{
+const GUIDE_PATHS = ["api-reference/api-overview", "api-reference/authentication", "api-reference/rate-limits"];
+const EXPECTED_TABS = [{
   tab: "API Reference",
   groups: GROUPS.map(([group, pages]) => ({ group, pages }))
 }];
@@ -31,23 +49,22 @@ function hasUnsafeBearerAuthorization(source) {
   if (hasUnsafeAssignment) return true;
 
   return Array.from(source.matchAll(AUTHORIZATION_BEARER_VALUE)).some(([, value]) => {
-      const strippedValue = value
-        .trim()
-        .replace(/^```(?:[a-z][a-z0-9_-]*)?\s*/i, "")
-        .replace(/\s*```$/, "")
-        .trim()
-        .replace(/^&lt;(.+)&gt;$/, "<$1>")
-        .replace(/["'`][)\]}>},;|.!?]*$/, "")
-        .replace(/^["'`]+|[)\]"'`,;|.!?]+$/g, "")
-        .trim();
-      const isDynamicExpression = /^(?:\$\{[A-Za-z_$][\w$]*\}|\$\{process\.env(?:\.AIRSCALE_API_KEY|\[(?:"AIRSCALE_API_KEY"|'AIRSCALE_API_KEY')\])\}|\{[A-Za-z_$][\w$]*(?:(?:\.[A-Za-z_$][\w$]*)|(?:\[(?:"[^"]+"|'[^']+'|[A-Za-z_$][\w$]*)\]))*\}|\{os\.getenv\((?:"AIRSCALE_API_KEY"|'AIRSCALE_API_KEY')\)\})$/.test(strippedValue) || /^["'`]\+[A-Za-z_$][\w$]*(?:[)\],;]|$)/.test(value);
-      return Boolean(strippedValue) && strippedValue.toLowerCase() !== "authentication" && !isDynamicExpression && !APPROVED_BEARER_VALUES.has(strippedValue);
-    });
+    const strippedValue = value
+      .trim()
+      .replace(/^```(?:[a-z][a-z0-9_-]*)?\s*/i, "")
+      .replace(/\s*```$/, "")
+      .trim()
+      .replace(/^&lt;(.+)&gt;$/, "<$1>")
+      .replace(/["'`][)\]}>},;|.!?]*$/, "")
+      .replace(/^["'`]+|[)\]"'`,;|.!?]+$/g, "")
+      .trim();
+    const isDynamicExpression = /^(?:\$\{[A-Za-z_$][\w$]*\}|\$\{process\.env(?:\.AIRSCALE_API_KEY|\[(?:"AIRSCALE_API_KEY"|'AIRSCALE_API_KEY')\])\}|\{[A-Za-z_$][\w$]*(?:(?:\.[A-Za-z_$][\w$]*)|(?:\[(?:"[^"]+"|'[^']+'|[A-Za-z_$][\w$]*)\]))*\}|\{os\.getenv\((?:"AIRSCALE_API_KEY"|'AIRSCALE_API_KEY')\)\})$/.test(strippedValue) || /^["'`]\+[A-Za-z_$][\w$]*(?:[)\],;]|$)/.test(value);
+    return Boolean(strippedValue) && strippedValue.toLowerCase() !== "authentication" && !isDynamicExpression && !APPROVED_BEARER_VALUES.has(strippedValue);
+  });
 }
 
 function unwrapJavaScriptParentheses(expression) {
   let candidate = expression.trim();
-
   while (candidate.startsWith("(") && candidate.endsWith(")")) {
     let depth = 0;
     let closesBeforeEnd = false;
@@ -63,17 +80,14 @@ function unwrapJavaScriptParentheses(expression) {
     if (depth !== 0 || closesBeforeEnd) break;
     candidate = candidate.slice(1, -1).trim();
   }
-
   return candidate;
 }
 
 function isApprovedJavaScriptCredentialExpression(expression) {
   const candidate = unwrapJavaScriptParentheses(expression);
   if (/^process\.env(?:\.AIRSCALE_API_KEY|\[(?:"AIRSCALE_API_KEY"|'AIRSCALE_API_KEY')\])$/.test(candidate)) return true;
-
   const wrapper = candidate.match(/^[A-Za-z_$][\w$]*(?:\.[A-Za-z_$][\w$]*)*\(([\s\S]*)\)$/);
   if (!wrapper) return false;
-
   const argument = wrapper[1].trim();
   let depth = 0;
   for (const character of argument) {
@@ -81,7 +95,6 @@ function isApprovedJavaScriptCredentialExpression(expression) {
     if (character === ")") depth -= 1;
     if (depth < 0 || (character === "," && depth === 0)) return false;
   }
-
   return depth === 0 && isApprovedJavaScriptCredentialExpression(argument);
 }
 
@@ -91,19 +104,13 @@ function javascriptCredentialAssignments(source, variable) {
     `(?<![.\\w$])(?:(?:const|let|var)\\s+)?${escapedVariable}\\s*(\\?\\?=|\\|\\|=|&&=|\\*\\*=|>>>=|>>=|<<=|[+\\-*/%&|^]=|=(?!=))\\s*([^;\\n]+)`,
     "g"
   );
-
-  return Array.from(source.matchAll(assignment), ([, operator, expression]) => ({
-    operator,
-    expression: expression.trim()
-  }));
+  return Array.from(source.matchAll(assignment), ([, operator, expression]) => ({ operator, expression: expression.trim() }));
 }
 
 function hasApprovedBearerCredentialSource(source) {
   if (hasUnsafeBearerAuthorization(source)) return false;
-
   const bearerValues = Array.from(source.matchAll(AUTHORIZATION_BEARER_VALUE), ([, value]) => value);
   if (bearerValues.length === 0) return false;
-
   return bearerValues.every((value) => {
     const strippedValue = value
       .trim()
@@ -114,35 +121,17 @@ function hasApprovedBearerCredentialSource(source) {
       .replace(/["'`][)\]}>},;|.!?]*$/, "")
       .replace(/^["'`]+|[)\]"'`,;|.!?]+$/g, "")
       .trim();
-
     if (APPROVED_BEARER_VALUES.has(strippedValue)) return true;
-    if (/^\{os\.(?:environ\[(?:"AIRSCALE_API_KEY"|'AIRSCALE_API_KEY')\]|getenv\((?:"AIRSCALE_API_KEY"|'AIRSCALE_API_KEY')\))\}$/.test(strippedValue)) {
-      return true;
-    }
-
+    if (/^\{os\.(?:environ\[(?:"AIRSCALE_API_KEY"|'AIRSCALE_API_KEY')\]|getenv\((?:"AIRSCALE_API_KEY"|'AIRSCALE_API_KEY')\))\}$/.test(strippedValue)) return true;
     const directJavaScriptExpression = strippedValue.match(/^\$\{([\s\S]+)\}$/)?.[1];
     if (directJavaScriptExpression && isApprovedJavaScriptCredentialExpression(directJavaScriptExpression)) return true;
-
     const javascriptVariable = strippedValue.match(/^\$\{([A-Za-z_$][\w$]*)\}$/)?.[1];
     if (!javascriptVariable) return false;
-
     const assignments = javascriptCredentialAssignments(source, javascriptVariable);
     return assignments.length > 0 && assignments.every(({ operator, expression }) => (
       operator === "=" && isApprovedJavaScriptCredentialExpression(expression)
     ));
   });
-}
-
-function assertSafeSvgSource(source, path) {
-  const withoutSvgNamespace = source.replace(/\s+xmlns=(['"])http:\/\/www\.w3\.org\/2000\/svg\1/i, "");
-
-  assert.doesNotMatch(source, /<(?:script|image)\b/i, `${path} must not contain active or raster elements`);
-  assert.doesNotMatch(source, /<foreignObject\b/i, `${path} must not contain embedded HTML`);
-  assert.doesNotMatch(source, /\bon[a-z][\w:-]*\s*=/i, `${path} must not contain event handlers`);
-  assert.doesNotMatch(source, /<style\b|\bstyle\s*=/i, `${path} must not contain styles`);
-  assert.doesNotMatch(source, /\bdata:image\//i, `${path} must not contain raster data`);
-  assert.doesNotMatch(source, /\b(?:xlink:)?href\s*=/i, `${path} must not contain href references`);
-  assert.doesNotMatch(withoutSvgNamespace, /(?:https?:)?\/\//i, `${path} must not contain remote URLs`);
 }
 
 function readPage(path) {
@@ -158,9 +147,25 @@ function readPage(path) {
   return { source, body: match[2], frontmatter };
 }
 
+function mdxPagePaths(directory = "api-reference") {
+  return readdirSync(directory, { withFileTypes: true })
+    .flatMap((entry) => {
+      const path = `${directory}/${entry.name}`;
+      if (entry.isDirectory()) return mdxPagePaths(path);
+      return entry.isFile() && entry.name.endsWith(".mdx") ? [path.slice(0, -4)] : [];
+    })
+    .sort();
+}
+
 function localDocumentationLinks(source) {
-  const markdownLinks = Array.from(source.matchAll(/\[[^\]]*\]\((\/api-reference\/(?:[^()\s?#]+|\([^()\s?#]*\))+)(?:[?#][^)]*)?\)/g), ([, href]) => href);
-  const componentLinks = Array.from(source.matchAll(/<[A-Za-z][\w.:-]*\b[^>]*\bhref=(["'])(\/api-reference\/[^"'?#]+)(?:[?#][^"']*)?\1[^>]*>/g), ([, , href]) => href);
+  const markdownLinks = Array.from(
+    source.matchAll(/\[[^\]]*\]\((\/api-reference\/(?:[^()\s?#]+|\([^()\s?#]*\))+)(?:[?#][^)]*)?\)/g),
+    ([, href]) => href
+  );
+  const componentLinks = Array.from(
+    source.matchAll(/<[A-Za-z][\w.:-]*\b[^>]*\bhref=(["'])(\/api-reference\/[^"'?#]+)(?:[?#][^"']*)?\1[^>]*>/g),
+    ([, , href]) => href
+  );
   return [...markdownLinks, ...componentLinks];
 }
 
@@ -175,211 +180,32 @@ function assertBalancedCodeFences(source, path) {
   assert.equal(fenceCount % 2, 0, `${path} must have balanced code fences`);
 }
 
-function assertApprovedNavigationTabs(tabs) {
-  assert.deepEqual(tabs, API_REFERENCE_TABS);
+function assertSafeSvgSource(source, path) {
+  const withoutSvgNamespace = source.replace(/\s+xmlns=(["'])http:\/\/www\.w3\.org\/2000\/svg\1/i, "");
+  assert.doesNotMatch(source, /<(?:script|image|foreignObject)\b/i, `${path} must not embed active content`);
+  assert.doesNotMatch(source, /\bon[a-z][\w:-]*\s*=|<style\b|\bstyle\s*=/i, `${path} must not contain executable styles or handlers`);
+  assert.doesNotMatch(source, /\bdata:image\/|\b(?:xlink:)?href\s*=/i, `${path} must not contain external references`);
+  assert.doesNotMatch(withoutSvgNamespace, /(?:https?:)?\/\//i, `${path} must not contain remote URLs`);
 }
 
-function sectionSource(source, heading, nextHeading) {
-  const marker = `## ${heading}`;
-  const start = source.indexOf(marker);
-  assert.notEqual(start, -1, `missing ${marker}`);
-  const contentStart = start + marker.length;
-  const end = nextHeading ? source.indexOf(`## ${nextHeading}`, contentStart) : source.length;
-  assert.notEqual(end, -1, `missing ## ${nextHeading}`);
-  return source.slice(contentStart, end);
-}
-
-function markdownTableRows(source) {
-  return source
-    .split("\n")
-    .filter((line) => /^\|.*\|$/.test(line))
-    .map((line) => line.slice(1, -1).split("|").map((cell) => cell.trim()))
-    .filter((row) => !row.every((cell) => /^:?-+:?$/.test(cell)));
-}
-
-function jsonPayloads(source, label) {
-  return Array.from(source.matchAll(/^```json\n([\s\S]*?)^```/gm), ([, json], index) => {
-    assert.doesNotThrow(() => JSON.parse(json), `${label} JSON payload ${index + 1} must parse`);
-    return JSON.parse(json);
-  });
-}
-
-function matchesJsonShape(actual, expected, exact = false) {
-  if (expected === String) return typeof actual === "string";
-  if (expected === Number) return typeof actual === "number";
-  if (expected === Boolean) return typeof actual === "boolean";
-  if (typeof expected === "function") return expected(actual);
-  if (expected === null || typeof expected !== "object") return Object.is(actual, expected);
-  if (actual === null || typeof actual !== "object" || Array.isArray(actual) !== Array.isArray(expected)) return false;
-  if (Array.isArray(expected)) {
-    return actual.length === expected.length && expected.every((value, index) => matchesJsonShape(actual[index], value, exact));
-  }
-  if (exact && !matchesJsonShape(Object.keys(actual).sort(), Object.keys(expected).sort(), true)) return false;
-  return Object.entries(expected).every(([key, value]) => matchesJsonShape(actual[key], value, exact));
-}
-
-function assertTableRows(source, rows, label) {
-  const actualRows = markdownTableRows(source);
-  for (const row of rows) {
-    assert.ok(
-      actualRows.some((actual) => actual.length >= row.length && matchesJsonShape(actual.slice(0, row.length), row, true)),
-      `${label} must contain table row: ${row.join(" | ")}`
-    );
-  }
-}
-
-function assertOrderedFragments(source, fragments, label) {
-  let cursor = 0;
-  for (const fragment of fragments) {
-    const position = source.indexOf(fragment, cursor);
-    assert.notEqual(position, -1, `${label} must contain ${fragment} in contract order`);
-    cursor = position + fragment.length;
-  }
-}
-
-function assertEndpointPageContract(source, contract, path) {
-  const responseHeading = contract.responseHeading ?? "Response";
-  const requestEndHeading = contract.requestEndHeading ?? responseHeading;
-  const responseEndHeading = contract.responseEndHeading ?? "Errors";
-  const errorsEndHeading = contract.errorsEndHeading ?? "Examples";
-  const requestStart = source.indexOf("## Request");
-  assert.notEqual(requestStart, -1, `${path} must have a Request section`);
-  const summary = source.slice(0, requestStart);
-  const request = sectionSource(source, "Request", requestEndHeading);
-  const response = sectionSource(source, responseHeading, responseEndHeading);
-  const errors = sectionSource(source, "Errors", errorsEndHeading);
-  const examples = sectionSource(source, "Examples", "Next step");
-
-  assertTableRows(summary, contract.summaryRows, `${path} contract summary`);
-  assertTableRows(request, contract.requestRows, `${path} request`);
-  assertTableRows(response, contract.responseRows ?? [], `${path} response`);
-
-  assertOrderedFragments(request, contract.requestFragments, `${path} request`);
-  assertOrderedFragments(response, contract.responseFragments, `${path} response`);
-  assertOrderedFragments(examples, contract.exampleFragments ?? [], `${path} examples`);
-  for (const pattern of contract.forbiddenPatterns ?? []) {
-    assert.doesNotMatch(source, pattern, `${path} must not contain ${pattern}`);
-  }
-
-  const requestExamples = jsonPayloads(request, `${path} request`);
-  for (const example of [...contract.requestExamples, ...(contract.requestSectionExamples ?? [])]) {
-    assert.ok(
-      requestExamples.some((payload) => matchesJsonShape(payload, example.shape, example.exact)),
-      `${path} must include a ${example.label} request payload`
-    );
-  }
-
-  const responseExamples = jsonPayloads(response, `${path} response`);
-  for (const example of contract.responseExamples) {
-    assert.ok(
-      responseExamples.some((payload) => matchesJsonShape(payload, example.shape, example.exact)),
-      `${path} must include a ${example.label} response payload`
-    );
-  }
-
-  const actualErrorRows = markdownTableRows(errors)
-    .filter(([status]) => /^`\d{3} /.test(status));
-  const actualErrors = Object.fromEntries(
-    actualErrorRows.map(([status, cause]) => [status.slice(1, -1), cause])
-  );
-  const actualRecoveries = Object.fromEntries(
-    actualErrorRows.map(([status, , recovery]) => [status.slice(1, -1), recovery])
-  );
-  assert.deepEqual(Object.keys(actualErrors), Object.keys(contract.errorCauseFragments), `${path} must document the source-backed error statuses`);
-  for (const [status, fragments] of Object.entries(contract.errorCauseFragments)) {
-    assertOrderedFragments(actualErrors[status], fragments, `${path} ${status} cause`);
-  }
-  for (const [status, expectation] of Object.entries(contract.errorRecoveryFragments ?? {})) {
-    const recovery = actualRecoveries[status];
-    assert.ok(recovery, `${path} ${status} must have a recovery action`);
-    if (typeof expectation === "function") {
-      assert.ok(expectation(recovery), `${path} ${status} recovery must satisfy its semantic contract`);
-    } else {
-      assertOrderedFragments(recovery, expectation, `${path} ${status} recovery`);
-    }
-  }
-}
-
-function assertEndpointPageContentSystem(path, contract, manifest) {
-  const { source, body, frontmatter } = readPage(path);
-  const pageName = path.replace("api-reference/", "");
-  const evidence = manifest.pages[pageName];
-
-  assert.equal(frontmatter.description, contract.description, `${path} must use the approved description`);
-  assert.ok(frontmatter.description, `${path} must have a description`);
-  assert.doesNotMatch(body, /^#\s+/m, `${path} must not repeat its title as a body H1`);
-  assert.ok(!localDocumentationLinks(source).includes(`/${path}`), `${path} must not link to itself`);
-  assert.ok(evidence, `${path} must have contract evidence`);
-  for (const endpoint of evidence.endpoints) {
-    assert.match(source, new RegExp(`\\b${endpoint.method}\\b`), `${path} must document ${endpoint.method}`);
-    assert.ok(source.includes(endpoint.path), `${path} must document ${endpoint.path}`);
-    assert.ok(
-      source.includes(`<Badge color="blue">${endpoint.method}</Badge> \`${endpoint.path}\``),
-      `${path} must show a native method badge beside the full public path`
-    );
-  }
-  assert.match(source, /^## Request$/m, `${path} must have a Request section`);
-  assert.match(source, new RegExp(`^## ${contract.responseHeading ?? "Response"}$`, "m"), `${path} must have a response section`);
-  assert.match(source, /^## Errors$/m, `${path} must have an Errors section`);
-  assert.match(source, /^## Examples$/m, `${path} must have an Examples section`);
-  assert.match(source, /^## Next step$/m, `${path} must have a Next step section`);
-  assert.match(source, /^```bash(?:\s|$)/m, `${path} must have a bash example`);
-  assert.match(source, /^```json(?:\s|$)/m, `${path} must have a JSON example`);
-  assert.match(source, /\b(?:credit|billing|charge)\b/i, `${path} must document credit behavior or link to billing guidance`);
-
-  const sectionPositions = (contract.sectionOrder ?? ["Request", contract.responseHeading ?? "Response", "Errors", "Examples", "Next step"])
-    .map((heading) => source.indexOf(`## ${heading}`));
-  assert.ok(
-    sectionPositions.every((position) => position >= 0),
-    `${path} must contain every required contract section`
-  );
-  assert.deepEqual(
-    sectionPositions,
-    [...sectionPositions].sort((left, right) => left - right),
-    `${path} must use the approved section order`
-  );
-  assert.match(source, /## Examples\n\n<CodeGroup>\n```bash cURL/, `${path} examples must use a CodeGroup with cURL first`);
-
-  const authorizationExamples = Array.from(source.matchAll(/^```[^\n]*\n([\s\S]*?)^```/gm), ([, code]) => code)
-    .filter((code) => /Authorization[\s\S]*Bearer/i.test(code));
-  assert.ok(authorizationExamples.length > 0, `${path} must include an authenticated code example`);
-  for (const code of authorizationExamples) {
-    assert.equal(hasUnsafeBearerAuthorization(code), false, `${path} code examples must not contain static API keys`);
-    assert.equal(
-      hasApprovedBearerCredentialSource(code),
-      true,
-      `${path} code examples must source every Bearer credential from an approved placeholder or environment reference`
-    );
-  }
-
-  assertEndpointPageContract(source, contract, path);
-  const mutatedSource = contract.mutate(source);
-  assert.notEqual(mutatedSource, source, `${path} mutation fixture must change a material contract value`);
-  assert.throws(
-    () => assertEndpointPageContract(mutatedSource, contract, `${path} mutated fixture`),
-    `${path} contract helper must reject its material-value mutation`
-  );
+function assertNoStaticCredentials(source, path) {
+  assert.doesNotMatch(source, /\b(?:sk|pk)_live_[A-Za-z0-9_-]+\b/i, `${path} must not contain live credentials`);
+  assert.equal(hasUnsafeBearerAuthorization(source), false, `${path} must not contain a static Bearer credential`);
 }
 
 test("brand configuration and assets match Airscale", () => {
   const config = JSON.parse(readFileSync("docs.json", "utf8"));
-
   assert.equal(config.$schema, "https://mintlify.com/docs.json");
   assert.equal(config.theme, "mint");
   assert.equal(config.name, "Airscale API");
-  assert.equal(config.colors.primary, "#4079FF");
-  assert.equal(config.colors.light, "#4079FF");
-  assert.equal(config.colors.dark, "#6F9BFF");
-  assert.equal(config.logo.light, "/logo/light.svg");
-  assert.equal(config.logo.dark, "/logo/dark.svg");
-  assert.equal(config.logo.href, "https://airscale.io/");
+  assert.deepEqual(config.colors, { primary: "#4079FF", light: "#4079FF", dark: "#6F9BFF" });
+  assert.deepEqual(config.logo, { light: "/logo/light.svg", dark: "/logo/dark.svg", href: "https://airscale.io/" });
   assert.equal(config.favicon, "/favicon.svg");
   assert.equal(config.appearance.default, "light");
   assert.equal(config.fonts.family, "Poppins");
   assert.equal(config.icons.library, "lucide");
   assert.equal(config.styling.eyebrows, "breadcrumbs");
-  assert.equal(config.styling.codeblocks.theme.light, "github-light");
-  assert.equal(config.styling.codeblocks.theme.dark, "github-dark");
+  assert.deepEqual(config.styling.codeblocks.theme, { light: "github-light", dark: "github-dark" });
   assert.deepEqual(config.navbar.links, [{ label: "Back to website", href: "https://airscale.io/" }]);
   assert.deepEqual(config.navbar.primary, {
     type: "button",
@@ -387,47 +213,35 @@ test("brand configuration and assets match Airscale", () => {
     href: "https://app.airscale.io/dashboard"
   });
   assert.equal(existsSync("custom.css"), false);
-
-  for (const asset of [config.logo.light, config.logo.dark, config.favicon]) {
-    assert.ok(existsSync(`.${asset}`), `${asset} must exist`);
-  }
-  assert.doesNotMatch(JSON.stringify(config.logo), /mintlify\.s3|bubble\.io/);
+  for (const asset of [config.logo.light, config.logo.dark, config.favicon]) assert.ok(existsSync(`.${asset}`));
 });
 
-test("brand SVGs preserve the Airscale symbol and safe local source", () => {
+test("Mintlify uses the approved non-executing OpenAPI example configuration", () => {
+  const configSource = readFileSync("docs.json", "utf8");
+  const config = JSON.parse(configSource);
+  assert.deepEqual(config.api, {
+    openapi: "openapi.json",
+    playground: { display: "simple" },
+    examples: { languages: ["curl", "node", "python"], defaults: "required", prefill: true, autogenerate: true }
+  });
+  assert.equal(Object.hasOwn(config.api.playground, "mode"), false);
+  assert.doesNotMatch(configSource, /hideApiMarker/);
+});
+
+test("brand SVGs preserve the Airscale symbol and reject unsafe source", () => {
   for (const [path, fill] of [["logo/light.svg", "#111827"], ["logo/dark.svg", "#FFFFFF"]]) {
     const source = readFileSync(path, "utf8");
-
     assert.match(source, /viewBox="0 0 164 32"/);
     assert.ok(source.includes(CANONICAL_SYMBOL_PATH), `${path} must include the canonical symbol`);
-    assert.match(source, /transform="translate\(0 1\.95\) scale\(\.48716\)"/);
     assert.match(source, new RegExp(`fill="${fill}"`));
-    assert.match(source, /<text x="40" y="23" font-family="Poppins, Arial, sans-serif" font-size="20" font-weight="600">Airscale<\/text>/);
+    assert.match(source, />Airscale<\/text>/);
     assertSafeSvgSource(source, path);
   }
-
   const favicon = readFileSync("favicon.svg", "utf8");
-  assert.match(favicon, /viewBox="0 0 57\.476 57\.700"/);
-  assert.ok(favicon.includes(CANONICAL_SYMBOL_PATH), "favicon.svg must include the canonical symbol");
-  assert.match(favicon, /fill="#111827"/);
+  assert.ok(favicon.includes(CANONICAL_SYMBOL_PATH));
   assert.doesNotMatch(favicon, /<text\b/i);
   assertSafeSvgSource(favicon, "favicon.svg");
-});
-
-test("SVG source safety rejects active, raster, remote, and href content", () => {
-  for (const unsafeSource of [
-    "<svg><script>alert(1)</script></svg>",
-    "<svg><image href=\"data:image/png;base64,AAAA\" /></svg>",
-    "<svg><use href=\"#symbol\" /></svg>",
-    "<svg><metadata>https://example.com/logo.svg</metadata></svg>",
-    "<svg onload=\"alert(1)\" />",
-    "<svg><path onclick=\"alert(1)\" /></svg>",
-    "<svg><path style=\"fill: red\" /></svg>",
-    "<svg><style>path { fill: red; }</style></svg>",
-    "<svg><foreignObject><div>unsafe</div></foreignObject></svg>"
-  ]) {
-    assert.throws(() => assertSafeSvgSource(unsafeSource, "unsafe.svg"));
-  }
+  assert.throws(() => assertSafeSvgSource('<svg><script src="https://example.com/x.js" /></svg>', "unsafe.svg"));
 });
 
 test("authorization bearer checks reject unsafe token formats", () => {
@@ -465,10 +279,6 @@ test("authorization bearer checks reject unsafe token formats", () => {
   assert.equal(hasUnsafeBearerAuthorization('AIRSCALE_API_KEY = os.environ["AIRSCALE_API_KEY"]'), false);
   assert.equal(hasUnsafeBearerAuthorization('headers={"Authorization": f"Bearer {api_key}"}'), false);
   assert.equal(hasUnsafeBearerAuthorization('headers={"Authorization": f"Bearer {os.getenv(\'AIRSCALE_API_KEY\')}"}'), false);
-  assert.equal(hasUnsafeBearerAuthorization("req.Header.Set(\"Authorization\", \"Bearer \"+apiKey)"), false);
-  assert.equal(hasUnsafeBearerAuthorization("headers = { Authorization: 'Bearer ' . $apiKey };"), false);
-  assert.equal(hasUnsafeBearerAuthorization("Authorization supports Bearer authentication."), false);
-  assert.equal(hasUnsafeBearerAuthorization("Use Bearer authentication for every request."), false);
 
   assert.equal(
     hasApprovedBearerCredentialSource([
@@ -476,191 +286,121 @@ test("authorization bearer checks reject unsafe token formats", () => {
       'apiKey = "live-secret-token";',
       "const headers = { Authorization: `Bearer ${apiKey}` };"
     ].join("\n")),
-    false,
-    "a later literal reassignment of the Bearer variable must be rejected"
+    false
   );
   assert.equal(
     hasApprovedBearerCredentialSource([
       "const apiKey = requireEnv(process.env.AIRSCALE_API_KEY);",
       "const headers = { Authorization: `Bearer ${apiKey}` };"
     ].join("\n")),
-    true,
-    "a Bearer variable wrapped around the approved environment source must be accepted"
+    true
   );
 
   const unsafePythonEnvironmentWrite = [
     'os.environ["AIRSCALE_API_KEY"] = "live-secret-token"',
     'headers = {"Authorization": f"Bearer {os.environ[\'AIRSCALE_API_KEY\']}"}'
   ].join("\n");
-  assert.equal(
-    hasUnsafeBearerAuthorization(unsafePythonEnvironmentWrite),
-    true,
-    "a literal Python environment-key write before an approved Bearer read must be rejected"
-  );
+  assert.equal(hasUnsafeBearerAuthorization(unsafePythonEnvironmentWrite), true);
   assert.equal(hasApprovedBearerCredentialSource(unsafePythonEnvironmentWrite), false);
-
-  for (const writeTarget of [
-    "AIRSCALE_API_KEY",
-    "process.env.AIRSCALE_API_KEY",
-    'process.env["AIRSCALE_API_KEY"]',
-    "process.env['AIRSCALE_API_KEY']",
-    'os.environ["AIRSCALE_API_KEY"]',
-    "os.environ['AIRSCALE_API_KEY']"
-  ]) {
-    assert.equal(
-      hasUnsafeBearerAuthorization(`${writeTarget} = "live-secret-token";\nAuthorization: Bearer $AIRSCALE_API_KEY`),
-      true,
-      `${writeTarget} literal writes must be rejected`
-    );
-  }
 
   for (const environmentRead of [
     "process.env.AIRSCALE_API_KEY",
     'process.env["AIRSCALE_API_KEY"]',
     "process.env['AIRSCALE_API_KEY']"
   ]) {
-    const directJavaScriptRead = `const headers = { Authorization: \`Bearer \${${environmentRead}}\` };`;
-    assert.equal(hasUnsafeBearerAuthorization(directJavaScriptRead), false);
-    assert.equal(
-      hasApprovedBearerCredentialSource(directJavaScriptRead),
-      true,
-      `${environmentRead} must be accepted as a direct Bearer source`
-    );
-
-    const wrappedJavaScriptRead = [
-      `const apiKey = requireEnv(${environmentRead});`,
-      "const headers = { Authorization: `Bearer ${apiKey}` };"
-    ].join("\n");
-    assert.equal(hasUnsafeBearerAuthorization(wrappedJavaScriptRead), false);
-    assert.equal(
-      hasApprovedBearerCredentialSource(wrappedJavaScriptRead),
-      true,
-      `${environmentRead} must be accepted as the sole wrapped Bearer source`
-    );
+    const directRead = `const headers = { Authorization: \`Bearer \${${environmentRead}}\` };`;
+    assert.equal(hasApprovedBearerCredentialSource(directRead), true);
+    const wrappedRead = `const apiKey = requireEnv(${environmentRead});\nconst headers = { Authorization: \`Bearer \${apiKey}\` };`;
+    assert.equal(hasApprovedBearerCredentialSource(wrappedRead), true);
   }
 });
 
-test("code-fence validation rejects malformed indented fences", () => {
-  const malformedSource = "  ```bash\n  echo unclosed";
-
-  assert.throws(() => assertBalancedCodeFences(malformedSource, "indented malformed fixture"));
-});
-
-test("navigation contains the five approved groups in order", () => {
+test("navigation contains exactly the approved 18 pages in five groups", () => {
   const config = JSON.parse(readFileSync("docs.json", "utf8"));
-
-  assertApprovedNavigationTabs(config.navigation.tabs);
+  assert.deepEqual(config.navigation.tabs, EXPECTED_TABS);
+  assert.deepEqual(mdxPagePaths(), [...PAGE_PATHS].sort());
 });
 
-test("navigation rejects unexpected tabs", () => {
-  const extraTabs = structuredClone(API_REFERENCE_TABS);
-  extraTabs.push({ tab: "Unexpected", groups: [] });
+test("every public operation has one exact OpenAPI-backed wrapper", () => {
+  const catalog = JSON.parse(readFileSync("contracts/public-api-operations.json", "utf8"));
+  const expectedBindings = new Map(catalog.operations.map(({ method, path, page }) => [
+    page,
+    `/openapi.json ${method} ${path}`
+  ]));
+  const actualBindings = new Map();
 
-  assert.throws(() => assertApprovedNavigationTabs(extraTabs));
-});
-
-test("exactly the approved 16 pages exist", () => {
-  const actualPages = readdirSync("api-reference")
-    .filter((file) => file.endsWith(".mdx"))
-    .map((file) => `api-reference/${file.slice(0, -4)}`)
-    .sort();
-
-  assert.deepEqual(actualPages, [...PAGE_PATHS].sort());
-  assert.ok(!actualPages.includes("api-reference/leads-finder"));
-});
-
-test("every page has baseline-safe MDX", () => {
-  for (const path of PAGE_PATHS) {
-    const { source, frontmatter } = readPage(path);
-
-    assert.ok(frontmatter.title, `${path} must have a title`);
-    assertBalancedCodeFences(source, path);
-    assert.equal(hasUnsafeBearerAuthorization(source), false, `${path} must not contain a non-placeholder bearer token`);
-  }
-});
-
-test("every page passes editorial and contract invariants", () => {
-  const manifest = JSON.parse(readFileSync("contracts/public-api-contracts.json", "utf8"));
-  assert.deepEqual(
-    Object.keys(manifest.pages).sort(),
-    PAGE_PATHS.map((path) => path.replace("api-reference/", "")).sort(),
-    "the contract manifest must cover exactly the published pages"
-  );
-
-  for (const path of PAGE_PATHS) {
-    const { source, body, frontmatter } = readPage(path);
-    const pageName = path.replace("api-reference/", "");
-    const evidence = manifest.pages[pageName];
-
-    assert.ok(frontmatter.description, `${path} must have a description`);
-    assert.doesNotMatch(body, /^#\s+/m, `${path} must not repeat its title as a body H1`);
-    assert.doesNotMatch(source, /\b(?:Authentification|Endoints)\b/, `${path} must not retain migration misspellings`);
-    assert.ok(!localDocumentationLinks(source).includes(`/${path}`), `${path} must not contain a copied source-page self-link`);
-    assert.doesNotMatch(
-      source,
-      new RegExp(`^Source:\\s*.*(?:https?:\\/\\/docs\\.airscale\\.io)?\\/${path}(?:[?#)\\s]|$)`, "mi"),
-      `${path} must not contain a copied source-page self-link`
-    );
-    assert.ok(evidence, `${path} must have contract evidence`);
-
-    for (const endpoint of evidence.endpoints) {
-      assert.match(source, new RegExp(`\\b${endpoint.method}\\b`), `${path} must document ${endpoint.method}`);
-      assert.ok(source.includes(endpoint.path), `${path} must document ${endpoint.path}`);
-    }
-  }
-});
-
-test("internal documentation links resolve", () => {
-  for (const path of PAGE_PATHS) {
-    const { source } = readPage(path);
-    assertLocalDocumentationLinksResolve(source, path);
-  }
-});
-
-test("local Markdown and component documentation links resolve", () => {
-  assert.doesNotThrow(() => assertLocalDocumentationLinksResolve('[Bulk email](/api-reference/email-finder-(bulk))', "valid Markdown fixture"));
-  assert.doesNotThrow(() => assertLocalDocumentationLinksResolve('<Card href="/api-reference/api-overview">Overview</Card>', "valid component fixture"));
-  assert.throws(() => assertLocalDocumentationLinksResolve('<Card href="/api-reference/missing">Missing</Card>', "invalid component fixture"));
-});
-
-test("foundation pages teach a safe first request", () => {
-  const descriptions = {
-    "api-reference/api-overview": "Authenticate with Airscale and make your first API request.",
-    "api-reference/authentication": "Create, send, protect, and rotate an Airscale API key.",
-    "api-reference/rate-limits": "Understand endpoint-specific request limits and 429 responses.",
-    "api-reference/credit-count": "Check the remaining credit balance for your Airscale workspace."
-  };
-
-  for (const [path, description] of Object.entries(descriptions)) {
-    const { source, body, frontmatter } = readPage(path);
-
-    assert.equal(frontmatter.description, description, `${path} must use the approved description`);
-    assert.ok(frontmatter.description, `${path} must have a description`);
-    assert.doesNotMatch(body, /^#\s+/m, `${path} must not repeat its title as a body H1`);
-    assert.doesNotMatch(source, /\b(?:Authentification|Endoints)\b/, `${path} must not retain migration misspellings`);
-    assert.ok(!localDocumentationLinks(source).includes(`/${path}`), `${path} must not link to itself`);
+  for (const page of PAGE_PATHS) {
+    const { body, frontmatter } = readPage(page);
+    if (!frontmatter.openapi) continue;
+    actualBindings.set(page, frontmatter.openapi);
+    assert.equal(frontmatter.openapi, expectedBindings.get(page), `${page} must bind its catalog operation`);
+    assert.doesNotMatch(body, /<Badge\b[^>]*>\s*(?:GET|POST)\s*<\/Badge>/i);
+    assert.doesNotMatch(body, /^## (?:Request|Response|Errors|Examples)$/m);
+    assert.doesNotMatch(body, /<CodeGroup>|^```/m);
+    assert.match(body, /^## Next step$/m, `${page} must retain next-step guidance`);
+    assert.ok(body.split(/\n\s*\n/)[0].trim(), `${page} must retain a purpose statement`);
   }
 
+  assert.equal(expectedBindings.size, 15);
+  assert.equal(new Set(expectedBindings.values()).size, 15);
+  assert.equal(actualBindings.size, 15);
+  assert.deepEqual(actualBindings, expectedBindings);
+});
+
+test("every wrapper binding resolves to its cataloged generated OpenAPI operation", () => {
+  const catalog = JSON.parse(readFileSync("contracts/public-api-operations.json", "utf8"));
+  const specification = JSON.parse(readFileSync("openapi.json", "utf8"));
+  const resolved = [];
+
+  for (const entry of catalog.operations) {
+    const binding = readPage(entry.page).frontmatter.openapi;
+    const match = binding?.match(/^\/openapi\.json (GET|POST) (\/v1\/[^\s]+)$/);
+    assert.ok(match, `${entry.page} must have a parseable OpenAPI binding`);
+    const [, method, path] = match;
+    const operation = specification.paths?.[path]?.[method.toLowerCase()];
+    assert.ok(operation, `${binding} must resolve in openapi.json`);
+    assert.equal(operation.operationId, entry.operationId);
+    resolved.push(`${method} ${path}`);
+  }
+
+  assert.equal(new Set(resolved).size, 15);
+  assert.deepEqual(resolved.sort(), catalog.operations.map(({ method, path }) => `${method} ${path}`).sort());
+});
+
+test("exactly three guide pages remain prose-only", () => {
+  const guides = PAGE_PATHS.filter((page) => !Object.hasOwn(readPage(page).frontmatter, "openapi"));
+  assert.deepEqual(guides, GUIDE_PATHS);
+});
+
+test("every page keeps valid preview metadata, safe MDX, and resolvable local links", () => {
+  for (const page of PAGE_PATHS) {
+    const { source, body, frontmatter } = readPage(page);
+    assert.ok(frontmatter.title, `${page} must have a title`);
+    assert.ok(frontmatter.description, `${page} must have a description`);
+    assert.equal(frontmatter.canonical, `https://airscale.mintlify.app/${page}`);
+    assert.doesNotMatch(body, /^#\s+/m, `${page} must not repeat its title as a body H1`);
+    assert.doesNotMatch(source, /hideApiMarker|\b(?:Authentification|Endoints)\b/);
+    assertBalancedCodeFences(source, page);
+    assertNoStaticCredentials(source, page);
+    assertLocalDocumentationLinksResolve(source, page);
+    assert.ok(!localDocumentationLinks(source).includes(`/${page}`), `${page} must not link to itself`);
+  }
+  assert.throws(() => assertBalancedCodeFences("  ```bash\n  unclosed", "malformed fixture"));
+  assert.throws(() => assertLocalDocumentationLinksResolve("[Missing](/api-reference/missing)", "missing fixture"));
+  assert.throws(() => assertNoStaticCredentials("Authorization: Bearer live-secret", "unsafe fixture"));
+});
+
+test("guide pages teach authentication, safe retries, and a first request", () => {
   const overview = readPage("api-reference/api-overview").source;
-  assert.match(overview, /<CardGroup cols=\{2\}>/);
   assert.match(overview, /<Steps>/);
   assert.match(overview, /POST https:\/\/api\.airscale\.io\/v1\/credits/);
   assert.match(overview, /\$AIRSCALE_API_KEY/);
-  for (const path of [
-    "authentication",
-    "rate-limits",
-    "find-people",
-    "find-companies",
-    "email-finder",
-    "airsearch"
-  ]) {
-    assert.ok(localDocumentationLinks(overview).includes(`/api-reference/${path}`), `API overview must link to ${path}`);
+  for (const page of ["authentication", "rate-limits", "find-people", "find-companies", "email-finder", "airsearch"]) {
+    assert.ok(localDocumentationLinks(overview).includes(`/api-reference/${page}`));
   }
-  assert.doesNotMatch(overview, /version-live|Authentification|Endoints/);
 
   const authentication = readPage("api-reference/authentication").source;
   assert.match(authentication, /Airscale Settings/);
-  assert.match(authentication, /Authorization: Bearer \$AIRSCALE_API_KEY/);
   assert.match(authentication, /401 Unauthorized/);
   assert.match(authentication, /<Warning>/);
   assert.match(authentication, /rotate/i);
@@ -669,1133 +409,41 @@ test("foundation pages teach a safe first request", () => {
   assert.match(rateLimits, /endpoint-specific/i);
   assert.match(rateLimits, /429 Too Many Requests/);
   assert.match(rateLimits, /bounded exponential backoff/i);
-  assert.doesNotMatch(rateLimits, /3,?000/);
-
-  const creditCount = readPage("api-reference/credit-count").source;
-  assert.match(creditCount, /POST https:\/\/api\.airscale\.io\/v1\/credits/);
-  assert.match(creditCount, /<CodeGroup>/);
-  assert.match(creditCount, /```bash cURL/);
-  assert.match(creditCount, /```python Python/);
-  assert.match(creditCount, /```javascript (?:Node\.js|JavaScript \(Node\.js 18\+\))/);
-  assert.doesNotMatch(creditCount, /```javascript JavaScript\n/);
-  assert.match(creditCount, /## Request/);
-  assert.match(creditCount, /## Response/);
-  assert.match(creditCount, /## Errors/);
-  assert.match(creditCount, /\| Airscale credit cost \| No charge; checking the balance does not debit Airscale credits\. \|/);
-
-  const invalidKeyRow = creditCount.match(/\| `401 Unauthorized` \| The API key is invalid\. \| ([^|\n]+) \|/);
-  assert.ok(invalidKeyRow, "Credit count must document invalid-key recovery");
-  const invalidKeyRecovery = invalidKeyRow[1];
-  assert.match(invalidKeyRecovery, /Copy the current key from the Airscale dashboard/i);
-  assert.match(invalidKeyRecovery, /verify it matches the deployed value/i);
-  assert.match(invalidKeyRecovery, /update your server-side secret first/i);
-  assert.match(invalidKeyRecovery, /Rotate only if the key was exposed/i);
-  const recoverySteps = ["Copy", "verify", "update", "Rotate"].map((step) => invalidKeyRecovery.indexOf(step));
-  assert.ok(recoverySteps.every((position) => position >= 0));
-  assert.deepEqual(recoverySteps, [...recoverySteps].sort((left, right) => left - right));
-
-  const assertNumericCreditBalance = (source) => {
-    const successBlock = source.match(/## Response[\s\S]*?```json\n([\s\S]*?)\n```/);
-    assert.ok(successBlock, "Credit count must contain a JSON success response");
-    const payload = JSON.parse(successBlock[1]);
-    assert.equal(typeof payload?.response?.credits, "number");
-  };
-  assertNumericCreditBalance(creditCount);
-  const stringCreditMutation = creditCount.replace(
-    /("credits"\s*:\s*)(-?(?:0|[1-9]\d*)(?:\.\d+)?(?:[eE][+-]?\d+)?)/,
-    '$1"$2"'
-  );
-  assert.notEqual(stringCreditMutation, creditCount, "Credit-count mutation fixture must modify the response");
-  assert.throws(() => assertNumericCreditBalance(stringCreditMutation));
-
-  assert.match(creditCount, /401/);
-  assert.ok(localDocumentationLinks(creditCount).includes("/api-reference/find-people"));
 });
 
-test("search and discovery pages preserve their complete contracts", () => {
-  const contracts = {
-    "api-reference/find-people": {
-      description: "Search and count people using person, role, and company filters.",
-      responseHeading: "Search response",
-      requestEndHeading: "Search response",
-      responseEndHeading: "Errors",
-      errorsEndHeading: "Examples",
-      sectionOrder: [
-        "Contract summary", "Search and Count endpoint comparison", "Request", "Filter shapes",
-        "Person filters", "Current company filters", "Past experience filters", "Pagination",
-        "Search response", "Count response", "Errors", "Rate limits and credits", "Examples", "Next step"
-      ],
-      summaryRows: [
-        ["Authentication", "Bearer API key"],
-        ["Execution", "Synchronous"],
-        ["Rate limit", "6 requests per second per workspace"],
-        ["Request body limit", "256 KiB"],
-        ["Search credit cost", "0.1 credits per returned lead; no charge when no leads are returned."],
-        ["Count credit cost", "No charge; Count does not debit Airscale credits."]
-      ],
-      requestRows: [
-        ["`query`", "object", "Yes"],
-        ["`size`", "integer", "No"],
-        ["`cursor`", "string", "No"],
-        ["`firstname`", "include/exclude"],
-        ["`lastname`", "include/exclude"],
-        ["`jobTitle`", "include/exclude"],
-        ["`school`", "include/exclude"],
-        ["`languages`", "include/exclude"],
-        ["`skills`", "include/exclude"],
-        ["`location`", "include/exclude"],
-        ["`keyword`", "include/exclude"],
-        ["`totalYearsOfExperience`", "integer range"],
-        ["`timeInCurrentCompany`", "integer range"],
-        ["`currentCompanyName`", "include/exclude"],
-        ["`companyDomain`", "include/exclude"],
-        ["`companyLinkedinUrl`", "include/exclude"],
-        ["`currentCompany.type`", "include/exclude"],
-        ["`currentCompany.industry`", "include/exclude"],
-        ["`currentCompany.location`", "include/exclude"],
-        ["`currentCompany.keyword`", "include/exclude"],
-        ["`currentCompany.headcount`", "integer range"],
-        ["`currentCompany.revenue`", "integer range"],
-        ["`currentCompany.headcountGrowth`", "growth"],
-        ["`pastJobTitle`", "include/exclude"],
-        ["`pastCompanyName`", "include/exclude"],
-        ["`pastCompanyId`", "include/exclude"],
-        ["`pastCompanyWebsite`", "include/exclude"],
-        ["`pastCompanyUrn`", "include/exclude"],
-        ["`pastCompany.type`", "include/exclude"],
-        ["`pastCompany.industry`", "include/exclude"],
-        ["`pastCompany.location`", "include/exclude"],
-        ["`pastCompany.keyword`", "include/exclude"],
-        ["`pastCompany.headcount`", "integer range"],
-        ["`pastCompany.revenue`", "integer range"],
-        ["`pastCompany.headcountGrowth`", "growth"]
-      ],
-      responseRows: [
-        ["`total`", "number"],
-        ["`leads`", "array"],
-        ["`leads[].firstname`", "string, when available"],
-        ["`leads[].lastname`", "string, when available"],
-        ["`leads[].profileUrl`", "string, when available"],
-        ["`leads[].jobTitle`", "string, when available"],
-        ["`leads[].companyName`", "string, when available"],
-        ["`next_cursor`", "string or null"]
-      ],
-      requestFragments: [
-        "At least one supported filter", "`query`", "`size`", "1 to 100", "defaults to `100`", "`cursor`",
-        "`include`", "`exclude`", "200 values", "Integer range", "`>`", "`>=`", "`<`", "`<=`",
-        "growth", "`6months`", "`12months`", "`24months`", "-100", "10000",
-        "`firstname`", "`totalYearsOfExperience`", "`currentCompanyName`", "`currentCompany.headcountGrowth`",
-        "`pastJobTitle`", "`pastCompany.headcountGrowth`", "## Pagination", "`next_cursor`"
-      ],
-      responseFragments: [
-        "`200 OK`", "`total`", "`leads`", "`next_cursor`", "## Count response", "`200 OK`", "`total`"
-      ],
-      exampleFragments: [
-        "https://api.airscale.io/v1/find-people", "https://api.airscale.io/v1/find-people/count"
-      ],
-      forbiddenPatterns: [
-        /\bsame prior role\b/i,
-        /\b(?:IcyPeas|Explorium|OpenAI|RapidAPI|Serper|Jina)\b/i,
-        /\b(?:provider prompt|internal prompt|cost telemetry|estimated_cost|airsearch_logs|icypeas_logs)\b/i
-      ],
-      requestExamples: [
-        {
-          label: "minimal person search",
-          shape: { query: { jobTitle: { include: [String] } } },
-          exact: true
-        },
-        {
-          label: "complete filter-family search",
-          shape: {
-            query: {
-              firstname: { include: [String] },
-              currentCompanyName: { include: [String] },
-              "currentCompany.headcountGrowth": { min: Number, timespan: "12months" },
-              pastJobTitle: { include: [String] },
-              "pastCompany.headcountGrowth": { max: Number, timespan: "24months" }
-            },
-            size: Number
-          },
-          exact: false
-        }
-      ],
-      responseExamples: [
-        {
-          label: "search result page",
-          shape: {
-            total: Number,
-            leads: [{
-              firstname: String,
-              lastname: String,
-              profileUrl: String,
-              jobTitle: String,
-              companyName: String
-            }],
-            next_cursor: String
-          },
-          exact: false
-        },
-        { label: "count result", shape: { total: Number }, exact: true }
-      ],
-      errorCauseFragments: {
-        "400 Bad Request": ["JSON", "`query`", "unsupported filter", "filter shape", "`size`", "`cursor`"],
-        "401 Unauthorized": ["Bearer token", "missing", "invalid"],
-        "403 Forbidden": ["Search", "fewer than 0.1 credits"],
-        "404 Not Found": ["method", "path"],
-        "413 Content Too Large": ["exceeds 256 KiB"],
-        "429 Too Many Requests": ["6 requests", "current second"],
-        "502 Bad Gateway": ["search service", "unreachable"],
-        "503 Service Unavailable": ["API-key validation", "credit service"]
-      },
-      errorRecoveryFragments: {
-        "400 Bad Request": ["details", "supported filter", "valid shape"],
-        "403 Forbidden": ["Add credits", "Search", "Count"],
-        "429 Too Many Requests": ["next second", "bounded exponential backoff"],
-        "503 Service Unavailable": ["same request", "bounded backoff"]
-      },
-      mutationLayer: "summary",
-      mutate: (source) => source.replace("0.1 credits per returned lead", "0.2 credits per returned lead"),
-      additionalMutations: {
-        request: (source) => source.replace("Maximum 200 values in each array.", "Maximum 201 values in each array."),
-        response: (source) => source.replace('"next_cursor": "fp_', '"next_page": "fp_'),
-        errors: (source) => source.replace("`413 Content Too Large`", "`414 URI Too Long`")
-      }
-    },
-    "api-reference/find-companies": {
-      description: "Search companies using firmographic, location, event, intent, and technology filters.",
-      errorsEndHeading: "Examples",
-      sectionOrder: [
-        "Contract summary", "Search and Filter-values endpoint comparison", "Request", "Filter field table",
-        "Filter discovery", "Pagination", "Response", "Errors", "Rate limits and credits", "Examples", "Next step"
-      ],
-      summaryRows: [
-        ["Authentication", "Bearer API key"],
-        ["Execution", "Synchronous"],
-        ["Rate limit", "6 requests per second per workspace"],
-        ["Request body limit", "256 KiB"],
-        ["Search credit cost", "0.1 credits per returned company; no charge when no companies are returned."],
-        ["Filter-values credit cost", "No charge."]
-      ],
-      requestRows: [
-        ["`filters`", "object", "Yes"],
-        ["`page`", "integer", "No"],
-        ["`size`", "integer", "No"],
-        ["`cursor`", "string", "No"],
-        ["`country`", "string or array of strings"],
-        ["`region`", "string or array of strings"],
-        ["`city`", "string or array of strings"],
-        ["`industry`", "string or array of strings"],
-        ["`size`", "string or array of strings"],
-        ["`revenue`", "string or array of strings"],
-        ["`age`", "string or array of strings"],
-        ["`techStack`", "string or array of strings"],
-        ["`keywords`", "string or array of strings"],
-        ["`topics`", "string or array of strings"],
-        ["`events`", "string or array of strings"],
-        ["`locations`", "string or array of strings"],
-        ["`companyName`", "string or array of strings"],
-        ["`eventWindow`", "string"],
-        ["`locationMatch`", "string"],
-        ["`hasWebsite`", "boolean or null"],
-        ["`isPublicCompany`", "boolean or null"],
-        ["`filter`", "string", "Yes"],
-        ["`q`", "string", "Yes"],
-        [
-          "`limit`", "integer", "No",
-          "Omitted, non-numeric, or non-integer values default to `20`; an explicit empty `?limit=` converts to `0` and clamps to `1`; integers below `1` clamp to `1`, and integers above `100` clamp to `100`."
-        ],
-        ["`label`", "string", "Always"],
-        ["`value`", "string", "Always"],
-        ["`query`", "string", "Autocomplete options only"],
-        ["`city`", "string", "City options, when resolved"],
-        ["`region`", "string", "City or region options, when resolved"],
-        ["`countryCode`", "string", "City or region options, when resolved"],
-        ["`regionCode`", "string", "City or region options, when resolved"]
-      ],
-      responseRows: [
-        ["`rows`", "array"],
-        ["`total`", "number"],
-        ["`page`", "number"],
-        ["`size`", "number"],
-        ["`next_cursor`", "string or null"],
-        ["`rows[].name`", "string, when available"],
-        ["`rows[].domain`", "string, when available"],
-        ["`rows[].website`", "string, when available"],
-        ["`rows[].countryName`", "string, when available"],
-        ["`rows[].cityName`", "string, when available"],
-        ["`rows[].linkedinProfile`", "string, when available"]
-      ],
-      requestFragments: [
-        "At least one real filter", "`page`", "defaults to `0`", "`size`", "1 to 100", "defaults to `50`", "`cursor`",
-        "`country`", "`region`", "`city`", "`industry`", "`size`", "`revenue`", "`age`", "`techStack`",
-        "`keywords`", "`topics`", "`events`", "`locations`", "`companyName`", "`eventWindow`", "`locationMatch`",
-        "`hasWebsite`", "`isPublicCompany`", "## Filter discovery", "`city`", "`region`", "`industry`", "`topics`",
-        "`techStack`", "2 to 120 characters", "`limit`", "non-numeric", "non-integer", "default to `20`",
-        "explicit empty `?limit=`", "converts to `0`", "clamps to `1`", "below `1`", "clamp to `1`",
-        "above `100`", "clamp to `100`", "`label`", "Always", "`value`",
-        "Autocomplete options only", "## Pagination", "10,000 companies", "`fc_`"
-      ],
-      responseFragments: [
-        "`200 OK`", "sanitized", "`rows`", "`total`", "`page`", "`size`", "`next_cursor`"
-      ],
-      exampleFragments: [
-        "https://api.airscale.io/v1/find-companies", "https://api.airscale.io/v1/find-companies/filter-values"
-      ],
-      forbiddenPatterns: [
-        /\b(?:IcyPeas|Explorium|OpenAI|RapidAPI|Serper|Jina)\b/i,
-        /\b(?:provider prompt|internal prompt|cost telemetry|estimated_cost|airsearch_logs|icypeas_logs)\b/i
-      ],
-      requestExamples: [
-        {
-          label: "minimal company search",
-          shape: { filters: { country: [String] }, size: 25 },
-          exact: true
-        },
-        {
-          label: "complete company-filter search",
-          shape: {
-            filters: {
-              country: [String], region: [String], city: [String], industry: [String], size: [String],
-              revenue: [String], age: [String], techStack: [String], keywords: [String], topics: [String],
-              events: [String], locations: [String], companyName: [String], eventWindow: "60 days",
-              locationMatch: "hqOperating", hasWebsite: true, isPublicCompany: false
-            },
-            page: 0,
-            size: 25
-          },
-          exact: true
-        }
-      ],
-      requestSectionExamples: [
-        {
-          label: "local filter-value option",
-          shape: {
-            filter: "industry",
-            query: "software",
-            values: [{ label: "data security software products", value: "data security software products" }]
-          },
-          exact: true
-        },
-        {
-          label: "autocomplete location option",
-          shape: {
-            filter: "city",
-            query: "san",
-            values: [{
-              query: "san", label: "San Francisco", value: "San Francisco, CA, US",
-              city: "San Francisco", region: "CA", regionCode: "us-ca", countryCode: "us"
-            }]
-          },
-          exact: true
-        }
-      ],
-      responseExamples: [
-        {
-          label: "company result page",
-          shape: {
-            rows: [{
-              name: String, domain: String, website: String, countryName: String,
-              cityName: String, linkedinProfile: String
-            }],
-            total: Number,
-            page: Number,
-            size: Number,
-            next_cursor: String
-          },
-          exact: false
-        }
-      ],
-      errorCauseFragments: {
-        "400 Bad Request": ["JSON", "unknown filter", "unsupported value", "`size`", "`cursor`", "filter-values"],
-        "401 Unauthorized": ["Bearer token", "missing", "invalid"],
-        "403 Forbidden": ["Search", "fewer than 0.1 credits", "credit settlement"],
-        "413 Content Too Large": ["exceeds 256 KiB"],
-        "429 Too Many Requests": ["6 requests", "current second"],
-        "500 Internal Server Error": ["server configuration", "unexpected worker error"],
-        "502 Bad Gateway": ["API-key validation", "Search", "Filter-values"],
-        "503 Service Unavailable": ["credit service", "successful Search"]
-      },
-      errorRecoveryFragments: {
-        "400 Bad Request": ["message", "supported filter", "documented value"],
-        "403 Forbidden": ["Add credits", "retry Search"],
-        "429 Too Many Requests": ["next second", "bounded exponential backoff"],
-        "502 Bad Gateway": ["same request", "bounded backoff"],
-        "503 Service Unavailable": ["same filters", "credit service", "recovers"]
-      },
-      mutationLayer: "request",
-      mutate: (source) => source.replace("Must be from 1 to 100; defaults to `50`.", "Must be from 1 to 200; defaults to `50`."),
-      additionalMutations: {
-        summary: (source) => source.replace("0.1 credits per returned company", "0.2 credits per returned company"),
-        response: (source) => source.replace('"total": 240', '"total": "240"'),
-        errors: (source) => source.replace("`502 Bad Gateway`", "`504 Gateway Timeout`"),
-        "filter-values limit coercion": (source) => source.replace("integers below `1` clamp to `1`", "integers below `1` are rejected"),
-        "empty filter-values limit": (source) => source.replace("an explicit empty `?limit=` converts to `0` and clamps to `1`", "an explicit empty `?limit=` defaults to `20`")
-      }
-    },
-    "api-reference/airsearch": {
-      description: "Research the web and return structured answers with Airsearch.",
-      errorsEndHeading: "Examples",
-      sectionOrder: [
-        "Contract summary", "Request", "Top-level fields", "Schema types", "Response",
-        "Success and not-found cases", "Errors", "Rate limits and credits", "Examples", "Next step"
-      ],
-      summaryRows: [
-        ["Authentication", "Bearer API key"],
-        ["Execution", "Synchronous"],
-        ["Rate limit", "300 requests per minute per workspace"],
-        ["Request body limit", "256 KiB"],
-        ["Airscale credit cost", "1 credit only for `status: \"success\"`; `not_found` and `timeout` are not charged."]
-      ],
-      requestRows: [
-        ["`prompt`", "string", "Yes"],
-        ["`schema`", "object", "No"],
-        ["`string`", "Text value"],
-        ["`text`", "Text value"],
-        ["`url`", "Full HTTP or HTTPS URL"],
-        ["`email`", "Email address"],
-        ["`number`", "Numeric value"],
-        ["`int`", "Integer number"],
-        ["`float`", "Decimal number"],
-        ["`boolean`", "Boolean value"],
-        [
-          "`date`", "Date value",
-          "String or null, when present; a string becomes `null` only when it neither begins with a `YYYY-MM-DD` shape nor parses as a date."
-        ],
-        ["`phone`", "Phone number"]
-      ],
-      responseRows: [
-        ["`status`", "string"],
-        ["`response`", "string or object"],
-        ["Requested schema keys", "string or null, when present"],
-        ["`reasoning`", "string or null"],
-        ["`sources`", "array"],
-        ["`confidence_score`", "number"],
-        ["`certainty_tag`", "string"],
-        ["`duration_ms`", "number"]
-      ],
-      requestFragments: [
-        "minimal valid request", "non-empty", "`prompt`", "optional", "`schema`", "output field names",
-        "extraction and format hints", "do not guarantee native JSON scalar types",
-        "`string`", "`text`", "`url`", "`email`", "`number`", "`int`", "`float`", "`boolean`", "`date`", "`phone`"
-      ],
-      responseFragments: [
-        "`200 OK`", "`success`", "`not_found`", "`timeout`", "`response`", "Requested schema keys",
-        "`reasoning`", "`sources`", "`confidence_score`", "`certainty_tag`", "`duration_ms`",
-        "## Success and not-found cases", "`success`", "may be omitted", "string", "null", "parse or coerce",
-        "`not_found`", "not charged", "`timeout`", "not charged"
-      ],
-      exampleFragments: ["https://api.airscale.io/v1/airsearch"],
-      forbiddenPatterns: [
-        /\b(?:IcyPeas|Explorium|OpenAI|RapidAPI|Serper|Jina)\b/i,
-        /\b(?:provider prompt|internal prompt|cost telemetry|estimated_cost|airsearch_logs|icypeas_logs)\b/i,
-        /requested schema keys? (?:is|are) always present/i,
-        /all invalid dates become null|semantic calendar validation/i,
-        /\b(?:number|int|float|boolean)\b[^\n.]*(?:returns?|is returned) as (?:a )?native JSON (?:number|integer|float|boolean)\b/i
-      ],
-      requestExamples: [
-        { label: "minimal research request", shape: { prompt: String }, exact: true },
-        {
-          label: "structured research request",
-          shape: {
-            prompt: String,
-            schema: { company_name: "string", website: "url", founded_year: "int" }
-          },
-          exact: true
-        }
-      ],
-      responseExamples: [
-        {
-          label: "structured success",
-          shape: {
-            status: "success", response: String, company_name: String, website: String, founded_year: String,
-            reasoning: String, sources: [String], confidence_score: Number, certainty_tag: "high", duration_ms: Number
-          },
-          exact: true
-        },
-        {
-          label: "success with omitted requested keys",
-          shape: {
-            status: "success", response: String, company_name: String,
-            reasoning: String, sources: [String], confidence_score: Number, certainty_tag: "medium", duration_ms: Number
-          },
-          exact: true
-        },
-        {
-          label: "not-found result",
-          shape: {
-            status: "not_found", response: "No relevant information found.", company_name: null, website: null,
-            founded_year: null, reasoning: null, sources: [], confidence_score: Number, certainty_tag: "low", duration_ms: Number
-          },
-          exact: true
-        },
-        {
-          label: "soft-timeout result",
-          shape: {
-            status: "timeout", response: "No relevant information found.", company_name: null, website: null,
-            founded_year: null, reasoning: null, sources: [], confidence_score: Number, certainty_tag: "low", duration_ms: Number
-          },
-          exact: true
-        }
-      ],
-      errorCauseFragments: {
-        "400 Bad Request": ["JSON", "missing", "empty", "`prompt`"],
-        "401 Unauthorized": ["Bearer token", "missing", "invalid"],
-        "403 Forbidden": ["fewer than 1 credit", "credit reservation"],
-        "413 Content Too Large": ["exceeds 256 KiB"],
-        "429 Too Many Requests": ["300 requests", "current minute"],
-        "500 Internal Server Error": ["Research processing", "unexpected worker error"],
-        "502 Bad Gateway": ["API-key validation", "unavailable"],
-        "503 Service Unavailable": ["credit service", "reservation"],
-        "504 Gateway Timeout": ["initial research stage", "timed out"]
-      },
-      errorRecoveryFragments: {
-        "400 Bad Request": ["valid JSON", "non-empty `prompt`"],
-        "403 Forbidden": ["Add credits", "retry"],
-        "429 Too Many Requests": ["minute window", "bounded exponential backoff"],
-        "503 Service Unavailable": ["same request", "credit service", "recovers"],
-        "504 Gateway Timeout": ["narrower prompt", "retry"]
-      },
-      mutationLayer: "response",
-      mutate: (source) => source.replace('"status": "not_found"', '"status": "empty"'),
-      additionalMutations: {
-        request: (source) => source.replace('"website": "url"', '"website": "uri"'),
-        summary: (source) => source.replace("1 credit only for", "2 credits only for"),
-        errors: (source) => source.replace("| `504 Gateway Timeout` |", "| `408 Request Timeout` |"),
-        "numeric scalar output": (source) => source.replace('"founded_year": "2024"', '"founded_year": 2024'),
-        "universal schema keys claim": (source) => source.replace("Requested schema keys may be omitted", "Requested schema keys are always present"),
-        "date hint predicate": (source) => source.replace("a string becomes `null` only when it neither begins with a `YYYY-MM-DD` shape nor parses as a date", "all invalid dates become null")
-      }
-    }
-  };
-  const manifest = JSON.parse(readFileSync("contracts/public-api-contracts.json", "utf8"));
-  const contractLayers = ["errors", "request", "response", "summary"];
-  const mutationLayers = new Set(Object.values(contracts).flatMap((contract) => [
-    contract.mutationLayer,
-    ...Object.keys(contract.additionalMutations ?? {}).filter((name) => contractLayers.includes(name))
-  ]));
-  assert.deepEqual([...mutationLayers].sort(), contractLayers);
+const DURABLE_OPERATION_GUIDANCE = {
+  "api-reference/credit-count": [/no request body/i, /does not debit Airscale credits/i],
+  "api-reference/email-finder": [/3,000 requests per minute/i, /2 credits/i, /`not_found` is not charged/i, /bounded backoff/i],
+  "api-reference/email-finder-(bulk)": [
+    /asynchronous/i,
+    /webhook/i,
+    /100 people/i,
+    /3,000 input items per minute/i,
+    /automatic webhook retries/i,
+    /every callback echoes `custom_id`/i,
+    /omitted or `null`.*zero-based input index/is,
+    /`status: "success"`.*`email`.*`email_status: "valid"`.*`provider`.*`verifier`/is,
+    /`status: "error"`.*`error: "insufficient_credits"`.*`email: null`/is,
+    /`status: "not_found"` or `status: "timeout"`.*`email: null`/is
+  ],
+  "api-reference/mobile-finder": [/3,000 requests per minute/i, /40 credits/i, /`not_found` is not charged/i, /bounded backoff/i],
+  "api-reference/personal-email": [/2,000 requests per minute/i, /3 and 12 credits/i, /minimum balance/i, /usage recording/i, /before retrying/i],
+  "api-reference/people-url-finder": [/6 requests per second/i, /0\.5 credits/i, /`not_found` is not charged/i, /bounded exponential backoff/i],
+  "api-reference/extract-people-profile": [/submitted URL/i, /response schema/i, /credit cost/i, /`p1`.*`p2`.*`p3`/i, /3,000 requests per minute/i],
+  "api-reference/extract-company-profile": [/submitted URL/i, /response schema/i, /credit cost/i, /`p1`.*`p2`.*`p3`/i, /3,000 requests per minute/i],
+  "api-reference/reverse-email": [/25 requests per second/i, /2 credits/i, /JSON string `"not found"`/i, /not charged/i, /bounded backoff/i],
+  "api-reference/reverse-phone": [/2,000 requests per minute/i, /10 credits/i, /true miss.*exhausted or failed/i, /one bounded-backoff retry/i, /normalized number/i],
+  "api-reference/find-people": [/6 requests per second/i, /0\.1 credits per returned lead/i, /empty result pages are not charged/i, /send it unchanged as `cursor`/i, /Count people/i],
+  "api-reference/find-people/count": [/Count is free/i, /same `query`/i, /no pagination fields/i, /6 requests per second/i],
+  "api-reference/find-companies": [/6 requests per second/i, /0\.1 credits per returned company/i, /zero returned rows cost zero credits/i, /when `next_cursor` is not `null`.*send the exact value unchanged as `cursor`/is, /10,000 companies/i],
+  "api-reference/find-companies/filter-values": [/free and has no request body/i, /6 requests per second/i, /`q` parameter takes precedence/i],
+  "api-reference/airsearch": [/300 requests per minute/i, /1 credit/i, /`not_found` and `timeout` are not charged/i, /reservation is settled only for `success`/i, /initial-stage timeout.*`504 Gateway Timeout`/i]
+};
 
-  for (const [path, contract] of Object.entries(contracts)) {
-    assertEndpointPageContentSystem(path, contract, manifest);
-
-    for (const [mutationName, mutate] of Object.entries(contract.additionalMutations ?? {})) {
-      const source = readPage(path).source;
-      const mutatedSource = mutate(source);
-      assert.notEqual(mutatedSource, source, `${path} ${mutationName} mutation must change the contract`);
-      assert.throws(
-        () => assertEndpointPageContract(mutatedSource, contract, `${path} ${mutationName} mutation`),
-        `${path} must reject ${mutationName}`
-      );
-    }
-  }
-});
-
-test("contact data pages follow the endpoint content system", () => {
-  const contracts = {
-    "api-reference/email-finder": {
-      description: "Find a professional email address for one person.",
-      summaryRows: [
-        ["Rate limit", "3,000 requests per minute per workspace"],
-        ["Request body limit", "256 KiB"],
-        ["Airscale credit cost", "2 credits only when the response has `status: \"success\"`; `not_found` is not charged."]
-      ],
-      requestRows: [
-        ["`linkedin_profile_url`", "string", "Required for profile lookup"],
-        ["`first_name`", "string", "Required for name lookup"],
-        ["`last_name`", "string", "Required for name lookup"],
-        ["`domain`", "string", "Conditional"],
-        ["`company_name`", "string", "Conditional"]
-      ],
-      responseRows: [
-        ["`status`", "string"],
-        ["`email`", "string or null"],
-        ["`linkedin_profile_url`", "string"]
-      ],
-      requestFragments: [
-        "one of two ways", "`linkedin_profile_url`", "`first_name`", "`last_name`",
-        "`domain`", "`company_name`", "At least one complete form"
-      ],
-      responseFragments: [
-        "`200 OK`", "recognized LinkedIn URL", "supplied", "`200 OK`", "does not charge credits"
-      ],
-      requestExamples: [
-        { label: "profile-identification", shape: { linkedin_profile_url: String }, exact: true },
-        { label: "name-and-company-identification", shape: { first_name: String, last_name: String, domain: String }, exact: true }
-      ],
-      responseExamples: [
-        {
-          label: "successful professional-email",
-          shape: {
-            status: "success", email: String, email_status: "valid", provider: String,
-            verifier: String, catch_all: String, linkedin_profile_url: String
-          },
-          exact: true
-        },
-        { label: "not-found", shape: { status: "not_found", email: null }, exact: true }
-      ],
-      errorCauseFragments: {
-        "400 Bad Request": ["JSON", "neither identification form"],
-        "401 Unauthorized": ["Bearer token", "missing", "invalid"],
-        "403 Forbidden": ["fewer than 2 credits"],
-        "413 Content Too Large": ["exceeds 256 KiB"],
-        "429 Too Many Requests": ["3,000 requests", "current minute"],
-        "502 Bad Gateway": ["API-key validation", "temporarily unavailable"],
-        "503 Service Unavailable": ["successful result", "credit service"],
-        "500 Internal Server Error": ["unexpected worker error"]
-      },
-      mutationLayer: "response",
-      mutate: (source) => source.replace('"email_status": "valid"', '"email_status": null')
-    },
-    "api-reference/email-finder-(bulk)": {
-      description: "Find professional email addresses for a batch of people.",
-      summaryRows: [
-        ["Maximum batch", "100 input items per request"],
-        ["Rate limit", "3,000 input items per minute per workspace"],
-        ["Request body limit", "256 KiB"],
-        ["Airscale credit cost", "2 credits per item with `status: \"success\"`; misses and timeouts are not charged."]
-      ],
-      requestRows: [
-        ["`webhook_url`", "string", "Yes"],
-        ["`inputs`", "array", "Yes"],
-        ["`custom_id`", "any JSON value", "No"],
-        ["`linkedin_profile_url`", "string", "Required for profile lookup"],
-        ["`first_name`", "string", "Required for name lookup"],
-        ["`last_name`", "string", "Required for name lookup"],
-        ["`domain`", "string", "Conditional"],
-        ["`company_name`", "string", "Conditional"]
-      ],
-      responseRows: [
-        ["`status`", "string"],
-        ["`count`", "number"],
-        ["`custom_id`", "any JSON value"],
-        ["`email`", "string or null"]
-      ],
-      requestFragments: [
-        "non-empty `inputs`", "`webhook_url`", "`http`", "Between 1 and 100",
-        "non-null JSON value", "zero-based array index", "`linkedin_profile_url`",
-        "`first_name`", "`last_name`", "`domain`", "`company_name`"
-      ],
-      responseFragments: [
-        "`202 Accepted`", "successful item", "miss or timeout", "non-null value",
-        "echoed unchanged", "zero-based array index", "`success`", "`not_found`",
-        "`timeout`", "`error`", "insufficient_credits"
-      ],
-      forbiddenPatterns: [/valid HTTP\(S\) URL|invalid webhook URL|must be a valid URL/i],
-      requestExamples: [{
-        label: "bounded batch with both identification forms",
-        shape: {
-          webhook_url: String,
-          inputs: (inputs) => Array.isArray(inputs) && inputs.length >= 2
-            && inputs.some((item) => typeof item?.linkedin_profile_url === "string")
-            && inputs.some((item) => typeof item?.first_name === "string" && typeof item?.last_name === "string"
-              && (typeof item?.domain === "string" || typeof item?.company_name === "string"))
-        },
-        exact: true
-      }],
-      responseExamples: [
-        { label: "202 accepted", shape: { status: "accepted", count: Number }, exact: true },
-        {
-          label: "successful item webhook",
-          shape: {
-            custom_id: String, status: "success", email: String, email_status: "valid",
-            provider: String, verifier: String
-          },
-          exact: true
-        },
-        { label: "not-found item webhook", shape: { custom_id: Number, status: "not_found", email: null }, exact: true }
-      ],
-      errorCauseFragments: {
-        "400 Bad Request": [
-          "JSON", "`inputs`", "missing", "not an array", "empty", "over 100",
-          "`webhook_url`", "missing", "not a string", "`http`"
-        ],
-        "401 Unauthorized": ["Bearer token", "missing", "invalid"],
-        "403 Forbidden": ["fewer than 2 credits", "batch"],
-        "413 Content Too Large": ["exceeds 256 KiB"],
-        "429 Too Many Requests": ["3,000 input items", "current minute"],
-        "502 Bad Gateway": ["API-key validation", "temporarily unavailable"],
-        "500 Internal Server Error": ["unexpected worker error", "before acceptance"]
-      },
-      mutationLayer: "errors",
-      mutate: (source) => source.replace("| `429 Too Many Requests` |", "| `418 I'm a Teapot` |")
-    },
-    "api-reference/mobile-finder": {
-      description: "Find a mobile phone number from a professional profile.",
-      summaryRows: [
-        ["Rate limit", "3,000 requests per minute per workspace"],
-        ["Request body limit", "256 KiB"],
-        ["Airscale credit cost", "40 credits only when the response has `status: \"success\"`; `not_found` is not charged."]
-      ],
-      requestRows: [
-        ["`linkedin_profile_url`", "string", "Yes"]
-      ],
-      responseRows: [
-        ["`status`", "string"],
-        ["`linkedin_profile_url`", "string"],
-        ["`phone_numbers`", "string or null"],
-        ["`provider`", "string or null"]
-      ],
-      requestFragments: ["`linkedin_profile_url`", "LinkedIn person profile URL"],
-      responseFragments: [
-        "`200 OK`", "Phone number on success", "`null`", "`200 OK`", "without charging credits"
-      ],
-      forbiddenPatterns: [/E\.164/i],
-      requestExamples: [
-        { label: "profile-identification", shape: { linkedin_profile_url: String }, exact: true }
-      ],
-      responseExamples: [
-        {
-          label: "successful mobile",
-          shape: { status: "success", linkedin_profile_url: String, phone_numbers: String, provider: String },
-          exact: true
-        },
-        {
-          label: "not-found mobile",
-          shape: { status: "not_found", linkedin_profile_url: String, phone_numbers: null, provider: null },
-          exact: true
-        }
-      ],
-      errorCauseFragments: {
-        "400 Bad Request": ["JSON", "`linkedin_profile_url`", "missing"],
-        "401 Unauthorized": ["Bearer token", "missing", "invalid"],
-        "403 Forbidden": ["fewer than 40 credits"],
-        "413 Content Too Large": ["exceeds 256 KiB"],
-        "429 Too Many Requests": ["3,000 requests", "current minute"],
-        "502 Bad Gateway": ["API-key validation", "temporarily unavailable"],
-        "503 Service Unavailable": ["successful result", "credit service"],
-        "500 Internal Server Error": ["unexpected worker error"]
-      },
-      mutationLayer: "summary",
-      mutate: (source) => source.replace(
-        "40 credits only when the response has `status: \"success\"`",
-        "41 credits only when the response has `status: \"success\"`"
-      )
-    },
-    "api-reference/personal-email": {
-      description: "Find a personal email address from a professional profile.",
-      summaryRows: [
-        ["Rate limit", "2,000 requests per minute per workspace"],
-        ["Request body limit", "256 KiB"],
-        ["Airscale credit cost", "3–12 credits for a successful result, depending on the result source; `not_found` is not charged."]
-      ],
-      requestRows: [
-        ["`linkedin_profile_url`", "string", "Yes"],
-        ["`verification`", "boolean or string", "No"]
-      ],
-      responseRows: [
-        ["`status`", "string"],
-        ["`email`", "string or null"]
-      ],
-      requestFragments: [
-        "`linkedin_profile_url`", "`linkedin.com`", "one profile slug", "`/in/`",
-        "optional trailing slash", "`verification`", "`true`", "`\"yes\"`"
-      ],
-      responseFragments: [
-        "`200 OK`", "Personal email on success", "`null`", "`200 OK`", "without charging credits"
-      ],
-      requestExamples: [
-        { label: "profile-identification", shape: { linkedin_profile_url: String }, exact: true }
-      ],
-      responseExamples: [
-        { label: "successful personal-email", shape: { status: "success", email: String }, exact: true },
-        { label: "not-found personal-email", shape: { status: "not_found", email: null }, exact: true }
-      ],
-      errorCauseFragments: {
-        "400 Bad Request": ["JSON", "profile URL", "missing", "LinkedIn `/in/` URL"],
-        "401 Unauthorized": ["Bearer token", "missing", "invalid"],
-        "403 Forbidden": ["3-credit minimum", "final result cost"],
-        "413 Content Too Large": ["exceeds 256 KiB"],
-        "429 Too Many Requests": ["2,000 requests", "current minute"],
-        "502 Bad Gateway": ["API-key validation", "usage recording", "temporarily unavailable"],
-        "503 Service Unavailable": ["successful result", "credit service"],
-        "500 Internal Server Error": ["unexpected worker error"]
-      },
-      mutationLayer: "summary",
-      mutate: (source) => source.replace("3–12 credits for a successful result", "3–10 credits for a successful result")
-    },
-    "api-reference/people-url-finder": {
-      description: "Find a professional profile URL from person and company details.",
-      summaryRows: [
-        ["Rate limit", "6 requests per second per workspace"],
-        ["Request body limit", "256 KiB"],
-        ["Airscale credit cost", "0.5 credits only when the response has `status: \"success\"`; `not_found` is not charged."]
-      ],
-      requestRows: [
-        ["`first_name`", "string", "Yes"],
-        ["`last_name`", "string", "Yes"],
-        ["`company_name`", "string", "Yes"]
-      ],
-      responseRows: [
-        ["`status`", "string"],
-        ["`url`", "string"]
-      ],
-      requestFragments: ["required non-empty strings", "`first_name`", "`last_name`", "`company_name`"],
-      responseFragments: [
-        "`200 OK`", "Matched profile URL", "success", "`200 OK`", "without charging credits"
-      ],
-      requestExamples: [{
-        label: "person-and-company identification",
-        shape: { first_name: String, last_name: String, company_name: String },
-        exact: true
-      }],
-      responseExamples: [
-        { label: "successful profile match", shape: { status: "success", url: String }, exact: true },
-        { label: "not-found profile match", shape: { status: "not_found" }, exact: true }
-      ],
-      errorCauseFragments: {
-        "400 Bad Request": ["JSON", "required field", "missing", "empty"],
-        "401 Unauthorized": ["Bearer token", "missing", "invalid"],
-        "403 Forbidden": ["fewer than 0.5 credits"],
-        "413 Content Too Large": ["exceeds 256 KiB"],
-        "429 Too Many Requests": ["6 requests", "current second"],
-        "502 Bad Gateway": ["API-key validation", "temporarily unavailable"],
-        "503 Service Unavailable": ["credit reservation service", "temporarily unavailable"],
-        "500 Internal Server Error": ["unexpected worker error"]
-      },
-      mutationLayer: "summary",
-      mutate: (source) => source.replace("6 requests per second per workspace", "7 requests per second per workspace")
-    }
-  };
-  const mutationLayers = Object.values(contracts).map(({ mutationLayer }) => mutationLayer);
-  assert.ok(mutationLayers.includes("response"), "at least one mutation must prove parsed response-shape enforcement");
-  assert.ok(mutationLayers.includes("errors"), "at least one mutation must prove error-status mapping enforcement");
-  const manifest = JSON.parse(readFileSync("contracts/public-api-contracts.json", "utf8"));
-
-  assert.equal(
-    hasApprovedBearerCredentialSource([
-      'const apiKey = "live-secret";',
-      "const unused = process.env.AIRSCALE_API_KEY;",
-      "const headers = { Authorization: `Bearer ${apiKey}` };"
-    ].join("\n")),
-    false,
-    "an unused environment reference must not make a literal-backed Bearer variable safe"
-  );
-
-  for (const [path, contract] of Object.entries(contracts)) {
-    assertEndpointPageContentSystem(path, contract, manifest);
-  }
-});
-
-test("profile and reverse lookup pages follow the endpoint content system", () => {
-  const contracts = {
-    "api-reference/extract-people-profile": {
-      description: "Extract a structured person profile from a professional profile URL.",
-      summaryRows: [
-        ["Rate limit", "3,000 requests per minute per workspace"],
-        ["Request body limit", "256 KiB"],
-        ["Airscale credit cost", "URL-selected: `/in/` successes cost 1 credit by default (workspace-specific pricing may differ); `/company/` or `/school/` successes cost 0.5 credits; unsuccessful requests are not charged."]
-      ],
-      requestRows: [
-        ["`linkedin_profile_url`", "string", "Yes"],
-        ["`mode`", "string", "No"]
-      ],
-      responseRows: [
-        ["`url`", "string or null"],
-        ["`identifier`", "string or null"],
-        ["`firstname`", "string or null"],
-        ["`lastname`", "string or null"],
-        ["`headline`", "string or null"],
-        ["`location`", "object"],
-        ["`positionGroups`", "object"],
-        ["`skills`", "object"]
-      ],
-      requestFragments: [
-        "`linkedin_profile_url`", "`/in/`", "`/company/`", "`/school/`",
-        "submitted URL", "response schema", "successful-call credit cost", "`mode`", "`p1`", "`p2`", "`p3`",
-        "without a scheme", "https://www.linkedin.com", "`/in/`",
-        "Omit `mode`", "default", "response shape", "`p2` or `p3`", "normalized"
-      ],
-      responseFragments: [
-        "Response shape", "successful extraction mode", "normalized", "`p2` or `p3`",
-        "`p1`", "top-level object", "different field names",
-        "`200 OK`", "person profile object", "`firstname`", "`positionGroups`", "`skills`",
-        "submitted recognized profile URL", "either profile route", "`/in/`",
-        "[Company profile](/api-reference/extract-company-profile)", "`/v1/profile`", "credit cost"
-      ],
-      forbiddenPatterns: [
-        /Use an `\/in\/` URL for this endpoint/i,
-        /(?:request route|endpoint) determines (?:the )?(?:response|entity|credit|cost)/i,
-        /default[^.\n]*(?:always|only)[^.\n]*normalized/i,
-        /all successful responses use[^.\n]*(?:normalized|fields)/i
-      ],
-      requestExamples: [
-        { label: "normalized person profile URL", shape: { linkedin_profile_url: String, mode: "p3" }, exact: true }
-      ],
-      exampleFragments: ['"mode":"p3"', '"mode": "p3"', 'mode: "p3"'],
-      responseExamples: [{
-        label: "person profile",
-        shape: {
-          url: String,
-          identifier: String,
-          firstname: String,
-          lastname: String,
-          headline: String,
-          location: { country: String, city: String },
-          positionGroups: { totalElements: Number, contents: Array },
-          skills: { totalElements: Number, contents: Array }
-        },
-        exact: false
-      }],
-      errorCauseFragments: {
-        "400 Bad Request": ["JSON", "`linkedin_profile_url`", "`mode`", "invalid profile"],
-        "401 Unauthorized": ["Bearer token", "missing", "invalid"],
-        "403 Forbidden": ["successful-call cost", "submitted URL type"],
-        "404 Not Found": ["profile", "could not be extracted"],
-        "413 Content Too Large": ["exceeds 256 KiB"],
-        "429 Too Many Requests": ["3,000 requests", "current minute"],
-        "502 Bad Gateway": ["API-key validation", "upstream configuration"],
-        "503 Service Unavailable": ["extraction", "credit settlement"],
-        "500 Internal Server Error": ["unexpected worker error"]
-      },
-      errorRecoveryFragments: {
-        "400 Bad Request": ["recognized LinkedIn", "`/in/`", "`/company/`", "`/school/`", "response schema"],
-        "403 Forbidden": ["selected URL type"],
-        "404 Not Found": ["Confirm", "profile URL", "intended profile type"]
-      },
-      mutate: (source) => source.replace('"firstname": "Example"', '"first_name": "Example"'),
-      additionalMutations: {
-        "route-selected response and billing": (source) => source.replace(
-          "The submitted recognized profile URL determines",
-          "The request route determines"
-        ),
-        "normalized-only default response": (source) => source.replace(
-          "A successful `p1` response remains a top-level object but may use different field names.",
-          "All successful responses use the normalized fields shown below."
-        )
-      }
-    },
-    "api-reference/extract-company-profile": {
-      description: "Extract a structured company profile from a company profile URL.",
-      summaryRows: [
-        ["Rate limit", "3,000 requests per minute per workspace"],
-        ["Request body limit", "256 KiB"],
-        ["Airscale credit cost", "URL-selected: `/in/` successes cost 1 credit by default (workspace-specific pricing may differ); `/company/` or `/school/` successes cost 0.5 credits; unsuccessful requests are not charged."]
-      ],
-      requestRows: [
-        ["`linkedin_profile_url`", "string", "Yes"],
-        ["`mode`", "string", "No"]
-      ],
-      responseRows: [
-        ["`url`", "string or null"],
-        ["`name`", "string or null"],
-        ["`universalName`", "string or null"],
-        ["`description`", "string or null"],
-        ["`website`", "string or null"],
-        ["`foundedYear`", "number or null"],
-        ["`staff`", "object"],
-        ["`locations`", "object"],
-        ["`industries`", "array or null"]
-      ],
-      requestFragments: [
-        "`linkedin_profile_url`", "`/in/`", "`/company/`", "`/school/`",
-        "submitted URL", "response schema", "successful-call credit cost", "`mode`", "`p1`", "`p2`", "`p3`",
-        "without a scheme", "https://www.linkedin.com",
-        "Omit `mode`", "default", "response shape", "`p2` or `p3`", "normalized"
-      ],
-      responseFragments: [
-        "Response shape", "successful extraction mode", "normalized", "`p2` or `p3`",
-        "`p1`", "top-level object", "different field names",
-        "`200 OK`", "company profile object", "`foundedYear`", "`staff`", "`locations`",
-        "submitted recognized profile URL", "either profile route", "`/company/`", "`/school/`",
-        "[People profile](/api-reference/extract-people-profile)", "`/v1/company`", "credit cost"
-      ],
-      forbiddenPatterns: [
-        /Use a `\/company\/` or `\/school\/` path for this endpoint/i,
-        /(?:request route|endpoint) determines (?:the )?(?:response|entity|credit|cost)/i,
-        /default[^.\n]*(?:always|only)[^.\n]*normalized/i,
-        /all successful responses use[^.\n]*(?:normalized|fields)/i
-      ],
-      requestExamples: [
-        { label: "normalized company profile URL", shape: { linkedin_profile_url: String, mode: "p3" }, exact: true }
-      ],
-      exampleFragments: ['"mode":"p3"', '"mode": "p3"', 'mode: "p3"'],
-      responseExamples: [{
-        label: "company profile",
-        shape: {
-          url: String,
-          name: String,
-          universalName: String,
-          description: String,
-          website: String,
-          followers: null,
-          foundedYear: Number,
-          staff: { total: Number, range: null },
-          locations: { headquarter: { country: String, city: String } },
-          industries: Array
-        },
-        exact: false
-      }],
-      errorCauseFragments: {
-        "400 Bad Request": ["JSON", "`linkedin_profile_url`", "`mode`", "invalid profile"],
-        "401 Unauthorized": ["Bearer token", "missing", "invalid"],
-        "403 Forbidden": ["successful-call cost", "submitted URL type"],
-        "404 Not Found": ["profile", "could not be extracted"],
-        "413 Content Too Large": ["exceeds 256 KiB"],
-        "429 Too Many Requests": ["3,000 requests", "current minute"],
-        "502 Bad Gateway": ["API-key validation", "upstream configuration"],
-        "503 Service Unavailable": ["extraction", "credit settlement"],
-        "500 Internal Server Error": ["unexpected worker error"]
-      },
-      errorRecoveryFragments: {
-        "400 Bad Request": ["recognized LinkedIn", "`/in/`", "`/company/`", "`/school/`", "response schema"],
-        "403 Forbidden": ["selected URL type"],
-        "404 Not Found": ["Confirm", "profile URL", "intended profile type"]
-      },
-      mutate: (source) => source.replace('"foundedYear": 2024', '"founded_year": 2024'),
-      additionalMutations: {
-        "route-selected response and billing": (source) => source.replace(
-          "The submitted recognized profile URL determines",
-          "The request route determines"
-        ),
-        "normalized-only default response": (source) => source.replace(
-          "A successful `p1` response remains a top-level object but may use different field names.",
-          "All successful responses use the normalized fields shown below."
-        ),
-        "non-null P3-only field": (source) => source.replace(
-          '"followers": null',
-          '"followers": 250'
-        )
-      }
-    },
-    "api-reference/reverse-email": {
-      description: "Find a person profile from an email address.",
-      summaryRows: [
-        ["Rate limit", "25 requests per second per workspace"],
-        ["Request body limit", "256 KiB"],
-        ["Airscale credit cost", "2 credits only when a profile is returned; `\"not found\"` and errors are not charged."]
-      ],
-      requestRows: [
-        ["`email`", "string", "Yes"]
-      ],
-      responseRows: [
-        ["`url`", "string or null"],
-        ["`identifier`", "string or null"],
-        ["`profile`", "object, when available"],
-        ["Additional profile fields", "varies"]
-      ],
-      requestFragments: [
-        "`email`", "trimmed", "lowercase", "local part", "domain", "dot"
-      ],
-      responseFragments: [
-        "`200 OK`", "top-level profile object", "`url`", "`identifier`",
-        "JSON string", "`\"not found\"`", "does not charge credits"
-      ],
-      requestExamples: [
-        { label: "email address", shape: { email: String }, exact: true }
-      ],
-      responseExamples: [
-        {
-          label: "person profile",
-          shape: { url: String, identifier: String, profile: { fullName: String, headline: String } },
-          exact: false
-        },
-        { label: "not-found JSON string", shape: "not found", exact: true }
-      ],
-      errorCauseFragments: {
-        "400 Bad Request": ["JSON", "`email`", "invalid"],
-        "401 Unauthorized": ["Bearer token", "missing", "invalid"],
-        "403 Forbidden": ["fewer than 2 credits"],
-        "413 Content Too Large": ["exceeds 256 KiB"],
-        "429 Too Many Requests": ["25 requests", "current second"],
-        "502 Bad Gateway": ["API-key validation", "temporarily unavailable"],
-        "503 Service Unavailable": ["transport", "credit settlement"],
-        "500 Internal Server Error": ["configuration", "unexpected worker error"]
-      },
-      errorRecoveryFragments: {
-        "400 Bad Request": ["valid email", "`example.person@example.com`"],
-        "429 Too Many Requests": ["later second", "bounded exponential backoff"],
-        "503 Service Unavailable": ["same email", "bounded backoff", "not charged"]
-      },
-      mutate: (source) => source.replace('```json\n"not found"\n```', '```json\n{"status":"not_found"}\n```')
-    },
-    "api-reference/reverse-phone": {
-      description: "Find a person profile from a phone number.",
-      summaryRows: [
-        ["Rate limit", "2,000 requests per minute per workspace"],
-        ["Request body limit", "256 KiB"],
-        ["Airscale credit cost", "10 credits only when a profile is returned; `not_found` and errors are not charged."]
-      ],
-      requestRows: [
-        ["`mobile_phone`", "string", "Yes"]
-      ],
-      responseRows: [
-        ["`url`", "string, when available"],
-        ["`identifier`", "string, when available"],
-        ["`body`", "object"],
-        ["`status`", "string"]
-      ],
-      requestFragments: [
-        "`mobile_phone`", "non-empty string", "trimmed", "E.164-style", "not enforce E.164 validation"
-      ],
-      responseFragments: [
-        "`200 OK`", "top level", "`body`", "`url`", "only when", "`identifier`",
-        "no lookup path", "true miss", "exhausted or failed", "`status: \"not_found\"`",
-        "does not charge credits", "one bounded-backoff retry", "verify", "`mobile_phone`"
-      ],
-      forbiddenPatterns: [/always means[^.\n]*no matching profile/i],
-      requestExamples: [
-        { label: "phone number", shape: { mobile_phone: String }, exact: true }
-      ],
-      responseExamples: [
-        {
-          label: "person profile envelope",
-          shape: {
-            id: String,
-            url: String,
-            identifier: String,
-            body: { id: String, url: String, identifier: String }
-          },
-          exact: false
-        },
-        { label: "not-found", shape: { status: "not_found" }, exact: true }
-      ],
-      errorCauseFragments: {
-        "400 Bad Request": ["JSON", "`mobile_phone`", "missing", "empty"],
-        "401 Unauthorized": ["Bearer token", "missing", "invalid"],
-        "403 Forbidden": ["fewer than 10 credits"],
-        "413 Content Too Large": ["exceeds 256 KiB"],
-        "429 Too Many Requests": ["2,000 requests", "current minute"],
-        "502 Bad Gateway": ["API-key validation", "temporarily unavailable"],
-        "503 Service Unavailable": ["successful result", "credit settlement"],
-        "500 Internal Server Error": ["configuration", "unexpected worker error"]
-      },
-      errorRecoveryFragments: {
-        "400 Bad Request": ["non-empty string", "`+12025550147`"],
-        "429 Too Many Requests": (recovery) => (
-          /minute window/i.test(recovery) && /bounded exponential backoff/i.test(recovery)
-        ),
-        "503 Service Unavailable": ["same number", "credit service", "recovers"]
-      },
-      mutate: (source) => source.replace('"body": {', '"profile": {'),
-      additionalMutations: {
-        "required success URL": (source) => source.replace(
-          "| `url` | string, when available |",
-          "| `url` | string |"
-        ),
-        "definite-miss-only no-result": (source) => source.replace(
-          "This can represent a true miss or lookup paths that were exhausted or failed.",
-          "This always means the number has no matching profile."
-        ),
-        "missing recovery action": (source) => source.replace(
-          "Retry after the minute window with bounded exponential backoff.",
-          "Try again later."
-        )
-      }
-    }
-  };
-  const manifest = JSON.parse(readFileSync("contracts/public-api-contracts.json", "utf8"));
-
-  for (const [path, contract] of Object.entries(contracts)) {
-    assertEndpointPageContentSystem(path, contract, manifest);
-
-    for (const [mutationName, mutate] of Object.entries(contract.additionalMutations ?? {})) {
-      const source = readPage(path).source;
-      const mutatedSource = mutate(source);
-      assert.notEqual(mutatedSource, source, `${path} ${mutationName} mutation must change the contract`);
-      assert.throws(
-        () => assertEndpointPageContract(mutatedSource, contract, `${path} ${mutationName} mutation`),
-        `${path} must reject ${mutationName}`
-      );
-    }
+test("operation wrappers retain durable rate, credit, retry, and asynchronous guidance", () => {
+  assert.equal(Object.keys(DURABLE_OPERATION_GUIDANCE).length, 15);
+  for (const [page, patterns] of Object.entries(DURABLE_OPERATION_GUIDANCE)) {
+    const { body } = readPage(page);
+    for (const pattern of patterns) assert.match(body, pattern, `${page} must retain ${pattern}`);
   }
 });

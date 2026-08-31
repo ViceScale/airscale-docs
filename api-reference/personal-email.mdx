@@ -2,123 +2,20 @@
 title: "Personal email"
 description: "Find a personal email address from a professional profile."
 canonical: "https://airscale.mintlify.app/api-reference/personal-email"
+openapi: "/openapi.json POST /v1/personal-email"
 ---
 
 Submit a LinkedIn person profile URL and return a personal email address when one is found.
 
-<Badge color="blue">POST</Badge> `/v1/personal-email`
-
-| Property | Value |
-| --- | --- |
-| Method | `POST` |
-| Endpoint | `https://api.airscale.io/v1/personal-email` |
-| Execution | Synchronous |
-| Authentication | Bearer API key |
-| Rate limit | 2,000 requests per minute per workspace |
-| Request body limit | 256 KiB |
-| Airscale credit cost | 3–12 credits for a successful result, depending on the result source; `not_found` is not charged. |
-
-## Request
-
-| Field | Type | Required | Description |
-| --- | --- | --- | --- |
-| `linkedin_profile_url` | string | Yes | LinkedIn person profile URL. URLs without `https://` are normalized; the host must be `linkedin.com`, and the path must contain exactly one profile slug after `/in/`, with an optional trailing slash. |
-| `verification` | boolean or string | No | Set to `true` or `"yes"` to require additional email verification before a result is accepted. |
-
-```json
-{
-  "linkedin_profile_url": "https://www.linkedin.com/in/example-person-000000"
-}
-```
-
-## Response
-
-A successful lookup returns `200 OK`:
-
-```json
-{
-  "status": "success",
-  "email": "example.person@example.com"
-}
-```
-
-| Field | Type | Description |
-| --- | --- | --- |
-| `status` | string | `success` or `not_found`. |
-| `email` | string or null | Personal email on success; otherwise `null`. |
-
-When no personal email is found, the endpoint returns `200 OK` without charging credits:
-
-```json
-{
-  "status": "not_found",
-  "email": null
-}
-```
-
 <Note>
-The minimum balance required to start a lookup is 3 credits. A successful result costs between 3 and 12 credits; an unsuccessful lookup costs 0 credits.
+The limit is 2,000 requests per minute per workspace. The minimum balance required to start is 3 credits. A successful result costs between 3 and 12 credits, depending on its source; `not_found` costs 0 credits.
 </Note>
 
 <Warning>
-If a result is found and charged but required usage recording then fails, the endpoint returns `502 Bad Gateway`. Check your balance before retrying that input.
+If a result is found and charged but required usage recording then fails, the operation returns `502 Bad Gateway`. Check your balance before retrying that input to avoid paying again for the same result.
 </Warning>
 
-## Errors
-
-| Status | Cause | Recovery |
-| --- | --- | --- |
-| `400 Bad Request` | The JSON is invalid, the profile URL is missing, or it is not a valid LinkedIn `/in/` URL. | Send a LinkedIn person profile URL such as `https://www.linkedin.com/in/example-person-000000`. |
-| `401 Unauthorized` | The Bearer token is missing or invalid. | Add the current workspace API key to the `Authorization` header. |
-| `403 Forbidden` | The workspace cannot cover the 3-credit minimum or the final result cost. | Add enough credits to cover a result of up to 12 credits before retrying. |
-| `413 Content Too Large` | The request body exceeds 256 KiB. | Remove unrelated fields and resend the request. |
-| `429 Too Many Requests` | The workspace reached 2,000 requests in the current minute. | Retry after the minute window with bounded exponential backoff. |
-| `502 Bad Gateway` | API-key validation or required usage recording is temporarily unavailable. | Retry with bounded backoff; contact support if repeated requests fail. |
-| `503 Service Unavailable` | A successful result could not be settled by the credit service. | Retry with the same input after the service recovers. |
-| `500 Internal Server Error` | An unexpected worker error occurred. | Retry once with bounded backoff, then contact support with the timestamp. |
-
-## Examples
-
-<CodeGroup>
-```bash cURL
-curl --request POST \
-  --url https://api.airscale.io/v1/personal-email \
-  --header "Authorization: Bearer $AIRSCALE_API_KEY" \
-  --header "Content-Type: application/json" \
-  --data '{"linkedin_profile_url":"https://www.linkedin.com/in/example-person-000000"}'
-```
-
-```python Python
-import os
-import requests
-
-response = requests.post(
-    "https://api.airscale.io/v1/personal-email",
-    headers={"Authorization": f"Bearer {os.environ['AIRSCALE_API_KEY']}"},
-    json={"linkedin_profile_url": "https://www.linkedin.com/in/example-person-000000"},
-    timeout=100,
-)
-response.raise_for_status()
-print(response.json())
-```
-
-```javascript Node.js
-const apiKey = process.env.AIRSCALE_API_KEY;
-const response = await fetch("https://api.airscale.io/v1/personal-email", {
-  method: "POST",
-  headers: {
-    Authorization: `Bearer ${apiKey}`,
-    "Content-Type": "application/json",
-  },
-  body: JSON.stringify({
-    linkedin_profile_url: "https://www.linkedin.com/in/example-person-000000",
-  }),
-});
-
-if (!response.ok) throw new Error(`Personal-email lookup failed with HTTP ${response.status}`);
-console.log(await response.json());
-```
-</CodeGroup>
+For other transient failures, retry with bounded backoff. Wait for the credit service to recover before retrying a settlement failure.
 
 ## Next step
 

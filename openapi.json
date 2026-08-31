@@ -1,0 +1,4309 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Airscale Public API",
+    "version": "2026-08-30",
+    "description": "Search, enrich, and resolve public business data with Airscale.",
+    "x-airscale-source-repository": "ViceScale/airscale-code",
+    "x-airscale-source-sha": "8606866a5fb1f9405a94d49cfa9fbddaf4aaf431"
+  },
+  "servers": [
+    {
+      "url": "https://api.airscale.io",
+      "description": "Production"
+    }
+  ],
+  "tags": [
+    {
+      "name": "Search and discovery",
+      "description": "Search people, companies, and the web."
+    },
+    {
+      "name": "Contact data",
+      "description": "Find professional and personal contact data."
+    },
+    {
+      "name": "Profiles and reverse lookup",
+      "description": "Extract profiles or resolve a person from known contact data."
+    },
+    {
+      "name": "Account",
+      "description": "Inspect workspace account state."
+    }
+  ],
+  "security": [
+    {
+      "bearerAuth": []
+    }
+  ],
+  "paths": {
+    "/v1/credits": {
+      "post": {
+        "operationId": "getCredits",
+        "tags": [
+          "Account"
+        ],
+        "summary": "Get workspace credit balance",
+        "description": "Returns the current Airscale credit balance for the authenticated workspace.",
+        "x-airscale-rate-limit": "No endpoint-specific rate limit is documented.",
+        "x-airscale-credit-cost": "No charge; checking the balance does not debit Airscale credits.",
+        "responses": {
+          "200": {
+            "description": "The current workspace credit balance.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "status",
+                    "response"
+                  ],
+                  "additionalProperties": false,
+                  "properties": {
+                    "status": {
+                      "type": "string",
+                      "const": "success"
+                    },
+                    "response": {
+                      "type": "object",
+                      "required": [
+                        "credits"
+                      ],
+                      "additionalProperties": false,
+                      "properties": {
+                        "credits": {
+                          "type": "number"
+                        }
+                      }
+                    }
+                  }
+                },
+                "examples": {
+                  "success": {
+                    "summary": "Credit balance",
+                    "value": {
+                      "status": "success",
+                      "response": {
+                        "credits": 1200
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "500": {
+            "description": "The credit balance could not be retrieved because of an unexpected server error.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "The credit balance is temporarily unavailable. Try again later.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/email": {
+      "post": {
+        "operationId": "findProfessionalEmail",
+        "tags": [
+          "Contact data"
+        ],
+        "summary": "Find a professional email",
+        "description": "Finds a professional email from a recognized person profile or from a complete name and company identifier. The JSON request body is limited to 256 KiB.",
+        "x-airscale-rate-limit": "3,000 requests per minute per workspace.",
+        "x-airscale-credit-cost": "2 credits only when the response has status success; not_found is not charged.",
+        "requestBody": {
+          "required": true,
+          "description": "Provide either a recognized non-empty person profile, or first and last name with a domain or company name. Both complete forms may be supplied together. The JSON body must not exceed 256 KiB.",
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                  "linkedin_profile_url": {
+                    "$ref": "#/components/schemas/LinkedInPersonUrl"
+                  },
+                  "first_name": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "last_name": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "domain": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "company_name": {
+                    "type": "string",
+                    "minLength": 1
+                  }
+                },
+                "anyOf": [
+                  {
+                    "required": [
+                      "linkedin_profile_url"
+                    ]
+                  },
+                  {
+                    "required": [
+                      "first_name",
+                      "last_name"
+                    ],
+                    "anyOf": [
+                      {
+                        "required": [
+                          "domain"
+                        ]
+                      },
+                      {
+                        "required": [
+                          "company_name"
+                        ]
+                      }
+                    ]
+                  }
+                ]
+              },
+              "examples": {
+                "byProfile": {
+                  "summary": "Identify by profile",
+                  "value": {
+                    "linkedin_profile_url": "https://www.linkedin.com/in/example-person-000000"
+                  }
+                },
+                "byName": {
+                  "summary": "Identify by name and domain",
+                  "value": {
+                    "first_name": "Example",
+                    "last_name": "Person",
+                    "domain": "example.org"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "A professional email result or a not-found result.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "$ref": "#/components/schemas/SuccessEmail"
+                    },
+                    {
+                      "$ref": "#/components/schemas/NotFoundEmail"
+                    }
+                  ]
+                },
+                "examples": {
+                  "success": {
+                    "summary": "Email found",
+                    "value": {
+                      "status": "success",
+                      "email": "example.person@example.org"
+                    }
+                  },
+                  "notFound": {
+                    "summary": "No email found",
+                    "value": {
+                      "status": "not_found",
+                      "email": null
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "The JSON body is invalid or required identification fields are missing.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "description": "The workspace cannot complete this request because access or available credits are insufficient.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "The JSON request body exceeds the 256 KiB limit.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "The workspace rate limit has been exceeded. Try again after the current window resets.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "The request could not be completed because of an unexpected server error.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "502": {
+            "description": "The request could not be completed because a required service returned an unsuccessful response.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "The request is temporarily unavailable. Try again later.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/email-bulk": {
+      "post": {
+        "operationId": "findProfessionalEmailsBulk",
+        "tags": [
+          "Contact data"
+        ],
+        "summary": "Submit a professional email batch",
+        "description": "Accepts up to 100 professional-email inputs and sends results to the supplied HTTP webhook URL after processing.",
+        "x-airscale-rate-limit": "3,000 input items per minute per workspace.",
+        "x-airscale-credit-cost": "2 credits per item with status success; misses and timeouts are not charged.",
+        "requestBody": {
+          "required": true,
+          "description": "Provide a webhook URL and between 1 and 100 inputs. Each input may include an optional custom_id and must identify a person by profile or by complete name and company information.",
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "webhook_url",
+                  "inputs"
+                ],
+                "additionalProperties": false,
+                "properties": {
+                  "webhook_url": {
+                    "type": "string",
+                    "minLength": 1,
+                    "pattern": "^http"
+                  },
+                  "inputs": {
+                    "type": "array",
+                    "minItems": 1,
+                    "maxItems": 100,
+                    "items": {
+                      "type": "object",
+                      "additionalProperties": false,
+                      "properties": {
+                        "custom_id": {
+                          "description": "If omitted or null, the item's zero-based array index is used; any other JSON value is echoed unchanged."
+                        },
+                        "linkedin_profile_url": {
+                          "$ref": "#/components/schemas/LinkedInPersonUrl"
+                        },
+                        "first_name": {
+                          "type": "string",
+                          "minLength": 1
+                        },
+                        "last_name": {
+                          "type": "string",
+                          "minLength": 1
+                        },
+                        "domain": {
+                          "type": "string",
+                          "minLength": 1
+                        },
+                        "company_name": {
+                          "type": "string",
+                          "minLength": 1
+                        }
+                      },
+                      "anyOf": [
+                        {
+                          "required": [
+                            "linkedin_profile_url"
+                          ]
+                        },
+                        {
+                          "required": [
+                            "first_name",
+                            "last_name"
+                          ],
+                          "anyOf": [
+                            {
+                              "required": [
+                                "domain"
+                              ]
+                            },
+                            {
+                              "required": [
+                                "company_name"
+                              ]
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  }
+                }
+              },
+              "examples": {
+                "batch": {
+                  "summary": "Two synthetic contacts",
+                  "value": {
+                    "webhook_url": "https://webhook.example.org/email-results",
+                    "inputs": [
+                      {
+                        "custom_id": "contact-001",
+                        "linkedin_profile_url": "https://www.linkedin.com/in/example-person-000000"
+                      },
+                      {
+                        "custom_id": 2002,
+                        "first_name": "Sample",
+                        "last_name": "Contact",
+                        "company_name": "Example Company"
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "202": {
+            "description": "The batch was accepted for asynchronous processing.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "status",
+                    "count"
+                  ],
+                  "additionalProperties": false,
+                  "properties": {
+                    "status": {
+                      "type": "string",
+                      "const": "accepted"
+                    },
+                    "count": {
+                      "type": "integer",
+                      "minimum": 1,
+                      "maximum": 100
+                    }
+                  }
+                },
+                "examples": {
+                  "accepted": {
+                    "summary": "Batch accepted",
+                    "value": {
+                      "status": "accepted",
+                      "count": 2
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "The JSON body is invalid or required identification fields are missing.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "description": "The workspace cannot complete this request because access or available credits are insufficient.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "The JSON request body exceeds the 256 KiB limit.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "The workspace rate limit has been exceeded. Try again after the current window resets.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "The request could not be completed because of an unexpected server error.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "502": {
+            "description": "The request could not be completed because a required service returned an unsuccessful response.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/phone": {
+      "post": {
+        "operationId": "findMobilePhone",
+        "tags": [
+          "Contact data"
+        ],
+        "summary": "Find a mobile phone number",
+        "description": "Finds a mobile phone number for a recognized person profile.",
+        "x-airscale-rate-limit": "3,000 requests per minute per workspace.",
+        "x-airscale-credit-cost": "40 credits only when the response has status success; not_found is not charged.",
+        "requestBody": {
+          "required": true,
+          "description": "Provide the recognized person profile to search.",
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "linkedin_profile_url"
+                ],
+                "additionalProperties": false,
+                "properties": {
+                  "linkedin_profile_url": {
+                    "$ref": "#/components/schemas/LinkedInPersonUrl"
+                  }
+                }
+              },
+              "examples": {
+                "profile": {
+                  "summary": "Person profile",
+                  "value": {
+                    "linkedin_profile_url": "https://www.linkedin.com/in/example-person-000000"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "A mobile phone result or a not-found result.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "type": "object",
+                      "required": [
+                        "status",
+                        "linkedin_profile_url",
+                        "phone_numbers",
+                        "provider"
+                      ],
+                      "additionalProperties": true,
+                      "properties": {
+                        "status": {
+                          "type": "string",
+                          "const": "success"
+                        },
+                        "linkedin_profile_url": {
+                          "$ref": "#/components/schemas/LinkedInPersonUrl"
+                        },
+                        "phone_numbers": {
+                          "type": "string"
+                        },
+                        "provider": {
+                          "type": [
+                            "string",
+                            "null"
+                          ],
+                          "description": "A public source label when one is available."
+                        }
+                      }
+                    },
+                    {
+                      "type": "object",
+                      "required": [
+                        "status",
+                        "linkedin_profile_url",
+                        "phone_numbers",
+                        "provider"
+                      ],
+                      "additionalProperties": true,
+                      "properties": {
+                        "status": {
+                          "type": "string",
+                          "const": "not_found"
+                        },
+                        "linkedin_profile_url": {
+                          "$ref": "#/components/schemas/LinkedInPersonUrl"
+                        },
+                        "phone_numbers": {
+                          "type": "null"
+                        },
+                        "provider": {
+                          "type": [
+                            "string",
+                            "null"
+                          ]
+                        }
+                      }
+                    }
+                  ]
+                },
+                "examples": {
+                  "success": {
+                    "summary": "Mobile phone found",
+                    "value": {
+                      "status": "success",
+                      "linkedin_profile_url": "https://www.linkedin.com/in/example-person-000000",
+                      "phone_numbers": "+12025550147",
+                      "provider": null
+                    }
+                  },
+                  "notFound": {
+                    "summary": "No mobile phone found",
+                    "value": {
+                      "status": "not_found",
+                      "linkedin_profile_url": "https://www.linkedin.com/in/example-person-000000",
+                      "phone_numbers": null,
+                      "provider": null
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "The JSON body is invalid or required identification fields are missing.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "description": "The workspace cannot complete this request because access or available credits are insufficient.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "The JSON request body exceeds the 256 KiB limit.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "The workspace rate limit has been exceeded. Try again after the current window resets.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "The request could not be completed because of an unexpected server error.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "502": {
+            "description": "The request could not be completed because a required service returned an unsuccessful response.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "The request is temporarily unavailable. Try again later.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/personal-email": {
+      "post": {
+        "operationId": "findPersonalEmail",
+        "tags": [
+          "Contact data"
+        ],
+        "summary": "Find a personal email",
+        "description": "Finds a personal email for a recognized person profile, with optional verification behavior.",
+        "x-airscale-rate-limit": "2,000 requests per minute per workspace.",
+        "x-airscale-credit-cost": "3–12 credits for a successful result; not_found is not charged.",
+        "requestBody": {
+          "required": true,
+          "description": "Provide the recognized person profile. Verification is enabled only for boolean true or the case-insensitive string \"yes\"; all other values leave verification disabled.",
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "linkedin_profile_url"
+                ],
+                "additionalProperties": false,
+                "properties": {
+                  "linkedin_profile_url": {
+                    "description": "A LinkedIn person-profile input accepted and canonicalized after trimming whitespace. Valid URL user info, numeric ports, queries, and fragments are accepted but omitted from the canonical profile URL.",
+                    "allOf": [
+                      {
+                        "$ref": "#/components/schemas/LinkedInPersonUrl"
+                      },
+                      {
+                        "pattern": "^\\s*(?:[Hh][Tt][Tt][Pp][Ss]?:\\/\\/)?(?:[^\\s\\/@:]+(?::[^\\s\\/@]*)?@)?(?:[Ww]{3}\\.)?[Ll][Ii][Nn][Kk][Ee][Dd][Ii][Nn]\\.[Cc][Oo][Mm](?::(?:0*[0-9]{1,4}|0*(?:[1-5][0-9]{4}|6[0-4][0-9]{3}|65[0-4][0-9]{2}|655[0-2][0-9]|6553[0-5])))?\\/in\\/(?:[A-Za-z0-9_-]|%[0-9A-Fa-f]{2})+\\/?(?:\\?[^\\s#]*)?(?:#[^\\s]*)?\\s*$"
+                      }
+                    ]
+                  },
+                  "verification": {
+                    "description": "Verification is enabled only for boolean true or the case-insensitive string \"yes\"; all other values leave verification disabled.",
+                    "oneOf": [
+                      {
+                        "type": "boolean"
+                      },
+                      {
+                        "type": "string"
+                      }
+                    ]
+                  }
+                }
+              },
+              "examples": {
+                "profile": {
+                  "summary": "Person profile with verification enabled",
+                  "value": {
+                    "linkedin_profile_url": "https://www.linkedin.com/in/example-person-000000",
+                    "verification": true
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "A personal email result or a not-found result.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "type": "object",
+                      "required": [
+                        "status",
+                        "email"
+                      ],
+                      "additionalProperties": true,
+                      "properties": {
+                        "status": {
+                          "type": "string",
+                          "const": "success"
+                        },
+                        "email": {
+                          "type": "string",
+                          "format": "email"
+                        }
+                      }
+                    },
+                    {
+                      "$ref": "#/components/schemas/NotFoundEmail"
+                    }
+                  ]
+                },
+                "examples": {
+                  "success": {
+                    "summary": "Personal email found",
+                    "value": {
+                      "status": "success",
+                      "email": "personal.example@example.org"
+                    }
+                  },
+                  "notFound": {
+                    "summary": "No personal email found",
+                    "value": {
+                      "status": "not_found",
+                      "email": null
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "The JSON body is invalid or required identification fields are missing.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "description": "The workspace cannot complete this request because access or available credits are insufficient.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "The JSON request body exceeds the 256 KiB limit.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "The workspace rate limit has been exceeded. Try again after the current window resets.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "The request could not be completed because of an unexpected server error.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "502": {
+            "description": "The request could not be completed because a required service returned an unsuccessful response.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "The request is temporarily unavailable. Try again later.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/url-search-people": {
+      "post": {
+        "operationId": "findPeopleProfileUrl",
+        "tags": [
+          "Contact data"
+        ],
+        "summary": "Find a person's profile URL",
+        "description": "Finds a person's public profile URL from their name and company name.",
+        "x-airscale-rate-limit": "6 requests per second per workspace.",
+        "x-airscale-credit-cost": "0.5 credits only when the response has status success; not_found is not charged.",
+        "requestBody": {
+          "required": true,
+          "description": "Provide the person's first name, last name, and company name.",
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "first_name",
+                  "last_name",
+                  "company_name"
+                ],
+                "additionalProperties": false,
+                "properties": {
+                  "first_name": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "last_name": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "company_name": {
+                    "type": "string",
+                    "minLength": 1
+                  }
+                }
+              },
+              "examples": {
+                "person": {
+                  "summary": "Synthetic person and company",
+                  "value": {
+                    "first_name": "Example",
+                    "last_name": "Person",
+                    "company_name": "Example Company"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "A profile URL result or a not-found result.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "type": "object",
+                      "required": [
+                        "status",
+                        "url"
+                      ],
+                      "additionalProperties": true,
+                      "properties": {
+                        "status": {
+                          "type": "string",
+                          "const": "success"
+                        },
+                        "url": {
+                          "type": "string"
+                        }
+                      }
+                    },
+                    {
+                      "type": "object",
+                      "required": [
+                        "status"
+                      ],
+                      "additionalProperties": true,
+                      "properties": {
+                        "status": {
+                          "type": "string",
+                          "const": "not_found"
+                        }
+                      }
+                    }
+                  ]
+                },
+                "examples": {
+                  "success": {
+                    "summary": "Profile URL found",
+                    "value": {
+                      "status": "success",
+                      "url": "https://www.linkedin.com/in/example-person-000000"
+                    }
+                  },
+                  "notFound": {
+                    "summary": "No profile URL found",
+                    "value": {
+                      "status": "not_found"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "The JSON body is invalid or required identification fields are missing.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "description": "The workspace cannot complete this request because access or available credits are insufficient.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "The JSON request body exceeds the 256 KiB limit.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "The workspace rate limit has been exceeded. Try again after the current window resets.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "The request could not be completed because of an unexpected server error.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "502": {
+            "description": "The request could not be completed because a required service returned an unsuccessful response.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "The request is temporarily unavailable. Try again later.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/profile": {
+      "post": {
+        "operationId": "extractPersonProfile",
+        "tags": [
+          "Profiles and reverse lookup"
+        ],
+        "summary": "Extract a person profile",
+        "description": "Extracts public profile data. The submitted URL determines whether the successful response is a person or company object.",
+        "x-airscale-rate-limit": "3,000 requests per minute per workspace.",
+        "x-airscale-credit-cost": "URL-selected: /in/ successes cost 1 credit by default (workspace-specific pricing may differ); /company/ or /school/ successes cost 0.5 credits; unsuccessful requests are not charged.",
+        "requestBody": {
+          "required": true,
+          "description": "The LinkedIn URL is trimmed and a missing scheme is normalized. The hostname must be linkedin.com or a subdomain, and the first path segment must be /in/, /company/, or /school/. Query and extra path segments are canonicalized away. The submitted URL type chooses the person or company response and successful credit cost, regardless of which of these two routes receives it. When mode is omitted, the response can use a variable source shape; modes p2 and p3 request normalized shapes.",
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "linkedin_profile_url"
+                ],
+                "additionalProperties": false,
+                "properties": {
+                  "linkedin_profile_url": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "mode": {
+                    "type": "string",
+                    "enum": [
+                      "p1",
+                      "p2",
+                      "p3"
+                    ]
+                  }
+                }
+              },
+              "examples": {
+                "profile": {
+                  "summary": "Normalized profile extraction",
+                  "value": {
+                    "linkedin_profile_url": "linkedin.com/in/example-person-000000?source=synthetic",
+                    "mode": "p3"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "The submitted URL selects a person or company profile response.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "anyOf": [
+                    {
+                      "$ref": "#/components/schemas/VariablePersonProfile"
+                    },
+                    {
+                      "$ref": "#/components/schemas/VariableCompanyProfile"
+                    }
+                  ]
+                },
+                "examples": {
+                  "success": {
+                    "summary": "Normalized profile",
+                    "value": {
+                      "url": "https://www.linkedin.com/in/example-person-000000",
+                      "identifier": "example-person-000000",
+                      "firstname": "Example",
+                      "lastname": "Person",
+                      "headline": "Example role at Example Company",
+                      "industry": "Software Development",
+                      "location": {
+                        "country": "United States",
+                        "city": "Example City",
+                        "state": "Example State"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "The JSON body is invalid or a required input is missing or invalid.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "description": "The workspace cannot complete this request because access or available credits are insufficient.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No profile could be extracted for the submitted LinkedIn URL.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "The JSON request body exceeds the 256 KiB limit.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "The workspace rate limit has been exceeded. Try again after the current window resets.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "The request could not be completed because of an unexpected server error.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "502": {
+            "description": "The request could not be completed because a required service returned an unsuccessful response.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "The request is temporarily unavailable. Try again later.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/company": {
+      "post": {
+        "operationId": "extractCompanyProfile",
+        "tags": [
+          "Profiles and reverse lookup"
+        ],
+        "summary": "Extract a company profile",
+        "description": "Extracts public profile data. The submitted URL determines whether the successful response is a person or company object.",
+        "x-airscale-rate-limit": "3,000 requests per minute per workspace.",
+        "x-airscale-credit-cost": "URL-selected: /in/ successes cost 1 credit by default (workspace-specific pricing may differ); /company/ or /school/ successes cost 0.5 credits; unsuccessful requests are not charged.",
+        "requestBody": {
+          "required": true,
+          "description": "The LinkedIn URL is trimmed and a missing scheme is normalized. The hostname must be linkedin.com or a subdomain, and the first path segment must be /in/, /company/, or /school/. Query and extra path segments are canonicalized away. The submitted URL type chooses the person or company response and successful credit cost, regardless of which of these two routes receives it. When mode is omitted, the response can use a variable source shape; modes p2 and p3 request normalized shapes.",
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "linkedin_profile_url"
+                ],
+                "additionalProperties": false,
+                "properties": {
+                  "linkedin_profile_url": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "mode": {
+                    "type": "string",
+                    "enum": [
+                      "p1",
+                      "p2",
+                      "p3"
+                    ]
+                  }
+                }
+              },
+              "examples": {
+                "profile": {
+                  "summary": "Normalized profile extraction",
+                  "value": {
+                    "linkedin_profile_url": "https://www.linkedin.com/company/example-company-000000/about/",
+                    "mode": "p3"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "The submitted URL selects a person or company profile response.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "anyOf": [
+                    {
+                      "$ref": "#/components/schemas/VariablePersonProfile"
+                    },
+                    {
+                      "$ref": "#/components/schemas/VariableCompanyProfile"
+                    }
+                  ]
+                },
+                "examples": {
+                  "success": {
+                    "summary": "Normalized profile",
+                    "value": {
+                      "url": "https://www.linkedin.com/company/example-company-000000",
+                      "name": "Example Company",
+                      "universalName": "example-company-000000",
+                      "website": "https://www.example.org",
+                      "description": "Synthetic company profile for API documentation.",
+                      "staff": {
+                        "total": 120,
+                        "range": "51-200"
+                      },
+                      "locations": {
+                        "headquarter": {
+                          "country": "United States",
+                          "city": "Example City"
+                        },
+                        "other": []
+                      },
+                      "industries": [
+                        "Software Development"
+                      ],
+                      "specialities": [
+                        "Synthetic data"
+                      ]
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "The JSON body is invalid or a required input is missing or invalid.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "description": "The workspace cannot complete this request because access or available credits are insufficient.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No profile could be extracted for the submitted LinkedIn URL.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "The JSON request body exceeds the 256 KiB limit.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "The workspace rate limit has been exceeded. Try again after the current window resets.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "The request could not be completed because of an unexpected server error.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "502": {
+            "description": "The request could not be completed because a required service returned an unsuccessful response.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "The request is temporarily unavailable. Try again later.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/reverse-email": {
+      "post": {
+        "operationId": "reverseEmailLookup",
+        "tags": [
+          "Profiles and reverse lookup"
+        ],
+        "summary": "Find a profile from an email",
+        "description": "Resolves a public person profile from an email address, or returns the JSON string \"not found\" when no profile is available.",
+        "x-airscale-rate-limit": "25 requests per second per workspace.",
+        "x-airscale-credit-cost": "2 credits only when a profile is returned; \"not found\" and errors are not charged.",
+        "requestBody": {
+          "required": true,
+          "description": "The email is trimmed and lowercased before lookup. It must have a non-empty local part, an @ sign, and a domain containing a dot.",
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "email"
+                ],
+                "additionalProperties": false,
+                "properties": {
+                  "email": {
+                    "type": "string",
+                    "pattern": "^\\s*[^\\s@]+@[^\\s@]+\\.[^\\s@]+\\s*$"
+                  }
+                }
+              },
+              "examples": {
+                "email": {
+                  "summary": "Synthetic email",
+                  "value": {
+                    "email": " Example.Person@Example.Org "
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "A public person profile or the exact JSON string \"not found\".",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "$ref": "#/components/schemas/VariablePersonProfile"
+                    },
+                    {
+                      "type": "string",
+                      "enum": [
+                        "not found"
+                      ]
+                    }
+                  ]
+                },
+                "examples": {
+                  "success": {
+                    "summary": "Profile found",
+                    "value": {
+                      "url": "https://www.linkedin.com/in/example-person-000000",
+                      "identifier": "example-person-000000",
+                      "firstname": "Example",
+                      "lastname": "Person",
+                      "headline": "Example role at Example Company"
+                    }
+                  },
+                  "notFound": {
+                    "summary": "No profile found",
+                    "value": "not found"
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "The JSON body is invalid or a required input is missing or invalid.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "description": "The workspace cannot complete this request because access or available credits are insufficient.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "The JSON request body exceeds the 256 KiB limit.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "The workspace rate limit has been exceeded. Try again after the current window resets.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "The request could not be completed because of an unexpected server error.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "502": {
+            "description": "The request could not be completed because a required service returned an unsuccessful response.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "The request is temporarily unavailable. Try again later.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/reverse-phone": {
+      "post": {
+        "operationId": "reversePhoneLookup",
+        "tags": [
+          "Profiles and reverse lookup"
+        ],
+        "summary": "Find a profile from a phone number",
+        "description": "Resolves a public person profile from a phone-number string, or returns a not_found status when no profile is available.",
+        "x-airscale-rate-limit": "2,000 requests per minute per workspace.",
+        "x-airscale-credit-cost": "10 credits only when a profile is returned; not_found and errors are not charged.",
+        "requestBody": {
+          "required": true,
+          "description": "The mobile_phone value is trimmed before lookup and must contain at least one non-whitespace character. The exact trimmed lowercase strings \"null\" and \"undefined\" are treated as missing input.",
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "mobile_phone"
+                ],
+                "additionalProperties": false,
+                "properties": {
+                  "mobile_phone": {
+                    "type": "string",
+                    "minLength": 1,
+                    "pattern": "^(?!\\s*(?:null|undefined)\\s*$)(?=.*\\S)[\\s\\S]+$"
+                  }
+                }
+              },
+              "examples": {
+                "phone": {
+                  "summary": "Synthetic phone number",
+                  "value": {
+                    "mobile_phone": "+12025550147"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "A public person profile in a body envelope, or an exact not_found status.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "type": "object",
+                      "required": [
+                        "body"
+                      ],
+                      "additionalProperties": true,
+                      "properties": {
+                        "body": {
+                          "type": "object",
+                          "additionalProperties": true
+                        },
+                        "url": {
+                          "description": "A pass-through public profile URL value when supplied by the lookup source."
+                        },
+                        "identifier": {
+                          "description": "A pass-through public profile identifier when supplied by the lookup source."
+                        },
+                        "link": {
+                          "description": "A pass-through link value whose type and shape vary by lookup source."
+                        },
+                        "firstname": {
+                          "description": "A pass-through public first-name value when supplied by the lookup source."
+                        },
+                        "lastname": {
+                          "description": "A pass-through public last-name value when supplied by the lookup source."
+                        }
+                      }
+                    },
+                    {
+                      "$ref": "#/components/schemas/NotFoundStatus"
+                    }
+                  ]
+                },
+                "examples": {
+                  "success": {
+                    "summary": "Profile found",
+                    "value": {
+                      "url": "https://www.linkedin.com/in/example-person-000000",
+                      "identifier": "example-person-000000",
+                      "firstname": "Example",
+                      "lastname": "Person",
+                      "link": {
+                        "linkedin": "https://www.linkedin.com/in/example-person-000000"
+                      },
+                      "body": {
+                        "url": "https://www.linkedin.com/in/example-person-000000",
+                        "identifier": "example-person-000000",
+                        "firstname": "Example",
+                        "lastname": "Person",
+                        "link": {
+                          "linkedin": "https://www.linkedin.com/in/example-person-000000"
+                        }
+                      }
+                    }
+                  },
+                  "notFound": {
+                    "summary": "No profile found",
+                    "value": {
+                      "status": "not_found"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "The JSON body is invalid or a required input is missing or invalid.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "description": "The workspace cannot complete this request because access or available credits are insufficient.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "The JSON request body exceeds the 256 KiB limit.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "The workspace rate limit has been exceeded. Try again after the current window resets.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "The request could not be completed because of an unexpected server error.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "502": {
+            "description": "The request could not be completed because a required service returned an unsuccessful response.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "The request is temporarily unavailable. Try again later.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/find-people": {
+      "post": {
+        "operationId": "findPeople",
+        "tags": [
+          "Search and discovery"
+        ],
+        "summary": "Find people",
+        "description": "Searches for people who match structured person, role, and company filters. The JSON request body is limited to 256 KiB.",
+        "x-airscale-rate-limit": "6 requests per second per workspace.",
+        "x-airscale-credit-cost": "0.1 credits per returned lead; no charge when no leads are returned.",
+        "requestBody": {
+          "required": true,
+          "description": "Provide at least one supported query filter. Search pagination accepts a page size from 1 to 100 and an optional opaque cursor.",
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "query"
+                ],
+                "additionalProperties": false,
+                "properties": {
+                  "query": {
+                    "type": "object",
+                    "minProperties": 1,
+                    "additionalProperties": false,
+                    "properties": {
+                      "firstname": {
+                        "description": "Matches a person's first name.",
+                        "allOf": [
+                          {
+                            "$ref": "#/components/schemas/IncludeExcludeFilter"
+                          }
+                        ]
+                      },
+                      "lastname": {
+                        "description": "Matches a person's last name.",
+                        "allOf": [
+                          {
+                            "$ref": "#/components/schemas/IncludeExcludeFilter"
+                          }
+                        ]
+                      },
+                      "jobTitle": {
+                        "description": "Matches the person's current role or job title.",
+                        "allOf": [
+                          {
+                            "$ref": "#/components/schemas/IncludeExcludeFilter"
+                          }
+                        ]
+                      },
+                      "school": {
+                        "description": "Matches a school name on the person's profile.",
+                        "allOf": [
+                          {
+                            "$ref": "#/components/schemas/IncludeExcludeFilter"
+                          }
+                        ]
+                      },
+                      "languages": {
+                        "description": "Matches a language name or code on the person's profile.",
+                        "allOf": [
+                          {
+                            "$ref": "#/components/schemas/IncludeExcludeFilter"
+                          }
+                        ]
+                      },
+                      "skills": {
+                        "description": "Matches a skill name on the person's profile.",
+                        "allOf": [
+                          {
+                            "$ref": "#/components/schemas/IncludeExcludeFilter"
+                          }
+                        ]
+                      },
+                      "location": {
+                        "description": "Matches the person or current-role location. Country names and ISO alpha-2 codes are accepted.",
+                        "allOf": [
+                          {
+                            "$ref": "#/components/schemas/IncludeExcludeFilter"
+                          }
+                        ]
+                      },
+                      "keyword": {
+                        "description": "Matches text on the person's profile.",
+                        "allOf": [
+                          {
+                            "$ref": "#/components/schemas/IncludeExcludeFilter"
+                          }
+                        ]
+                      },
+                      "currentCompanyName": {
+                        "description": "Matches the person's current company name.",
+                        "allOf": [
+                          {
+                            "$ref": "#/components/schemas/IncludeExcludeFilter"
+                          }
+                        ]
+                      },
+                      "companyDomain": {
+                        "description": "Matches a current company domain; URL input is normalized to its hostname. Values from companyDomain and companyLinkedinUrl are combined as OR alternatives into one current-company identifier filter.",
+                        "allOf": [
+                          {
+                            "$ref": "#/components/schemas/IncludeExcludeFilter"
+                          }
+                        ]
+                      },
+                      "companyLinkedinUrl": {
+                        "description": "Matches a current company profile URL or identifier. Values from companyDomain and companyLinkedinUrl are combined as OR alternatives into one current-company identifier filter.",
+                        "allOf": [
+                          {
+                            "$ref": "#/components/schemas/IncludeExcludeFilter"
+                          }
+                        ]
+                      },
+                      "currentCompany.type": {
+                        "description": "Matches the current company type.",
+                        "allOf": [
+                          {
+                            "$ref": "#/components/schemas/IncludeExcludeFilter"
+                          }
+                        ]
+                      },
+                      "currentCompany.industry": {
+                        "description": "Matches the current company industry.",
+                        "allOf": [
+                          {
+                            "$ref": "#/components/schemas/IncludeExcludeFilter"
+                          }
+                        ]
+                      },
+                      "currentCompany.location": {
+                        "description": "Matches the current company headquarters location.",
+                        "allOf": [
+                          {
+                            "$ref": "#/components/schemas/IncludeExcludeFilter"
+                          }
+                        ]
+                      },
+                      "currentCompany.keyword": {
+                        "description": "Matches text on the current company profile.",
+                        "allOf": [
+                          {
+                            "$ref": "#/components/schemas/IncludeExcludeFilter"
+                          }
+                        ]
+                      },
+                      "pastJobTitle": {
+                        "description": "Matches a title in a previous position.",
+                        "allOf": [
+                          {
+                            "$ref": "#/components/schemas/IncludeExcludeFilter"
+                          }
+                        ]
+                      },
+                      "pastCompanyName": {
+                        "description": "Matches a previous company name.",
+                        "allOf": [
+                          {
+                            "$ref": "#/components/schemas/IncludeExcludeFilter"
+                          }
+                        ]
+                      },
+                      "pastCompanyId": {
+                        "description": "Matches a previous company identifier.",
+                        "allOf": [
+                          {
+                            "$ref": "#/components/schemas/IncludeExcludeFilter"
+                          }
+                        ]
+                      },
+                      "pastCompanyWebsite": {
+                        "description": "Matches a previous company website or domain.",
+                        "allOf": [
+                          {
+                            "$ref": "#/components/schemas/IncludeExcludeFilter"
+                          }
+                        ]
+                      },
+                      "pastCompanyUrn": {
+                        "description": "Matches a previous company URN.",
+                        "allOf": [
+                          {
+                            "$ref": "#/components/schemas/IncludeExcludeFilter"
+                          }
+                        ]
+                      },
+                      "pastCompany.type": {
+                        "description": "Matches a previous company type.",
+                        "allOf": [
+                          {
+                            "$ref": "#/components/schemas/IncludeExcludeFilter"
+                          }
+                        ]
+                      },
+                      "pastCompany.industry": {
+                        "description": "Matches a previous company industry.",
+                        "allOf": [
+                          {
+                            "$ref": "#/components/schemas/IncludeExcludeFilter"
+                          }
+                        ]
+                      },
+                      "pastCompany.location": {
+                        "description": "Matches a previous company headquarters location.",
+                        "allOf": [
+                          {
+                            "$ref": "#/components/schemas/IncludeExcludeFilter"
+                          }
+                        ]
+                      },
+                      "pastCompany.keyword": {
+                        "description": "Matches text on a previous company profile.",
+                        "allOf": [
+                          {
+                            "$ref": "#/components/schemas/IncludeExcludeFilter"
+                          }
+                        ]
+                      },
+                      "totalYearsOfExperience": {
+                        "description": "Matches the person's total years of experience.",
+                        "allOf": [
+                          {
+                            "$ref": "#/components/schemas/IntegerRangeFilter"
+                          }
+                        ]
+                      },
+                      "timeInCurrentCompany": {
+                        "description": "Matches years spent at the current company.",
+                        "allOf": [
+                          {
+                            "$ref": "#/components/schemas/IntegerRangeFilter"
+                          }
+                        ]
+                      },
+                      "currentCompany.headcount": {
+                        "description": "Matches current company employee count.",
+                        "allOf": [
+                          {
+                            "$ref": "#/components/schemas/IntegerRangeFilter"
+                          }
+                        ]
+                      },
+                      "currentCompany.revenue": {
+                        "description": "Matches current company revenue.",
+                        "allOf": [
+                          {
+                            "$ref": "#/components/schemas/IntegerRangeFilter"
+                          }
+                        ]
+                      },
+                      "pastCompany.headcount": {
+                        "description": "Matches previous company employee count.",
+                        "allOf": [
+                          {
+                            "$ref": "#/components/schemas/IntegerRangeFilter"
+                          }
+                        ]
+                      },
+                      "pastCompany.revenue": {
+                        "description": "Matches previous company revenue.",
+                        "allOf": [
+                          {
+                            "$ref": "#/components/schemas/IntegerRangeFilter"
+                          }
+                        ]
+                      },
+                      "currentCompany.headcountGrowth": {
+                        "description": "Matches current company headcount growth for a supported timespan.",
+                        "allOf": [
+                          {
+                            "$ref": "#/components/schemas/GrowthFilter"
+                          }
+                        ]
+                      },
+                      "pastCompany.headcountGrowth": {
+                        "description": "Matches previous company headcount growth for a supported timespan.",
+                        "allOf": [
+                          {
+                            "$ref": "#/components/schemas/GrowthFilter"
+                          }
+                        ]
+                      }
+                    }
+                  },
+                  "size": {
+                    "description": "A page size from 1 through 100 supplied as an integer JSON number or one of the equivalent canonical decimal strings. OpenAPI intentionally uses canonical decimal strings even though runtime Number() accepts additional JS-coercible spellings.",
+                    "oneOf": [
+                      {
+                        "type": "integer",
+                        "minimum": 1,
+                        "maximum": 100
+                      },
+                      {
+                        "type": "string",
+                        "pattern": "^(?:[1-9]|[1-9][0-9]|100)$"
+                      }
+                    ],
+                    "default": 100
+                  },
+                  "cursor": {
+                    "type": "string",
+                    "minLength": 1,
+                    "description": "An opaque value returned as next_cursor by the preceding page. Send it unchanged."
+                  }
+                }
+              },
+              "examples": {
+                "audience": {
+                  "summary": "Synthetic audience",
+                  "value": {
+                    "query": {
+                      "jobTitle": {
+                        "include": [
+                          "Revenue Operations Manager"
+                        ]
+                      },
+                      "location": {
+                        "include": [
+                          "Example Country"
+                        ]
+                      }
+                    },
+                    "size": 50
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "A page of matching public lead records.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "total",
+                    "leads",
+                    "next_cursor"
+                  ],
+                  "additionalProperties": false,
+                  "properties": {
+                    "total": {
+                      "type": "number"
+                    },
+                    "leads": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/FlexibleResult"
+                      }
+                    },
+                    "next_cursor": {
+                      "type": [
+                        "string",
+                        "null"
+                      ]
+                    }
+                  }
+                },
+                "examples": {
+                  "page": {
+                    "summary": "Synthetic lead page",
+                    "value": {
+                      "total": 124,
+                      "leads": [
+                        {
+                          "firstname": "Example",
+                          "lastname": "Person",
+                          "profileUrl": "https://www.linkedin.com/in/example-person-000000",
+                          "jobTitle": "Revenue Operations Manager",
+                          "companyName": "Example Company"
+                        }
+                      ],
+                      "next_cursor": "fp_synthetic_cursor"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "The request is invalid or contains an unsupported field or value.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "description": "The workspace cannot complete this request because access or available credits are insufficient.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "The HTTP method or path does not match this public endpoint.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "The JSON request body exceeds the 256 KiB limit.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "The workspace rate limit has been exceeded. Try again after the current window resets.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "502": {
+            "description": "The request could not be completed because a required service returned an unsuccessful response.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "The request is temporarily unavailable. Try again later.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/find-people/count": {
+      "post": {
+        "operationId": "countPeople",
+        "tags": [
+          "Search and discovery"
+        ],
+        "summary": "Count people",
+        "description": "Counts people using the exact same structured query contract as Find People, without retrieving or paginating lead records.",
+        "x-airscale-rate-limit": "6 requests per second per workspace.",
+        "x-airscale-credit-cost": "No charge; Count does not debit Airscale credits.",
+        "requestBody": {
+          "required": true,
+          "description": "Provide at least one supported query filter. Count has no size or cursor fields.",
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "query"
+                ],
+                "additionalProperties": false,
+                "properties": {
+                  "query": {
+                    "type": "object",
+                    "minProperties": 1,
+                    "additionalProperties": false,
+                    "properties": {
+                      "firstname": {
+                        "description": "Matches a person's first name.",
+                        "allOf": [
+                          {
+                            "$ref": "#/components/schemas/IncludeExcludeFilter"
+                          }
+                        ]
+                      },
+                      "lastname": {
+                        "description": "Matches a person's last name.",
+                        "allOf": [
+                          {
+                            "$ref": "#/components/schemas/IncludeExcludeFilter"
+                          }
+                        ]
+                      },
+                      "jobTitle": {
+                        "description": "Matches the person's current role or job title.",
+                        "allOf": [
+                          {
+                            "$ref": "#/components/schemas/IncludeExcludeFilter"
+                          }
+                        ]
+                      },
+                      "school": {
+                        "description": "Matches a school name on the person's profile.",
+                        "allOf": [
+                          {
+                            "$ref": "#/components/schemas/IncludeExcludeFilter"
+                          }
+                        ]
+                      },
+                      "languages": {
+                        "description": "Matches a language name or code on the person's profile.",
+                        "allOf": [
+                          {
+                            "$ref": "#/components/schemas/IncludeExcludeFilter"
+                          }
+                        ]
+                      },
+                      "skills": {
+                        "description": "Matches a skill name on the person's profile.",
+                        "allOf": [
+                          {
+                            "$ref": "#/components/schemas/IncludeExcludeFilter"
+                          }
+                        ]
+                      },
+                      "location": {
+                        "description": "Matches the person or current-role location. Country names and ISO alpha-2 codes are accepted.",
+                        "allOf": [
+                          {
+                            "$ref": "#/components/schemas/IncludeExcludeFilter"
+                          }
+                        ]
+                      },
+                      "keyword": {
+                        "description": "Matches text on the person's profile.",
+                        "allOf": [
+                          {
+                            "$ref": "#/components/schemas/IncludeExcludeFilter"
+                          }
+                        ]
+                      },
+                      "currentCompanyName": {
+                        "description": "Matches the person's current company name.",
+                        "allOf": [
+                          {
+                            "$ref": "#/components/schemas/IncludeExcludeFilter"
+                          }
+                        ]
+                      },
+                      "companyDomain": {
+                        "description": "Matches a current company domain; URL input is normalized to its hostname. Values from companyDomain and companyLinkedinUrl are combined as OR alternatives into one current-company identifier filter.",
+                        "allOf": [
+                          {
+                            "$ref": "#/components/schemas/IncludeExcludeFilter"
+                          }
+                        ]
+                      },
+                      "companyLinkedinUrl": {
+                        "description": "Matches a current company profile URL or identifier. Values from companyDomain and companyLinkedinUrl are combined as OR alternatives into one current-company identifier filter.",
+                        "allOf": [
+                          {
+                            "$ref": "#/components/schemas/IncludeExcludeFilter"
+                          }
+                        ]
+                      },
+                      "currentCompany.type": {
+                        "description": "Matches the current company type.",
+                        "allOf": [
+                          {
+                            "$ref": "#/components/schemas/IncludeExcludeFilter"
+                          }
+                        ]
+                      },
+                      "currentCompany.industry": {
+                        "description": "Matches the current company industry.",
+                        "allOf": [
+                          {
+                            "$ref": "#/components/schemas/IncludeExcludeFilter"
+                          }
+                        ]
+                      },
+                      "currentCompany.location": {
+                        "description": "Matches the current company headquarters location.",
+                        "allOf": [
+                          {
+                            "$ref": "#/components/schemas/IncludeExcludeFilter"
+                          }
+                        ]
+                      },
+                      "currentCompany.keyword": {
+                        "description": "Matches text on the current company profile.",
+                        "allOf": [
+                          {
+                            "$ref": "#/components/schemas/IncludeExcludeFilter"
+                          }
+                        ]
+                      },
+                      "pastJobTitle": {
+                        "description": "Matches a title in a previous position.",
+                        "allOf": [
+                          {
+                            "$ref": "#/components/schemas/IncludeExcludeFilter"
+                          }
+                        ]
+                      },
+                      "pastCompanyName": {
+                        "description": "Matches a previous company name.",
+                        "allOf": [
+                          {
+                            "$ref": "#/components/schemas/IncludeExcludeFilter"
+                          }
+                        ]
+                      },
+                      "pastCompanyId": {
+                        "description": "Matches a previous company identifier.",
+                        "allOf": [
+                          {
+                            "$ref": "#/components/schemas/IncludeExcludeFilter"
+                          }
+                        ]
+                      },
+                      "pastCompanyWebsite": {
+                        "description": "Matches a previous company website or domain.",
+                        "allOf": [
+                          {
+                            "$ref": "#/components/schemas/IncludeExcludeFilter"
+                          }
+                        ]
+                      },
+                      "pastCompanyUrn": {
+                        "description": "Matches a previous company URN.",
+                        "allOf": [
+                          {
+                            "$ref": "#/components/schemas/IncludeExcludeFilter"
+                          }
+                        ]
+                      },
+                      "pastCompany.type": {
+                        "description": "Matches a previous company type.",
+                        "allOf": [
+                          {
+                            "$ref": "#/components/schemas/IncludeExcludeFilter"
+                          }
+                        ]
+                      },
+                      "pastCompany.industry": {
+                        "description": "Matches a previous company industry.",
+                        "allOf": [
+                          {
+                            "$ref": "#/components/schemas/IncludeExcludeFilter"
+                          }
+                        ]
+                      },
+                      "pastCompany.location": {
+                        "description": "Matches a previous company headquarters location.",
+                        "allOf": [
+                          {
+                            "$ref": "#/components/schemas/IncludeExcludeFilter"
+                          }
+                        ]
+                      },
+                      "pastCompany.keyword": {
+                        "description": "Matches text on a previous company profile.",
+                        "allOf": [
+                          {
+                            "$ref": "#/components/schemas/IncludeExcludeFilter"
+                          }
+                        ]
+                      },
+                      "totalYearsOfExperience": {
+                        "description": "Matches the person's total years of experience.",
+                        "allOf": [
+                          {
+                            "$ref": "#/components/schemas/IntegerRangeFilter"
+                          }
+                        ]
+                      },
+                      "timeInCurrentCompany": {
+                        "description": "Matches years spent at the current company.",
+                        "allOf": [
+                          {
+                            "$ref": "#/components/schemas/IntegerRangeFilter"
+                          }
+                        ]
+                      },
+                      "currentCompany.headcount": {
+                        "description": "Matches current company employee count.",
+                        "allOf": [
+                          {
+                            "$ref": "#/components/schemas/IntegerRangeFilter"
+                          }
+                        ]
+                      },
+                      "currentCompany.revenue": {
+                        "description": "Matches current company revenue.",
+                        "allOf": [
+                          {
+                            "$ref": "#/components/schemas/IntegerRangeFilter"
+                          }
+                        ]
+                      },
+                      "pastCompany.headcount": {
+                        "description": "Matches previous company employee count.",
+                        "allOf": [
+                          {
+                            "$ref": "#/components/schemas/IntegerRangeFilter"
+                          }
+                        ]
+                      },
+                      "pastCompany.revenue": {
+                        "description": "Matches previous company revenue.",
+                        "allOf": [
+                          {
+                            "$ref": "#/components/schemas/IntegerRangeFilter"
+                          }
+                        ]
+                      },
+                      "currentCompany.headcountGrowth": {
+                        "description": "Matches current company headcount growth for a supported timespan.",
+                        "allOf": [
+                          {
+                            "$ref": "#/components/schemas/GrowthFilter"
+                          }
+                        ]
+                      },
+                      "pastCompany.headcountGrowth": {
+                        "description": "Matches previous company headcount growth for a supported timespan.",
+                        "allOf": [
+                          {
+                            "$ref": "#/components/schemas/GrowthFilter"
+                          }
+                        ]
+                      }
+                    }
+                  }
+                }
+              },
+              "examples": {
+                "audience": {
+                  "summary": "Synthetic audience count",
+                  "value": {
+                    "query": {
+                      "jobTitle": {
+                        "include": [
+                          "Revenue Operations Manager"
+                        ]
+                      },
+                      "location": {
+                        "include": [
+                          "Example Country"
+                        ]
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "The number of people matching the query.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "total"
+                  ],
+                  "additionalProperties": false,
+                  "properties": {
+                    "total": {
+                      "type": "number"
+                    }
+                  }
+                },
+                "examples": {
+                  "count": {
+                    "summary": "Synthetic audience count",
+                    "value": {
+                      "total": 124
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "The request is invalid or contains an unsupported field or value.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "description": "The workspace cannot complete this request because access or available credits are insufficient.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "The HTTP method or path does not match this public endpoint.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "The JSON request body exceeds the 256 KiB limit.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "The workspace rate limit has been exceeded. Try again after the current window resets.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "502": {
+            "description": "The request could not be completed because a required service returned an unsuccessful response.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "The request is temporarily unavailable. Try again later.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/find-companies": {
+      "post": {
+        "operationId": "findCompanies",
+        "tags": [
+          "Search and discovery"
+        ],
+        "summary": "Find companies",
+        "description": "Searches for companies using firmographic, geographic, event, intent, technology, and website filters. The JSON request body is limited to 256 KiB.",
+        "x-airscale-rate-limit": "6 requests per second per workspace.",
+        "x-airscale-credit-cost": "0.1 credits per returned company; no charge when no companies are returned.",
+        "requestBody": {
+          "required": true,
+          "description": "Provide at least one real company filter. Defaults such as eventWindow and locationMatch do not count as filters.",
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "filters"
+                ],
+                "additionalProperties": false,
+                "properties": {
+                  "filters": {
+                    "type": "object",
+                    "minProperties": 1,
+                    "additionalProperties": false,
+                    "properties": {
+                      "country": {
+                        "description": "Matches a recognized country name or ISO alpha-2 code.",
+                        "allOf": [
+                          {
+                            "$ref": "#/components/schemas/StringOrStringArray"
+                          }
+                        ]
+                      },
+                      "region": {
+                        "description": "Matches a canonical region code, Region|Country value, or a region name scoped by country. Discover canonical values with GET /v1/find-companies/filter-values.",
+                        "allOf": [
+                          {
+                            "$ref": "#/components/schemas/StringOrStringArray"
+                          }
+                        ]
+                      },
+                      "city": {
+                        "description": "Matches a resolvable city value. Discover accepted values with GET /v1/find-companies/filter-values.",
+                        "allOf": [
+                          {
+                            "$ref": "#/components/schemas/StringOrStringArray"
+                          }
+                        ]
+                      },
+                      "industry": {
+                        "description": "Matches a canonical company industry. Discover accepted values with GET /v1/find-companies/filter-values.",
+                        "allOf": [
+                          {
+                            "$ref": "#/components/schemas/StringOrStringArray"
+                          }
+                        ]
+                      },
+                      "size": {
+                        "description": "Matches a fixed employee-count range.",
+                        "oneOf": [
+                          {
+                            "type": "string",
+                            "enum": [
+                              "1-10",
+                              "11-50",
+                              "51-200",
+                              "201-500",
+                              "501-1000",
+                              "1001-5000",
+                              "5001-10000",
+                              "10001+"
+                            ]
+                          },
+                          {
+                            "type": "array",
+                            "minItems": 1,
+                            "items": {
+                              "type": "string",
+                              "enum": [
+                                "1-10",
+                                "11-50",
+                                "51-200",
+                                "201-500",
+                                "501-1000",
+                                "1001-5000",
+                                "5001-10000",
+                                "10001+"
+                              ]
+                            }
+                          }
+                        ]
+                      },
+                      "revenue": {
+                        "description": "Matches a fixed company revenue range.",
+                        "oneOf": [
+                          {
+                            "type": "string",
+                            "enum": [
+                              "0-500K",
+                              "500K-1M",
+                              "1M-5M",
+                              "5M-10M",
+                              "10M-25M",
+                              "25M-75M",
+                              "75M-200M",
+                              "200M-500M",
+                              "500M-1B",
+                              "1B-10B",
+                              "10B-100B",
+                              "100B-1T",
+                              "1T-10T",
+                              "10T+"
+                            ]
+                          },
+                          {
+                            "type": "array",
+                            "minItems": 1,
+                            "items": {
+                              "type": "string",
+                              "enum": [
+                                "0-500K",
+                                "500K-1M",
+                                "1M-5M",
+                                "5M-10M",
+                                "10M-25M",
+                                "25M-75M",
+                                "75M-200M",
+                                "200M-500M",
+                                "500M-1B",
+                                "1B-10B",
+                                "10B-100B",
+                                "100B-1T",
+                                "1T-10T",
+                                "10T+"
+                              ]
+                            }
+                          }
+                        ]
+                      },
+                      "age": {
+                        "description": "Matches a fixed company age range.",
+                        "oneOf": [
+                          {
+                            "type": "string",
+                            "enum": [
+                              "0-3",
+                              "3-6",
+                              "6-10",
+                              "10-20",
+                              "20+"
+                            ]
+                          },
+                          {
+                            "type": "array",
+                            "minItems": 1,
+                            "items": {
+                              "type": "string",
+                              "enum": [
+                                "0-3",
+                                "3-6",
+                                "6-10",
+                                "10-20",
+                                "20+"
+                              ]
+                            }
+                          }
+                        ]
+                      },
+                      "techStack": {
+                        "description": "Matches a technology used by the company. Discover accepted values with GET /v1/find-companies/filter-values.",
+                        "allOf": [
+                          {
+                            "$ref": "#/components/schemas/StringOrStringArray"
+                          }
+                        ]
+                      },
+                      "keywords": {
+                        "description": "Matches text found on the company website.",
+                        "allOf": [
+                          {
+                            "$ref": "#/components/schemas/StringOrStringArray"
+                          }
+                        ]
+                      },
+                      "topics": {
+                        "description": "Matches a canonical business-intent topic. Discover accepted values with GET /v1/find-companies/filter-values.",
+                        "allOf": [
+                          {
+                            "$ref": "#/components/schemas/StringOrStringArray"
+                          }
+                        ]
+                      },
+                      "events": {
+                        "description": "Matches a fixed recent company event.",
+                        "oneOf": [
+                          {
+                            "type": "string",
+                            "enum": [
+                              "increase_in_customer_service_department",
+                              "hiring_in_finance_department",
+                              "hiring_in_support_department",
+                              "increase_in_engineering_department",
+                              "decrease_in_customer_service_department",
+                              "hiring_in_operations_department",
+                              "hiring_in_creative_department",
+                              "decrease_in_engineering_department",
+                              "hiring_in_sales_department",
+                              "increase_in_operations_department",
+                              "hiring_in_trade_department",
+                              "decrease_in_marketing_department",
+                              "increase_in_marketing_department",
+                              "hiring_in_marketing_department",
+                              "hiring_in_health_department",
+                              "hiring_in_education_department",
+                              "increase_in_all_departments",
+                              "decrease_in_all_departments",
+                              "decrease_in_sales_department",
+                              "decrease_in_operations_department",
+                              "hiring_in_professional_service_department",
+                              "hiring_in_human_resources_department",
+                              "increase_in_sales_department",
+                              "hiring_in_legal_department",
+                              "hiring_in_unknown_department",
+                              "hiring_in_engineering_department",
+                              "company_award",
+                              "new_product",
+                              "employee_joined_company",
+                              "merger_and_acquisitions",
+                              "lawsuits_and_legal_issues",
+                              "outages_and_security_breaches",
+                              "closing_office",
+                              "new_investment",
+                              "new_office",
+                              "new_partnership",
+                              "cost_cutting",
+                              "new_funding_round",
+                              "award",
+                              "ipo_announcement"
+                            ]
+                          },
+                          {
+                            "type": "array",
+                            "minItems": 1,
+                            "items": {
+                              "type": "string",
+                              "enum": [
+                                "increase_in_customer_service_department",
+                                "hiring_in_finance_department",
+                                "hiring_in_support_department",
+                                "increase_in_engineering_department",
+                                "decrease_in_customer_service_department",
+                                "hiring_in_operations_department",
+                                "hiring_in_creative_department",
+                                "decrease_in_engineering_department",
+                                "hiring_in_sales_department",
+                                "increase_in_operations_department",
+                                "hiring_in_trade_department",
+                                "decrease_in_marketing_department",
+                                "increase_in_marketing_department",
+                                "hiring_in_marketing_department",
+                                "hiring_in_health_department",
+                                "hiring_in_education_department",
+                                "increase_in_all_departments",
+                                "decrease_in_all_departments",
+                                "decrease_in_sales_department",
+                                "decrease_in_operations_department",
+                                "hiring_in_professional_service_department",
+                                "hiring_in_human_resources_department",
+                                "increase_in_sales_department",
+                                "hiring_in_legal_department",
+                                "hiring_in_unknown_department",
+                                "hiring_in_engineering_department",
+                                "company_award",
+                                "new_product",
+                                "employee_joined_company",
+                                "merger_and_acquisitions",
+                                "lawsuits_and_legal_issues",
+                                "outages_and_security_breaches",
+                                "closing_office",
+                                "new_investment",
+                                "new_office",
+                                "new_partnership",
+                                "cost_cutting",
+                                "new_funding_round",
+                                "award",
+                                "ipo_announcement"
+                              ]
+                            }
+                          }
+                        ]
+                      },
+                      "locations": {
+                        "description": "Matches a fixed range for the number of company locations.",
+                        "oneOf": [
+                          {
+                            "type": "string",
+                            "enum": [
+                              "0-1",
+                              "2-5",
+                              "6-20",
+                              "21-50",
+                              "51-100",
+                              "101-1000",
+                              "1001+"
+                            ]
+                          },
+                          {
+                            "type": "array",
+                            "minItems": 1,
+                            "items": {
+                              "type": "string",
+                              "enum": [
+                                "0-1",
+                                "2-5",
+                                "6-20",
+                                "21-50",
+                                "51-100",
+                                "101-1000",
+                                "1001+"
+                              ]
+                            }
+                          }
+                        ]
+                      },
+                      "companyName": {
+                        "description": "Matches the company name.",
+                        "allOf": [
+                          {
+                            "$ref": "#/components/schemas/StringOrStringArray"
+                          }
+                        ]
+                      },
+                      "eventWindow": {
+                        "description": "Sets the recent-event window. Null or blank values use the default 30 days.",
+                        "oneOf": [
+                          {
+                            "type": "string",
+                            "enum": [
+                              "30 days",
+                              "60 days",
+                              "90 days"
+                            ]
+                          },
+                          {
+                            "type": "null"
+                          },
+                          {
+                            "type": "string",
+                            "pattern": "^\\s*$"
+                          }
+                        ],
+                        "default": "30 days"
+                      },
+                      "locationMatch": {
+                        "description": "Controls whether location filters match headquarters only or headquarters and operating locations. Null or blank values use the default hqOnly.",
+                        "oneOf": [
+                          {
+                            "type": "string",
+                            "enum": [
+                              "hqOnly",
+                              "hqOperating"
+                            ]
+                          },
+                          {
+                            "type": "null"
+                          },
+                          {
+                            "type": "string",
+                            "pattern": "^\\s*$"
+                          }
+                        ],
+                        "default": "hqOnly"
+                      },
+                      "hasWebsite": {
+                        "type": [
+                          "boolean",
+                          "null"
+                        ],
+                        "description": "Matches companies by whether a website is present; null leaves this criterion unset."
+                      },
+                      "isPublicCompany": {
+                        "type": [
+                          "boolean",
+                          "null"
+                        ],
+                        "description": "Matches companies by public-company status; null leaves this criterion unset."
+                      }
+                    },
+                    "anyOf": [
+                      {
+                        "required": [
+                          "country"
+                        ]
+                      },
+                      {
+                        "required": [
+                          "region"
+                        ]
+                      },
+                      {
+                        "required": [
+                          "city"
+                        ]
+                      },
+                      {
+                        "required": [
+                          "industry"
+                        ]
+                      },
+                      {
+                        "required": [
+                          "techStack"
+                        ]
+                      },
+                      {
+                        "required": [
+                          "keywords"
+                        ]
+                      },
+                      {
+                        "required": [
+                          "topics"
+                        ]
+                      },
+                      {
+                        "required": [
+                          "companyName"
+                        ]
+                      },
+                      {
+                        "required": [
+                          "size"
+                        ]
+                      },
+                      {
+                        "required": [
+                          "revenue"
+                        ]
+                      },
+                      {
+                        "required": [
+                          "age"
+                        ]
+                      },
+                      {
+                        "required": [
+                          "events"
+                        ]
+                      },
+                      {
+                        "required": [
+                          "locations"
+                        ]
+                      },
+                      {
+                        "required": [
+                          "hasWebsite"
+                        ],
+                        "properties": {
+                          "hasWebsite": {
+                            "type": "boolean"
+                          }
+                        }
+                      },
+                      {
+                        "required": [
+                          "isPublicCompany"
+                        ],
+                        "properties": {
+                          "isPublicCompany": {
+                            "type": "boolean"
+                          }
+                        }
+                      }
+                    ]
+                  },
+                  "page": {
+                    "description": "A zero-based page supplied as an integer JSON number or one of the equivalent canonical decimal strings. OpenAPI intentionally uses canonical decimal strings even though runtime Number() accepts additional spellings.",
+                    "oneOf": [
+                      {
+                        "type": "integer",
+                        "minimum": 0
+                      },
+                      {
+                        "type": "string",
+                        "pattern": "^(?:0|[1-9][0-9]*)$"
+                      }
+                    ],
+                    "default": 0
+                  },
+                  "size": {
+                    "description": "A page size from 1 through 100 supplied as an integer JSON number or one of the equivalent canonical decimal strings. OpenAPI intentionally uses canonical decimal strings even though runtime Number() accepts additional spellings.",
+                    "oneOf": [
+                      {
+                        "type": "integer",
+                        "minimum": 1,
+                        "maximum": 100
+                      },
+                      {
+                        "type": "string",
+                        "pattern": "^(?:[1-9]|[1-9][0-9]|100)$"
+                      }
+                    ],
+                    "default": 50
+                  },
+                  "cursor": {
+                    "type": "string",
+                    "pattern": "^fc_",
+                    "description": "An opaque fc_ cursor returned by the preceding page. When supplied, its saved page size takes precedence over new page or size values."
+                  }
+                }
+              },
+              "examples": {
+                "audience": {
+                  "summary": "Synthetic company audience",
+                  "value": {
+                    "filters": {
+                      "country": [
+                        "FR"
+                      ],
+                      "size": [
+                        "11-50"
+                      ],
+                      "keywords": [
+                        "workflow automation"
+                      ]
+                    },
+                    "size": 25
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "A page of matching sanitized public company records.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "rows",
+                    "total",
+                    "page",
+                    "size",
+                    "next_cursor"
+                  ],
+                  "additionalProperties": false,
+                  "properties": {
+                    "rows": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/FlexibleResult"
+                      }
+                    },
+                    "total": {
+                      "type": "number"
+                    },
+                    "page": {
+                      "type": "number"
+                    },
+                    "size": {
+                      "type": "number"
+                    },
+                    "next_cursor": {
+                      "type": [
+                        "string",
+                        "null"
+                      ]
+                    }
+                  }
+                },
+                "examples": {
+                  "reservedData": {
+                    "summary": "Synthetic company page using reserved example data",
+                    "value": {
+                      "rows": [
+                        {
+                          "name": "Example Company",
+                          "domain": "example.com",
+                          "website": "https://example.com",
+                          "countryName": "Example Country",
+                          "cityName": "Example City"
+                        }
+                      ],
+                      "total": 240,
+                      "page": 0,
+                      "size": 25,
+                      "next_cursor": "fc_eyJ2IjoxLCJtb2RlIjoicGFnZSIsInBhZ2UiOjEsInBhZ2VTaXplIjoyNSwicHJvdmlkZXJTaXplIjoxMDAwMH0"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "The request is invalid or contains an unsupported field or value.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "description": "The workspace cannot complete this request because access or available credits are insufficient.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "The JSON request body exceeds the 256 KiB limit.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "The workspace rate limit has been exceeded. Try again after the current window resets.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "The request could not be completed because of an unexpected server error.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "502": {
+            "description": "The request could not be completed because a required service returned an unsuccessful response.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "The request is temporarily unavailable. Try again later.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/find-companies/filter-values": {
+      "get": {
+        "operationId": "listFindCompanyFilterValues",
+        "tags": [
+          "Search and discovery"
+        ],
+        "summary": "List Find Companies filter values",
+        "description": "Discovers normalized values accepted by location, industry, intent-topic, and technology filters.",
+        "x-airscale-rate-limit": "6 requests per second per workspace.",
+        "x-airscale-credit-cost": "No charge; Filter-values does not debit Airscale credits.",
+        "x-codeSamples": [
+          {
+            "label": "cURL",
+            "lang": "bash",
+            "source": "curl --request GET \\\n  --url 'https://api.airscale.io/v1/find-companies/filter-values?filter=industry&q=example' \\\n  --header \"Authorization: Bearer $AIRSCALE_API_KEY\""
+          },
+          {
+            "label": "Node.js",
+            "lang": "node",
+            "source": "const url = new URL(\"https://api.airscale.io/v1/find-companies/filter-values\");\nurl.searchParams.set(\"filter\", \"industry\");\nurl.searchParams.set(\"q\", \"example\");\n\nconst response = await fetch(url, {\n  headers: {\n    Authorization: `Bearer ${process.env.AIRSCALE_API_KEY}`\n  }\n});\nconst data = await response.json();\nconsole.log(data);"
+          },
+          {
+            "label": "Python",
+            "lang": "python",
+            "source": "import os\nimport requests\n\nresponse = requests.get(\n    \"https://api.airscale.io/v1/find-companies/filter-values\",\n    headers={\"Authorization\": f'Bearer {os.environ[\"AIRSCALE_API_KEY\"]}'},\n    params={\"filter\": \"industry\", \"q\": \"example\"},\n    timeout=30,\n)\nresponse.raise_for_status()\nprint(response.json())"
+          }
+        ],
+        "parameters": [
+          {
+            "name": "filter",
+            "in": "query",
+            "required": true,
+            "description": "The Find Companies filter whose accepted values should be discovered.",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "city",
+                "region",
+                "industry",
+                "topics",
+                "techStack"
+              ]
+            }
+          },
+          {
+            "name": "q",
+            "in": "query",
+            "required": false,
+            "description": "At least one of q or query is required and must contain 2 to 120 characters after trimming. When q is present it is read first; a blank q suppresses query and returns 400.",
+            "schema": {
+              "type": "string",
+              "pattern": "^\\s*\\S[\\s\\S]{0,118}\\S\\s*$"
+            }
+          },
+          {
+            "name": "query",
+            "in": "query",
+            "required": false,
+            "description": "At least one of q or query is required and must contain 2 to 120 characters after trimming. query is used only when q is absent.",
+            "schema": {
+              "type": "string",
+              "pattern": "^\\s*\\S[\\s\\S]{0,118}\\S\\s*$"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "description": "Omitted, non-numeric, or non-integer values default to 20; an explicit empty value becomes 0 then clamps to 1; integers below 1 clamp to 1; integers above 100 clamp to 100.",
+            "schema": {
+              "oneOf": [
+                {
+                  "type": "integer"
+                },
+                {
+                  "type": "string"
+                }
+              ],
+              "default": 20,
+              "example": 20
+            }
+          },
+          {
+            "name": "country",
+            "in": "query",
+            "required": false,
+            "description": "Optional country context supplied as repeat or comma-separated values.",
+            "style": "form",
+            "explode": true,
+            "schema": {
+              "oneOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                }
+              ]
+            }
+          },
+          {
+            "name": "region",
+            "in": "query",
+            "required": false,
+            "description": "Optional region context supplied as repeat or comma-separated values; a bare region name needs country context.",
+            "style": "form",
+            "explode": true,
+            "schema": {
+              "oneOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                }
+              ]
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Normalized filter values matching the query and optional location context.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "filter",
+                    "query",
+                    "values"
+                  ],
+                  "additionalProperties": false,
+                  "properties": {
+                    "filter": {
+                      "type": "string",
+                      "enum": [
+                        "city",
+                        "region",
+                        "industry",
+                        "topics",
+                        "techStack"
+                      ]
+                    },
+                    "query": {
+                      "type": "string"
+                    },
+                    "values": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "required": [
+                          "label",
+                          "value"
+                        ],
+                        "additionalProperties": false,
+                        "properties": {
+                          "label": {
+                            "type": "string"
+                          },
+                          "value": {
+                            "type": "string"
+                          },
+                          "query": {
+                            "type": "string"
+                          },
+                          "city": {
+                            "type": "string"
+                          },
+                          "region": {
+                            "type": "string"
+                          },
+                          "countryCode": {
+                            "type": "string"
+                          },
+                          "regionCode": {
+                            "type": "string"
+                          }
+                        }
+                      }
+                    }
+                  }
+                },
+                "examples": {
+                  "industry": {
+                    "summary": "Synthetic industry values",
+                    "value": {
+                      "filter": "industry",
+                      "query": "example",
+                      "values": [
+                        {
+                          "label": "Example industry",
+                          "value": "example industry"
+                        }
+                      ]
+                    }
+                  },
+                  "city": {
+                    "summary": "Synthetic city values",
+                    "value": {
+                      "filter": "city",
+                      "query": "exa",
+                      "values": [
+                        {
+                          "query": "exa",
+                          "label": "Example City",
+                          "value": "Example City, EX, XX",
+                          "city": "Example City",
+                          "region": "EX",
+                          "countryCode": "xx",
+                          "regionCode": "xx-ex"
+                        }
+                      ]
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "The request is invalid or contains an unsupported field or value.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "description": "The workspace cannot complete this request because access or available credits are insufficient.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "The JSON request body exceeds the 256 KiB limit.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "The workspace rate limit has been exceeded. Try again after the current window resets.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "The request could not be completed because of an unexpected server error.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "502": {
+            "description": "The request could not be completed because a required service returned an unsuccessful response.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "The request is temporarily unavailable. Try again later.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/airsearch": {
+      "post": {
+        "operationId": "airsearch",
+        "tags": [
+          "Search and discovery"
+        ],
+        "summary": "Research the web with Airsearch",
+        "description": "Researches a public question and returns a sourced answer with optional requested output fields. The JSON request body is limited to 256 KiB.",
+        "x-airscale-rate-limit": "300 requests per minute per workspace.",
+        "x-airscale-credit-cost": "1 credit only for status success; not_found and timeout are not charged.",
+        "requestBody": {
+          "required": true,
+          "description": "Provide a non-empty prompt and, optionally, a map of requested output names to type keywords or descriptions.",
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "prompt"
+                ],
+                "additionalProperties": false,
+                "properties": {
+                  "prompt": {
+                    "type": "string",
+                    "minLength": 1,
+                    "pattern": "\\S",
+                    "description": "A research question or instruction that remains non-empty after surrounding whitespace is trimmed."
+                  },
+                  "schema": {
+                    "type": "object",
+                    "propertyNames": {
+                      "minLength": 1,
+                      "pattern": "\\S",
+                      "not": {
+                        "enum": [
+                          "status",
+                          "response",
+                          "reasoning",
+                          "sources",
+                          "confidence_score",
+                          "certainty_tag",
+                          "duration_ms"
+                        ]
+                      }
+                    },
+                    "additionalProperties": {
+                      "type": "string",
+                      "minLength": 1,
+                      "pattern": "\\S"
+                    },
+                    "description": "Maps arbitrary requested output names to non-empty type keywords or plain-language descriptions. Stable envelope names are reserved because dynamic requested fields must not collide with status, response, reasoning, sources, confidence_score, certainty_tag, or duration_ms."
+                  }
+                }
+              },
+              "examples": {
+                "structuredResearch": {
+                  "summary": "Research a synthetic company",
+                  "value": {
+                    "prompt": "What category does Example Company use to describe its service at https://example.com?",
+                    "schema": {
+                      "category": "string"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "A completed research result, including successful, not-found, and soft-timeout outcomes.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "status",
+                    "response",
+                    "reasoning",
+                    "sources",
+                    "confidence_score",
+                    "certainty_tag",
+                    "duration_ms"
+                  ],
+                  "properties": {
+                    "status": {
+                      "$ref": "#/components/schemas/Status"
+                    },
+                    "response": {
+                      "oneOf": [
+                        {
+                          "type": "string"
+                        },
+                        {
+                          "type": "object",
+                          "additionalProperties": true
+                        }
+                      ]
+                    },
+                    "reasoning": {
+                      "type": [
+                        "string",
+                        "null"
+                      ]
+                    },
+                    "sources": {
+                      "type": "array",
+                      "items": {
+                        "type": "string",
+                        "description": "A public source URL, public source label such as serp_snippets, or an empty string forwarded from the upstream result."
+                      }
+                    },
+                    "confidence_score": {
+                      "type": "number",
+                      "minimum": 0,
+                      "maximum": 1
+                    },
+                    "certainty_tag": {
+                      "type": "string",
+                      "enum": [
+                        "low",
+                        "medium",
+                        "high"
+                      ]
+                    },
+                    "duration_ms": {
+                      "type": "number",
+                      "minimum": 0
+                    }
+                  },
+                  "additionalProperties": {
+                    "type": [
+                      "string",
+                      "null"
+                    ]
+                  }
+                },
+                "examples": {
+                  "success": {
+                    "summary": "Synthetic successful research",
+                    "value": {
+                      "status": "success",
+                      "response": "Example Company describes its service as workflow automation.",
+                      "category": "workflow automation",
+                      "reasoning": "The public example page and search snippets agree.",
+                      "sources": [
+                        "https://example.com",
+                        "serp_snippets"
+                      ],
+                      "confidence_score": 0.92,
+                      "certainty_tag": "high",
+                      "duration_ms": 8420
+                    }
+                  },
+                  "notFound": {
+                    "summary": "No usable result",
+                    "value": {
+                      "status": "not_found",
+                      "response": "No relevant information found.",
+                      "category": null,
+                      "reasoning": null,
+                      "sources": [],
+                      "confidence_score": 0.1,
+                      "certainty_tag": "low",
+                      "duration_ms": 6900
+                    }
+                  },
+                  "timeout": {
+                    "summary": "Soft timeout",
+                    "value": {
+                      "status": "timeout",
+                      "response": "No relevant information found.",
+                      "category": null,
+                      "reasoning": null,
+                      "sources": [],
+                      "confidence_score": 0,
+                      "certainty_tag": "low",
+                      "duration_ms": 150000
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "The request is invalid or contains an unsupported field or value.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "description": "The workspace cannot complete this request because access or available credits are insufficient.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "The JSON request body exceeds the 256 KiB limit.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "The workspace rate limit has been exceeded. Try again after the current window resets.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "The request could not be completed because of an unexpected server error.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "502": {
+            "description": "The request could not be completed because a required service returned an unsuccessful response.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "The request is temporarily unavailable. Try again later.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "504": {
+            "description": "The initial research stage exceeded its time limit. Narrow the prompt before retrying.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "bearerAuth": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "API key",
+        "description": "Use an Airscale workspace API key. Never expose the key in client-side code."
+      }
+    },
+    "schemas": {
+      "Status": {
+        "type": "string",
+        "enum": [
+          "success",
+          "not_found",
+          "timeout"
+        ]
+      },
+      "IncludeExcludeFilter": {
+        "type": "object",
+        "description": "Use include, exclude, or both. Empty arrays and empty string values are accepted by the runtime, but meaningful non-empty values are recommended.",
+        "additionalProperties": false,
+        "properties": {
+          "include": {
+            "type": "array",
+            "maxItems": 200,
+            "items": {
+              "type": "string"
+            }
+          },
+          "exclude": {
+            "type": "array",
+            "maxItems": 200,
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "anyOf": [
+          {
+            "required": [
+              "include"
+            ]
+          },
+          {
+            "required": [
+              "exclude"
+            ]
+          }
+        ]
+      },
+      "IntegerRangeFilter": {
+        "type": "object",
+        "minProperties": 1,
+        "additionalProperties": false,
+        "properties": {
+          ">": {
+            "type": "integer"
+          },
+          ">=": {
+            "type": "integer"
+          },
+          "<": {
+            "type": "integer"
+          },
+          "<=": {
+            "type": "integer"
+          }
+        }
+      },
+      "GrowthFilter": {
+        "type": "object",
+        "description": "Headcount growth bounds for one supported timespan. When both bounds are present, min must be less than or equal to max.",
+        "x-airscale-runtime-constraint": "When both are present, min must be less than or equal to max.",
+        "additionalProperties": false,
+        "required": [
+          "timespan"
+        ],
+        "properties": {
+          "min": {
+            "type": "number",
+            "minimum": -100,
+            "maximum": 10000
+          },
+          "max": {
+            "type": "number",
+            "minimum": -100,
+            "maximum": 10000
+          },
+          "timespan": {
+            "type": "string",
+            "enum": [
+              "6months",
+              "12months",
+              "24months"
+            ]
+          }
+        },
+        "anyOf": [
+          {
+            "required": [
+              "min"
+            ]
+          },
+          {
+            "required": [
+              "max"
+            ]
+          }
+        ]
+      },
+      "StringOrStringArray": {
+        "oneOf": [
+          {
+            "type": "string",
+            "minLength": 1,
+            "pattern": "\\S"
+          },
+          {
+            "type": "array",
+            "minItems": 1,
+            "items": {
+              "type": "string",
+              "minLength": 1,
+              "pattern": "\\S"
+            }
+          }
+        ]
+      },
+      "FlexibleResult": {
+        "type": "object",
+        "additionalProperties": true,
+        "properties": {
+          "firstname": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "lastname": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "profileUrl": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "jobTitle": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "companyName": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "name": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "domain": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "website": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "countryName": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "cityName": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "linkedinProfile": {
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        }
+      },
+      "LinkedInPersonUrl": {
+        "type": "string",
+        "minLength": 1,
+        "description": "A recognized LinkedIn person-profile URL or identifier. Airscale normalizes supported profile inputs.",
+        "example": "https://www.linkedin.com/in/example-person-000000"
+      },
+      "SuccessEmail": {
+        "type": "object",
+        "required": [
+          "status",
+          "email"
+        ],
+        "additionalProperties": true,
+        "properties": {
+          "status": {
+            "type": "string",
+            "const": "success"
+          },
+          "email": {
+            "type": "string",
+            "format": "email"
+          },
+          "email_status": {
+            "type": "string",
+            "description": "The value is \"valid\" on a successful result."
+          },
+          "provider": {
+            "type": "string"
+          },
+          "verifier": {
+            "type": "string"
+          },
+          "catch_all": {
+            "type": "string",
+            "enum": [
+              "yes",
+              "no"
+            ]
+          },
+          "linkedin_profile_url": {
+            "$ref": "#/components/schemas/LinkedInPersonUrl"
+          }
+        }
+      },
+      "NotFoundEmail": {
+        "type": "object",
+        "required": [
+          "status",
+          "email"
+        ],
+        "additionalProperties": true,
+        "properties": {
+          "status": {
+            "type": "string",
+            "const": "not_found"
+          },
+          "email": {
+            "type": "null"
+          }
+        }
+      },
+      "VariablePersonProfile": {
+        "type": "object",
+        "additionalProperties": true,
+        "properties": {
+          "url": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "identifier": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "profile": {
+            "description": "A pass-through profile value whose type and shape vary by response source."
+          },
+          "link": {
+            "description": "A pass-through link value whose type and shape vary by response source."
+          },
+          "firstname": {
+            "description": "A pass-through public first-name value whose type varies by response source."
+          },
+          "lastname": {
+            "description": "A pass-through public last-name value whose type varies by response source."
+          },
+          "headline": {
+            "description": "A pass-through public headline value whose type varies by response source."
+          },
+          "industry": {
+            "description": "A pass-through public industry value whose type varies by response source."
+          },
+          "location": {
+            "description": "A pass-through public location value whose type and shape vary by response source."
+          }
+        }
+      },
+      "VariableCompanyProfile": {
+        "type": "object",
+        "additionalProperties": true,
+        "properties": {
+          "url": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "name": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "universalName": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "website": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "description": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "staff": {
+            "type": [
+              "object",
+              "null"
+            ],
+            "additionalProperties": true
+          },
+          "locations": {
+            "type": [
+              "object",
+              "null"
+            ],
+            "additionalProperties": true
+          },
+          "industries": {
+            "type": [
+              "array",
+              "null"
+            ],
+            "items": {}
+          },
+          "specialities": {
+            "type": [
+              "array",
+              "null"
+            ],
+            "items": {}
+          }
+        }
+      },
+      "NotFoundStatus": {
+        "type": "object",
+        "required": [
+          "status"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "status": {
+            "type": "string",
+            "const": "not_found"
+          }
+        }
+      },
+      "Error": {
+        "type": "object",
+        "additionalProperties": true,
+        "properties": {
+          "error": {
+            "type": "string"
+          },
+          "message": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "responses": {
+      "Unauthorized": {
+        "description": "The Bearer token is missing or invalid.",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/Error"
+            }
+          }
+        }
+      }
+    }
+  }
+}
