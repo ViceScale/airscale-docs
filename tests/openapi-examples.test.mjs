@@ -346,9 +346,9 @@ function assertSafeCodeSampleSource(source, label) {
   );
 
   const withoutApprovedBearerValues = source
-    .replaceAll("Bearer $AIRSCALE_API_KEY", "")
-    .replaceAll("Bearer ${process.env.AIRSCALE_API_KEY}", "")
-    .replaceAll('Bearer {os.environ["AIRSCALE_API_KEY"]}', "");
+    .replace(/Bearer \$AIRSCALE_API_KEY(?=$|[\s'"`])/g, "")
+    .replace(/Bearer \$\{process\.env\.AIRSCALE_API_KEY\}(?=$|[\s'"`])/g, "")
+    .replace(/Bearer \{os\.environ\["AIRSCALE_API_KEY"\]\}(?=$|[\s'"`])/g, "");
   assert.doesNotMatch(
     withoutApprovedBearerValues,
     /\bBearer\s+[^\s'"`]+/i,
@@ -546,6 +546,29 @@ test("authored x-codeSamples enter the structural privacy and safety walk", () =
     () => assertAuthoredExampleShapes(fixture(safeSource.replace("api.airscale.io", "real-company.com"))),
     /not an approved code-sample origin/
   );
+});
+
+test("code-sample Bearer environment placeholders require a terminal boundary", () => {
+  for (const source of [
+    'Authorization: "Bearer $AIRSCALE_API_KEY"',
+    'Authorization: `Bearer ${process.env.AIRSCALE_API_KEY}`',
+    'Authorization: f\'Bearer {os.environ["AIRSCALE_API_KEY"]}\'',
+    "Authorization: Bearer $AIRSCALE_API_KEY\nnext",
+    "Authorization: Bearer $AIRSCALE_API_KEY"
+  ]) {
+    assert.doesNotThrow(() => assertSafeCodeSampleSource(source, "valid boundary control"));
+  }
+
+  for (const source of [
+    "Authorization: Bearer $AIRSCALE_API_KEYsuffix",
+    "Authorization: Bearer ${process.env.AIRSCALE_API_KEY}suffix",
+    'Authorization: Bearer {os.environ["AIRSCALE_API_KEY"]}suffix'
+  ]) {
+    assert.throws(
+      () => assertSafeCodeSampleSource(source, "suffix mutant"),
+      /credential examples must use the AIRSCALE_API_KEY environment placeholder/
+    );
+  }
 });
 
 test("URL-bearing fields normalize absolute, scheme-relative, and bare-host values", () => {
