@@ -1,5 +1,5 @@
 ---
-name: Airscale
+name: airscale
 description: Search for people and companies, enrich professional contact data, run web research, and create asynchronous exports through the Airscale API or MCP server.
 metadata:
   version: "1.0"
@@ -46,7 +46,7 @@ Prefer browser OAuth in supported remote MCP clients. Header-capable local clien
 
 - MCP workflow and safety: https://airscale.mintlify.app/mcp/how-to-use-the-airscale-mcp
 - MCP tool catalog: https://airscale.mintlify.app/mcp/tools
-- MCP structured manifest: https://airscale.mintlify.app/mcp-tools.json
+- MCP structured manifest: https://airscale.mintlify.app/mcp-tools.txt
 - HTTP API reference: https://airscale.mintlify.app/api-reference/api-overview
 - OpenAPI specification: https://airscale.mintlify.app/openapi.json
 - Agent resource directory: https://airscale.mintlify.app/mcp/agent-resources

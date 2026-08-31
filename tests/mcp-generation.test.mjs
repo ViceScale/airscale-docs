@@ -18,6 +18,7 @@ import {
 import { tmpdir } from "node:os";
 import { dirname, join } from "node:path";
 import test from "node:test";
+import { getFileCategory } from "@mintlify/common";
 import Ajv2020 from "ajv/dist/2020.js";
 import addFormats from "ajv-formats";
 import { fromMarkdown } from "mdast-util-from-markdown";
@@ -30,9 +31,7 @@ import {
   run
 } from "../scripts/build-mcp-catalog.mjs";
 import {
-  renderAgentCard,
   renderAgentFiles,
-  renderApiCatalog,
   renderLlmsFull,
   renderLlmsIndex,
   renderSkill,
@@ -103,9 +102,7 @@ const PAID_EXPORT_STARTS = [
 const AGENT_OUTPUT_PATHS = [
   "llms.txt",
   "llms-full.txt",
-  "skill.md",
-  ".well-known/api-catalog",
-  ".well-known/agent-card.json"
+  "skill.md"
 ];
 
 function agentFixtureInputs() {
@@ -117,7 +114,7 @@ function agentFixtureInputs() {
     docsConfig,
     pageSources: Object.fromEntries(pagePaths.map((path) => [path, readFileSync(`${path}.mdx`, "utf8")])),
     openapi: JSON.parse(readFileSync("openapi.json", "utf8")),
-    mcpTools: JSON.parse(readFileSync("mcp-tools.json", "utf8")),
+    mcpTools: JSON.parse(readFileSync("mcp-tools.txt", "utf8")),
     mcpContract: JSON.parse(readFileSync("contracts/mcp-tools.json", "utf8"))
   };
 }
@@ -126,7 +123,7 @@ function writeAgentFixture(rootDirectory) {
   const inputs = agentFixtureInputs();
   writeFileSync(join(rootDirectory, "docs.json"), `${JSON.stringify(inputs.docsConfig, null, 2)}\n`);
   writeFileSync(join(rootDirectory, "openapi.json"), `${JSON.stringify(inputs.openapi, null, 2)}\n`);
-  writeFileSync(join(rootDirectory, "mcp-tools.json"), `${JSON.stringify(inputs.mcpTools, null, 2)}\n`);
+  writeFileSync(join(rootDirectory, "mcp-tools.txt"), `${JSON.stringify(inputs.mcpTools, null, 2)}\n`);
   mkdirSync(join(rootDirectory, "contracts"), { recursive: true });
   writeFileSync(join(rootDirectory, "contracts/mcp-tools.json"), `${JSON.stringify(inputs.mcpContract, null, 2)}\n`);
   for (const [path, source] of Object.entries(inputs.pageSources)) {
@@ -135,6 +132,18 @@ function writeAgentFixture(rootDirectory) {
     writeFileSync(pagePath, source);
   }
   return inputs;
+}
+
+function runMintlifyPrebuild(contentDirectory, outputDirectory) {
+  const prebuildUrl = new URL("../node_modules/@mintlify/prebuild/dist/index.js", import.meta.url).href;
+  const result = spawnSync(process.execPath, ["--input-type=module", "--eval", `
+    import { prebuild } from ${JSON.stringify(prebuildUrl)};
+    await prebuild(${JSON.stringify(contentDirectory)}, { disablePrefetch: true });
+  `], {
+    cwd: outputDirectory,
+    encoding: "utf8"
+  });
+  assert.equal(result.status, 0, result.stderr || result.stdout);
 }
 
 function readContract() {
@@ -2955,7 +2964,7 @@ test("outputs cannot occupy each other's reserved transaction namespaces in eith
   });
 });
 
-test("agent renderers publish the complete preview-host corpus and exact discovery contracts", () => {
+test("agent renderers publish only the platform-supported custom agent files", () => {
   const inputs = agentFixtureInputs();
   const outputs = renderAgentFiles(inputs);
   assert.deepEqual(Object.keys(outputs), AGENT_OUTPUT_PATHS);
@@ -2967,8 +2976,6 @@ test("agent renderers publish the complete preview-host corpus and exact discove
   assert.equal(outputs["llms.txt"], renderLlmsIndex(inputs));
   assert.equal(outputs["llms-full.txt"], renderLlmsFull(inputs));
   assert.equal(outputs["skill.md"], renderSkill(inputs));
-  assert.equal(outputs[".well-known/api-catalog"], renderApiCatalog(inputs));
-  assert.equal(outputs[".well-known/agent-card.json"], renderAgentCard(inputs));
 
   const navigationPaths = inputs.docsConfig.navigation.tabs.flatMap(({ groups }) => (
     groups.flatMap(({ pages }) => pages)
@@ -2987,38 +2994,44 @@ test("agent renderers publish the complete preview-host corpus and exact discove
     );
   }
 
-  assert.match(outputs["skill.md"], /^---\nname: Airscale\ndescription: Search for people and companies, enrich professional contact data, run web research, and create asynchronous exports through the Airscale API or MCP server\./);
+  assert.match(outputs["skill.md"], /^---\nname: airscale\ndescription: Search for people and companies, enrich professional contact data, run web research, and create asynchronous exports through the Airscale API or MCP server\./);
   assert.match(outputs["skill.md"], /version: "1\.0"/);
   assert.match(outputs["skill.md"], /source_sha: "b06ea2c46276f8415a97721f6901437ce07f13fa"/);
   assert.match(outputs["skill.md"], /API authentication[\s\S]*MCP authentication/i);
   assert.match(outputs["skill.md"], /Airsearch costs 2 credits per call/);
   assert.match(outputs["skill.md"], /confirm_credit_spend[\s\S]*explicit/i);
   assert.match(outputs["skill.md"], /https:\/\/airscale\.mintlify\.app\/mcp\/tools/);
+  assert.match(outputs["llms.txt"], /https:\/\/airscale\.mintlify\.app\/mcp-tools\.txt/);
+  assert.match(outputs["skill.md"], /https:\/\/airscale\.mintlify\.app\/mcp-tools\.txt/);
+  for (const contents of Object.values(outputs)) {
+    assert.doesNotMatch(contents, /mcp-tools\.json|\.well-known\/api-catalog/i);
+  }
+});
 
-  assert.deepEqual(JSON.parse(outputs[".well-known/api-catalog"]), {
-    name: "Airscale developer APIs",
-    version: "1.0.0",
-    documentation: "https://airscale.mintlify.app/api-reference/api-overview",
-    openapi: "https://airscale.mintlify.app/openapi.json",
-    mcpTools: "https://airscale.mintlify.app/mcp-tools.json",
-    mcpServer: "https://mcp.airscale.io/mcp",
-    documentationMcp: "https://airscale.mintlify.app/mcp"
-  });
+test("Mintlify cold and update prebuilds publish every advertised repository-owned machine file", () => {
+  const outputDirectory = mkdtempSync(join(tmpdir(), "airscale-mint-prebuild-"));
+  try {
+    runMintlifyPrebuild(process.cwd(), outputDirectory);
+    const publicDirectory = join(outputDirectory, "public");
+    for (const path of ["llms.txt", "llms-full.txt", "mcp-tools.txt"]) {
+      assert.equal(existsSync(join(publicDirectory, path)), true, `${path} must be copied by a cold Mintlify prebuild`);
+      assert.deepEqual(readFileSync(join(publicDirectory, path)), readFileSync(path));
+    }
+    assert.equal(getFileCategory("skill.md"), "skillFile", "Mintlify must classify the custom skill through its supported skill-file path");
+    for (const unsupportedPath of ["mcp-tools.json", ".well-known/api-catalog", ".well-known/agent-card.json"]) {
+      assert.equal(existsSync(join(publicDirectory, unsupportedPath)), false, `${unsupportedPath} must not be treated as an authored public file`);
+    }
 
-  const agentCard = JSON.parse(outputs[".well-known/agent-card.json"]);
-  assert.equal(agentCard.url, "https://airscale.mintlify.app/");
-  assert.equal(agentCard.provider.url, "https://airscale.mintlify.app/");
-  assert.equal(agentCard.documentationUrl, "https://airscale.mintlify.app/mcp/agent-resources");
-  assert.deepEqual(agentCard.supportedInterfaces.map(({ url }) => url), ["https://airscale.mintlify.app/"]);
-  assert.deepEqual(agentCard.skills.map(({ url }) => url), ["https://airscale.mintlify.app/skill.md"]);
-  assert.deepEqual(agentCard["x-airscale-resources"], {
-    openapi: "https://airscale.mintlify.app/openapi.json",
-    mcpTools: "https://airscale.mintlify.app/mcp-tools.json",
-    operationalMcp: "https://mcp.airscale.io/mcp",
-    documentationMcp: "https://airscale.mintlify.app/mcp",
-    skill: "https://airscale.mintlify.app/skill.md",
-    skillDiscovery: "https://airscale.mintlify.app/.well-known/agent-skills/index.json"
-  });
+    writeFileSync(join(publicDirectory, "mcp-tools.txt"), "stale manifest\n");
+    runMintlifyPrebuild(process.cwd(), outputDirectory);
+    assert.deepEqual(
+      readFileSync(join(publicDirectory, "mcp-tools.txt")),
+      readFileSync("mcp-tools.txt"),
+      "an update prebuild must replace a stale published manifest"
+    );
+  } finally {
+    rmSync(outputDirectory, { recursive: true, force: true });
+  }
 });
 
 test("agent renderers escape compact-index metadata and reject unsafe or incomplete navigation input", () => {
@@ -3107,6 +3120,132 @@ test("atomic generated sets install every output and reject overlapping writer o
   }
 });
 
+test("writeGeneratedSet rejects aliased, nested, and reserved targets before mutation", () => {
+  const directory = mkdtempSync(join(tmpdir(), "airscale-generated-set-invalid-"));
+  const token = "123.456.abc123";
+  try {
+    const assertZeroMutationRejection = (name, targetPaths, pattern) => {
+      const caseDirectory = join(directory, name);
+      mkdirSync(caseDirectory);
+      const before = readdirSync(caseDirectory, { recursive: true });
+      assert.throws(
+        () => writeGeneratedSet(targetPaths.map((targetPath, index) => ({
+          targetPath,
+          contents: `value ${index}\n`
+        })), {
+          io: fileSystem,
+          transactionToken: `${process.pid}.${Date.now()}.abc123`
+        }),
+        pattern
+      );
+      assert.deepEqual(readdirSync(caseDirectory, { recursive: true }), before, name);
+    };
+
+    const canonicalDirectory = join(directory, "canonical");
+    assertZeroMutationRejection(
+      "canonical",
+      [join(canonicalDirectory, "same.txt"), `${canonicalDirectory}/./same.txt`],
+      /canonical alias|same canonical target/i
+    );
+
+    const symlinkAliasDirectory = join(directory, "symlink-alias");
+    const realDirectory = join(symlinkAliasDirectory, "real");
+    const aliasDirectory = join(symlinkAliasDirectory, "alias");
+    mkdirSync(realDirectory, { recursive: true });
+    symlinkSync(realDirectory, aliasDirectory, "dir");
+    const mutations = [];
+    const mutationSpyIo = {
+      ...fileSystem,
+      openSync(...args) {
+        mutations.push({ method: "openSync", flags: args[1] });
+        return fileSystem.openSync(...args);
+      },
+      mkdirSync(...args) {
+        mutations.push({ method: "mkdirSync" });
+        return fileSystem.mkdirSync(...args);
+      },
+      renameSync(...args) {
+        mutations.push({ method: "renameSync" });
+        return fileSystem.renameSync(...args);
+      },
+      unlinkSync(...args) {
+        mutations.push({ method: "unlinkSync" });
+        return fileSystem.unlinkSync(...args);
+      },
+      writeFileSync(...args) {
+        mutations.push({ method: "writeFileSync" });
+        return fileSystem.writeFileSync(...args);
+      }
+    };
+    assert.throws(
+      () => writeGeneratedSet([
+        { targetPath: join(realDirectory, "same.txt"), contents: "first\n" },
+        { targetPath: join(aliasDirectory, "same.txt"), contents: "second\n" }
+      ], {
+        io: mutationSpyIo,
+        transactionToken: `${process.pid}.${Date.now()}.abc123`
+      }),
+      /canonical alias|same canonical target/i
+    );
+    assert.deepEqual(mutations, [], "symlink-parent aliases must fail before any mutating filesystem call");
+    assert.deepEqual(readdirSync(realDirectory), []);
+
+    const nestedDirectory = join(directory, "nested");
+    assertZeroMutationRejection(
+      "nested",
+      [join(nestedDirectory, "parent"), join(nestedDirectory, "parent/child.txt")],
+      /ancestor|descendant|contain one another/i
+    );
+
+    const reservedSuffixes = [
+      ".mcp-pair-transaction.json",
+      ".mcp-pair-transaction.json.next",
+      `.mcp-pair-transaction.json.${token}.stage`,
+      ".mcp-pair-write.lock",
+      `.mcp-pair-write.lock.${token}.candidate`,
+      `.mcp-pair-write.lock.${token}.stale`,
+      `.${token}.tmp`,
+      `.${token}.bak`
+    ];
+    for (const [index, suffix] of reservedSuffixes.entries()) {
+      for (const direction of ["forward", "reverse"]) {
+        const caseDirectory = join(directory, `reserved-${index}-${direction}`);
+        const base = join(caseDirectory, "output.txt");
+        const paths = [base, `${base}${suffix}`];
+        if (direction === "reverse") paths.reverse();
+        assertZeroMutationRejection(
+          `reserved-${index}-${direction}`,
+          paths,
+          /reserved transaction namespace/i
+        );
+      }
+    }
+
+    const hardlinkDirectory = join(directory, "hardlink");
+    mkdirSync(hardlinkDirectory);
+    const firstPath = join(hardlinkDirectory, "first.txt");
+    const secondPath = join(hardlinkDirectory, "second.txt");
+    writeFileSync(firstPath, "sentinel\n");
+    linkSync(firstPath, secondPath);
+    const before = readdirSync(hardlinkDirectory, { recursive: true });
+    assert.throws(
+      () => writeGeneratedSet([
+        { targetPath: firstPath, contents: "first\n" },
+        { targetPath: secondPath, contents: "second\n" }
+      ], {
+        io: fileSystem,
+        transactionToken: `${process.pid}.${Date.now()}.def456`
+      }),
+      /hardlink|same file identity/i
+    );
+    assert.deepEqual(readdirSync(hardlinkDirectory, { recursive: true }), before);
+    assert.equal(readFileSync(firstPath, "utf8"), "sentinel\n");
+    assert.equal(readFileSync(secondPath, "utf8"), "sentinel\n");
+  } finally {
+    rmSync(directory, { recursive: true, force: true });
+  }
+});
+
 test("agent --check is exact-byte, non-mutating, and fails closed for missing, stale, or unsafe targets", async () => {
   await inTemporaryDirectory(async (directory) => {
     const inputs = writeAgentFixture(directory);
@@ -3129,7 +3268,7 @@ test("agent --check is exact-byte, non-mutating, and fails closed for missing, s
     await assert.rejects(runAgentFiles(["--write", "../escape"], { rootDir: directory }), /usage|unexpected/i);
 
     const victimPath = join(directory, "victim.txt");
-    const catalogPath = join(directory, ".well-known/api-catalog");
+    const catalogPath = join(directory, "llms.txt");
     writeFileSync(victimPath, "victim sentinel\n");
     rmSync(catalogPath);
     symlinkSync(victimPath, catalogPath);
@@ -3138,13 +3277,44 @@ test("agent --check is exact-byte, non-mutating, and fails closed for missing, s
   });
 });
 
+test("agent --check and fresh --write reject an output swapped to a symlink after validation", async () => {
+  for (const mode of ["--check", "--write"]) {
+    await inTemporaryDirectory(async (directory) => {
+      writeAgentFixture(directory);
+      await runAgentFiles(["--write"], { rootDir: directory });
+      const targetPath = join(directory, "skill.md");
+      const victimPath = join(directory, `victim-${mode.slice(2)}.md`);
+      writeFileSync(victimPath, readFileSync(targetPath));
+      let swapped = false;
+      const swappingOpenSync = (path, ...args) => {
+        if (path === targetPath && !swapped) {
+          swapped = true;
+          rmSync(targetPath);
+          symlinkSync(victimPath, targetPath);
+        }
+        return fileSystem.openSync(path, ...args);
+      };
+
+      await assert.rejects(
+        runAgentFiles([mode], {
+          rootDir: directory,
+          fsImpl: { openSync: swappingOpenSync }
+        }),
+        /symbolic link|identity changed|ELOOP|too many/i,
+        mode
+      );
+      assert.equal(swapped, true, `${mode} must reach the deterministic swap hook`);
+      assert.equal(lstatSync(targetPath).isSymbolicLink(), true);
+      assert.equal(readFileSync(victimPath, "utf8"), renderAgentFiles(agentFixtureInputs())["skill.md"]);
+    });
+  }
+});
+
 test("a later agent writer recovers crashes at every multi-output install and cleanup phase", async () => {
   const phases = [
     "first-install",
     "install-2",
     "install-3",
-    "install-4",
-    "install-5",
     "second-install",
     "cleanup"
   ];

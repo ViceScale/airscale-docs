@@ -25,9 +25,7 @@ const SKILL_DESCRIPTION = "Search for people and companies, enrich professional 
 const OUTPUT_PATHS = Object.freeze([
   "llms.txt",
   "llms-full.txt",
-  "skill.md",
-  ".well-known/api-catalog",
-  ".well-known/agent-card.json"
+  "skill.md"
 ]);
 
 function isPlainObject(value) {
@@ -128,7 +126,7 @@ function validateOpenApi(openapi) {
 }
 
 function validateMcpTools(mcpTools, mcpContract) {
-  if (!isPlainObject(mcpTools)) throw new Error("mcp-tools.json must contain an object");
+  if (!isPlainObject(mcpTools)) throw new Error("mcp-tools.txt must contain a JSON object");
   if (!isPlainObject(mcpContract)) throw new Error("the source-pinned MCP contract must contain an object");
   let expectedManifest;
   try {
@@ -139,15 +137,15 @@ function validateMcpTools(mcpTools, mcpContract) {
   if (!isDeepStrictEqual(mcpTools, expectedManifest)) {
     throw new Error("the public MCP manifest does not match the complete source-pinned contract");
   }
-  if (mcpTools.sourceSha !== SOURCE_SHA) throw new Error("mcp-tools.json source SHA does not match the pinned MCP contract");
-  if (mcpTools.serverUrl !== OPERATIONAL_MCP_URL) throw new Error("mcp-tools.json has an unexpected operational MCP URL");
+  if (mcpTools.sourceSha !== SOURCE_SHA) throw new Error("mcp-tools.txt source SHA does not match the pinned MCP contract");
+  if (mcpTools.serverUrl !== OPERATIONAL_MCP_URL) throw new Error("mcp-tools.txt has an unexpected operational MCP URL");
   if (mcpTools.toolCount !== 22 || !Array.isArray(mcpTools.tools) || mcpTools.tools.length !== 22) {
-    throw new Error("mcp-tools.json must expose exactly 22 tools");
+    throw new Error("mcp-tools.txt must expose exactly 22 tools");
   }
   const names = new Set();
   for (const tool of mcpTools.tools) {
     if (!isPlainObject(tool) || typeof tool.name !== "string" || names.has(tool.name)) {
-      throw new Error("mcp-tools.json must expose 22 uniquely named tool objects");
+      throw new Error("mcp-tools.txt must expose 22 uniquely named tool objects");
     }
     names.add(tool.name);
   }
@@ -219,7 +217,7 @@ function renderLlmsIndexModel(model) {
     "## Machine-readable contracts",
     "",
     `- [OpenAPI specification](${PREVIEW_ORIGIN}/openapi.json): HTTP API operations, schemas, authentication, and responses.`,
-    `- [MCP tool manifest](${PREVIEW_ORIGIN}/mcp-tools.json): Exact names and input schemas for all 22 operational MCP tools.`,
+    `- [MCP tool manifest](${PREVIEW_ORIGIN}/mcp-tools.txt): JSON-formatted names and input schemas for all 22 operational MCP tools.`,
     `- [Agent skill](${PREVIEW_ORIGIN}/skill.md): Capability, authentication, credit, and approval guidance for agents.`,
     ""
   );
@@ -253,7 +251,7 @@ function renderLlmsFullModel(model) {
 
 function renderSkillModel() {
   return `---
-name: Airscale
+name: airscale
 description: ${SKILL_DESCRIPTION}
 metadata:
   version: "1.0"
@@ -300,69 +298,11 @@ Prefer browser OAuth in supported remote MCP clients. Header-capable local clien
 
 - MCP workflow and safety: ${PREVIEW_ORIGIN}/mcp/how-to-use-the-airscale-mcp
 - MCP tool catalog: ${PREVIEW_ORIGIN}/mcp/tools
-- MCP structured manifest: ${PREVIEW_ORIGIN}/mcp-tools.json
+- MCP structured manifest: ${PREVIEW_ORIGIN}/mcp-tools.txt
 - HTTP API reference: ${PREVIEW_ORIGIN}/api-reference/api-overview
 - OpenAPI specification: ${PREVIEW_ORIGIN}/openapi.json
 - Agent resource directory: ${PREVIEW_ORIGIN}/mcp/agent-resources
 `;
-}
-
-function renderApiCatalogModel() {
-  return `${JSON.stringify({
-    name: "Airscale developer APIs",
-    version: "1.0.0",
-    documentation: `${PREVIEW_ORIGIN}/api-reference/api-overview`,
-    openapi: `${PREVIEW_ORIGIN}/openapi.json`,
-    mcpTools: `${PREVIEW_ORIGIN}/mcp-tools.json`,
-    mcpServer: OPERATIONAL_MCP_URL,
-    documentationMcp: `${PREVIEW_ORIGIN}/mcp`
-  }, null, 2)}\n`;
-}
-
-function renderAgentCardModel() {
-  return `${JSON.stringify({
-    protocolVersion: "0.3",
-    name: "Airscale developer documentation",
-    description: SKILL_DESCRIPTION,
-    url: `${PREVIEW_ORIGIN}/`,
-    documentationUrl: `${PREVIEW_ORIGIN}/mcp/agent-resources`,
-    provider: {
-      organization: "Airscale",
-      url: `${PREVIEW_ORIGIN}/`
-    },
-    preferredTransport: "HTTP+JSON",
-    supportedInterfaces: [{
-      url: `${PREVIEW_ORIGIN}/`,
-      protocolBinding: "HTTP+JSON",
-      protocolVersion: "0.3"
-    }],
-    capabilities: {
-      streaming: false,
-      pushNotifications: false
-    },
-    defaultInputModes: ["text/plain"],
-    defaultOutputModes: ["text/plain"],
-    skills: [{
-      id: "airscale",
-      name: "Airscale",
-      description: SKILL_DESCRIPTION,
-      url: `${PREVIEW_ORIGIN}/skill.md`,
-      tags: ["api", "mcp", "people search", "company search", "contact enrichment", "exports"],
-      examples: [
-        "Check Airscale credits before a workflow.",
-        "Count a people-search audience before retrieving records.",
-        "Create a bounded asynchronous export after explicit approval."
-      ]
-    }],
-    "x-airscale-resources": {
-      openapi: `${PREVIEW_ORIGIN}/openapi.json`,
-      mcpTools: `${PREVIEW_ORIGIN}/mcp-tools.json`,
-      operationalMcp: OPERATIONAL_MCP_URL,
-      documentationMcp: `${PREVIEW_ORIGIN}/mcp`,
-      skill: `${PREVIEW_ORIGIN}/skill.md`,
-      skillDiscovery: `${PREVIEW_ORIGIN}/.well-known/agent-skills/index.json`
-    }
-  }, null, 2)}\n`;
 }
 
 export function renderLlmsIndex(inputs) {
@@ -378,24 +318,12 @@ export function renderSkill(inputs) {
   return renderSkillModel();
 }
 
-export function renderApiCatalog(inputs) {
-  createModel(inputs);
-  return renderApiCatalogModel();
-}
-
-export function renderAgentCard(inputs) {
-  createModel(inputs);
-  return renderAgentCardModel();
-}
-
 export function renderAgentFiles(inputs) {
   const model = createModel(inputs);
   return {
     "llms.txt": renderLlmsIndexModel(model),
     "llms-full.txt": renderLlmsFullModel(model),
-    "skill.md": renderSkillModel(),
-    ".well-known/api-catalog": renderApiCatalogModel(),
-    ".well-known/agent-card.json": renderAgentCardModel()
+    "skill.md": renderSkillModel()
   };
 }
 
@@ -448,6 +376,36 @@ function sameIdentity(left, right) {
   return Boolean(left && right && left.dev === right.dev && left.ino === right.ino);
 }
 
+function readRegularFile(path, label, io, { encoding, required = true } = {}) {
+  const initial = assertRegularFile(path, label, io, { required });
+  if (!initial) return null;
+  const noFollow = fileSystem.constants.O_NOFOLLOW;
+  if (!Number.isInteger(noFollow)) throw new Error("this platform cannot safely open generated files without following symbolic links");
+  let descriptor;
+  try {
+    descriptor = io.openSync(path, fileSystem.constants.O_RDONLY | noFollow);
+  } catch (error) {
+    throw new Error(`${label} could not be opened without following symbolic links: ${path}: ${error.message}`, { cause: error });
+  }
+  try {
+    const opened = io.fstatSync(descriptor);
+    if (!opened.isFile()) throw new Error(`${label} must be a regular file: ${path}`);
+    if (!sameIdentity(initial, opened)) throw new Error(`${label} identity changed before it was opened: ${path}`);
+    const contents = encoding === undefined
+      ? io.readFileSync(descriptor)
+      : io.readFileSync(descriptor, encoding);
+    const finalDescriptor = io.fstatSync(descriptor);
+    if (!finalDescriptor.isFile() || !sameIdentity(opened, finalDescriptor)) {
+      throw new Error(`${label} descriptor identity changed while it was being read: ${path}`);
+    }
+    const finalPath = assertRegularFile(path, label, io, { required: true });
+    if (!sameIdentity(opened, finalPath)) throw new Error(`${label} identity changed while it was being read: ${path}`);
+    return contents;
+  } finally {
+    io.closeSync(descriptor);
+  }
+}
+
 function validateTargetPaths(rootDirectory, sourcePaths, io) {
   const targetPaths = OUTPUT_PATHS.map((path) => resolve(rootDirectory, path));
   for (const targetPath of targetPaths) {
@@ -478,9 +436,8 @@ function validateTargetPaths(rootDirectory, sourcePaths, io) {
 }
 
 function readJson(path, label, io) {
-  assertRegularFile(path, label, io);
   try {
-    return JSON.parse(io.readFileSync(path, "utf8"));
+    return JSON.parse(readRegularFile(path, label, io, { encoding: "utf8" }));
   } catch (error) {
     throw new Error(`${label} is not valid JSON: ${error.message}`, { cause: error });
   }
@@ -489,7 +446,7 @@ function readJson(path, label, io) {
 function readInputs(rootDirectory, io) {
   const docsPath = resolve(rootDirectory, "docs.json");
   const openapiPath = resolve(rootDirectory, "openapi.json");
-  const mcpToolsPath = resolve(rootDirectory, "mcp-tools.json");
+  const mcpToolsPath = resolve(rootDirectory, "mcp-tools.txt");
   const mcpContractPath = resolve(rootDirectory, "contracts/mcp-tools.json");
   for (const inputPath of [docsPath, openapiPath, mcpToolsPath, mcpContractPath]) {
     assertPathInsideRoot(inputPath, rootDirectory, "generator input");
@@ -504,14 +461,14 @@ function readInputs(rootDirectory, io) {
     assertPathInsideRoot(pagePath, rootDirectory, "navigable page");
     assertSafeAncestors(pagePath, rootDirectory, io, "navigable page directory");
     assertRegularFile(pagePath, `navigable page ${path}`, io);
-    pageSources[path] = io.readFileSync(pagePath, "utf8");
+    pageSources[path] = readRegularFile(pagePath, `navigable page ${path}`, io, { encoding: "utf8" });
     pagePaths.push(pagePath);
   }
   const inputs = {
     docsConfig,
     pageSources,
     openapi: readJson(openapiPath, "openapi.json", io),
-    mcpTools: readJson(mcpToolsPath, "mcp-tools.json", io),
+    mcpTools: readJson(mcpToolsPath, "mcp-tools.txt", io),
     mcpContract: readJson(mcpContractPath, "source-pinned MCP contract", io)
   };
   const outputs = renderAgentFiles(inputs);
@@ -535,9 +492,10 @@ function bytesMatch(contents, artifact) {
 }
 
 function outputsAreFresh(outputs, targetPaths, io) {
-  return targetPaths.every((targetPath, index) => (
-    io.existsSync(targetPath) && bytesMatch(outputs[OUTPUT_PATHS[index]], io.readFileSync(targetPath))
-  ));
+  return targetPaths.every((targetPath, index) => {
+    const artifact = readRegularFile(targetPath, `agent output ${OUTPUT_PATHS[index]}`, io, { required: false });
+    return artifact !== null && bytesMatch(outputs[OUTPUT_PATHS[index]], artifact);
+  });
 }
 
 export async function run(argv, dependencies = {}) {
@@ -556,18 +514,20 @@ export async function run(argv, dependencies = {}) {
     assertNoWriterLockForCheck(targetPaths, io);
     assertNoIncompleteTransactionForCheck(targetPaths, io);
     for (const [index, targetPath] of targetPaths.entries()) {
-      if (!io.existsSync(targetPath)) throw new Error(`agent output is missing: ${OUTPUT_PATHS[index]}`);
-      if (!bytesMatch(outputs[OUTPUT_PATHS[index]], io.readFileSync(targetPath))) {
+      const artifact = readRegularFile(targetPath, `agent output ${OUTPUT_PATHS[index]}`, io, { required: false });
+      if (artifact === null) throw new Error(`agent output is missing: ${OUTPUT_PATHS[index]}`);
+      if (!bytesMatch(outputs[OUTPUT_PATHS[index]], artifact)) {
         throw new Error(`agent output is stale: ${OUTPUT_PATHS[index]}`);
       }
     }
+    validateTargetPaths(rootDirectory, sourcePaths, io);
+    assertNoWriterLockForCheck(targetPaths, io);
+    assertNoIncompleteTransactionForCheck(targetPaths, io);
     return;
   }
 
   let rendered = readInputs(rootDirectory, io);
   let targetPaths = validateTargetPaths(rootDirectory, rendered.sourcePaths, io);
-  io.mkdirSync(resolve(rootDirectory, ".well-known"), { recursive: true });
-  targetPaths = validateTargetPaths(rootDirectory, rendered.sourcePaths, io);
   const transactionToken = `${process.pid}.${Date.now()}.${randomBytes(8).toString("hex")}`;
   const writerLock = acquireGeneratedPairWriterLock(targetPaths, transactionToken, io, {
     writerLockPhaseHook: dependencies.writerLockPhaseHook
@@ -589,7 +549,11 @@ export async function run(argv, dependencies = {}) {
     assertGeneratedPairWriterLock(writerLock, targetPaths, io);
     targetPaths = validateTargetPaths(rootDirectory, rendered.sourcePaths, io);
 
-    if (outputsAreFresh(rendered.outputs, targetPaths, io)) return;
+    if (outputsAreFresh(rendered.outputs, targetPaths, io)) {
+      targetPaths = validateTargetPaths(rootDirectory, rendered.sourcePaths, io);
+      assertGeneratedPairWriterLock(writerLock, targetPaths, io);
+      return;
+    }
     writeGeneratedSet(targetPaths.map((targetPath, index) => ({
       targetPath,
       contents: rendered.outputs[OUTPUT_PATHS[index]]

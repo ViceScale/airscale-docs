@@ -2399,16 +2399,16 @@ Use the authenticated product server only when an agent should perform Airscale 
 | Resource | URL | Use |
 | --- | --- | --- |
 | OpenAPI specification | `https://airscale.mintlify.app/openapi.json` | HTTP operations, schemas, authentication, and responses. |
-| MCP tool manifest | `https://airscale.mintlify.app/mcp-tools.json` | Source-pinned contract for all 22 operational MCP tools. |
+| MCP tool manifest | `https://airscale.mintlify.app/mcp-tools.txt` | JSON-formatted, source-pinned contract for all 22 operational MCP tools, published as supported `text/plain`. |
+| Operational tool schemas | `tools/list` on `https://mcp.airscale.io/mcp` | Live authenticated MCP names and input schemas from the running product server. |
 | Compact LLM directory | `https://airscale.mintlify.app/llms.txt` | Navigable page directory with discriminating descriptions. |
 | Full LLM corpus | `https://airscale.mintlify.app/llms-full.txt` | Complete public content of every navigable preview page. |
 | Page Markdown | `https://airscale.mintlify.app/mcp/agent-resources.md` | Clean Markdown for this page; append `.md` to any documentation page URL. |
 | Markdown negotiation | `Accept: text/markdown` | Request Markdown from a documentation page without changing its path. |
 | Agent skill | `https://airscale.mintlify.app/skill.md` | Curated capability, authentication, credit, and approval guidance. |
 | Skill discovery | `https://airscale.mintlify.app/.well-known/agent-skills/index.json` | Mintlify's generated agent-skills 0.2.0 discovery index with integrity metadata. |
-| API catalog | `https://airscale.mintlify.app/.well-known/api-catalog` | Preview-host pointers to the API, MCP contract, and both MCP surfaces. |
 | Documentation MCP server card | `https://airscale.mintlify.app/.well-known/mcp/server-card.json` | Mintlify automatically serves the documentation MCP's advertised tools and read-only annotations. |
-| Agent card | `https://airscale.mintlify.app/.well-known/agent-card.json` | Preview-host A2A discovery metadata and links to the Airscale skill and contracts. |
+| Agent discovery | `https://airscale.mintlify.app/.well-known/agent-card.json` | Mintlify automatically generates documentation discovery from the published skill. It is not an Airscale product-agent endpoint or an interactive API. |
 
 <Note>
 The preview remains intentionally `noindex, follow`. These resources make the documentation directly readable by agents without changing DNS or the search-indexing boundary.
@@ -2437,7 +2437,7 @@ After connecting, ask the client to search the Airscale documentation for the re
 - Use a page's `.md` export when only one topic is needed.
 - Use `llms-full.txt` only when the agent genuinely needs the entire public corpus.
 - Use `openapi.json` for HTTP request and response contracts.
-- Use `mcp-tools.json` for exact operational MCP names, schemas, spend metadata, and API mappings.
+- Use `mcp-tools.txt` for the source-pinned operational MCP snapshot, spend metadata, and API mappings; use the authenticated server's `tools/list` response when runtime freshness matters.
 - Use `skill.md` for workflow order, authentication boundaries, and approval rules.
 
 ---

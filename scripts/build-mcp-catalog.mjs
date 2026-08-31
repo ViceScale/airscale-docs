@@ -33,7 +33,7 @@ import {
 
 const DEFAULT_CONTRACT_PATH = fileURLToPath(new URL("../contracts/mcp-tools.json", import.meta.url));
 const DEFAULT_CATALOG_PATH = fileURLToPath(new URL("../mcp/tools.mdx", import.meta.url));
-const DEFAULT_PUBLIC_PATH = fileURLToPath(new URL("../mcp-tools.json", import.meta.url));
+const DEFAULT_PUBLIC_PATH = fileURLToPath(new URL("../mcp-tools.txt", import.meta.url));
 const PUBLIC_DESCRIPTION = "Browse all 22 typed tools exposed by the Airscale MCP server.";
 const CATEGORY_GROUPS = [
   { key: "workspace", title: "Workspace", count: 1 },

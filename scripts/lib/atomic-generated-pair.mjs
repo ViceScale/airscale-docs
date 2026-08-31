@@ -1,5 +1,5 @@
 import { execFileSync } from "node:child_process";
-import { basename, dirname, join, resolve } from "node:path";
+import { basename, dirname, isAbsolute, join, relative, resolve, sep } from "node:path";
 import { isDeepStrictEqual } from "node:util";
 
 const JOURNAL_VERSION = 1;
@@ -139,6 +139,27 @@ function assertRegularArtifact(path, label, io, { required = false } = {}) {
   if (stat.isSymbolicLink()) throw new Error(`${label} must not be a symbolic link: ${path}`);
   if (!stat.isFile()) throw new Error(`${label} must be a regular file: ${path}`);
   return stat;
+}
+
+function canonicalizeProspectivePath(path, io) {
+  const unresolvedSegments = [];
+  let existingPath = resolve(path);
+  let existingStat = lstatIfPresent(existingPath, io);
+  while (!existingStat) {
+    const parentPath = dirname(existingPath);
+    if (parentPath === existingPath) {
+      throw new Error(`generated output target has no existing filesystem ancestor: ${path}`);
+    }
+    unresolvedSegments.push(basename(existingPath));
+    existingPath = parentPath;
+    existingStat = lstatIfPresent(existingPath, io);
+  }
+  const canonicalAncestor = io.realpathSync(existingPath);
+  const canonicalAncestorStat = io.statSync(canonicalAncestor);
+  if (unresolvedSegments.length > 0 && !canonicalAncestorStat.isDirectory()) {
+    throw new Error(`generated output target has a non-directory ancestor: ${existingPath}`);
+  }
+  return resolve(canonicalAncestor, ...unresolvedSegments.reverse());
 }
 
 function unlinkCreatedArtifact(path, identity, label, io) {
@@ -1452,12 +1473,56 @@ export function writeGeneratedSet(outputs, options) {
   ))) {
     throw new GeneratedPairTransactionError([], "generated output transactions require string target paths and contents");
   }
-  const distinctTargets = new Set(outputs.map(({ targetPath }) => targetPath));
+  const targetPaths = outputs.map(({ targetPath }) => targetPath);
+  const distinctTargets = new Set(targetPaths);
   if (distinctTargets.size !== outputs.length) {
     throw new GeneratedPairTransactionError([], "generated output transaction targets must be distinct");
   }
   const { io, transactionToken, writerLock = null } = options;
-  const targetPaths = outputs.map(({ targetPath }) => targetPath);
+  const canonicalTargetPaths = targetPaths.map((targetPath) => canonicalizeProspectivePath(targetPath, io));
+  if (new Set(canonicalTargetPaths).size !== canonicalTargetPaths.length) {
+    throw new GeneratedPairTransactionError([], "generated output transaction targets must not resolve to the same canonical target alias");
+  }
+  const identities = targetPaths.map((targetPath) => assertRegularArtifact(
+    targetPath,
+    "generated output target",
+    io
+  ));
+  for (let leftIndex = 0; leftIndex < targetPaths.length; leftIndex += 1) {
+    for (let rightIndex = leftIndex + 1; rightIndex < targetPaths.length; rightIndex += 1) {
+      const leftPath = canonicalTargetPaths[leftIndex];
+      const rightPath = canonicalTargetPaths[rightIndex];
+      const leftRelativeToRight = relative(leftPath, rightPath);
+      const rightRelativeToLeft = relative(rightPath, leftPath);
+      const leftContainsRight = Boolean(leftRelativeToRight)
+        && leftRelativeToRight !== ".."
+        && !leftRelativeToRight.startsWith(`..${sep}`)
+        && !isAbsolute(leftRelativeToRight);
+      const rightContainsLeft = Boolean(rightRelativeToLeft)
+        && rightRelativeToLeft !== ".."
+        && !rightRelativeToLeft.startsWith(`..${sep}`)
+        && !isAbsolute(rightRelativeToLeft);
+      if (leftContainsRight || rightContainsLeft) {
+        throw new GeneratedPairTransactionError([], "generated output transaction targets must not be ancestor and descendant paths");
+      }
+      if (
+        isGeneratedPairReservedPath(leftPath, rightPath)
+        || isGeneratedPairReservedPath(rightPath, leftPath)
+      ) {
+        throw new GeneratedPairTransactionError([], "generated output targets must not occupy another target's reserved transaction namespace");
+      }
+      const leftIdentity = identities[leftIndex];
+      const rightIdentity = identities[rightIndex];
+      if (
+        leftIdentity
+        && rightIdentity
+        && leftIdentity.dev === rightIdentity.dev
+        && leftIdentity.ino === rightIdentity.ino
+      ) {
+        throw new GeneratedPairTransactionError([], "generated output transaction targets must not be hardlink aliases with the same file identity");
+      }
+    }
+  }
   if (writerLock && writerLock.transactionToken !== transactionToken) {
     throw new GeneratedPairWriterLockError("MCP writer lock token does not match the generated-pair transaction");
   }

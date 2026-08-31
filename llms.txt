@@ -57,5 +57,5 @@
 ## Machine-readable contracts
 
 - [OpenAPI specification](https://airscale.mintlify.app/openapi.json): HTTP API operations, schemas, authentication, and responses.
-- [MCP tool manifest](https://airscale.mintlify.app/mcp-tools.json): Exact names and input schemas for all 22 operational MCP tools.
+- [MCP tool manifest](https://airscale.mintlify.app/mcp-tools.txt): JSON-formatted names and input schemas for all 22 operational MCP tools.
 - [Agent skill](https://airscale.mintlify.app/skill.md): Capability, authentication, credit, and approval guidance for agents.

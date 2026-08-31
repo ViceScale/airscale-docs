@@ -1,9 +1,0 @@
-{
-  "name": "Airscale developer APIs",
-  "version": "1.0.0",
-  "documentation": "https://airscale.mintlify.app/api-reference/api-overview",
-  "openapi": "https://airscale.mintlify.app/openapi.json",
-  "mcpTools": "https://airscale.mintlify.app/mcp-tools.json",
-  "mcpServer": "https://mcp.airscale.io/mcp",
-  "documentationMcp": "https://airscale.mintlify.app/mcp"
-}

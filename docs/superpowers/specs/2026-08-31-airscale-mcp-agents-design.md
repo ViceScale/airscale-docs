@@ -267,17 +267,23 @@ Examples use synthetic companies, people, domains, and identifiers. No example p
 ### Published discovery resources
 
 - `/openapi.json`
+- `/mcp-tools.txt` containing the source-pinned JSON tool snapshot, served through Mintlify's supported text-asset path
 - `/llms.txt`
 - `/llms-full.txt`
 - page-level `.md` exports
 - Markdown content negotiation
 - `/skill.md`
 - `/.well-known/agent-skills/index.json`
-- `/.well-known/api-catalog`
-- a structured MCP tool manifest
-- the documentation MCP server card or connection instructions
+- the Mintlify-generated documentation MCP server card and connection instructions
+- Mintlify-generated agent discovery, described only as documentation metadata
 
-`llms.txt` is a compact directory with discriminating descriptions. `llms-full.txt` is the full public corpus. `skill.md` is a curated workflow and safety summary, not a duplicate catalog. The structured MCP tool manifest carries exact names and input schemas from the same source-pinned contract used by the visible catalog.
+`llms.txt` is a compact directory with discriminating descriptions. `llms-full.txt` is the full public corpus. `skill.md` is a curated workflow and safety summary, not a duplicate catalog. `mcp-tools.txt` contains JSON-formatted exact names and input schemas from the same source-pinned contract used by the visible catalog; clients that require runtime freshness use authenticated MCP `tools/list` on `https://mcp.airscale.io/mcp`.
+
+### Publication constraint supersession
+
+Mintlify CLI 4.2.850 prebuild evidence supersedes the initially approved five-custom-file design. Authored non-OpenAPI JSON such as `/mcp-tools.json` and `/.well-known/agent-card.json` is dropped from public build output. Although an extensionless `/.well-known/api-catalog` is copied, this configuration cannot guarantee the RFC 9727 Linkset media type, so the standards claim and artifact are removed. A custom Agent Card is also removed because the documentation homepage is not an Airscale interactive agent endpoint.
+
+The custom agent generator therefore owns exactly three outputs: `llms.txt`, `llms-full.txt`, and lowercase-name `skill.md`. The catalog generator separately owns `mcp-tools.txt`, whose JSON bytes are intentionally delivered as supported `text/plain`. Mintlify owns skill discovery, documentation MCP discovery, and any generated agent-discovery metadata. Generated agent discovery must not be described as an Airscale product-agent endpoint or evidence that the homepage accepts interactive agent tasks.
 
 All absolute links resolve on `https://airscale.mintlify.app`. Generated content must not point at `docs.airscale.io` while that domain serves Framer.
 
@@ -353,11 +359,14 @@ Hosted verification requires:
 - MCP navigation is present beside API Reference;
 - preview canonicals and `noindex` remain correct;
 - all discovery files resolve with expected content types;
+- after an authorized deployment, `/mcp-tools.txt` returns HTTP 200 with `text/plain` and exact bytes matching the committed artifact in two settled checks;
 - the documentation MCP is presented as read-only;
 - the safe live MCP health endpoint reports twenty-two tools;
 - OAuth protected-resource and authorization-server metadata return HTTP 200;
 - no DNS or Framer state changed; and
 - verification remains stable across repeated hosted rounds.
+
+Local generation, Mintlify validation, and prebuild classification do not prove current hosted publication. Until the post-deployment `/mcp-tools.txt` smoke passes, status must remain “locally build-verified, not confirmed hosted.”
 
 ## Acceptance criteria
 
@@ -373,7 +382,7 @@ The feature is complete when:
 - paid export starts clearly require explicit confirmation;
 - ChatGPT and Claude setup flows use OAuth language correctly;
 - operational and documentation MCP surfaces are clearly distinguished;
-- all approved machine-readable resources are visible and resolve on the preview host;
+- all revised, platform-supported machine-readable resources are visible and resolve on the preview host after deployment;
 - all preview pages remain `noindex` with preview-host canonicals;
 - all automated and browser checks pass; and
 - no DNS, redirect, Framer, provider, credit, or production-data mutation occurs.

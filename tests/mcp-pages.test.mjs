@@ -602,19 +602,22 @@ test("agent resources distinguish the operational product server from the docume
 
   const resourcePaths = [
     "https://airscale.mintlify.app/openapi.json",
-    "https://airscale.mintlify.app/mcp-tools.json",
+    "https://airscale.mintlify.app/mcp-tools.txt",
     "https://airscale.mintlify.app/llms.txt",
     "https://airscale.mintlify.app/llms-full.txt",
     "https://airscale.mintlify.app/mcp/agent-resources.md",
     "https://airscale.mintlify.app/skill.md",
     "https://airscale.mintlify.app/.well-known/agent-skills/index.json",
-    "https://airscale.mintlify.app/.well-known/api-catalog",
     "https://airscale.mintlify.app/.well-known/mcp/server-card.json",
     "https://airscale.mintlify.app/.well-known/agent-card.json"
   ];
   assertOrdered(body, ["## Machine-readable resources", ...resourcePaths, "## Connect the documentation MCP"], path);
   assert.match(body, /Accept: text\/markdown/);
   assert.match(body, /Documentation MCP server card[\s\S]{0,220}Mintlify automatically serves/i);
+  assert.match(body, /Operational tool schemas[\s\S]{0,260}tools\/list/i);
+  assert.match(body, /Agent discovery[\s\S]{0,280}Mintlify automatically generates/i);
+  assert.match(body, /not an Airscale product-agent endpoint/i);
+  assert.doesNotMatch(body, /\.well-known\/api-catalog|A2A|HTTP\+JSON/i);
 
   const connectionSection = body.slice(body.indexOf("## Connect the documentation MCP"));
   assert.match(connectionSection, /https:\/\/airscale\.mintlify\.app\/mcp/);
@@ -629,14 +632,16 @@ test("custom agent files preserve the preview and noindex trust boundary", () =>
     "llms.txt",
     "llms-full.txt",
     "skill.md",
-    ".well-known/api-catalog",
-    ".well-known/agent-card.json"
+    "mcp-tools.txt"
   ];
   for (const path of paths) {
     assert.ok(existsSync(path), `${path} must exist`);
     const source = readFileSync(path, "utf8");
     assert.doesNotMatch(source, /https:\/\/docs\.airscale\.io/i);
     assertNoStaticCredentials(source, path);
+  }
+  for (const unsupportedPath of ["mcp-tools.json", ".well-known/api-catalog", ".well-known/agent-card.json"]) {
+    assert.equal(existsSync(unsupportedPath), false, `${unsupportedPath} must not be authored or advertised as a static artifact`);
   }
   const config = JSON.parse(readFileSync("docs.json", "utf8"));
   assert.equal(config.seo.indexing, "navigable");

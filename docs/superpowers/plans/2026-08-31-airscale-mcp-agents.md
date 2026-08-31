@@ -13,20 +13,18 @@
 ## File map
 
 - `contracts/mcp-tools.json`: source-pinned contract snapshot for all twenty-two tools.
-- `scripts/build-mcp-catalog.mjs`: deterministic catalog and public JSON generator with `--check` and `--write` modes.
-- `scripts/build-agent-files.mjs`: deterministic `llms.txt`, `llms-full.txt`, `skill.md`, and well-known discovery output generator.
+- `scripts/build-mcp-catalog.mjs`: deterministic catalog and JSON-formatted text-manifest generator with `--check` and `--write` modes.
+- `scripts/build-agent-files.mjs`: deterministic three-file `llms.txt`, `llms-full.txt`, and `skill.md` generator.
 - `mcp/airscale-mcp-server.mdx`: developer-first landing page and security/credit reference.
 - `mcp/tools.mdx`: generated one-page tool catalog.
 - `mcp/connect-airscale-mcp-to-chatgpt.mdx`: migrated ChatGPT OAuth walkthrough.
 - `mcp/connect-airscale-mcp-to-claude.mdx`: migrated Claude OAuth and developer-client walkthrough.
 - `mcp/how-to-use-the-airscale-mcp.mdx`: practical count, sample, refine, export workflow.
 - `mcp/agent-resources.mdx`: visible product-MCP versus docs-MCP and agent-resource guide.
-- `mcp-tools.json`: public machine-readable twenty-two-tool catalog.
+- `mcp-tools.txt`: public, JSON-formatted twenty-two-tool catalog served through Mintlify's supported text-asset path.
 - `llms.txt`: custom preview-host page directory.
 - `llms-full.txt`: custom preview-host full corpus generated from navigable MDX.
 - `skill.md`: custom Airscale API and MCP skill that overrides stale generated content.
-- `.well-known/api-catalog`: preview-host API and MCP catalog discovery document.
-- `.well-known/agent-card.json`: preview-host agent card that avoids the retained Framer custom domain.
 - `docs.json`: add the approved navigation tab without changing the API tab.
 - `package.json`: add MCP and agent-file check/build scripts to `validate`.
 - `tests/mcp-contract.test.mjs`: contract count, order, schema, spend, and mapping tests.
@@ -205,7 +203,7 @@ git commit -m "docs: lock MCP tool contract"
 - Create: `tests/mcp-generation.test.mjs`
 - Create: `scripts/build-mcp-catalog.mjs`
 - Create: `mcp/tools.mdx`
-- Create: `mcp-tools.json`
+- Create: `mcp-tools.txt`
 - Modify: `package.json`
 
 - [ ] **Step 1: Write failing generator tests**
@@ -242,7 +240,7 @@ test("public manifest strips source-only fields but preserves all schemas", () =
 test("check mode rejects stale files and accepts exact output", async () => {
   const directory = mkdtempSync(join(tmpdir(), "airscale-mcp-catalog-"));
   const catalogPath = join(directory, "tools.mdx");
-  const publicPath = join(directory, "mcp-tools.json");
+  const publicPath = join(directory, "mcp-tools.txt");
   writeFileSync(catalogPath, "stale");
   writeFileSync(publicPath, "stale");
   await assert.rejects(run(["--check", "--catalog", catalogPath, "--public", publicPath]));
@@ -301,7 +299,7 @@ Expected: generator tests pass and the generated files are exact.
 - [ ] **Step 5: Commit the generated catalog slice**
 
 ```bash
-git add package.json scripts/build-mcp-catalog.mjs tests/mcp-generation.test.mjs mcp/tools.mdx mcp-tools.json
+git add package.json scripts/build-mcp-catalog.mjs tests/mcp-generation.test.mjs mcp/tools.mdx mcp-tools.txt
 git commit -m "docs: generate MCP tool catalog"
 ```
 
@@ -440,18 +438,22 @@ git add mcp/connect-airscale-mcp-to-chatgpt.mdx mcp/connect-airscale-mcp-to-clau
 git commit -m "docs: migrate MCP connection workflows"
 ```
 
-### Task 5: Add accurate agent resources and custom discovery files
+### Task 5: Add accurate agent resources on Mintlify-supported publication paths
+
+> **Review supersession:** Mintlify CLI 4.2.850 prebuild testing showed that authored non-OpenAPI JSON files are not copied to public build output. That makes the original five-output agent generator infeasible: `/mcp-tools.json` and `/.well-known/agent-card.json` would not publish, and the extensionless `/.well-known/api-catalog` cannot provide a standards-correct Linkset content type through this configuration. The accepted implementation therefore uses three custom agent outputs (`llms.txt`, `llms-full.txt`, and `skill.md`), publishes the JSON-formatted tool snapshot separately at the supported `/mcp-tools.txt` text path, and relies on Mintlify-generated discovery endpoints. No authored API catalog or Agent Card is shipped.
 
 **Files:**
 - Modify: `tests/mcp-pages.test.mjs`
 - Modify: `tests/mcp-generation.test.mjs`
-- Create: `scripts/build-agent-files.mjs`
+- Modify: `scripts/build-agent-files.mjs`
+- Modify: `scripts/build-mcp-catalog.mjs`
+- Modify: `scripts/lib/atomic-generated-pair.mjs`
 - Modify: `mcp/agent-resources.mdx`
-- Create: `llms.txt`
-- Create: `llms-full.txt`
-- Create: `skill.md`
-- Create: `.well-known/api-catalog`
-- Create: `.well-known/agent-card.json`
+- Modify: `llms.txt`
+- Modify: `llms-full.txt`
+- Modify: `skill.md`
+- Rename superseded draft: `mcp-tools.json` to `mcp-tools.txt`
+- Remove superseded drafts: `.well-known/api-catalog`, `.well-known/agent-card.json`
 - Modify: `package.json`
 
 - [ ] **Step 1: Write failing agent-resource tests**
@@ -465,7 +467,9 @@ assert.match(source, /authenticated product server/i);
 assert.match(source, /read-only documentation/i);
 ```
 
-Require every custom machine file to contain only preview-host documentation URLs, reject `https://docs.airscale.io`, require `skill.md` to state Airsearch's two-credit cost and MCP paid-export confirmation, and require the catalog and agent card to reference `/openapi.json`, `/mcp-tools.json`, `/mcp`, `/skill.md`, and `/.well-known/agent-skills/index.json` as appropriate.
+Require every custom machine file to contain only preview-host documentation URLs, reject `https://docs.airscale.io`, require `skill.md` to state Airsearch's two-credit cost and MCP paid-export confirmation, and require links to `/openapi.json`, `/mcp-tools.txt`, `/mcp`, `/skill.md`, and `/.well-known/agent-skills/index.json` as appropriate. Add a real Mintlify cold-build and update-build publication test: `mcp-tools.txt`, `llms.txt`, and `llms-full.txt` must appear byte-for-byte in public prebuild output, while `skill.md` must retain Mintlify's supported `skillFile` classification. The test must reject authored `/mcp-tools.json`, `/.well-known/api-catalog`, and `/.well-known/agent-card.json` artifacts.
+
+Also test the shared multi-output transaction entry point before mutation. It must reject canonical aliases, existing hardlink aliases, ancestor/descendant targets, and bidirectional journal/lock/stage/candidate/stale/tmp/bak namespace collisions. Both `--check` and a fresh `--write` must reject a deterministic output-to-symlink swap after path validation.
 
 - [ ] **Step 2: Run and verify RED**
 
@@ -477,13 +481,13 @@ Expected: FAIL because the generator and custom resources do not exist.
 
 - [ ] **Step 3: Implement the deterministic agent-file generator**
 
-`scripts/build-agent-files.mjs` reads `docs.json`, all navigable MDX pages, `openapi.json`, and `mcp-tools.json`. It exports pure renderers and supports atomic `--write` and exact-byte `--check` modes.
+`scripts/build-agent-files.mjs` reads `docs.json`, all navigable MDX pages, `openapi.json`, and `mcp-tools.txt`. It exports pure renderers and supports atomic three-output `--write` and exact-byte `--check` modes.
 
 The custom `skill.md` begins:
 
 ```md
 ---
-name: Airscale
+name: airscale
 description: Search for people and companies, enrich professional contact data, run web research, and create asynchronous exports through the Airscale API or MCP server.
 metadata:
   version: "1.0"
@@ -491,27 +495,11 @@ metadata:
 ---
 ```
 
-It describes API and MCP authentication separately, starts with free checks, states Airsearch's two-credit cost, requires explicit confirmation for paid exports, and links to preview-host canonical detail.
-
-The API catalog contains:
-
-```json
-{
-  "name": "Airscale developer APIs",
-  "version": "1.0.0",
-  "documentation": "https://airscale.mintlify.app/api-reference/api-overview",
-  "openapi": "https://airscale.mintlify.app/openapi.json",
-  "mcpTools": "https://airscale.mintlify.app/mcp-tools.json",
-  "mcpServer": "https://mcp.airscale.io/mcp",
-  "documentationMcp": "https://airscale.mintlify.app/mcp"
-}
-```
-
-The agent card uses `https://airscale.mintlify.app/` for `url`, `documentationUrl`, provider URL, supported interface, and skill URL.
+It describes API and MCP authentication separately, starts with free checks, states Airsearch's two-credit cost, requires explicit confirmation for paid exports, and links to preview-host canonical detail. The lowercase `name: airscale` follows the current skill-file naming requirement.
 
 - [ ] **Step 4: Complete the visible agent-resources page**
 
-Use two adjacent cards for the operational and documentation MCP surfaces, followed by a resource table for OpenAPI, the MCP manifest, llms files, Markdown, skill discovery, the API catalog, MCP server card, and agent card. Include client connection examples for the documentation MCP only; do not configure the operational server in that subsection.
+Use two adjacent cards for the operational and documentation MCP surfaces, followed by a resource table for OpenAPI, `/mcp-tools.txt`, live authenticated MCP `tools/list`, llms files, Markdown, skill discovery, the Mintlify-generated MCP server card, and Mintlify-generated agent discovery. State that generated agent discovery is documentation metadata, not an Airscale product-agent endpoint or interactive API. Include client connection examples for the documentation MCP only; do not configure the operational server in that subsection.
 
 - [ ] **Step 5: Add scripts, generate, test, and commit**
 
@@ -529,7 +517,7 @@ npm run agents:build
 npm run agents:check
 node --test tests/mcp-generation.test.mjs tests/mcp-pages.test.mjs
 npm test
-git add package.json scripts/build-agent-files.mjs tests/mcp-generation.test.mjs tests/mcp-pages.test.mjs mcp/agent-resources.mdx llms.txt llms-full.txt skill.md .well-known/api-catalog .well-known/agent-card.json
+git add package.json scripts/build-agent-files.mjs scripts/lib/atomic-generated-pair.mjs scripts/build-mcp-catalog.mjs tests/mcp-generation.test.mjs tests/mcp-pages.test.mjs mcp/agent-resources.mdx mcp-tools.txt llms.txt llms-full.txt skill.md
 git commit -m "docs: publish MCP agent resources"
 ```
 
@@ -576,10 +564,10 @@ Expected: all generators are fresh, all Node tests pass, and Mint validation exi
 
 - [ ] **Step 4: Start Mintlify locally and run the browser matrix**
 
-Start on an isolated port:
+Start the pinned local CLI without opening a browser. Mint 4.2.850 does not expose a `--port` option; it selects the first free port from 3000 through 3009. Record the URL printed by the CLI and use that exact origin for the browser matrix:
 
 ```bash
-npx mint dev --port 5198
+npm exec -- mint dev --no-open
 ```
 
 Verify the six MCP routes at wide desktop, 1200-pixel laptop, and 390-pixel mobile in light and dark themes. Check the top, middle, and bottom of the long catalog; keyboard navigation; code copy controls; wrapping; horizontal overflow; internal links; and relevant console/network output. Confirm no request reaches `api.airscale.io` or the operational `/mcp` endpoint.
@@ -623,3 +611,5 @@ Confirm only the docs design, plan, contracts, generators, tests, MCP pages, age
 - [ ] **Step 4: Hand off without merging or deploying**
 
 Report the branch name, commits, test counts, Mint validation result, and local browser matrix. Do not push, open a PR, merge, deploy, or change DNS until separately authorized.
+
+After a separately authorized preview deployment, the publication gate is a fresh `GET https://airscale.mintlify.app/mcp-tools.txt`: require HTTP 200, a `text/plain` content type, and exact response bytes matching the committed `mcp-tools.txt`. Repeat once after the deployment has settled. Until that hosted check passes, report the manifest as locally build-verified but not confirmed hosted.
