@@ -97,8 +97,8 @@ const findPeopleFilterDescriptions = {
   location: "Matches the person or current-role location. Country names and ISO alpha-2 codes are accepted.",
   keyword: "Matches text on the person's profile.",
   currentCompanyName: "Matches the person's current company name.",
-  companyDomain: "Matches a current company domain; URL input is normalized to its hostname. Values merge with companyLinkedinUrl into one current-company identifier filter.",
-  companyLinkedinUrl: "Matches a current company profile URL or identifier. Values merge with companyDomain into one current-company identifier filter.",
+  companyDomain: "Matches a current company domain; URL input is normalized to its hostname. Values from companyDomain and companyLinkedinUrl are combined as OR alternatives into one current-company identifier filter.",
+  companyLinkedinUrl: "Matches a current company profile URL or identifier. Values from companyDomain and companyLinkedinUrl are combined as OR alternatives into one current-company identifier filter.",
   "currentCompany.type": "Matches the current company type.",
   "currentCompany.industry": "Matches the current company industry.",
   "currentCompany.location": "Matches the current company headquarters location.",
@@ -411,8 +411,7 @@ const airsearchResponseSchema = {
       type: "array",
       items: {
         type: "string",
-        minLength: 1,
-        description: "A public source URL or source label such as serp_snippets."
+        description: "A public source URL, public source label such as serp_snippets, or an empty string forwarded from the upstream result."
       }
     },
     confidence_score: { type: "number", minimum: 0, maximum: 1 },
@@ -440,7 +439,14 @@ export const searchDiscoveryOperations = [
           additionalProperties: false,
           properties: {
             query: findPeopleQuerySchema,
-            size: { type: "integer", minimum: 1, maximum: 100, default: 100 },
+            size: {
+              description: "A page size from 1 through 100 supplied as an integer JSON number or one of the equivalent canonical decimal strings. OpenAPI intentionally uses canonical decimal strings even though runtime Number() accepts additional JS-coercible spellings.",
+              oneOf: [
+                { type: "integer", minimum: 1, maximum: 100 },
+                { type: "string", pattern: "^(?:[1-9]|[1-9][0-9]|100)$" }
+              ],
+              default: 100
+            },
             cursor: {
               type: "string",
               minLength: 1,
@@ -742,9 +748,9 @@ export const searchDiscoveryOperations = [
         airsearchRequestSchema,
         {
           structuredResearch: {
-            summary: "Research the documented Airscale origin",
+            summary: "Research a synthetic company",
             value: {
-              prompt: "What category does Airscale use to describe its service at https://airscale.io?",
+              prompt: "What category does Example Company use to describe its service at https://example.com?",
               schema: {
                 category: "string"
               }
@@ -764,10 +770,10 @@ export const searchDiscoveryOperations = [
                   summary: "Synthetic successful research",
                   value: {
                     status: "success",
-                    response: "Airscale is a sales data enrichment platform.",
-                    category: "sales data enrichment platform",
-                    reasoning: "The web page and public search snippets agree.",
-                    sources: ["https://airscale.io", "serp_snippets"],
+                    response: "Example Company describes its service as workflow automation.",
+                    category: "workflow automation",
+                    reasoning: "The public example page and search snippets agree.",
+                    sources: ["https://example.com", "serp_snippets"],
                     confidence_score: 0.92,
                     certainty_tag: "high",
                     duration_ms: 8420

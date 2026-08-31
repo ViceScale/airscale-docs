@@ -74,11 +74,11 @@ export const baseSpec = {
       },
       StringOrStringArray: {
         oneOf: [
-          { type: "string", minLength: 1 },
+          { type: "string", minLength: 1, pattern: "\\S" },
           {
             type: "array",
             minItems: 1,
-            items: { type: "string", minLength: 1 }
+            items: { type: "string", minLength: 1, pattern: "\\S" }
           }
         ]
       },

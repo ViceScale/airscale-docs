@@ -1886,7 +1886,7 @@
                         ]
                       },
                       "companyDomain": {
-                        "description": "Matches a current company domain; URL input is normalized to its hostname. Values merge with companyLinkedinUrl into one current-company identifier filter.",
+                        "description": "Matches a current company domain; URL input is normalized to its hostname. Values from companyDomain and companyLinkedinUrl are combined as OR alternatives into one current-company identifier filter.",
                         "allOf": [
                           {
                             "$ref": "#/components/schemas/IncludeExcludeFilter"
@@ -1894,7 +1894,7 @@
                         ]
                       },
                       "companyLinkedinUrl": {
-                        "description": "Matches a current company profile URL or identifier. Values merge with companyDomain into one current-company identifier filter.",
+                        "description": "Matches a current company profile URL or identifier. Values from companyDomain and companyLinkedinUrl are combined as OR alternatives into one current-company identifier filter.",
                         "allOf": [
                           {
                             "$ref": "#/components/schemas/IncludeExcludeFilter"
@@ -2072,9 +2072,18 @@
                     }
                   },
                   "size": {
-                    "type": "integer",
-                    "minimum": 1,
-                    "maximum": 100,
+                    "description": "A page size from 1 through 100 supplied as an integer JSON number or one of the equivalent canonical decimal strings. OpenAPI intentionally uses canonical decimal strings even though runtime Number() accepts additional JS-coercible spellings.",
+                    "oneOf": [
+                      {
+                        "type": "integer",
+                        "minimum": 1,
+                        "maximum": 100
+                      },
+                      {
+                        "type": "string",
+                        "pattern": "^(?:[1-9]|[1-9][0-9]|100)$"
+                      }
+                    ],
                     "default": 100
                   },
                   "cursor": {
@@ -2335,7 +2344,7 @@
                         ]
                       },
                       "companyDomain": {
-                        "description": "Matches a current company domain; URL input is normalized to its hostname. Values merge with companyLinkedinUrl into one current-company identifier filter.",
+                        "description": "Matches a current company domain; URL input is normalized to its hostname. Values from companyDomain and companyLinkedinUrl are combined as OR alternatives into one current-company identifier filter.",
                         "allOf": [
                           {
                             "$ref": "#/components/schemas/IncludeExcludeFilter"
@@ -2343,7 +2352,7 @@
                         ]
                       },
                       "companyLinkedinUrl": {
-                        "description": "Matches a current company profile URL or identifier. Values merge with companyDomain into one current-company identifier filter.",
+                        "description": "Matches a current company profile URL or identifier. Values from companyDomain and companyLinkedinUrl are combined as OR alternatives into one current-company identifier filter.",
                         "allOf": [
                           {
                             "$ref": "#/components/schemas/IncludeExcludeFilter"
@@ -3661,9 +3670,9 @@
               },
               "examples": {
                 "structuredResearch": {
-                  "summary": "Research the documented Airscale origin",
+                  "summary": "Research a synthetic company",
                   "value": {
-                    "prompt": "What category does Airscale use to describe its service at https://airscale.io?",
+                    "prompt": "What category does Example Company use to describe its service at https://example.com?",
                     "schema": {
                       "category": "string"
                     }
@@ -3714,8 +3723,7 @@
                       "type": "array",
                       "items": {
                         "type": "string",
-                        "minLength": 1,
-                        "description": "A public source URL or source label such as serp_snippets."
+                        "description": "A public source URL, public source label such as serp_snippets, or an empty string forwarded from the upstream result."
                       }
                     },
                     "confidence_score": {
@@ -3748,11 +3756,11 @@
                     "summary": "Synthetic successful research",
                     "value": {
                       "status": "success",
-                      "response": "Airscale is a sales data enrichment platform.",
-                      "category": "sales data enrichment platform",
-                      "reasoning": "The web page and public search snippets agree.",
+                      "response": "Example Company describes its service as workflow automation.",
+                      "category": "workflow automation",
+                      "reasoning": "The public example page and search snippets agree.",
                       "sources": [
-                        "https://airscale.io",
+                        "https://example.com",
                         "serp_snippets"
                       ],
                       "confidence_score": 0.92,
@@ -3992,14 +4000,16 @@
         "oneOf": [
           {
             "type": "string",
-            "minLength": 1
+            "minLength": 1,
+            "pattern": "\\S"
           },
           {
             "type": "array",
             "minItems": 1,
             "items": {
               "type": "string",
-              "minLength": 1
+              "minLength": 1,
+              "pattern": "\\S"
             }
           }
         ]
