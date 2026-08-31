@@ -2,6 +2,7 @@ import {
   closeSync,
   existsSync,
   fsyncSync,
+  linkSync,
   lstatSync,
   mkdirSync,
   openSync,
@@ -19,8 +20,14 @@ import { isDeepStrictEqual } from "node:util";
 import Ajv2020 from "ajv/dist/2020.js";
 import addFormats from "ajv-formats";
 import {
+  acquireGeneratedPairWriterLock,
+  assertGeneratedPairWriterLock,
   assertNoIncompleteTransactionForCheck,
+  assertNoWriterLockForCheck,
+  finishGeneratedPairWriterLockRecovery,
+  isGeneratedPairReservedPath,
   recoverGeneratedPair,
+  releaseGeneratedPairWriterLock,
   writeGeneratedPair
 } from "./lib/atomic-generated-pair.mjs";
 
@@ -122,6 +129,7 @@ const defaultFileIO = {
   closeSync,
   existsSync,
   fsyncSync,
+  linkSync,
   lstatSync,
   mkdirSync,
   openSync,
@@ -1606,6 +1614,12 @@ function validateTargetPaths(paths, io) {
   if (isDescendantPath(catalogIdentity, publicIdentity) || isDescendantPath(publicIdentity, catalogIdentity)) {
     throw new Error("Unsafe output targets: catalog and public manifest paths must not contain one another");
   }
+  if (
+    isGeneratedPairReservedPath(catalogIdentity, publicIdentity)
+    || isGeneratedPairReservedPath(publicIdentity, catalogIdentity)
+  ) {
+    throw new Error("Unsafe output targets: outputs must not occupy each other's reserved transaction namespace");
+  }
   if (catalogIdentity === contractIdentity || sameExistingFile(catalogPath, contractPath, io)) {
     throw new Error("Unsafe catalog output target: it would overwrite the source contract");
   }
@@ -1629,24 +1643,15 @@ export async function run(argv, dependencies = {}) {
     publicPath: parsed.public ?? DEFAULT_PUBLIC_PATH
   }, io);
   if (parsed.mode === "--check") {
+    assertNoWriterLockForCheck([paths.catalogPath, paths.publicPath], io);
     assertNoIncompleteTransactionForCheck([paths.catalogPath, paths.publicPath], io);
-  } else {
-    recoverGeneratedPair([paths.catalogPath, paths.publicPath], io);
+    const contract = JSON.parse(io.readFileSync(paths.contractPath, "utf8"));
+    const catalog = (dependencies.renderCatalogImpl ?? renderCatalog)(contract);
+    const publicManifest = (dependencies.renderPublicManifestImpl ?? renderPublicManifest)(contract);
+    validateRenderedPair(contract, catalog, publicManifest);
     paths = validateTargetPaths(paths, io);
-  }
-  const contract = JSON.parse(io.readFileSync(paths.contractPath, "utf8"));
-  const catalog = (dependencies.renderCatalogImpl ?? renderCatalog)(contract);
-  const publicManifest = (dependencies.renderPublicManifestImpl ?? renderPublicManifest)(contract);
-  validateRenderedPair(contract, catalog, publicManifest);
-  paths = validateTargetPaths(paths, io);
-  if (parsed.mode === "--check") {
+    assertNoWriterLockForCheck([paths.catalogPath, paths.publicPath], io);
     assertNoIncompleteTransactionForCheck([paths.catalogPath, paths.publicPath], io);
-  } else {
-    recoverGeneratedPair([paths.catalogPath, paths.publicPath], io);
-    paths = validateTargetPaths(paths, io);
-  }
-
-  if (parsed.mode === "--check") {
     if (!io.existsSync(paths.catalogPath)) throw new Error(`MCP catalog output is missing: ${basename(paths.catalogPath)}`);
     if (!bytesMatch(catalog, io.readFileSync(paths.catalogPath))) {
       throw new Error(`MCP catalog output is stale: ${basename(paths.catalogPath)}`);
@@ -1658,24 +1663,69 @@ export async function run(argv, dependencies = {}) {
     return;
   }
 
-  if (
-    io.existsSync(paths.catalogPath)
-    && io.existsSync(paths.publicPath)
-    && bytesMatch(catalog, io.readFileSync(paths.catalogPath))
-    && bytesMatch(publicManifest, io.readFileSync(paths.publicPath))
-  ) return;
-
   io.mkdirSync(dirname(paths.catalogPath), { recursive: true });
   io.mkdirSync(dirname(paths.publicPath), { recursive: true });
   const transactionToken = `${process.pid}.${Date.now()}.${Math.random().toString(16).slice(2)}`;
-  writeGeneratedPair([
-    { targetPath: paths.catalogPath, contents: catalog },
-    { targetPath: paths.publicPath, contents: publicManifest }
-  ], {
-    io,
+  const writerLock = acquireGeneratedPairWriterLock(
+    [paths.catalogPath, paths.publicPath],
     transactionToken,
-    transactionPhaseHook: dependencies.transactionPhaseHook
-  });
+    io,
+    { writerLockPhaseHook: dependencies.writerLockPhaseHook }
+  );
+  let operationError = null;
+  try {
+    assertGeneratedPairWriterLock(writerLock, [paths.catalogPath, paths.publicPath], io);
+    recoverGeneratedPair([paths.catalogPath, paths.publicPath], io, {
+      recoverableTransactionTokens: writerLock.recoverableTransactionTokens
+    });
+    assertGeneratedPairWriterLock(writerLock, [paths.catalogPath, paths.publicPath], io);
+    finishGeneratedPairWriterLockRecovery(writerLock, io);
+    assertGeneratedPairWriterLock(writerLock, [paths.catalogPath, paths.publicPath], io);
+    paths = validateTargetPaths(paths, io);
+
+    const contract = JSON.parse(io.readFileSync(paths.contractPath, "utf8"));
+    const catalog = (dependencies.renderCatalogImpl ?? renderCatalog)(contract);
+    const publicManifest = (dependencies.renderPublicManifestImpl ?? renderPublicManifest)(contract);
+    validateRenderedPair(contract, catalog, publicManifest);
+    assertGeneratedPairWriterLock(writerLock, [paths.catalogPath, paths.publicPath], io);
+    paths = validateTargetPaths(paths, io);
+    recoverGeneratedPair([paths.catalogPath, paths.publicPath], io);
+    assertGeneratedPairWriterLock(writerLock, [paths.catalogPath, paths.publicPath], io);
+    paths = validateTargetPaths(paths, io);
+
+    if (
+      io.existsSync(paths.catalogPath)
+      && io.existsSync(paths.publicPath)
+      && bytesMatch(catalog, io.readFileSync(paths.catalogPath))
+      && bytesMatch(publicManifest, io.readFileSync(paths.publicPath))
+    ) return;
+
+    assertGeneratedPairWriterLock(writerLock, [paths.catalogPath, paths.publicPath], io);
+    writeGeneratedPair([
+      { targetPath: paths.catalogPath, contents: catalog },
+      { targetPath: paths.publicPath, contents: publicManifest }
+    ], {
+      io,
+      transactionToken,
+      transactionPhaseHook: dependencies.transactionPhaseHook,
+      writerLock
+    });
+  } catch (error) {
+    operationError = error;
+    throw error;
+  } finally {
+    try {
+      releaseGeneratedPairWriterLock(writerLock, io);
+    } catch (releaseError) {
+      if (operationError) {
+        throw new AggregateError(
+          [operationError, releaseError],
+          `${operationError.message}; writer lock release was incomplete: ${releaseError.message}`
+        );
+      }
+      throw releaseError;
+    }
+  }
 }
 
 if (process.argv[1] && import.meta.url === pathToFileURL(resolve(process.argv[1])).href) {

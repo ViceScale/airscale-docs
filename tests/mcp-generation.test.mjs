@@ -1,9 +1,10 @@
 import assert from "node:assert/strict";
-import { spawnSync } from "node:child_process";
+import { spawn, spawnSync } from "node:child_process";
 import * as fileSystem from "node:fs";
 import {
   existsSync,
   fsyncSync,
+  linkSync,
   lstatSync,
   mkdirSync,
   mkdtempSync,
@@ -28,7 +29,13 @@ import {
   renderPublicManifest,
   run
 } from "../scripts/build-mcp-catalog.mjs";
-import { recoverGeneratedPair, writeGeneratedPair } from "../scripts/lib/atomic-generated-pair.mjs";
+import {
+  acquireGeneratedPairWriterLock,
+  finishGeneratedPairWriterLockRecovery,
+  recoverGeneratedPair,
+  releaseGeneratedPairWriterLock,
+  writeGeneratedPair
+} from "../scripts/lib/atomic-generated-pair.mjs";
 
 const CATEGORY_GROUPS = [
   {
@@ -189,7 +196,10 @@ function inTemporaryDirectory(callback) {
 function assertNoTransactionFiles(directory) {
   assert.deepEqual(
     readdirSync(directory).filter((name) => (
-      name.endsWith(".tmp") || name.endsWith(".bak") || name.includes(".mcp-pair-transaction.json")
+      name.endsWith(".tmp")
+      || name.endsWith(".bak")
+      || name.includes(".mcp-pair-transaction.json")
+      || name.includes(".mcp-pair-write.lock")
     )),
     []
   );
@@ -197,6 +207,56 @@ function assertNoTransactionFiles(directory) {
 
 function transactionFiles(directory, suffix) {
   return readdirSync(directory).filter((name) => name.endsWith(suffix));
+}
+
+function snapshotRegularFiles(paths) {
+  return paths.map((path) => {
+    const stat = lstatSync(path);
+    return {
+      path,
+      device: String(stat.dev),
+      inode: String(stat.ino),
+      contents: readFileSync(path)
+    };
+  });
+}
+
+function createUncommittedJournalFixture(directory) {
+  const catalogPath = join(directory, "tools.mdx");
+  const publicPath = join(directory, "mcp-tools.json");
+  const journalPath = `${catalogPath}.mcp-pair-transaction.json`;
+  const token = "123.456.deadbeef";
+  const entries = [catalogPath, publicPath].map((targetPath, index) => {
+    const temporaryPath = `${targetPath}.${token}.tmp`;
+    const backupPath = `${targetPath}.${token}.bak`;
+    writeFileSync(backupPath, `original output ${index}\n`);
+    const originalStat = lstatSync(backupPath);
+    writeFileSync(targetPath, `installed output ${index}\n`);
+    const temporaryStat = lstatSync(targetPath);
+    linkSync(targetPath, temporaryPath);
+    return {
+      targetPath,
+      temporaryPath,
+      backupPath,
+      hadTarget: true,
+      originalIdentity: { device: String(originalStat.dev), inode: String(originalStat.ino) },
+      temporaryIdentity: { device: String(temporaryStat.dev), inode: String(temporaryStat.ino) }
+    };
+  });
+  writeFileSync(journalPath, `${JSON.stringify({ version: 1, committed: false, entries }, null, 2)}\n`);
+  return {
+    catalogPath,
+    publicPath,
+    journalPath,
+    updatePath: `${journalPath}.next`,
+    entries,
+    transactionPaths: [
+      catalogPath,
+      publicPath,
+      journalPath,
+      ...entries.flatMap(({ temporaryPath, backupPath }) => [temporaryPath, backupPath])
+    ]
+  };
 }
 
 function crashWriterAt(phase, catalogPath, publicPath) {
@@ -216,10 +276,77 @@ function crashWriterAt(phase, catalogPath, publicPath) {
       },
       transactionPhaseHook(currentPhase) {
         if (currentPhase === ${JSON.stringify(phase)}) process.kill(process.pid, "SIGKILL");
+      },
+      writerLockPhaseHook(currentPhase) {
+        if (currentPhase === ${JSON.stringify(phase)}) process.kill(process.pid, "SIGKILL");
       }
     });
   `;
   return spawnSync(process.execPath, ["--input-type=module", "--eval", source], { encoding: "utf8" });
+}
+
+function writerChildSource(catalogPath, publicPath, {
+  contractPath = null,
+  pauseAtTemporaryFiles = false,
+  pauseAtWriterLockPhase = null
+} = {}) {
+  const generatorUrl = new URL("../scripts/build-mcp-catalog.mjs", import.meta.url).href;
+  const argumentsValue = [
+    "--write",
+    ...(contractPath ? ["--contract", contractPath] : []),
+    "--catalog",
+    catalogPath,
+    "--public",
+    publicPath
+  ];
+  return `
+    import { readFileSync } from "node:fs";
+    import { run } from ${JSON.stringify(generatorUrl)};
+    try {
+      await run(${JSON.stringify(argumentsValue)}, {
+        transactionPhaseHook(phase) {
+          if (${JSON.stringify(pauseAtTemporaryFiles)} && phase === "temporary-files") {
+            process.stdout.write("READY\\n");
+            readFileSync(0, "utf8");
+          }
+        },
+        writerLockPhaseHook(phase) {
+          if (phase === ${JSON.stringify(pauseAtWriterLockPhase)}) {
+            process.stdout.write("READY\\n");
+            readFileSync(0, "utf8");
+          }
+        }
+      });
+      process.stdout.write("OK\\n");
+    } catch (error) {
+      process.stdout.write(\`ERROR \${error.name}: \${error.message}\\n\`);
+      process.exitCode = 2;
+    }
+  `;
+}
+
+function waitForChildOutput(child, expected, output) {
+  return new Promise((resolvePromise, rejectPromise) => {
+    const timeout = setTimeout(() => {
+      child.kill("SIGKILL");
+      rejectPromise(new Error(`timed out waiting for child output ${JSON.stringify(expected)}; received ${output.value}`));
+    }, 10_000);
+    function finishIfReady() {
+      if (!output.value.includes(expected)) return;
+      clearTimeout(timeout);
+      child.stdout.off("data", finishIfReady);
+      resolvePromise();
+    }
+    child.stdout.on("data", finishIfReady);
+    finishIfReady();
+  });
+}
+
+function waitForChildExit(child, stdout, stderr) {
+  return new Promise((resolvePromise, rejectPromise) => {
+    child.once("error", rejectPromise);
+    child.once("close", (code, signal) => resolvePromise({ code, signal, stdout: stdout.value, stderr: stderr.value }));
+  });
 }
 
 test("catalog renderer emits the exact page framing, category order, headings, anchors, and summary links", () => {
@@ -1193,6 +1320,719 @@ test("a later writer cleans one complete temporary pair left before journal publ
   });
 });
 
+test("a concurrent writer cannot reclaim live pre-journal temporary files or lose installed outputs", async () => {
+  await inTemporaryDirectory(async (directory) => {
+    const catalogPath = join(directory, "tools.mdx");
+    const publicPath = join(directory, "mcp-tools.json");
+    const first = spawn(
+      process.execPath,
+      ["--input-type=module", "--eval", writerChildSource(catalogPath, publicPath, { pauseAtTemporaryFiles: true })],
+      { stdio: ["pipe", "pipe", "pipe"] }
+    );
+    const firstStdout = { value: "" };
+    const firstStderr = { value: "" };
+    first.stdout.setEncoding("utf8");
+    first.stderr.setEncoding("utf8");
+    first.stdout.on("data", (chunk) => { firstStdout.value += chunk; });
+    first.stderr.on("data", (chunk) => { firstStderr.value += chunk; });
+
+    try {
+      await waitForChildOutput(first, "READY\n", firstStdout);
+      const beforeCheck = readdirSync(directory).sort();
+      await assert.rejects(
+        run(["--check", "--catalog", catalogPath, "--public", publicPath]),
+        /writer lock/i
+      );
+      assert.deepEqual(readdirSync(directory).sort(), beforeCheck);
+      const second = spawnSync(
+        process.execPath,
+        ["--input-type=module", "--eval", writerChildSource(catalogPath, publicPath)],
+        { encoding: "utf8", timeout: 10_000 }
+      );
+      first.stdin.end("resume\n");
+      const firstResult = await waitForChildExit(first, firstStdout, firstStderr);
+
+      assert.equal(second.status, 2, `second writer unexpectedly succeeded: ${second.stdout}\n${second.stderr}`);
+      assert.match(second.stdout, /GeneratedPairWriterLockError:.*writer.*active/i);
+      assert.deepEqual(firstResult, { code: 0, signal: null, stdout: "READY\nOK\n", stderr: "" });
+      assert.equal(readFileSync(catalogPath, "utf8"), renderCatalog(readContract()));
+      assert.equal(readFileSync(publicPath, "utf8"), renderPublicManifest(readContract()));
+      assertNoTransactionFiles(directory);
+    } finally {
+      if (first.exitCode === null && first.signalCode === null) {
+        first.stdin.end("resume\n");
+        first.kill("SIGKILL");
+      }
+    }
+  });
+});
+
+test("overlapping output pairs serialize on every target regardless of target role or order", async () => {
+  await inTemporaryDirectory(async (directory) => {
+    for (const variant of ["shared-public", "reversed-role"]) {
+      const variantDirectory = join(directory, variant);
+      mkdirSync(variantDirectory);
+      const sharedPath = join(variantDirectory, "shared-output");
+      const aOnlyPath = join(variantDirectory, "a-only-output");
+      const bOnlyPath = join(variantDirectory, "b-only-output");
+      const aContractPath = join(variantDirectory, "contract-a.json");
+      const bContractPath = join(variantDirectory, "contract-b.json");
+      const contractA = readContract();
+      const contractB = readContract();
+      contractA.sourceSha = "a".repeat(40);
+      contractB.sourceSha = "b".repeat(40);
+      writeFileSync(aContractPath, JSON.stringify(contractA));
+      writeFileSync(bContractPath, JSON.stringify(contractB));
+      const [aCatalogPath, aPublicPath] = variant === "shared-public"
+        ? [aOnlyPath, sharedPath]
+        : [sharedPath, aOnlyPath];
+      const [bCatalogPath, bPublicPath] = [bOnlyPath, sharedPath];
+      const first = spawn(
+        process.execPath,
+        ["--input-type=module", "--eval", writerChildSource(aCatalogPath, aPublicPath, {
+          contractPath: aContractPath,
+          pauseAtWriterLockPhase: "lock-published"
+        })],
+        { stdio: ["pipe", "pipe", "pipe"] }
+      );
+      const firstStdout = { value: "" };
+      const firstStderr = { value: "" };
+      first.stdout.setEncoding("utf8");
+      first.stderr.setEncoding("utf8");
+      first.stdout.on("data", (chunk) => { firstStdout.value += chunk; });
+      first.stderr.on("data", (chunk) => { firstStderr.value += chunk; });
+
+      try {
+        await waitForChildOutput(first, "READY\n", firstStdout);
+        const contender = spawnSync(
+          process.execPath,
+          ["--input-type=module", "--eval", writerChildSource(bCatalogPath, bPublicPath, {
+            contractPath: bContractPath
+          })],
+          { encoding: "utf8", timeout: 10_000 }
+        );
+        assert.equal(contender.status, 2, `${variant}: contender unexpectedly succeeded: ${contender.stdout}\n${contender.stderr}`);
+        assert.match(contender.stdout, /GeneratedPairWriterLockError:.*writer.*active/i, variant);
+
+        first.stdin.end("resume\n");
+        const firstResult = await waitForChildExit(first, firstStdout, firstStderr);
+        assert.deepEqual(firstResult, { code: 0, signal: null, stdout: "READY\nOK\n", stderr: "" }, variant);
+
+        await run([
+          "--write",
+          "--contract",
+          bContractPath,
+          "--catalog",
+          bCatalogPath,
+          "--public",
+          bPublicPath
+        ]);
+        await assert.doesNotReject(run([
+          "--check",
+          "--contract",
+          bContractPath,
+          "--catalog",
+          bCatalogPath,
+          "--public",
+          bPublicPath
+        ]));
+        assert.equal(JSON.parse(readFileSync(sharedPath, "utf8")).sourceSha, contractB.sourceSha, variant);
+        assertNoTransactionFiles(variantDirectory);
+      } finally {
+        if (first.exitCode === null && first.signalCode === null) {
+          first.stdin.end("resume\n");
+          first.kill("SIGKILL");
+        }
+      }
+    }
+  });
+});
+
+test("a live writer lock candidate blocks another writer without being reclaimed", async () => {
+  await inTemporaryDirectory(async (directory) => {
+    const catalogPath = join(directory, "tools.mdx");
+    const publicPath = join(directory, "mcp-tools.json");
+    const first = spawn(
+      process.execPath,
+      ["--input-type=module", "--eval", writerChildSource(catalogPath, publicPath, {
+        pauseAtWriterLockPhase: "lock-candidate"
+      })],
+      { stdio: ["pipe", "pipe", "pipe"] }
+    );
+    const firstStdout = { value: "" };
+    const firstStderr = { value: "" };
+    first.stdout.setEncoding("utf8");
+    first.stderr.setEncoding("utf8");
+    first.stdout.on("data", (chunk) => { firstStdout.value += chunk; });
+    first.stderr.on("data", (chunk) => { firstStderr.value += chunk; });
+
+    try {
+      await waitForChildOutput(first, "READY\n", firstStdout);
+      const before = readdirSync(directory).sort();
+      const second = spawnSync(
+        process.execPath,
+        ["--input-type=module", "--eval", writerChildSource(catalogPath, publicPath)],
+        { encoding: "utf8", timeout: 10_000 }
+      );
+      assert.equal(second.status, 2, `second writer unexpectedly succeeded: ${second.stdout}\n${second.stderr}`);
+      assert.match(second.stdout, /GeneratedPairWriterLockError:.*writer.*active/i);
+      assert.deepEqual(readdirSync(directory).sort(), before);
+
+      first.stdin.end("resume\n");
+      const firstResult = await waitForChildExit(first, firstStdout, firstStderr);
+      assert.deepEqual(firstResult, { code: 0, signal: null, stdout: "READY\nOK\n", stderr: "" });
+      assert.equal(readFileSync(catalogPath, "utf8"), renderCatalog(readContract()));
+      assert.equal(readFileSync(publicPath, "utf8"), renderPublicManifest(readContract()));
+      assertNoTransactionFiles(directory);
+    } finally {
+      if (first.exitCode === null && first.signalCode === null) {
+        first.stdin.end("resume\n");
+        first.kill("SIGKILL");
+      }
+    }
+  });
+});
+
+test("a later writer recovers crashes at lock candidate, publication, and stale quarantine", async () => {
+  await inTemporaryDirectory(async (directory) => {
+    for (const phase of ["lock-candidate", "lock-published"]) {
+      const phaseDirectory = join(directory, phase);
+      mkdirSync(phaseDirectory);
+      const catalogPath = join(phaseDirectory, "tools.mdx");
+      const publicPath = join(phaseDirectory, "mcp-tools.json");
+      writeFileSync(catalogPath, "old catalog\n");
+      writeFileSync(publicPath, "old public\n");
+
+      const crashed = crashWriterAt(phase, catalogPath, publicPath);
+      assert.equal(crashed.signal, "SIGKILL", `${phase}: ${crashed.stderr}`);
+      assert.ok(readdirSync(phaseDirectory).some((name) => name.includes(".mcp-pair-write.lock")));
+
+      await run(["--write", "--catalog", catalogPath, "--public", publicPath]);
+      assert.equal(readFileSync(catalogPath, "utf8"), renderCatalog(readContract()));
+      assert.equal(readFileSync(publicPath, "utf8"), renderPublicManifest(readContract()));
+      assertNoTransactionFiles(phaseDirectory);
+    }
+
+    for (const phase of ["lock-stale-linked", "lock-stale-quarantine"]) {
+      const staleDirectory = join(directory, phase);
+      mkdirSync(staleDirectory);
+      const catalogPath = join(staleDirectory, "tools.mdx");
+      const publicPath = join(staleDirectory, "mcp-tools.json");
+      writeFileSync(catalogPath, "old catalog\n");
+      writeFileSync(publicPath, "old public\n");
+      const publishedCrash = crashWriterAt("lock-published", catalogPath, publicPath);
+      assert.equal(publishedCrash.signal, "SIGKILL", `${phase}: ${publishedCrash.stderr}`);
+      const quarantineCrash = crashWriterAt(phase, catalogPath, publicPath);
+      assert.equal(quarantineCrash.signal, "SIGKILL", `${phase}: ${quarantineCrash.stderr}`);
+      assert.ok(readdirSync(staleDirectory).some((name) => name.endsWith(".stale")));
+
+      await run(["--write", "--catalog", catalogPath, "--public", publicPath]);
+      assert.equal(readFileSync(catalogPath, "utf8"), renderCatalog(readContract()));
+      assert.equal(readFileSync(publicPath, "utf8"), renderPublicManifest(readContract()));
+      assertNoTransactionFiles(staleDirectory);
+    }
+  });
+});
+
+test("a lock winner discovers stale evidence published after its pre-acquisition scan", async () => {
+  await inTemporaryDirectory(async (directory) => {
+    const catalogPath = join(directory, "tools.mdx");
+    const publicPath = join(directory, "mcp-tools.json");
+    const lockPath = `${catalogPath}.mcp-pair-write.lock`;
+    const staleToken = "999999999.123.deadbeef";
+    const currentToken = `${process.pid}.456.cafebabe`;
+    const stalePath = `${lockPath}.${staleToken}.stale`;
+    writeFileSync(lockPath, `${JSON.stringify({
+      version: 2,
+      token: staleToken,
+      pid: 999999999,
+      processIncarnation: "dead-process-incarnation",
+      targetPaths: [catalogPath, publicPath]
+    }, null, 2)}\n`);
+    let linked = false;
+
+    const lock = acquireGeneratedPairWriterLock(
+      [catalogPath, publicPath],
+      currentToken,
+      {
+        ...fileSystem,
+        linkSync(source, destination) {
+          if (!linked) {
+            linked = true;
+            renameSync(lockPath, stalePath);
+          }
+          return fileSystem.linkSync(source, destination);
+        }
+      }
+    );
+    try {
+      assert.deepEqual([...lock.recoverableTransactionTokens], [staleToken]);
+      finishGeneratedPairWriterLockRecovery(lock, fileSystem);
+      assert.equal(existsSync(stalePath), false);
+    } finally {
+      releaseGeneratedPairWriterLock(lock, fileSystem);
+    }
+    assertNoTransactionFiles(directory);
+  });
+});
+
+test("a reused PID with a mismatched process incarnation permits safe stale-lock recovery", async () => {
+  await inTemporaryDirectory(async (directory) => {
+    const catalogPath = join(directory, "tools.mdx");
+    const publicPath = join(directory, "mcp-tools.json");
+    const lockPath = `${catalogPath}.mcp-pair-write.lock`;
+    const staleToken = `${process.pid}.111.deadbeef`;
+    const currentToken = `${process.pid}.222.cafebabe`;
+    const targetPaths = [catalogPath, publicPath];
+    writeFileSync(lockPath, `${JSON.stringify({
+      version: 2,
+      token: staleToken,
+      pid: process.pid,
+      processIncarnation: "prior-process-incarnation",
+      targetPaths
+    }, null, 2)}\n`);
+
+    const lock = acquireGeneratedPairWriterLock(targetPaths, currentToken, fileSystem, {
+      processIncarnationForPid() {
+        return "current-process-incarnation";
+      }
+    });
+    try {
+      assert.deepEqual([...lock.recoverableTransactionTokens], [staleToken]);
+      finishGeneratedPairWriterLockRecovery(lock, fileSystem);
+    } finally {
+      releaseGeneratedPairWriterLock(lock, fileSystem);
+    }
+    assertNoTransactionFiles(directory);
+  });
+});
+
+test("a genuine live owner with the same process incarnation is never reclaimed", async () => {
+  await inTemporaryDirectory(async (directory) => {
+    const catalogPath = join(directory, "tools.mdx");
+    const publicPath = join(directory, "mcp-tools.json");
+    const lockPath = `${catalogPath}.mcp-pair-write.lock`;
+    const ownerToken = `${process.pid}.333.deadbeef`;
+    const contenderToken = `${process.pid}.444.cafebabe`;
+    const targetPaths = [catalogPath, publicPath];
+    writeFileSync(lockPath, `${JSON.stringify({
+      version: 2,
+      token: ownerToken,
+      pid: process.pid,
+      processIncarnation: "same-live-incarnation",
+      targetPaths
+    }, null, 2)}\n`);
+
+    assert.throws(
+      () => acquireGeneratedPairWriterLock(targetPaths, contenderToken, fileSystem, {
+        processIncarnationForPid() {
+          return "same-live-incarnation";
+        }
+      }),
+      /writer.*active|live.*owner/i
+    );
+    assert.equal(JSON.parse(readFileSync(lockPath, "utf8")).token, ownerToken);
+  });
+});
+
+test("an uncertain process-incarnation lookup fails closed without reclaiming the owner", async () => {
+  await inTemporaryDirectory(async (directory) => {
+    const catalogPath = join(directory, "tools.mdx");
+    const publicPath = join(directory, "mcp-tools.json");
+    const lockPath = `${catalogPath}.mcp-pair-write.lock`;
+    const ownerToken = `${process.pid}.555.deadbeef`;
+    const contenderToken = `${process.pid}.666.cafebabe`;
+    const targetPaths = [catalogPath, publicPath];
+    writeFileSync(lockPath, `${JSON.stringify({
+      version: 2,
+      token: ownerToken,
+      pid: process.pid,
+      processIncarnation: "recorded-owner-incarnation",
+      targetPaths
+    }, null, 2)}\n`);
+    let lookups = 0;
+
+    assert.throws(
+      () => acquireGeneratedPairWriterLock(targetPaths, contenderToken, fileSystem, {
+        processIncarnationForPid() {
+          lookups += 1;
+          return lookups === 1 ? "contender-incarnation" : null;
+        }
+      }),
+      /ownership is unknown|incarnation could not be established/i
+    );
+    assert.equal(JSON.parse(readFileSync(lockPath, "utf8")).token, ownerToken);
+  });
+});
+
+test("writer fails closed on an unknown target-derived lock artifact", async () => {
+  await inTemporaryDirectory(async (directory) => {
+    const catalogPath = join(directory, "tools.mdx");
+    const publicPath = join(directory, "mcp-tools.json");
+    const unknownPath = `${catalogPath}.mcp-pair-write.lock.unrecognized`;
+    writeFileSync(unknownPath, "unknown lock evidence\n");
+
+    await assert.rejects(
+      run(["--write", "--catalog", catalogPath, "--public", publicPath]),
+      /writer lock recovery.*unsafe.*artifact/i
+    );
+    assert.equal(readFileSync(unknownPath, "utf8"), "unknown lock evidence\n");
+    assert.equal(existsSync(catalogPath), false);
+    assert.equal(existsSync(publicPath), false);
+  });
+});
+
+test("stale-lock quarantine captures a companion candidate created after the pre-scan", async () => {
+  await inTemporaryDirectory(async (directory) => {
+    const catalogPath = join(directory, "tools.mdx");
+    const publicPath = join(directory, "mcp-tools.json");
+    const lockPath = `${catalogPath}.mcp-pair-write.lock`;
+    const staleToken = "999999999.123.deadbeef";
+    const currentToken = `${process.pid}.456.cafebabe`;
+    const staleCandidatePath = `${lockPath}.${staleToken}.candidate`;
+    const targetPaths = [catalogPath, publicPath];
+    writeFileSync(lockPath, `${JSON.stringify({
+      version: 2,
+      token: staleToken,
+      pid: 999999999,
+      processIncarnation: "dead-process-incarnation",
+      targetPaths
+    }, null, 2)}\n`);
+    let candidatePublished = false;
+
+    const lock = acquireGeneratedPairWriterLock(targetPaths, currentToken, {
+      ...fileSystem,
+      linkSync(source, destination) {
+        if (source === lockPath && destination.endsWith(`.${staleToken}.stale`) && !candidatePublished) {
+          candidatePublished = true;
+          fileSystem.linkSync(lockPath, staleCandidatePath);
+        }
+        return fileSystem.linkSync(source, destination);
+      }
+    });
+    try {
+      assert.equal(lock.recoveryArtifacts.some(({ path }) => path === staleCandidatePath), true);
+      finishGeneratedPairWriterLockRecovery(lock, fileSystem);
+      assert.equal(existsSync(staleCandidatePath), false);
+    } finally {
+      releaseGeneratedPairWriterLock(lock, fileSystem);
+    }
+    assertNoTransactionFiles(directory);
+  });
+});
+
+test("stale-lock quarantine cannot overwrite or move a contender's live canonical lock", async () => {
+  await inTemporaryDirectory(async (directory) => {
+    const catalogPath = join(directory, "tools.mdx");
+    const publicPath = join(directory, "mcp-tools.json");
+    const lockPath = `${catalogPath}.mcp-pair-write.lock`;
+    const staleToken = "999999999.123.deadbeef";
+    const contenderToken = `${process.pid}.456.cafebabe`;
+    const writerToken = `${process.pid}.789.facefeed`;
+    const stalePath = `${lockPath}.${staleToken}.stale`;
+    const contenderCandidatePath = `${lockPath}.${contenderToken}.candidate`;
+    const targetPaths = [catalogPath, publicPath];
+    const record = (token, pid) => `${JSON.stringify({
+      version: 2,
+      token,
+      pid,
+      processIncarnation: pid === process.pid ? "live-process-incarnation" : "dead-process-incarnation",
+      targetPaths
+    }, null, 2)}\n`;
+    writeFileSync(lockPath, record(staleToken, 999999999));
+    let interposed = false;
+
+    const interposeContender = () => {
+      if (interposed) return;
+      interposed = true;
+      fileSystem.linkSync(lockPath, stalePath);
+      fileSystem.unlinkSync(lockPath);
+      writeFileSync(contenderCandidatePath, record(contenderToken, process.pid));
+      fileSystem.linkSync(contenderCandidatePath, lockPath);
+    };
+    const io = {
+      ...fileSystem,
+      linkSync(source, destination) {
+        if (source === lockPath && destination === stalePath) interposeContender();
+        return fileSystem.linkSync(source, destination);
+      },
+      renameSync(source, destination) {
+        if (source === lockPath && destination === stalePath) {
+          renameSync(source, destination);
+          writeFileSync(contenderCandidatePath, record(contenderToken, process.pid));
+          fileSystem.linkSync(contenderCandidatePath, lockPath);
+        }
+        return renameSync(source, destination);
+      }
+    };
+
+    assert.throws(
+      () => acquireGeneratedPairWriterLock(targetPaths, writerToken, io),
+      /ownership changed|identity changed|active/i
+    );
+    assert.equal(JSON.parse(readFileSync(lockPath, "utf8")).token, contenderToken);
+    assert.equal(JSON.parse(readFileSync(stalePath, "utf8")).token, staleToken);
+    assert.equal(existsSync(contenderCandidatePath), true);
+  });
+});
+
+test("a supplied writer lock must still own the exact canonical inode and targets", async () => {
+  await inTemporaryDirectory(async (directory) => {
+    const catalogPath = join(directory, "tools.mdx");
+    const publicPath = join(directory, "mcp-tools.json");
+    const transactionToken = `${process.pid}.123.deadbeef`;
+    const lock = acquireGeneratedPairWriterLock(
+      [catalogPath, publicPath],
+      transactionToken,
+      fileSystem
+    );
+    fileSystem.unlinkSync(lock.lockPath);
+
+    assert.throws(
+      () => writeGeneratedPair([
+        { targetPath: catalogPath, contents: "new catalog\n" },
+        { targetPath: publicPath, contents: "new public\n" }
+      ], { io: fileSystem, transactionToken, writerLock: lock }),
+      /writer lock.*missing|missing.*writer lock/i
+    );
+    assert.equal(existsSync(catalogPath), false);
+    assert.equal(existsSync(publicPath), false);
+    assert.throws(
+      () => releaseGeneratedPairWriterLock(lock, fileSystem),
+      /writer lock.*missing|missing.*writer lock/i
+    );
+  });
+});
+
+test("a supplied writer lock rejects in-place metadata rewritten to a foreign PID", async () => {
+  await inTemporaryDirectory(async (directory) => {
+    const catalogPath = join(directory, "tools.mdx");
+    const publicPath = join(directory, "mcp-tools.json");
+    const transactionToken = `${process.pid}.124.cafebabe`;
+    const targetPaths = [catalogPath, publicPath];
+    const lock = acquireGeneratedPairWriterLock(targetPaths, transactionToken, fileSystem);
+    writeFileSync(lock.lockPath, `${JSON.stringify({
+      version: 2,
+      token: transactionToken,
+      pid: process.pid + 1,
+      processIncarnation: lock.processIncarnation,
+      targetPaths
+    }, null, 2)}\n`);
+
+    assert.throws(
+      () => writeGeneratedPair([
+        { targetPath: catalogPath, contents: "new catalog\n" },
+        { targetPath: publicPath, contents: "new public\n" }
+      ], { io: fileSystem, transactionToken, writerLock: lock }),
+      /writer lock.*PID|PID.*writer lock/i
+    );
+    assert.equal(existsSync(catalogPath), false);
+    assert.equal(existsSync(publicPath), false);
+  });
+});
+
+test("writer lock reads detect canonical inode replacement before backup mutation", async () => {
+  await inTemporaryDirectory(async (directory) => {
+    const catalogPath = join(directory, "tools.mdx");
+    const publicPath = join(directory, "mcp-tools.json");
+    const catalogLockPath = `${catalogPath}.mcp-pair-write.lock`;
+    const displacedLockPath = join(directory, "displaced-owner-lock");
+    const foreignToken = `${process.pid}.999.feedface`;
+    writeFileSync(catalogPath, "old catalog\n");
+    writeFileSync(publicPath, "old public\n");
+    let armed = false;
+    let replaced = false;
+
+    await assert.rejects(
+      run(["--write", "--catalog", catalogPath, "--public", publicPath], {
+        transactionPhaseHook(phase) {
+          if (phase === "journal") armed = true;
+        },
+        fsImpl: {
+          readFileSync(path, options) {
+            if (armed && path === catalogLockPath && !replaced) {
+              replaced = true;
+              const ownerBytes = fileSystem.readFileSync(path, options);
+              const foreignRecord = { ...JSON.parse(String(ownerBytes)), token: foreignToken };
+              renameSync(path, displacedLockPath);
+              writeFileSync(path, `${JSON.stringify(foreignRecord, null, 2)}\n`);
+              return ownerBytes;
+            }
+            return fileSystem.readFileSync(path, options);
+          }
+        }
+      }),
+      /writer lock.*identity changed|identity changed.*writer lock|rollback was not attempted/i
+    );
+    assert.equal(replaced, true);
+    assert.equal(readFileSync(catalogPath, "utf8"), "old catalog\n");
+    assert.equal(readFileSync(publicPath, "utf8"), "old public\n");
+    assert.equal(JSON.parse(readFileSync(catalogLockPath, "utf8")).token, foreignToken);
+    assert.equal(existsSync(displacedLockPath), true);
+  });
+});
+
+test("a writer that loses one target lock cannot overwrite a completed overlapping contender", async () => {
+  await inTemporaryDirectory(async (directory) => {
+    const catalogPath = join(directory, "tools.mdx");
+    const publicPath = join(directory, "mcp-tools.json");
+    const contenderPublicPath = join(directory, "contender-mcp-tools.json");
+    const lockPath = `${catalogPath}.mcp-pair-write.lock`;
+    let contender;
+
+    await assert.rejects(
+      run(["--write", "--catalog", catalogPath, "--public", publicPath], {
+        renderPublicManifestImpl(contract) {
+          fileSystem.unlinkSync(lockPath);
+          contender = spawnSync(
+            process.execPath,
+            ["--input-type=module", "--eval", writerChildSource(catalogPath, contenderPublicPath)],
+            { encoding: "utf8", timeout: 10_000 }
+          );
+          return renderPublicManifest(contract);
+        }
+      }),
+      /writer lock.*(?:missing|release was incomplete)|missing.*writer lock/i
+    );
+    assert.equal(contender.status, 0, `${contender.stdout}\n${contender.stderr}`);
+    assert.equal(readFileSync(catalogPath, "utf8"), renderCatalog(readContract()));
+    assert.equal(existsSync(publicPath), false);
+    assert.equal(readFileSync(contenderPublicPath, "utf8"), renderPublicManifest(readContract()));
+    assertNoTransactionFiles(directory);
+  });
+});
+
+test("post-install rollback preserves a replacement output it did not install", async () => {
+  await inTemporaryDirectory(async (directory) => {
+    const catalogPath = join(directory, "tools.mdx");
+    const publicPath = join(directory, "mcp-tools.json");
+
+    await assert.rejects(
+      run(["--write", "--catalog", catalogPath, "--public", publicPath], {
+        transactionPhaseHook(phase) {
+          if (phase !== "first-install") return;
+          rmSync(catalogPath);
+          writeFileSync(catalogPath, "foreign catalog\n");
+          throw new Error("post-install replacement");
+        }
+      }),
+      /post-install replacement.*rollback was incomplete|rollback.*does not match.*transaction/i
+    );
+    assert.equal(readFileSync(catalogPath, "utf8"), "foreign catalog\n");
+    assert.equal(existsSync(publicPath), false);
+    assert.ok(readdirSync(directory).some((name) => name.includes(".mcp-pair-transaction.json")));
+  });
+});
+
+test("pre-backup rollback preserves a replaced original and all transaction evidence", async () => {
+  await inTemporaryDirectory(async (directory) => {
+    const catalogPath = join(directory, "tools.mdx");
+    const publicPath = join(directory, "mcp-tools.json");
+    writeFileSync(catalogPath, "old catalog\n");
+    writeFileSync(publicPath, "old public\n");
+
+    await assert.rejects(
+      run(["--write", "--catalog", catalogPath, "--public", publicPath], {
+        transactionPhaseHook(phase) {
+          if (phase !== "journal") return;
+          rmSync(publicPath);
+          writeFileSync(publicPath, "foreign public\n");
+          throw new Error("pre-backup replacement");
+        }
+      }),
+      /pre-backup replacement.*rollback was incomplete|original output identity.*does not match/i
+    );
+    assert.equal(readFileSync(catalogPath, "utf8"), "old catalog\n");
+    assert.equal(readFileSync(publicPath, "utf8"), "foreign public\n");
+    assert.equal(transactionFiles(directory, ".tmp").length, 2);
+    assert.equal(transactionFiles(directory, ".bak").length, 0);
+    assert.ok(readdirSync(directory).some((name) => name.includes(".mcp-pair-transaction.json")));
+  });
+});
+
+test("persisted transaction does not recover after losing its canonical writer lock", async () => {
+  await inTemporaryDirectory(async (directory) => {
+    const catalogPath = join(directory, "tools.mdx");
+    const publicPath = join(directory, "mcp-tools.json");
+    const lockPath = `${catalogPath}.mcp-pair-write.lock`;
+    const targetPaths = [catalogPath, publicPath];
+    const foreignToken = `${process.pid}.999.feedface`;
+    writeFileSync(catalogPath, "old catalog\n");
+    writeFileSync(publicPath, "old public\n");
+
+    await assert.rejects(
+      run(["--write", "--catalog", catalogPath, "--public", publicPath], {
+        transactionPhaseHook(phase) {
+          if (phase !== "journal") return;
+          rmSync(lockPath);
+          writeFileSync(lockPath, `${JSON.stringify({
+            version: 2,
+            token: foreignToken,
+            pid: process.pid,
+            processIncarnation: "foreign-process-incarnation",
+            targetPaths
+          }, null, 2)}\n`);
+          throw new Error("lost lock after journal");
+        }
+      }),
+      /lost lock after journal.*(?:lock|ownership)|rollback was not attempted/i
+    );
+    assert.equal(readFileSync(catalogPath, "utf8"), "old catalog\n");
+    assert.equal(readFileSync(publicPath, "utf8"), "old public\n");
+    assert.equal(transactionFiles(directory, ".tmp").length, 2);
+    assert.equal(JSON.parse(readFileSync(lockPath, "utf8")).token, foreignToken);
+    assert.ok(readdirSync(directory).some((name) => name.includes(".mcp-pair-transaction.json")));
+  });
+});
+
+test("committed journal replacement is preserved before backup cleanup", async () => {
+  await inTemporaryDirectory(async (directory) => {
+    const catalogPath = join(directory, "tools.mdx");
+    const publicPath = join(directory, "mcp-tools.json");
+    const journalPath = `${catalogPath}.mcp-pair-transaction.json`;
+    writeFileSync(catalogPath, "old catalog\n");
+    writeFileSync(publicPath, "old public\n");
+
+    await assert.rejects(
+      run(["--write", "--catalog", catalogPath, "--public", publicPath], {
+        transactionPhaseHook(phase) {
+          if (phase !== "second-install") return;
+          rmSync(journalPath);
+          writeFileSync(journalPath, "foreign committed journal\n");
+        }
+      }),
+      /journal.*identity|journal.*ownership/i
+    );
+    assert.equal(readFileSync(catalogPath, "utf8"), renderCatalog(readContract()));
+    assert.equal(readFileSync(publicPath, "utf8"), renderPublicManifest(readContract()));
+    assert.equal(readFileSync(journalPath, "utf8"), "foreign committed journal\n");
+    assert.equal(transactionFiles(directory, ".bak").length, 2);
+  });
+});
+
+test("writer revalidates installed output identity after phase hooks before committing", async () => {
+  await inTemporaryDirectory(async (directory) => {
+    const catalogPath = join(directory, "tools.mdx");
+    const publicPath = join(directory, "mcp-tools.json");
+    writeFileSync(catalogPath, "old catalog\n");
+    writeFileSync(publicPath, "old public\n");
+
+    await assert.rejects(
+      run(["--write", "--catalog", catalogPath, "--public", publicPath], {
+        transactionPhaseHook(phase) {
+          if (phase !== "first-install") return;
+          rmSync(catalogPath);
+          writeFileSync(catalogPath, "foreign catalog\n");
+        }
+      }),
+      /installed transaction output identity.*does not match|does not belong to.*transaction/i
+    );
+    assert.equal(readFileSync(catalogPath, "utf8"), "foreign catalog\n");
+    assert.equal(readFileSync(publicPath, "utf8"), "old public\n");
+    assert.ok(readdirSync(directory).some((name) => name.includes(".mcp-pair-transaction.json")));
+  });
+});
+
 test("pre-journal recovery preserves and refuses ambiguous temporary artifacts", async () => {
   await inTemporaryDirectory(async (directory) => {
     const catalogPath = join(directory, "tools.mdx");
@@ -1227,6 +2067,69 @@ test("pre-journal recovery preserves a sole temporary artifact with unprovable o
       /ambiguous.*temporary artifacts/i
     );
     assert.equal(readFileSync(soleTemporaryPath, "utf8"), "sole orphan\n");
+  });
+});
+
+test("pre-journal cleanup preserves a temporary file replaced during ownership validation", async () => {
+  await inTemporaryDirectory(async (directory) => {
+    const catalogPath = join(directory, "tools.mdx");
+    const publicPath = join(directory, "mcp-tools.json");
+    const token = "999999999.123.deadbeef";
+    const catalogTemporaryPath = `${catalogPath}.${token}.tmp`;
+    const publicTemporaryPath = `${publicPath}.${token}.tmp`;
+    writeFileSync(catalogTemporaryPath, "original catalog temporary\n");
+    writeFileSync(publicTemporaryPath, "original public temporary\n");
+    let swapped = false;
+
+    assert.throws(
+      () => recoverGeneratedPair([catalogPath, publicPath], {
+        ...fileSystem,
+        lstatSync(path) {
+          if (path === publicTemporaryPath && !swapped) {
+            swapped = true;
+            rmSync(catalogTemporaryPath);
+            writeFileSync(catalogTemporaryPath, "foreign catalog temporary\n");
+          }
+          return lstatSync(path);
+        }
+      }, { recoverableTransactionTokens: new Set([token]) }),
+      /temporary file ownership changed|temporary cleanup failed/i
+    );
+    assert.equal(readFileSync(catalogTemporaryPath, "utf8"), "foreign catalog temporary\n");
+    assert.equal(readFileSync(publicTemporaryPath, "utf8"), "original public temporary\n");
+  });
+});
+
+test("staged-journal cleanup preserves files replaced during ownership validation", async () => {
+  await inTemporaryDirectory(async (directory) => {
+    const catalogPath = join(directory, "tools.mdx");
+    const publicPath = join(directory, "mcp-tools.json");
+    const token = "999999999.123.deadbeef";
+    const stagePath = `${catalogPath}.mcp-pair-transaction.json.${token}.stage`;
+    const catalogTemporaryPath = `${catalogPath}.${token}.tmp`;
+    const publicTemporaryPath = `${publicPath}.${token}.tmp`;
+    writeFileSync(stagePath, "staged journal\n");
+    writeFileSync(catalogTemporaryPath, "original catalog temporary\n");
+    writeFileSync(publicTemporaryPath, "original public temporary\n");
+    let swapped = false;
+
+    assert.throws(
+      () => recoverGeneratedPair([catalogPath, publicPath], {
+        ...fileSystem,
+        lstatSync(path) {
+          if (path === publicTemporaryPath && !swapped) {
+            swapped = true;
+            rmSync(catalogTemporaryPath);
+            writeFileSync(catalogTemporaryPath, "foreign staged temporary\n");
+          }
+          return lstatSync(path);
+        }
+      }, { recoverableTransactionTokens: new Set([token]) }),
+      /temporary file ownership changed|staged journal was preserved/i
+    );
+    assert.equal(readFileSync(catalogTemporaryPath, "utf8"), "foreign staged temporary\n");
+    assert.equal(readFileSync(publicTemporaryPath, "utf8"), "original public temporary\n");
+    assert.equal(readFileSync(stagePath, "utf8"), "staged journal\n");
   });
 });
 
@@ -1265,6 +2168,30 @@ test("check mode fails closed on a public-only transaction artifact without muta
       /incomplete MCP output transaction/i
     );
     assert.equal(readFileSync(publicTemporaryPath, "utf8"), "public orphan\n");
+  });
+});
+
+test("check and write reject a symlink writer lock without mutating it", async () => {
+  await inTemporaryDirectory(async (directory) => {
+    for (const mode of ["--check", "--write"]) {
+      const modeDirectory = join(directory, mode.slice(2));
+      mkdirSync(modeDirectory);
+      const catalogPath = join(modeDirectory, "tools.mdx");
+      const publicPath = join(modeDirectory, "mcp-tools.json");
+      const lockPath = `${catalogPath}.mcp-pair-write.lock`;
+      const victimPath = join(modeDirectory, "victim.txt");
+      writeFileSync(catalogPath, renderCatalog(readContract()));
+      writeFileSync(publicPath, renderPublicManifest(readContract()));
+      writeFileSync(victimPath, "unrelated victim\n");
+      symlinkSync(victimPath, lockPath);
+
+      await assert.rejects(
+        run([mode, "--catalog", catalogPath, "--public", publicPath]),
+        /writer lock.*symbolic link|symbolic link.*writer lock/i
+      );
+      assert.equal(lstatSync(lockPath).isSymbolicLink(), true);
+      assert.equal(readFileSync(victimPath, "utf8"), "unrelated victim\n");
+    }
   });
 });
 
@@ -1365,6 +2292,95 @@ test("journal recovery rejects installed output symlinks before cleanup", async 
   });
 });
 
+test("uncommitted rollback preserves outputs not installed by the recorded transaction", async () => {
+  await inTemporaryDirectory(async (directory) => {
+    const catalogPath = join(directory, "tools.mdx");
+    const publicPath = join(directory, "mcp-tools.json");
+    const journalPath = `${catalogPath}.mcp-pair-transaction.json`;
+    const token = "123.456.deadbeef";
+    writeFileSync(catalogPath, "foreign catalog\n");
+    writeFileSync(publicPath, "foreign public\n");
+    const entries = [catalogPath, publicPath].map((targetPath) => ({
+      targetPath,
+      temporaryPath: `${targetPath}.${token}.tmp`,
+      backupPath: `${targetPath}.${token}.bak`,
+      hadTarget: false,
+      temporaryIdentity: { device: "999999", inode: "999999" }
+    }));
+    writeFileSync(journalPath, `${JSON.stringify({ version: 1, committed: false, entries }, null, 2)}\n`);
+
+    assert.throws(
+      () => recoverGeneratedPair([catalogPath, publicPath], fileSystem),
+      /output identity.*does not match|does not belong to.*transaction/i
+    );
+    assert.equal(readFileSync(catalogPath, "utf8"), "foreign catalog\n");
+    assert.equal(readFileSync(publicPath, "utf8"), "foreign public\n");
+    assert.equal(existsSync(journalPath), true);
+  });
+});
+
+test("journal recovery preserves a replacement regular temporary file with a foreign identity", async () => {
+  await inTemporaryDirectory(async (directory) => {
+    const catalogPath = join(directory, "tools.mdx");
+    const publicPath = join(directory, "mcp-tools.json");
+    const journalPath = `${catalogPath}.mcp-pair-transaction.json`;
+    const token = "123.456.deadbeef";
+    writeFileSync(catalogPath, "old catalog\n");
+    writeFileSync(publicPath, "old public\n");
+    const entries = [catalogPath, publicPath].map((targetPath) => ({
+      targetPath,
+      temporaryPath: `${targetPath}.${token}.tmp`,
+      backupPath: `${targetPath}.${token}.bak`,
+      hadTarget: true,
+      temporaryIdentity: { device: "999999", inode: "999999" }
+    }));
+    writeFileSync(entries[0].temporaryPath, "foreign temporary file\n");
+    writeFileSync(journalPath, `${JSON.stringify({ version: 1, committed: false, entries }, null, 2)}\n`);
+
+    assert.throws(
+      () => recoverGeneratedPair([catalogPath, publicPath], fileSystem),
+      /temporary file identity.*does not match|temporary file.*does not belong/i
+    );
+    assert.equal(readFileSync(entries[0].temporaryPath, "utf8"), "foreign temporary file\n");
+    assert.equal(readFileSync(catalogPath, "utf8"), "old catalog\n");
+    assert.equal(readFileSync(publicPath, "utf8"), "old public\n");
+    assert.equal(existsSync(journalPath), true);
+  });
+});
+
+test("committed recovery preserves a replacement regular backup with a foreign identity", async () => {
+  await inTemporaryDirectory(async (directory) => {
+    const catalogPath = join(directory, "tools.mdx");
+    const publicPath = join(directory, "mcp-tools.json");
+    const journalPath = `${catalogPath}.mcp-pair-transaction.json`;
+    const token = "123.456.deadbeef";
+    writeFileSync(catalogPath, "new catalog\n");
+    writeFileSync(publicPath, "new public\n");
+    const entries = [catalogPath, publicPath].map((targetPath) => {
+      const stat = lstatSync(targetPath);
+      return {
+        targetPath,
+        temporaryPath: `${targetPath}.${token}.tmp`,
+        backupPath: `${targetPath}.${token}.bak`,
+        hadTarget: true,
+        temporaryIdentity: { device: String(stat.dev), inode: String(stat.ino) },
+        originalIdentity: { device: "999999", inode: "999999" }
+      };
+    });
+    writeFileSync(entries[0].backupPath, "foreign backup file\n");
+    writeFileSync(journalPath, `${JSON.stringify({ version: 1, committed: true, entries }, null, 2)}\n`);
+
+    assert.throws(
+      () => recoverGeneratedPair([catalogPath, publicPath], fileSystem),
+      /backup identity.*does not match|backup.*does not belong/i
+    );
+    assert.equal(readFileSync(entries[0].backupPath, "utf8"), "foreign backup file\n");
+    assert.equal(readFileSync(catalogPath, "utf8"), "new catalog\n");
+    assert.equal(readFileSync(publicPath, "utf8"), "new public\n");
+    assert.equal(existsSync(journalPath), true);
+  });
+});
+
 test("staged-journal recovery rejects temporary symlinks before cleanup", async () => {
   await inTemporaryDirectory(async (directory) => {
     const catalogPath = join(directory, "tools.mdx");
@@ -1451,6 +2467,46 @@ test("journal recovery rejects a symlink journal update before cleanup", async (
     assert.equal(lstatSync(updatePath).isSymbolicLink(), true);
     assert.equal(readFileSync(victimPath, "utf8"), "unrelated victim\n");
     assert.equal(existsSync(journalPath), true);
+  });
+});
+
+test("journal recovery preserves a malformed foreign regular journal update and all transaction state", async () => {
+  await inTemporaryDirectory(async (directory) => {
+    const fixture = createUncommittedJournalFixture(directory);
+    writeFileSync(fixture.updatePath, "foreign journal update\n");
+    const before = snapshotRegularFiles([...fixture.transactionPaths, fixture.updatePath]);
+
+    assert.throws(
+      () => recoverGeneratedPair([fixture.catalogPath, fixture.publicPath], fileSystem),
+      /journal update.*(?:valid JSON|successor|does not match)|recovery.*journal update/i
+    );
+    assert.deepEqual(snapshotRegularFiles([...fixture.transactionPaths, fixture.updatePath]), before);
+  });
+});
+
+test("journal recovery preserves a mismatched committed journal update and all transaction state", async () => {
+  await inTemporaryDirectory(async (directory) => {
+    const fixture = createUncommittedJournalFixture(directory);
+    const foreignToken = "123.456.cafebabe";
+    const foreignEntries = [fixture.catalogPath, fixture.publicPath].map((targetPath, index) => ({
+      targetPath,
+      temporaryPath: `${targetPath}.${foreignToken}.tmp`,
+      backupPath: `${targetPath}.${foreignToken}.bak`,
+      hadTarget: index === 0,
+      originalIdentity: index === 0 ? { device: "9001", inode: "9002" } : null,
+      temporaryIdentity: { device: "9003", inode: String(9004 + index) }
+    }));
+    writeFileSync(
+      fixture.updatePath,
+      `${JSON.stringify({ version: 1, committed: true, entries: foreignEntries }, null, 2)}\n`
+    );
+    const before = snapshotRegularFiles([...fixture.transactionPaths, fixture.updatePath]);
+
+    assert.throws(
+      () => recoverGeneratedPair([fixture.catalogPath, fixture.publicPath], fileSystem),
+      /journal update.*(?:successor|does not match)|recovery.*journal update/i
+    );
+    assert.deepEqual(snapshotRegularFiles([...fixture.transactionPaths, fixture.updatePath]), before);
   });
 });
 
@@ -1548,23 +2604,18 @@ test("journal-persisted recovery failure preserves a replaced temporary artifact
     writeFileSync(catalogPath, "old catalog\n");
     writeFileSync(publicPath, "old public\n");
     writeFileSync(victimPath, "unrelated victim\n");
-    let fsyncCalls = 0;
 
     assert.throws(
       () => writeGeneratedPair([
         { targetPath: catalogPath, contents: "new catalog\n" },
         { targetPath: publicPath, contents: "new public\n" }
       ], {
-        io: {
-          ...fileSystem,
-          fsyncSync(descriptor) {
-            fsyncCalls += 1;
-            if (fsyncCalls === 5) {
-              rmSync(replacedPath);
-              symlinkSync(victimPath, replacedPath);
-              throw new Error("journal durability failed");
-            }
-            return fsyncSync(descriptor);
+        io: fileSystem,
+        transactionPhaseHook(phase) {
+          if (phase === "journal") {
+            rmSync(replacedPath);
+            symlinkSync(victimPath, replacedPath);
+            throw new Error("journal durability failed");
           }
         },
         transactionToken: token
@@ -1609,7 +2660,25 @@ test("every fsync fault point preserves a coherent pair recoverable by the next 
   await inTemporaryDirectory(async (directory) => {
     const expectedCatalog = renderCatalog(readContract());
     const expectedPublic = renderPublicManifest(readContract());
-    for (let failureAt = 1; failureAt <= 12; failureAt += 1) {
+    const baselineDirectory = join(directory, "fsync-baseline");
+    mkdirSync(baselineDirectory);
+    const baselineCatalogPath = join(baselineDirectory, "tools.mdx");
+    const baselinePublicPath = join(baselineDirectory, "mcp-tools.json");
+    writeFileSync(baselineCatalogPath, "old catalog\n");
+    writeFileSync(baselinePublicPath, "old public\n");
+    let baselineFsyncCalls = 0;
+    await run(["--write", "--catalog", baselineCatalogPath, "--public", baselinePublicPath], {
+      fsImpl: {
+        fsyncSync(descriptor) {
+          baselineFsyncCalls += 1;
+          return fsyncSync(descriptor);
+        }
+      }
+    });
+    assert.ok(baselineFsyncCalls > 0);
+    assertNoTransactionFiles(baselineDirectory);
+
+    for (let failureAt = 1; failureAt <= baselineFsyncCalls; failureAt += 1) {
       const phaseDirectory = join(directory, `fsync-${failureAt}`);
       mkdirSync(phaseDirectory);
       const catalogPath = join(phaseDirectory, "tools.mdx");
@@ -1617,19 +2686,24 @@ test("every fsync fault point preserves a coherent pair recoverable by the next 
       writeFileSync(catalogPath, "old catalog\n");
       writeFileSync(publicPath, "old public\n");
       let fsyncCalls = 0;
+      let faultInjected = false;
 
       await assert.rejects(
         run(["--write", "--catalog", catalogPath, "--public", publicPath], {
           fsImpl: {
             fsyncSync(descriptor) {
               fsyncCalls += 1;
-              if (fsyncCalls === failureAt) throw new Error(`fsync fault ${failureAt}`);
+              if (fsyncCalls === failureAt) {
+                faultInjected = true;
+                throw new Error(`fsync fault ${failureAt}`);
+              }
               return fsyncSync(descriptor);
             }
           }
         }),
         new RegExp(`fsync fault ${failureAt}`)
       );
+      assert.equal(faultInjected, true, `fsync ${failureAt} must be reached`);
       assert.ok(fsyncCalls >= failureAt);
       assert.equal(lstatSync(catalogPath).isFile(), true);
       assert.equal(lstatSync(publicPath).isFile(), true);
@@ -1790,5 +2864,46 @@ test("ancestor and descendant output targets fail before directory mutation", as
 
     assert.equal(existsSync(catalogPath), false);
     assertNoTransactionFiles(directory);
+  });
+});
+
+test("outputs cannot occupy each other's reserved transaction namespaces in either direction", async () => {
+  await inTemporaryDirectory(async (directory) => {
+    const token = "123.456.deadbeef";
+    const reservedPathsFor = (targetPath) => {
+      const journalPath = `${targetPath}.mcp-pair-transaction.json`;
+      const lockPath = `${targetPath}.mcp-pair-write.lock`;
+      return [
+        journalPath,
+        `${journalPath}.next`,
+        `${journalPath}.${token}.stage`,
+        lockPath,
+        `${lockPath}.${token}.candidate`,
+        `${lockPath}.${token}.stale`,
+        `${targetPath}.${token}.tmp`,
+        `${targetPath}.${token}.bak`
+      ];
+    };
+
+    for (const direction of ["catalog-primary", "public-primary"]) {
+      const primaryName = `${direction}-primary`;
+      const primaryPath = join(directory, primaryName);
+      for (const [index] of reservedPathsFor(primaryPath).entries()) {
+        const caseDirectory = join(directory, `${direction}-${index}`);
+        mkdirSync(caseDirectory);
+        const casePrimaryPath = join(caseDirectory, primaryName);
+        const caseReservedPath = reservedPathsFor(casePrimaryPath)[index];
+        const [catalogPath, publicPath] = direction === "catalog-primary"
+          ? [casePrimaryPath, caseReservedPath]
+          : [caseReservedPath, casePrimaryPath];
+
+        await assert.rejects(
+          run(["--write", "--catalog", catalogPath, "--public", publicPath]),
+          /unsafe output targets.*reserved transaction namespace/i,
+          `${direction} ${caseReservedPath}`
+        );
+        assert.deepEqual(readdirSync(caseDirectory), [], `${direction} ${caseReservedPath}`);
+      }
+    }
   });
 });
