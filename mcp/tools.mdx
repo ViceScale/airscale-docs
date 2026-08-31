@@ -1,0 +1,1212 @@
+---
+title: "MCP tool catalog"
+description: "Browse all 22 typed tools exposed by the Airscale MCP server."
+canonical: "https://airscale.mintlify.app/mcp/tools"
+---
+
+Airscale MCP exposes 22 typed tools for workspace checks, search, enrichment, research, managed batches, and asynchronous exports.
+
+<Warning>
+Review each tool's credit behavior before approval. Paid export starts require `confirm_credit_spend: true`.
+</Warning>
+
+<Note>
+Authenticate through the MCP connection. OAuth clients complete authentication in the browser; API keys never belong in tool arguments.
+</Note>
+
+# Workspace
+
+| Tool | Purpose | Credit behavior | Execution |
+| --- | --- | --- | --- |
+| [`airscale_check_credits`](#airscale-check-credits) | Check how many credits remain in the workspace. | Free; checking the balance does not debit credits | Sync |
+
+<a id="airscale-check-credits"></a>
+
+## `airscale_check_credits`
+
+**MCP tool**
+
+Check how many credits remain in the workspace.
+
+- **Category:** Workspace
+
+- **Spend classification:** Free
+
+- **Credit behavior:** Free; checking the balance does not debit credits
+
+- **Execution:** Synchronous
+
+- **Authentication:** Uses the credentials configured on the MCP connection; never include an API key in tool arguments.
+
+<Note>
+Credit behavior: Free; checking the balance does not debit credits.
+</Note>
+
+### Inputs
+
+| Field | Type | Required | Description | Constraints |
+| --- | --- | --- | --- | --- |
+| _No input fields_ | — | — | Pass an empty JSON object. | additional properties are not allowed |
+
+### Minimal `tools/call` example
+
+```json
+{
+  "jsonrpc": "2.0",
+  "id": 1,
+  "method": "tools/call",
+  "params": {
+    "name": "airscale_check_credits",
+    "arguments": {}
+  }
+}
+```
+
+### Expected result
+
+Returns the workspace's current Airscale credit balance without spending credits.
+
+**Related API reference:** [getCredits](/api-reference/credit-count)
+
+# Search and research
+
+| Tool | Purpose | Credit behavior | Execution |
+| --- | --- | --- | --- |
+| [`airscale_find_people`](#airscale-find-people) | Search people with public Find People filters for profile, current company, experience, and company growth. Costs 0.1 credits per returned lead. Paginate with cursor. | 0.1 credits per returned lead | Sync |
+| [`airscale_count_find_people`](#airscale-count-find-people) | Count people matching find-people query filters. Free, no credits charged. | Free; no credits charged | Sync |
+| [`airscale_find_companies`](#airscale-find-companies) | Search companies by firmographic, location, event, intent, technology, and website keyword filters. Costs 0.1 credits per returned company. Use airscale_find_companies_filter_values to discover accepted values. | 0.1 credits per returned company | Sync |
+| [`airscale_find_companies_filter_values`](#airscale-find-companies-filter-values) | Discover accepted values for find-companies filters (city, region, industry, topics, techStack). Free, no credits charged. | Free; no credits charged | Sync |
+| [`airscale_airsearch`](#airscale-airsearch) | AI web research agent: ask a natural-language question and optionally specify structured fields to extract. Costs 2 credits per call. | 2 credits per call | Sync |
+
+<a id="airscale-find-people"></a>
+
+## `airscale_find_people`
+
+**MCP tool**
+
+Search people with public Find People filters for profile, current company, experience, and company growth. Costs 0.1 credits per returned lead. Paginate with cursor.
+
+- **Category:** Search and research
+
+- **Spend classification:** Variable credit cost
+
+- **Credit behavior:** 0.1 credits per returned lead
+
+- **Execution:** Synchronous
+
+- **Authentication:** Uses the credentials configured on the MCP connection; never include an API key in tool arguments.
+
+<Note>
+Credit behavior: 0.1 credits per returned lead.
+</Note>
+
+### Inputs
+
+| Field | Type | Required | Description | Constraints |
+| --- | --- | --- | --- | --- |
+| `query` | `object` | Yes | At least one filter required | allowed properties: `firstname`, `lastname`, `JobTitle`, `companyDomain`, `companyLinkedinUrl`, `school`, `languages`, `skills`, `location`, `keyword`, `currentCompanyName`, `currentCompany.type`, `currentCompany.industry`, `currentCompany.location`, `currentCompany.keyword`, `totalYearsOfExperience`, `timeInCurrentCompany`, `currentCompany.headcount`, `currentCompany.revenue`, `currentCompany.headcountGrowth`; nested required fields: `currentCompany.headcountGrowth.timespan`; additional properties are not allowed |
+| `size` | `integer` | No | Results per page, 1..100. Defaults to 100 | minimum: 1; maximum: 100 |
+| `cursor` | `string` | No | next_cursor from the previous response | — |
+
+### Minimal `tools/call` example
+
+```json
+{
+  "jsonrpc": "2.0",
+  "id": 1,
+  "method": "tools/call",
+  "params": {
+    "name": "airscale_find_people",
+    "arguments": {
+      "query": {
+        "firstname": {
+          "include": [
+            "example"
+          ]
+        }
+      }
+    }
+  }
+}
+```
+
+### Expected result
+
+Returns one page of matching people and a cursor when another page is available.
+
+**Related API reference:** [findPeople](/api-reference/find-people)
+
+<a id="airscale-count-find-people"></a>
+
+## `airscale_count_find_people`
+
+**MCP tool**
+
+Count people matching find-people query filters. Free, no credits charged.
+
+- **Category:** Search and research
+
+- **Spend classification:** Free
+
+- **Credit behavior:** Free; no credits charged
+
+- **Execution:** Synchronous
+
+- **Authentication:** Uses the credentials configured on the MCP connection; never include an API key in tool arguments.
+
+<Note>
+Credit behavior: Free; no credits charged.
+</Note>
+
+### Inputs
+
+| Field | Type | Required | Description | Constraints |
+| --- | --- | --- | --- | --- |
+| `query` | `object` | Yes | At least one filter required | allowed properties: `firstname`, `lastname`, `JobTitle`, `companyDomain`, `companyLinkedinUrl`, `school`, `languages`, `skills`, `location`, `keyword`, `currentCompanyName`, `currentCompany.type`, `currentCompany.industry`, `currentCompany.location`, `currentCompany.keyword`, `totalYearsOfExperience`, `timeInCurrentCompany`, `currentCompany.headcount`, `currentCompany.revenue`, `currentCompany.headcountGrowth`; nested required fields: `currentCompany.headcountGrowth.timespan`; additional properties are not allowed |
+
+### Minimal `tools/call` example
+
+```json
+{
+  "jsonrpc": "2.0",
+  "id": 1,
+  "method": "tools/call",
+  "params": {
+    "name": "airscale_count_find_people",
+    "arguments": {
+      "query": {
+        "firstname": {
+          "include": [
+            "example"
+          ]
+        }
+      }
+    }
+  }
+}
+```
+
+### Expected result
+
+Returns the number of people matching the supplied query filters.
+
+**Related API reference:** [countPeople](/api-reference/find-people/count)
+
+<a id="airscale-find-companies"></a>
+
+## `airscale_find_companies`
+
+**MCP tool**
+
+Search companies by firmographic, location, event, intent, technology, and website keyword filters. Costs 0.1 credits per returned company. Use airscale_find_companies_filter_values to discover accepted values.
+
+- **Category:** Search and research
+
+- **Spend classification:** Variable credit cost
+
+- **Credit behavior:** 0.1 credits per returned company
+
+- **Execution:** Synchronous
+
+- **Authentication:** Uses the credentials configured on the MCP connection; never include an API key in tool arguments.
+
+<Note>
+Credit behavior: 0.1 credits per returned company.
+</Note>
+
+### Inputs
+
+| Field | Type | Required | Description | Constraints |
+| --- | --- | --- | --- | --- |
+| `filters` | `object` | No | At least one real filter is required by the API | allowed properties: `country`, `region`, `city`, `industry`, `size`, `revenue`, `age`, `techStack`, `keywords`, `topics`, `events`, `locations`, `companyName`, `eventWindow`, `locationMatch`, `hasWebsite`, `isPublicCompany`; additional properties are not allowed |
+| `page` | `integer` | No | Page number, >= 0. Defaults to 0 | minimum: 0 |
+| `size` | `integer` | No | Companies per page, 1..100. Defaults to 50 | minimum: 1; maximum: 100 |
+| `cursor` | `string` | No | next_cursor from the previous response; used instead of page | — |
+
+### Minimal `tools/call` example
+
+```json
+{
+  "jsonrpc": "2.0",
+  "id": 1,
+  "method": "tools/call",
+  "params": {
+    "name": "airscale_find_companies",
+    "arguments": {}
+  }
+}
+```
+
+### Expected result
+
+Returns one page of matching companies and pagination metadata for any remaining results.
+
+**Related API reference:** [findCompanies](/api-reference/find-companies)
+
+<a id="airscale-find-companies-filter-values"></a>
+
+## `airscale_find_companies_filter_values`
+
+**MCP tool**
+
+Discover accepted values for find-companies filters (city, region, industry, topics, techStack). Free, no credits charged.
+
+- **Category:** Search and research
+
+- **Spend classification:** Free
+
+- **Credit behavior:** Free; no credits charged
+
+- **Execution:** Synchronous
+
+- **Authentication:** Uses the credentials configured on the MCP connection; never include an API key in tool arguments.
+
+<Note>
+Credit behavior: Free; no credits charged.
+</Note>
+
+### Inputs
+
+| Field | Type | Required | Description | Constraints |
+| --- | --- | --- | --- | --- |
+| `filter` | `string` | Yes | Filter to discover values for | allowed values: `"city"`, `"region"`, `"industry"`, `"topics"`, `"techStack"` |
+| `q` | `string` | Yes | Search text, at least 2 characters | minimum length: 2 |
+| `limit` | `integer` | No | 1..100. Defaults to 20 | minimum: 1; maximum: 100 |
+| `country` | `string` | No | Country name or ISO code to narrow location results | — |
+| `region` | `string` | No | Region code or value to narrow city results, e.g. "us-ca" | — |
+
+### Minimal `tools/call` example
+
+```json
+{
+  "jsonrpc": "2.0",
+  "id": 1,
+  "method": "tools/call",
+  "params": {
+    "name": "airscale_find_companies_filter_values",
+    "arguments": {
+      "filter": "city",
+      "q": "ex"
+    }
+  }
+}
+```
+
+### Expected result
+
+Returns accepted values for the selected company filter and search text.
+
+**Related API reference:** [listFindCompanyFilterValues](/api-reference/find-companies/filter-values)
+
+<a id="airscale-airsearch"></a>
+
+## `airscale_airsearch`
+
+**MCP tool**
+
+AI web research agent: ask a natural-language question and optionally specify structured fields to extract. Costs 2 credits per call.
+
+- **Category:** Search and research
+
+- **Spend classification:** Variable credit cost
+
+- **Credit behavior:** 2 credits per call
+
+- **Execution:** Synchronous
+
+- **Authentication:** Uses the credentials configured on the MCP connection; never include an API key in tool arguments.
+
+<Note>
+Credit behavior: 2 credits per call.
+</Note>
+
+### Inputs
+
+| Field | Type | Required | Description | Constraints |
+| --- | --- | --- | --- | --- |
+| `prompt` | `string` | Yes | Natural-language research question or instruction | minimum length: 1 |
+| `schema` | `object` | No | Fields to extract: keys are output names, values are types (string, url, email, number, int, float, boolean, date, phone) or free-text descriptions. If omitted, the agent infers fields | — |
+
+### Minimal `tools/call` example
+
+```json
+{
+  "jsonrpc": "2.0",
+  "id": 1,
+  "method": "tools/call",
+  "params": {
+    "name": "airscale_airsearch",
+    "arguments": {
+      "prompt": "Research Example Company using public sources."
+    }
+  }
+}
+```
+
+### Expected result
+
+Returns the research answer and any structured fields requested in the prompt schema.
+
+**Related API reference:** [airsearch](/api-reference/airsearch)
+
+# Contact and profile enrichment
+
+| Tool | Purpose | Credit behavior | Execution |
+| --- | --- | --- | --- |
+| [`airscale_find_email`](#airscale-find-email) | Find a contact's professional email. Provide either a LinkedIn profile URL, or first/last name plus a company domain or name. | 2 credits per successful result | Sync |
+| [`airscale_find_email_bulk`](#airscale-find-email-bulk) | Find professional emails for multiple contacts. Returns immediately; results are delivered to webhook_url, one payload per input. | 2 credits per successful input | Async |
+| [`airscale_find_mobile_phone`](#airscale-find-mobile-phone) | Find a contact's mobile phone number from their LinkedIn profile URL. | 40 credits per successful result | Sync |
+| [`airscale_find_personal_email`](#airscale-find-personal-email) | Find a contact's personal email from their LinkedIn profile URL. | 3-12 credits per successful result | Sync |
+| [`airscale_find_people_by_url`](#airscale-find-people-by-url) | Find a person's LinkedIn profile URL from their name and company. | 0.5 credits per successful result | Sync |
+| [`airscale_extract_people_profile`](#airscale-extract-people-profile) | Extract a full LinkedIn person profile from its URL. | URL-selected pricing; person-profile successes cost 1 credit by default and workspace-specific pricing may differ | Sync |
+| [`airscale_extract_company_profile`](#airscale-extract-company-profile) | Extract a full LinkedIn company profile from its URL. | URL-selected pricing; company or school-profile successes cost 0.5 credits and workspace-specific pricing may differ | Sync |
+| [`airscale_reverse_email`](#airscale-reverse-email) | Resolve an email address to a LinkedIn profile. Returns the entire enriched profile, not only the URL. | 2 credits per returned profile | Sync |
+| [`airscale_reverse_phone`](#airscale-reverse-phone) | Resolve a phone number to a LinkedIn profile. Returns the entire enriched profile, not only the URL. | 10 credits per returned profile | Sync |
+
+<a id="airscale-find-email"></a>
+
+## `airscale_find_email`
+
+**MCP tool**
+
+Find a contact's professional email. Provide either a LinkedIn profile URL, or first/last name plus a company domain or name.
+
+- **Category:** Contact and profile enrichment
+
+- **Spend classification:** Variable credit cost
+
+- **Credit behavior:** 2 credits per successful result
+
+- **Execution:** Synchronous
+
+- **Authentication:** Uses the credentials configured on the MCP connection; never include an API key in tool arguments.
+
+<Note>
+Credit behavior: 2 credits per successful result.
+</Note>
+
+### Inputs
+
+| Field | Type | Required | Description | Constraints |
+| --- | --- | --- | --- | --- |
+| `linkedin_profile_url` | `string` | No | LinkedIn profile URL of the contact | minimum length: 1 |
+| `first_name` | `string` | No | No runtime description supplied. | minimum length: 1 |
+| `last_name` | `string` | No | No runtime description supplied. | minimum length: 1 |
+| `domain` | `string` | No | Company domain, e.g. airscale.io | minimum length: 1 |
+| `company_name` | `string` | No | No runtime description supplied. | minimum length: 1 |
+
+### Minimal `tools/call` example
+
+```json
+{
+  "jsonrpc": "2.0",
+  "id": 1,
+  "method": "tools/call",
+  "params": {
+    "name": "airscale_find_email",
+    "arguments": {}
+  }
+}
+```
+
+### Expected result
+
+Returns a professional email result when found, or a documented not-found result.
+
+**Related API reference:** [findProfessionalEmail](/api-reference/email-finder)
+
+<a id="airscale-find-email-bulk"></a>
+
+## `airscale_find_email_bulk`
+
+**MCP tool**
+
+Find professional emails for multiple contacts. Returns immediately; results are delivered to webhook_url, one payload per input.
+
+- **Category:** Contact and profile enrichment
+
+- **Spend classification:** Variable credit cost
+
+- **Credit behavior:** 2 credits per successful input
+
+- **Execution:** Asynchronous
+
+- **Authentication:** Uses the credentials configured on the MCP connection; never include an API key in tool arguments.
+
+<Note>
+Credit behavior: 2 credits per successful input.
+</Note>
+
+### Inputs
+
+| Field | Type | Required | Description | Constraints |
+| --- | --- | --- | --- | --- |
+| `webhook_url` | `string` | Yes | Results are POSTed here, one payload per input | format: `uri` |
+| `inputs` | `array<object>` | Yes | Contacts to enrich | minimum items: 1; item type: `object` |
+
+### Minimal `tools/call` example
+
+```json
+{
+  "jsonrpc": "2.0",
+  "id": 1,
+  "method": "tools/call",
+  "params": {
+    "name": "airscale_find_email_bulk",
+    "arguments": {
+      "webhook_url": "https://hooks.example.com/airscale",
+      "inputs": [
+        {
+          "custom_id": "example-custom-id"
+        }
+      ]
+    }
+  }
+}
+```
+
+### Expected result
+
+Returns an acceptance result immediately; one result per input is delivered to the webhook URL.
+
+**Related API reference:** [findProfessionalEmailsBulk](/api-reference/email-finder-(bulk))
+
+<a id="airscale-find-mobile-phone"></a>
+
+## `airscale_find_mobile_phone`
+
+**MCP tool**
+
+Find a contact's mobile phone number from their LinkedIn profile URL.
+
+- **Category:** Contact and profile enrichment
+
+- **Spend classification:** Variable credit cost
+
+- **Credit behavior:** 40 credits per successful result
+
+- **Execution:** Synchronous
+
+- **Authentication:** Uses the credentials configured on the MCP connection; never include an API key in tool arguments.
+
+<Note>
+Credit behavior: 40 credits per successful result.
+</Note>
+
+### Inputs
+
+| Field | Type | Required | Description | Constraints |
+| --- | --- | --- | --- | --- |
+| `linkedin_profile_url` | `string` | Yes | LinkedIn profile URL of the contact | minimum length: 1 |
+
+### Minimal `tools/call` example
+
+```json
+{
+  "jsonrpc": "2.0",
+  "id": 1,
+  "method": "tools/call",
+  "params": {
+    "name": "airscale_find_mobile_phone",
+    "arguments": {
+      "linkedin_profile_url": "https://www.linkedin.com/in/example-person-000000"
+    }
+  }
+}
+```
+
+### Expected result
+
+Returns the discovered mobile phone result, or a documented not-found result.
+
+**Related API reference:** [findMobilePhone](/api-reference/mobile-finder)
+
+<a id="airscale-find-personal-email"></a>
+
+## `airscale_find_personal_email`
+
+**MCP tool**
+
+Find a contact's personal email from their LinkedIn profile URL.
+
+- **Category:** Contact and profile enrichment
+
+- **Spend classification:** Variable credit cost
+
+- **Credit behavior:** 3-12 credits per successful result
+
+- **Execution:** Synchronous
+
+- **Authentication:** Uses the credentials configured on the MCP connection; never include an API key in tool arguments.
+
+<Note>
+Credit behavior: 3-12 credits per successful result.
+</Note>
+
+### Inputs
+
+| Field | Type | Required | Description | Constraints |
+| --- | --- | --- | --- | --- |
+| `linkedin_profile_url` | `string` | Yes | LinkedIn profile URL of the contact | minimum length: 1 |
+
+### Minimal `tools/call` example
+
+```json
+{
+  "jsonrpc": "2.0",
+  "id": 1,
+  "method": "tools/call",
+  "params": {
+    "name": "airscale_find_personal_email",
+    "arguments": {
+      "linkedin_profile_url": "https://www.linkedin.com/in/example-person-000000"
+    }
+  }
+}
+```
+
+### Expected result
+
+Returns the discovered personal email result, or a documented not-found result.
+
+**Related API reference:** [findPersonalEmail](/api-reference/personal-email)
+
+<a id="airscale-find-people-by-url"></a>
+
+## `airscale_find_people_by_url`
+
+**MCP tool**
+
+Find a person's LinkedIn profile URL from their name and company.
+
+- **Category:** Contact and profile enrichment
+
+- **Spend classification:** Variable credit cost
+
+- **Credit behavior:** 0.5 credits per successful result
+
+- **Execution:** Synchronous
+
+- **Authentication:** Uses the credentials configured on the MCP connection; never include an API key in tool arguments.
+
+<Note>
+Credit behavior: 0.5 credits per successful result.
+</Note>
+
+### Inputs
+
+| Field | Type | Required | Description | Constraints |
+| --- | --- | --- | --- | --- |
+| `first_name` | `string` | Yes | No runtime description supplied. | minimum length: 1 |
+| `last_name` | `string` | Yes | No runtime description supplied. | minimum length: 1 |
+| `company_name` | `string` | Yes | No runtime description supplied. | minimum length: 1 |
+
+### Minimal `tools/call` example
+
+```json
+{
+  "jsonrpc": "2.0",
+  "id": 1,
+  "method": "tools/call",
+  "params": {
+    "name": "airscale_find_people_by_url",
+    "arguments": {
+      "first_name": "Example",
+      "last_name": "Person",
+      "company_name": "Example Company"
+    }
+  }
+}
+```
+
+### Expected result
+
+Returns a matching LinkedIn person-profile URL, or a documented not-found result.
+
+**Related API reference:** [findPeopleProfileUrl](/api-reference/people-url-finder)
+
+<a id="airscale-extract-people-profile"></a>
+
+## `airscale_extract_people_profile`
+
+**MCP tool**
+
+Extract a full LinkedIn person profile from its URL.
+
+- **Category:** Contact and profile enrichment
+
+- **Spend classification:** Variable credit cost
+
+- **Credit behavior:** URL-selected pricing; person-profile successes cost 1 credit by default and workspace-specific pricing may differ
+
+- **Execution:** Synchronous
+
+- **Authentication:** Uses the credentials configured on the MCP connection; never include an API key in tool arguments.
+
+<Note>
+Credit behavior: URL-selected pricing; person-profile successes cost 1 credit by default and workspace-specific pricing may differ.
+</Note>
+
+### Inputs
+
+| Field | Type | Required | Description | Constraints |
+| --- | --- | --- | --- | --- |
+| `linkedin_profile_url` | `string` | Yes | LinkedIn person profile URL | minimum length: 1 |
+| `webhook_url` | `string` | No | Optional webhook to receive the profile | format: `uri` |
+
+### Minimal `tools/call` example
+
+```json
+{
+  "jsonrpc": "2.0",
+  "id": 1,
+  "method": "tools/call",
+  "params": {
+    "name": "airscale_extract_people_profile",
+    "arguments": {
+      "linkedin_profile_url": "https://www.linkedin.com/in/example-person-000000"
+    }
+  }
+}
+```
+
+### Expected result
+
+Returns the extracted person profile for the supplied LinkedIn URL.
+
+**Related API reference:** [extractPersonProfile](/api-reference/extract-people-profile)
+
+<a id="airscale-extract-company-profile"></a>
+
+## `airscale_extract_company_profile`
+
+**MCP tool**
+
+Extract a full LinkedIn company profile from its URL.
+
+- **Category:** Contact and profile enrichment
+
+- **Spend classification:** Variable credit cost
+
+- **Credit behavior:** URL-selected pricing; company or school-profile successes cost 0.5 credits and workspace-specific pricing may differ
+
+- **Execution:** Synchronous
+
+- **Authentication:** Uses the credentials configured on the MCP connection; never include an API key in tool arguments.
+
+<Note>
+Credit behavior: URL-selected pricing; company or school-profile successes cost 0.5 credits and workspace-specific pricing may differ.
+</Note>
+
+### Inputs
+
+| Field | Type | Required | Description | Constraints |
+| --- | --- | --- | --- | --- |
+| `linkedin_profile_url` | `string` | Yes | LinkedIn company page URL | minimum length: 1 |
+| `webhook_url` | `string` | No | Optional webhook to receive the profile | format: `uri` |
+
+### Minimal `tools/call` example
+
+```json
+{
+  "jsonrpc": "2.0",
+  "id": 1,
+  "method": "tools/call",
+  "params": {
+    "name": "airscale_extract_company_profile",
+    "arguments": {
+      "linkedin_profile_url": "https://www.linkedin.com/in/example-person-000000"
+    }
+  }
+}
+```
+
+### Expected result
+
+Returns the extracted company or school profile for the supplied LinkedIn URL.
+
+**Related API reference:** [extractCompanyProfile](/api-reference/extract-company-profile)
+
+<a id="airscale-reverse-email"></a>
+
+## `airscale_reverse_email`
+
+**MCP tool**
+
+Resolve an email address to a LinkedIn profile. Returns the entire enriched profile, not only the URL.
+
+- **Category:** Contact and profile enrichment
+
+- **Spend classification:** Variable credit cost
+
+- **Credit behavior:** 2 credits per returned profile
+
+- **Execution:** Synchronous
+
+- **Authentication:** Uses the credentials configured on the MCP connection; never include an API key in tool arguments.
+
+<Note>
+Credit behavior: 2 credits per returned profile.
+</Note>
+
+### Inputs
+
+| Field | Type | Required | Description | Constraints |
+| --- | --- | --- | --- | --- |
+| `email` | `string` | Yes | Email address to resolve to a LinkedIn profile | format: `email` |
+
+### Minimal `tools/call` example
+
+```json
+{
+  "jsonrpc": "2.0",
+  "id": 1,
+  "method": "tools/call",
+  "params": {
+    "name": "airscale_reverse_email",
+    "arguments": {
+      "email": "person@example.com"
+    }
+  }
+}
+```
+
+### Expected result
+
+Returns the enriched person profile resolved from the email address, not only a profile URL.
+
+**Related API reference:** [reverseEmailLookup](/api-reference/reverse-email)
+
+<a id="airscale-reverse-phone"></a>
+
+## `airscale_reverse_phone`
+
+**MCP tool**
+
+Resolve a phone number to a LinkedIn profile. Returns the entire enriched profile, not only the URL.
+
+- **Category:** Contact and profile enrichment
+
+- **Spend classification:** Variable credit cost
+
+- **Credit behavior:** 10 credits per returned profile
+
+- **Execution:** Synchronous
+
+- **Authentication:** Uses the credentials configured on the MCP connection; never include an API key in tool arguments.
+
+<Note>
+Credit behavior: 10 credits per returned profile.
+</Note>
+
+### Inputs
+
+| Field | Type | Required | Description | Constraints |
+| --- | --- | --- | --- | --- |
+| `mobile_phone` | `string` | Yes | Phone number with country code, e.g. +33610607076 | minimum length: 1 |
+
+### Minimal `tools/call` example
+
+```json
+{
+  "jsonrpc": "2.0",
+  "id": 1,
+  "method": "tools/call",
+  "params": {
+    "name": "airscale_reverse_phone",
+    "arguments": {
+      "mobile_phone": "+12025550147"
+    }
+  }
+}
+```
+
+### Expected result
+
+Returns the enriched person profile resolved from the phone number, not only a profile URL.
+
+**Related API reference:** [reversePhoneLookup](/api-reference/reverse-phone)
+
+# Async exports and managed batches
+
+| Tool | Purpose | Credit behavior | Execution |
+| --- | --- | --- | --- |
+| [`airscale_start_companies_export`](#airscale-start-companies-export) | Start an async paid export of Find Companies results to CSV or JSONL. Returns an export_id; poll airscale_get_export_status. | Up to 0.1 credits per exported company | Async |
+| [`airscale_start_people_export`](#airscale-start-people-export) | Start an async paid export of Find People results to CSV or JSONL. Returns an export_id; poll airscale_get_export_status. | Up to 0.1 credits per exported lead | Async |
+| [`airscale_create_contact_enrichment_batch`](#airscale-create-contact-enrichment-batch) | Create a server-side batch for CSV/file/table contact inputs with more than 20 rows before starting a managed bulk work-email enrichment export. | Free; no enrichment credits charged | Sync |
+| [`airscale_add_contacts_to_enrichment_batch`](#airscale-add-contacts-to-enrichment-batch) | Add CSV/file/table contacts to a managed enrichment batch in chunks of up to 250. Use this for more than 20 rows instead of repeated single-contact lookup tools. | Free; no enrichment credits charged | Sync |
+| [`airscale_start_contact_enrichment_export`](#airscale-start-contact-enrichment-export) | Start an async paid work-email enrichment export for a CSV/file/table contact batch with more than 20 rows after checking available credits. Returns an export_id; poll airscale_get_export_status, then use airscale_get_export_file. | Up to 2 credits per contact | Async |
+| [`airscale_get_export_status`](#airscale-get-export-status) | Check an async companies, people, or contact-enrichment export job without returning exported rows. | Free; no credits charged | Sync |
+| [`airscale_get_export_file`](#airscale-get-export-file) | Get the download URL and MCP resource link for a completed companies, people, or contact-enrichment export file. | Free; no credits charged | Sync |
+
+<a id="airscale-start-companies-export"></a>
+
+## `airscale_start_companies_export`
+
+**MCP tool**
+
+Start an async paid export of Find Companies results to CSV or JSONL. Returns an export_id; poll airscale_get_export_status.
+
+- **Category:** Async exports and managed batches
+
+- **Spend classification:** Paid export
+
+- **Credit behavior:** Up to 0.1 credits per exported company
+
+- **Execution:** Asynchronous
+
+- **Authentication:** Uses the credentials configured on the MCP connection; never include an API key in tool arguments.
+
+<Note>
+Credit behavior: Up to 0.1 credits per exported company.
+</Note>
+
+<Warning>
+This starts paid export work. Review the maximum possible credit spend, then set `confirm_credit_spend: true` only after approval.
+</Warning>
+
+### Inputs
+
+| Field | Type | Required | Description | Constraints |
+| --- | --- | --- | --- | --- |
+| `filters` | `object` | No | Same filters as airscale_find_companies. | allowed properties: `country`, `region`, `city`, `industry`, `size`, `revenue`, `age`, `techStack`, `keywords`, `topics`, `events`, `locations`, `companyName`, `eventWindow`, `locationMatch`, `hasWebsite`, `isPublicCompany`; additional properties are not allowed |
+| `max_rows` | `integer` | No | Maximum rows to export, 1..10000. Defaults to 1000. | minimum: 1; maximum: 10000 |
+| `format` | `string` | No | Export file format. Defaults to csv. | allowed values: `"csv"`, `"jsonl"` |
+| `fields` | `array<string>` | No | Optional top-level fields to include. | maximum items: 100; item type: `string` |
+| `confirm_credit_spend` | `boolean` | No | Must be true to start a paid fresh-row export. | — |
+
+### Minimal `tools/call` example
+
+```json
+{
+  "jsonrpc": "2.0",
+  "id": 1,
+  "method": "tools/call",
+  "params": {
+    "name": "airscale_start_companies_export",
+    "arguments": {
+      "confirm_credit_spend": true
+    }
+  }
+}
+```
+
+### Expected result
+
+Returns an `export_id`; poll `airscale_get_export_status` before requesting the file.
+
+<a id="airscale-start-people-export"></a>
+
+## `airscale_start_people_export`
+
+**MCP tool**
+
+Start an async paid export of Find People results to CSV or JSONL. Returns an export_id; poll airscale_get_export_status.
+
+- **Category:** Async exports and managed batches
+
+- **Spend classification:** Paid export
+
+- **Credit behavior:** Up to 0.1 credits per exported lead
+
+- **Execution:** Asynchronous
+
+- **Authentication:** Uses the credentials configured on the MCP connection; never include an API key in tool arguments.
+
+<Note>
+Credit behavior: Up to 0.1 credits per exported lead.
+</Note>
+
+<Warning>
+This starts paid export work. Review the maximum possible credit spend, then set `confirm_credit_spend: true` only after approval.
+</Warning>
+
+### Inputs
+
+| Field | Type | Required | Description | Constraints |
+| --- | --- | --- | --- | --- |
+| `query` | `object` | Yes | Same query as airscale_find_people. | allowed properties: `firstname`, `lastname`, `JobTitle`, `companyDomain`, `companyLinkedinUrl`, `school`, `languages`, `skills`, `location`, `keyword`, `currentCompanyName`, `currentCompany.type`, `currentCompany.industry`, `currentCompany.location`, `currentCompany.keyword`, `totalYearsOfExperience`, `timeInCurrentCompany`, `currentCompany.headcount`, `currentCompany.revenue`, `currentCompany.headcountGrowth`; nested required fields: `currentCompany.headcountGrowth.timespan`; additional properties are not allowed |
+| `max_rows` | `integer` | No | Maximum rows to export, 1..10000. Defaults to 1000. | minimum: 1; maximum: 10000 |
+| `format` | `string` | No | Export file format. Defaults to csv. | allowed values: `"csv"`, `"jsonl"` |
+| `fields` | `array<string>` | No | Optional top-level fields to include. | maximum items: 100; item type: `string` |
+| `confirm_credit_spend` | `boolean` | No | Must be true to start a paid fresh-row export. | — |
+
+### Minimal `tools/call` example
+
+```json
+{
+  "jsonrpc": "2.0",
+  "id": 1,
+  "method": "tools/call",
+  "params": {
+    "name": "airscale_start_people_export",
+    "arguments": {
+      "query": {
+        "firstname": {
+          "include": [
+            "example"
+          ]
+        }
+      },
+      "confirm_credit_spend": true
+    }
+  }
+}
+```
+
+### Expected result
+
+Returns an `export_id`; poll `airscale_get_export_status` before requesting the file.
+
+<a id="airscale-create-contact-enrichment-batch"></a>
+
+## `airscale_create_contact_enrichment_batch`
+
+**MCP tool**
+
+Create a server-side batch for CSV/file/table contact inputs with more than 20 rows before starting a managed bulk work-email enrichment export.
+
+- **Category:** Async exports and managed batches
+
+- **Spend classification:** Free
+
+- **Credit behavior:** Free; no enrichment credits charged
+
+- **Execution:** Synchronous
+
+- **Authentication:** Uses the credentials configured on the MCP connection; never include an API key in tool arguments.
+
+<Note>
+Credit behavior: Free; no enrichment credits charged.
+</Note>
+
+### Inputs
+
+| Field | Type | Required | Description | Constraints |
+| --- | --- | --- | --- | --- |
+| `name` | `string` | No | Optional user-facing batch name. | minimum length: 1; maximum length: 200 |
+
+### Minimal `tools/call` example
+
+```json
+{
+  "jsonrpc": "2.0",
+  "id": 1,
+  "method": "tools/call",
+  "params": {
+    "name": "airscale_create_contact_enrichment_batch",
+    "arguments": {}
+  }
+}
+```
+
+### Expected result
+
+Returns a managed `batch_id` that can receive contact chunks before enrichment starts.
+
+<a id="airscale-add-contacts-to-enrichment-batch"></a>
+
+## `airscale_add_contacts_to_enrichment_batch`
+
+**MCP tool**
+
+Add CSV/file/table contacts to a managed enrichment batch in chunks of up to 250. Use this for more than 20 rows instead of repeated single-contact lookup tools.
+
+- **Category:** Async exports and managed batches
+
+- **Spend classification:** Free
+
+- **Credit behavior:** Free; no enrichment credits charged
+
+- **Execution:** Synchronous
+
+- **Authentication:** Uses the credentials configured on the MCP connection; never include an API key in tool arguments.
+
+<Note>
+Credit behavior: Free; no enrichment credits charged.
+</Note>
+
+### Inputs
+
+| Field | Type | Required | Description | Constraints |
+| --- | --- | --- | --- | --- |
+| `batch_id` | `string` | Yes | Batch id returned by airscale_create_contact_enrichment_batch. | minimum length: 1 |
+| `contacts` | `array<object>` | Yes | Contacts to add. Send uploaded CSV rows in chunks of up to 250. | minimum items: 1; maximum items: 250; item type: `object` |
+
+### Minimal `tools/call` example
+
+```json
+{
+  "jsonrpc": "2.0",
+  "id": 1,
+  "method": "tools/call",
+  "params": {
+    "name": "airscale_add_contacts_to_enrichment_batch",
+    "arguments": {
+      "batch_id": "example-batch-id",
+      "contacts": [
+        {
+          "custom_id": "example-custom-id"
+        }
+      ]
+    }
+  }
+}
+```
+
+### Expected result
+
+Returns the updated managed-batch state after accepting the contact chunk.
+
+<a id="airscale-start-contact-enrichment-export"></a>
+
+## `airscale_start_contact_enrichment_export`
+
+**MCP tool**
+
+Start an async paid work-email enrichment export for a CSV/file/table contact batch with more than 20 rows after checking available credits. Returns an export_id; poll airscale_get_export_status, then use airscale_get_export_file.
+
+- **Category:** Async exports and managed batches
+
+- **Spend classification:** Paid export
+
+- **Credit behavior:** Up to 2 credits per contact
+
+- **Execution:** Asynchronous
+
+- **Authentication:** Uses the credentials configured on the MCP connection; never include an API key in tool arguments.
+
+<Note>
+Credit behavior: Up to 2 credits per contact.
+</Note>
+
+<Warning>
+This starts paid export work. Review the maximum possible credit spend, then set `confirm_credit_spend: true` only after approval.
+</Warning>
+
+### Inputs
+
+| Field | Type | Required | Description | Constraints |
+| --- | --- | --- | --- | --- |
+| `batch_id` | `string` | Yes | Batch id to enrich. | minimum length: 1 |
+| `enrichments` | `array<string>` | No | Phase 1 supports only work_email. | minimum items: 1; maximum items: 1; item type: `string` |
+| `format` | `string` | No | Export file format. Defaults to csv. | allowed values: `"csv"`, `"jsonl"` |
+| `fields` | `array<string>` | No | Optional top-level fields to include. | maximum items: 100; item type: `string` |
+| `confirm_credit_spend` | `boolean` | No | Must be true to start paid contact enrichment. | — |
+
+### Minimal `tools/call` example
+
+```json
+{
+  "jsonrpc": "2.0",
+  "id": 1,
+  "method": "tools/call",
+  "params": {
+    "name": "airscale_start_contact_enrichment_export",
+    "arguments": {
+      "batch_id": "example-batch-id",
+      "confirm_credit_spend": true
+    }
+  }
+}
+```
+
+### Expected result
+
+Returns an `export_id`; poll status, then request the completed export file.
+
+<a id="airscale-get-export-status"></a>
+
+## `airscale_get_export_status`
+
+**MCP tool**
+
+Check an async companies, people, or contact-enrichment export job without returning exported rows.
+
+- **Category:** Async exports and managed batches
+
+- **Spend classification:** Free
+
+- **Credit behavior:** Free; no credits charged
+
+- **Execution:** Synchronous
+
+- **Authentication:** Uses the credentials configured on the MCP connection; never include an API key in tool arguments.
+
+<Note>
+Credit behavior: Free; no credits charged.
+</Note>
+
+### Inputs
+
+| Field | Type | Required | Description | Constraints |
+| --- | --- | --- | --- | --- |
+| `export_id` | `string` | Yes | Export id returned by a start export tool. | minimum length: 1 |
+
+### Minimal `tools/call` example
+
+```json
+{
+  "jsonrpc": "2.0",
+  "id": 1,
+  "method": "tools/call",
+  "params": {
+    "name": "airscale_get_export_status",
+    "arguments": {
+      "export_id": "example-export-id"
+    }
+  }
+}
+```
+
+### Expected result
+
+Returns the export state and progress metadata, including the server-provided polling interval when present.
+
+<a id="airscale-get-export-file"></a>
+
+## `airscale_get_export_file`
+
+**MCP tool**
+
+Get the download URL and MCP resource link for a completed companies, people, or contact-enrichment export file.
+
+- **Category:** Async exports and managed batches
+
+- **Spend classification:** Free
+
+- **Credit behavior:** Free; no credits charged
+
+- **Execution:** Synchronous
+
+- **Authentication:** Uses the credentials configured on the MCP connection; never include an API key in tool arguments.
+
+<Note>
+Credit behavior: Free; no credits charged.
+</Note>
+
+### Inputs
+
+| Field | Type | Required | Description | Constraints |
+| --- | --- | --- | --- | --- |
+| `export_id` | `string` | Yes | Completed export id. | minimum length: 1 |
+
+### Minimal `tools/call` example
+
+```json
+{
+  "jsonrpc": "2.0",
+  "id": 1,
+  "method": "tools/call",
+  "params": {
+    "name": "airscale_get_export_file",
+    "arguments": {
+      "export_id": "example-export-id"
+    }
+  }
+}
+```
+
+### Expected result
+
+Returns a download URL and MCP resource link after the export has completed.

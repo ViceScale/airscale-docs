@@ -1,0 +1,2542 @@
+{
+  "schemaVersion": "1.0",
+  "name": "Airscale MCP tools",
+  "description": "Browse all 22 typed tools exposed by the Airscale MCP server.",
+  "serverUrl": "https://mcp.airscale.io/mcp",
+  "toolCount": 22,
+  "sourceSha": "b06ea2c46276f8415a97721f6901437ce07f13fa",
+  "tools": [
+    {
+      "name": "airscale_check_credits",
+      "anchor": "airscale-check-credits",
+      "category": "workspace",
+      "description": "Check how many credits remain in the workspace.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {},
+        "additionalProperties": false
+      },
+      "spend": {
+        "kind": "free",
+        "summary": "Free; checking the balance does not debit credits"
+      },
+      "asynchronous": false,
+      "operationId": "getCredits",
+      "apiPage": "/api-reference/credit-count"
+    },
+    {
+      "name": "airscale_find_people",
+      "anchor": "airscale-find-people",
+      "category": "search_and_research",
+      "description": "Search people with public Find People filters for profile, current company, experience, and company growth. Costs 0.1 credits per returned lead. Paginate with cursor.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "query": {
+            "type": "object",
+            "properties": {
+              "firstname": {
+                "type": "object",
+                "properties": {
+                  "include": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    },
+                    "maxItems": 200
+                  },
+                  "exclude": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    },
+                    "maxItems": 200
+                  }
+                },
+                "additionalProperties": false,
+                "description": "Include/exclude arrays of strings, max 200 values each"
+              },
+              "lastname": {
+                "type": "object",
+                "properties": {
+                  "include": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    },
+                    "maxItems": 200
+                  },
+                  "exclude": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    },
+                    "maxItems": 200
+                  }
+                },
+                "additionalProperties": false,
+                "description": "Include/exclude arrays of strings, max 200 values each"
+              },
+              "JobTitle": {
+                "type": "object",
+                "properties": {
+                  "include": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    },
+                    "maxItems": 200
+                  },
+                  "exclude": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    },
+                    "maxItems": 200
+                  }
+                },
+                "additionalProperties": false,
+                "description": "Include/exclude arrays of strings, max 200 values each"
+              },
+              "companyDomain": {
+                "type": "object",
+                "properties": {
+                  "include": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    },
+                    "maxItems": 200
+                  },
+                  "exclude": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    },
+                    "maxItems": 200
+                  }
+                },
+                "additionalProperties": false,
+                "description": "Company domain, e.g. airscale.io"
+              },
+              "companyLinkedinUrl": {
+                "type": "object",
+                "properties": {
+                  "include": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    },
+                    "maxItems": 200
+                  },
+                  "exclude": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    },
+                    "maxItems": 200
+                  }
+                },
+                "additionalProperties": false,
+                "description": "Include/exclude arrays of strings, max 200 values each"
+              },
+              "school": {
+                "type": "object",
+                "properties": {
+                  "include": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    },
+                    "maxItems": 200
+                  },
+                  "exclude": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    },
+                    "maxItems": 200
+                  }
+                },
+                "additionalProperties": false,
+                "description": "Include/exclude arrays of strings, max 200 values each"
+              },
+              "languages": {
+                "type": "object",
+                "properties": {
+                  "include": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    },
+                    "maxItems": 200
+                  },
+                  "exclude": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    },
+                    "maxItems": 200
+                  }
+                },
+                "additionalProperties": false,
+                "description": "Include/exclude arrays of strings, max 200 values each"
+              },
+              "skills": {
+                "type": "object",
+                "properties": {
+                  "include": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    },
+                    "maxItems": 200
+                  },
+                  "exclude": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    },
+                    "maxItems": 200
+                  }
+                },
+                "additionalProperties": false,
+                "description": "Include/exclude arrays of strings, max 200 values each"
+              },
+              "location": {
+                "type": "object",
+                "properties": {
+                  "include": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    },
+                    "maxItems": 200
+                  },
+                  "exclude": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    },
+                    "maxItems": 200
+                  }
+                },
+                "additionalProperties": false,
+                "description": "City, region, or country"
+              },
+              "keyword": {
+                "type": "object",
+                "properties": {
+                  "include": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    },
+                    "maxItems": 200
+                  },
+                  "exclude": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    },
+                    "maxItems": 200
+                  }
+                },
+                "additionalProperties": false,
+                "description": "Searches the full profile: titles, bio, skills, education"
+              },
+              "currentCompanyName": {
+                "type": "object",
+                "properties": {
+                  "include": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    },
+                    "maxItems": 200
+                  },
+                  "exclude": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    },
+                    "maxItems": 200
+                  }
+                },
+                "additionalProperties": false,
+                "description": "Include/exclude arrays of strings, max 200 values each"
+              },
+              "currentCompany.type": {
+                "type": "object",
+                "properties": {
+                  "include": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    },
+                    "maxItems": 200
+                  },
+                  "exclude": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    },
+                    "maxItems": 200
+                  }
+                },
+                "additionalProperties": false,
+                "description": "Include/exclude arrays of strings, max 200 values each"
+              },
+              "currentCompany.industry": {
+                "type": "object",
+                "properties": {
+                  "include": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    },
+                    "maxItems": 200
+                  },
+                  "exclude": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    },
+                    "maxItems": 200
+                  }
+                },
+                "additionalProperties": false,
+                "description": "Include/exclude arrays of strings, max 200 values each"
+              },
+              "currentCompany.location": {
+                "type": "object",
+                "properties": {
+                  "include": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    },
+                    "maxItems": 200
+                  },
+                  "exclude": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    },
+                    "maxItems": 200
+                  }
+                },
+                "additionalProperties": false,
+                "description": "Current company headquarters location"
+              },
+              "currentCompany.keyword": {
+                "type": "object",
+                "properties": {
+                  "include": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    },
+                    "maxItems": 200
+                  },
+                  "exclude": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    },
+                    "maxItems": 200
+                  }
+                },
+                "additionalProperties": false,
+                "description": "Searches the current company profile"
+              },
+              "totalYearsOfExperience": {
+                "type": "object",
+                "properties": {
+                  ">": {
+                    "type": "integer"
+                  },
+                  ">=": {
+                    "type": "integer"
+                  },
+                  "<": {
+                    "type": "integer"
+                  },
+                  "<=": {
+                    "type": "integer"
+                  }
+                },
+                "additionalProperties": false,
+                "description": "Integer range using >, >=, <, and/or <= operators"
+              },
+              "timeInCurrentCompany": {
+                "type": "object",
+                "properties": {
+                  ">": {
+                    "type": "integer"
+                  },
+                  ">=": {
+                    "type": "integer"
+                  },
+                  "<": {
+                    "type": "integer"
+                  },
+                  "<=": {
+                    "type": "integer"
+                  }
+                },
+                "additionalProperties": false,
+                "description": "Integer range using >, >=, <, and/or <= operators"
+              },
+              "currentCompany.headcount": {
+                "type": "object",
+                "properties": {
+                  ">": {
+                    "type": "integer"
+                  },
+                  ">=": {
+                    "type": "integer"
+                  },
+                  "<": {
+                    "type": "integer"
+                  },
+                  "<=": {
+                    "type": "integer"
+                  }
+                },
+                "additionalProperties": false,
+                "description": "Integer range using >, >=, <, and/or <= operators"
+              },
+              "currentCompany.revenue": {
+                "type": "object",
+                "properties": {
+                  ">": {
+                    "type": "integer"
+                  },
+                  ">=": {
+                    "type": "integer"
+                  },
+                  "<": {
+                    "type": "integer"
+                  },
+                  "<=": {
+                    "type": "integer"
+                  }
+                },
+                "additionalProperties": false,
+                "description": "Integer range using >, >=, <, and/or <= operators"
+              },
+              "currentCompany.headcountGrowth": {
+                "type": "object",
+                "properties": {
+                  "min": {
+                    "type": "number",
+                    "minimum": -100,
+                    "maximum": 10000
+                  },
+                  "max": {
+                    "type": "number",
+                    "minimum": -100,
+                    "maximum": 10000
+                  },
+                  "timespan": {
+                    "type": "string",
+                    "enum": [
+                      "6months",
+                      "12months",
+                      "24months"
+                    ]
+                  }
+                },
+                "required": [
+                  "timespan"
+                ],
+                "additionalProperties": false,
+                "description": "Headcount growth bounds from -100 to 10000 and a 6, 12, or 24 month timespan"
+              }
+            },
+            "additionalProperties": false,
+            "description": "At least one filter required"
+          },
+          "size": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 100,
+            "description": "Results per page, 1..100. Defaults to 100"
+          },
+          "cursor": {
+            "type": "string",
+            "description": "next_cursor from the previous response"
+          }
+        },
+        "required": [
+          "query"
+        ],
+        "additionalProperties": false
+      },
+      "spend": {
+        "kind": "variable",
+        "summary": "0.1 credits per returned lead"
+      },
+      "asynchronous": false,
+      "operationId": "findPeople",
+      "apiPage": "/api-reference/find-people"
+    },
+    {
+      "name": "airscale_count_find_people",
+      "anchor": "airscale-count-find-people",
+      "category": "search_and_research",
+      "description": "Count people matching find-people query filters. Free, no credits charged.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "query": {
+            "type": "object",
+            "properties": {
+              "firstname": {
+                "type": "object",
+                "properties": {
+                  "include": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    },
+                    "maxItems": 200
+                  },
+                  "exclude": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    },
+                    "maxItems": 200
+                  }
+                },
+                "additionalProperties": false,
+                "description": "Include/exclude arrays of strings, max 200 values each"
+              },
+              "lastname": {
+                "type": "object",
+                "properties": {
+                  "include": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    },
+                    "maxItems": 200
+                  },
+                  "exclude": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    },
+                    "maxItems": 200
+                  }
+                },
+                "additionalProperties": false,
+                "description": "Include/exclude arrays of strings, max 200 values each"
+              },
+              "JobTitle": {
+                "type": "object",
+                "properties": {
+                  "include": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    },
+                    "maxItems": 200
+                  },
+                  "exclude": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    },
+                    "maxItems": 200
+                  }
+                },
+                "additionalProperties": false,
+                "description": "Include/exclude arrays of strings, max 200 values each"
+              },
+              "companyDomain": {
+                "type": "object",
+                "properties": {
+                  "include": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    },
+                    "maxItems": 200
+                  },
+                  "exclude": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    },
+                    "maxItems": 200
+                  }
+                },
+                "additionalProperties": false,
+                "description": "Company domain, e.g. airscale.io"
+              },
+              "companyLinkedinUrl": {
+                "type": "object",
+                "properties": {
+                  "include": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    },
+                    "maxItems": 200
+                  },
+                  "exclude": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    },
+                    "maxItems": 200
+                  }
+                },
+                "additionalProperties": false,
+                "description": "Include/exclude arrays of strings, max 200 values each"
+              },
+              "school": {
+                "type": "object",
+                "properties": {
+                  "include": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    },
+                    "maxItems": 200
+                  },
+                  "exclude": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    },
+                    "maxItems": 200
+                  }
+                },
+                "additionalProperties": false,
+                "description": "Include/exclude arrays of strings, max 200 values each"
+              },
+              "languages": {
+                "type": "object",
+                "properties": {
+                  "include": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    },
+                    "maxItems": 200
+                  },
+                  "exclude": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    },
+                    "maxItems": 200
+                  }
+                },
+                "additionalProperties": false,
+                "description": "Include/exclude arrays of strings, max 200 values each"
+              },
+              "skills": {
+                "type": "object",
+                "properties": {
+                  "include": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    },
+                    "maxItems": 200
+                  },
+                  "exclude": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    },
+                    "maxItems": 200
+                  }
+                },
+                "additionalProperties": false,
+                "description": "Include/exclude arrays of strings, max 200 values each"
+              },
+              "location": {
+                "type": "object",
+                "properties": {
+                  "include": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    },
+                    "maxItems": 200
+                  },
+                  "exclude": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    },
+                    "maxItems": 200
+                  }
+                },
+                "additionalProperties": false,
+                "description": "City, region, or country"
+              },
+              "keyword": {
+                "type": "object",
+                "properties": {
+                  "include": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    },
+                    "maxItems": 200
+                  },
+                  "exclude": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    },
+                    "maxItems": 200
+                  }
+                },
+                "additionalProperties": false,
+                "description": "Searches the full profile: titles, bio, skills, education"
+              },
+              "currentCompanyName": {
+                "type": "object",
+                "properties": {
+                  "include": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    },
+                    "maxItems": 200
+                  },
+                  "exclude": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    },
+                    "maxItems": 200
+                  }
+                },
+                "additionalProperties": false,
+                "description": "Include/exclude arrays of strings, max 200 values each"
+              },
+              "currentCompany.type": {
+                "type": "object",
+                "properties": {
+                  "include": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    },
+                    "maxItems": 200
+                  },
+                  "exclude": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    },
+                    "maxItems": 200
+                  }
+                },
+                "additionalProperties": false,
+                "description": "Include/exclude arrays of strings, max 200 values each"
+              },
+              "currentCompany.industry": {
+                "type": "object",
+                "properties": {
+                  "include": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    },
+                    "maxItems": 200
+                  },
+                  "exclude": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    },
+                    "maxItems": 200
+                  }
+                },
+                "additionalProperties": false,
+                "description": "Include/exclude arrays of strings, max 200 values each"
+              },
+              "currentCompany.location": {
+                "type": "object",
+                "properties": {
+                  "include": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    },
+                    "maxItems": 200
+                  },
+                  "exclude": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    },
+                    "maxItems": 200
+                  }
+                },
+                "additionalProperties": false,
+                "description": "Current company headquarters location"
+              },
+              "currentCompany.keyword": {
+                "type": "object",
+                "properties": {
+                  "include": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    },
+                    "maxItems": 200
+                  },
+                  "exclude": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    },
+                    "maxItems": 200
+                  }
+                },
+                "additionalProperties": false,
+                "description": "Searches the current company profile"
+              },
+              "totalYearsOfExperience": {
+                "type": "object",
+                "properties": {
+                  ">": {
+                    "type": "integer"
+                  },
+                  ">=": {
+                    "type": "integer"
+                  },
+                  "<": {
+                    "type": "integer"
+                  },
+                  "<=": {
+                    "type": "integer"
+                  }
+                },
+                "additionalProperties": false,
+                "description": "Integer range using >, >=, <, and/or <= operators"
+              },
+              "timeInCurrentCompany": {
+                "type": "object",
+                "properties": {
+                  ">": {
+                    "type": "integer"
+                  },
+                  ">=": {
+                    "type": "integer"
+                  },
+                  "<": {
+                    "type": "integer"
+                  },
+                  "<=": {
+                    "type": "integer"
+                  }
+                },
+                "additionalProperties": false,
+                "description": "Integer range using >, >=, <, and/or <= operators"
+              },
+              "currentCompany.headcount": {
+                "type": "object",
+                "properties": {
+                  ">": {
+                    "type": "integer"
+                  },
+                  ">=": {
+                    "type": "integer"
+                  },
+                  "<": {
+                    "type": "integer"
+                  },
+                  "<=": {
+                    "type": "integer"
+                  }
+                },
+                "additionalProperties": false,
+                "description": "Integer range using >, >=, <, and/or <= operators"
+              },
+              "currentCompany.revenue": {
+                "type": "object",
+                "properties": {
+                  ">": {
+                    "type": "integer"
+                  },
+                  ">=": {
+                    "type": "integer"
+                  },
+                  "<": {
+                    "type": "integer"
+                  },
+                  "<=": {
+                    "type": "integer"
+                  }
+                },
+                "additionalProperties": false,
+                "description": "Integer range using >, >=, <, and/or <= operators"
+              },
+              "currentCompany.headcountGrowth": {
+                "type": "object",
+                "properties": {
+                  "min": {
+                    "type": "number",
+                    "minimum": -100,
+                    "maximum": 10000
+                  },
+                  "max": {
+                    "type": "number",
+                    "minimum": -100,
+                    "maximum": 10000
+                  },
+                  "timespan": {
+                    "type": "string",
+                    "enum": [
+                      "6months",
+                      "12months",
+                      "24months"
+                    ]
+                  }
+                },
+                "required": [
+                  "timespan"
+                ],
+                "additionalProperties": false,
+                "description": "Headcount growth bounds from -100 to 10000 and a 6, 12, or 24 month timespan"
+              }
+            },
+            "additionalProperties": false,
+            "description": "At least one filter required"
+          }
+        },
+        "required": [
+          "query"
+        ],
+        "additionalProperties": false
+      },
+      "spend": {
+        "kind": "free",
+        "summary": "Free; no credits charged"
+      },
+      "asynchronous": false,
+      "operationId": "countPeople",
+      "apiPage": "/api-reference/find-people/count"
+    },
+    {
+      "name": "airscale_find_companies",
+      "anchor": "airscale-find-companies",
+      "category": "search_and_research",
+      "description": "Search companies by firmographic, location, event, intent, technology, and website keyword filters. Costs 0.1 credits per returned company. Use airscale_find_companies_filter_values to discover accepted values.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "filters": {
+            "type": "object",
+            "properties": {
+              "country": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  }
+                ],
+                "description": "Country names or ISO codes, e.g. [\"France\", \"US\"]"
+              },
+              "region": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  }
+                ],
+                "description": "Region values from filter-values, e.g. [\"California|US\"] or [\"us-ca\"]"
+              },
+              "city": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  }
+                ],
+                "description": "City|Region|Country values from filter-values, e.g. [\"San Francisco|California|US\"]"
+              },
+              "industry": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  }
+                ],
+                "description": "Canonical industry values from filter-values"
+              },
+              "size": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  }
+                ],
+                "description": "Employee size ranges, e.g. [\"11-50\"]"
+              },
+              "revenue": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  }
+                ],
+                "description": "Revenue ranges, e.g. [\"1M-5M\"]"
+              },
+              "age": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  }
+                ],
+                "description": "Company age ranges in years, e.g. [\"3-6\"]"
+              },
+              "techStack": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  }
+                ],
+                "description": "Technology values from filter-values"
+              },
+              "keywords": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  }
+                ],
+                "description": "Free-text keywords found on the company website"
+              },
+              "topics": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  }
+                ],
+                "description": "Bombora intent topics from filter-values"
+              },
+              "events": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  }
+                ],
+                "description": "Recent company events, e.g. [\"new_funding_round\"]"
+              },
+              "locations": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  }
+                ],
+                "description": "Number of company locations, e.g. [\"2-5\"]"
+              },
+              "companyName": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  }
+                ],
+                "description": "Company names to include (free text)"
+              },
+              "eventWindow": {
+                "type": "string",
+                "enum": [
+                  "30 days",
+                  "60 days",
+                  "90 days"
+                ],
+                "description": "Defaults to 30 days"
+              },
+              "locationMatch": {
+                "type": "string",
+                "enum": [
+                  "hqOnly",
+                  "hqOperating"
+                ],
+                "description": "Defaults to hqOnly"
+              },
+              "hasWebsite": {
+                "type": [
+                  "boolean",
+                  "null"
+                ],
+                "description": "JSON true, false, or null"
+              },
+              "isPublicCompany": {
+                "type": [
+                  "boolean",
+                  "null"
+                ],
+                "description": "JSON true, false, or null"
+              }
+            },
+            "additionalProperties": false,
+            "description": "At least one real filter is required by the API"
+          },
+          "page": {
+            "type": "integer",
+            "minimum": 0,
+            "description": "Page number, >= 0. Defaults to 0"
+          },
+          "size": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 100,
+            "description": "Companies per page, 1..100. Defaults to 50"
+          },
+          "cursor": {
+            "type": "string",
+            "description": "next_cursor from the previous response; used instead of page"
+          }
+        },
+        "additionalProperties": false
+      },
+      "spend": {
+        "kind": "variable",
+        "summary": "0.1 credits per returned company"
+      },
+      "asynchronous": false,
+      "operationId": "findCompanies",
+      "apiPage": "/api-reference/find-companies"
+    },
+    {
+      "name": "airscale_find_companies_filter_values",
+      "anchor": "airscale-find-companies-filter-values",
+      "category": "search_and_research",
+      "description": "Discover accepted values for find-companies filters (city, region, industry, topics, techStack). Free, no credits charged.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "filter": {
+            "type": "string",
+            "enum": [
+              "city",
+              "region",
+              "industry",
+              "topics",
+              "techStack"
+            ],
+            "description": "Filter to discover values for"
+          },
+          "q": {
+            "type": "string",
+            "minLength": 2,
+            "description": "Search text, at least 2 characters"
+          },
+          "limit": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 100,
+            "description": "1..100. Defaults to 20"
+          },
+          "country": {
+            "type": "string",
+            "description": "Country name or ISO code to narrow location results"
+          },
+          "region": {
+            "type": "string",
+            "description": "Region code or value to narrow city results, e.g. \"us-ca\""
+          }
+        },
+        "required": [
+          "filter",
+          "q"
+        ],
+        "additionalProperties": false
+      },
+      "spend": {
+        "kind": "free",
+        "summary": "Free; no credits charged"
+      },
+      "asynchronous": false,
+      "operationId": "listFindCompanyFilterValues",
+      "apiPage": "/api-reference/find-companies/filter-values"
+    },
+    {
+      "name": "airscale_airsearch",
+      "anchor": "airscale-airsearch",
+      "category": "search_and_research",
+      "description": "AI web research agent: ask a natural-language question and optionally specify structured fields to extract. Costs 2 credits per call.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "prompt": {
+            "type": "string",
+            "minLength": 1,
+            "description": "Natural-language research question or instruction"
+          },
+          "schema": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "string"
+            },
+            "description": "Fields to extract: keys are output names, values are types (string, url, email, number, int, float, boolean, date, phone) or free-text descriptions. If omitted, the agent infers fields"
+          }
+        },
+        "required": [
+          "prompt"
+        ],
+        "additionalProperties": false
+      },
+      "spend": {
+        "kind": "variable",
+        "summary": "2 credits per call"
+      },
+      "asynchronous": false,
+      "operationId": "airsearch",
+      "apiPage": "/api-reference/airsearch"
+    },
+    {
+      "name": "airscale_find_email",
+      "anchor": "airscale-find-email",
+      "category": "contact_and_profile_enrichment",
+      "description": "Find a contact's professional email. Provide either a LinkedIn profile URL, or first/last name plus a company domain or name.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "linkedin_profile_url": {
+            "type": "string",
+            "minLength": 1,
+            "description": "LinkedIn profile URL of the contact"
+          },
+          "first_name": {
+            "type": "string",
+            "minLength": 1
+          },
+          "last_name": {
+            "type": "string",
+            "minLength": 1
+          },
+          "domain": {
+            "type": "string",
+            "minLength": 1,
+            "description": "Company domain, e.g. airscale.io"
+          },
+          "company_name": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "additionalProperties": false
+      },
+      "spend": {
+        "kind": "variable",
+        "summary": "2 credits per successful result"
+      },
+      "asynchronous": false,
+      "operationId": "findProfessionalEmail",
+      "apiPage": "/api-reference/email-finder"
+    },
+    {
+      "name": "airscale_find_email_bulk",
+      "anchor": "airscale-find-email-bulk",
+      "category": "contact_and_profile_enrichment",
+      "description": "Find professional emails for multiple contacts. Returns immediately; results are delivered to webhook_url, one payload per input.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "webhook_url": {
+            "type": "string",
+            "format": "uri",
+            "description": "Results are POSTed here, one payload per input"
+          },
+          "inputs": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "custom_id": {
+                  "type": "string",
+                  "description": "Echoed back in the webhook payload"
+                },
+                "linkedin_profile_url": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "first_name": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "last_name": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "domain": {
+                  "type": "string",
+                  "minLength": 1,
+                  "description": "Company domain, e.g. airscale.io"
+                },
+                "company_name": {
+                  "type": "string",
+                  "minLength": 1
+                }
+              },
+              "additionalProperties": false
+            },
+            "minItems": 1,
+            "description": "Contacts to enrich"
+          }
+        },
+        "required": [
+          "webhook_url",
+          "inputs"
+        ],
+        "additionalProperties": false
+      },
+      "spend": {
+        "kind": "variable",
+        "summary": "2 credits per successful input"
+      },
+      "asynchronous": true,
+      "operationId": "findProfessionalEmailsBulk",
+      "apiPage": "/api-reference/email-finder-(bulk)"
+    },
+    {
+      "name": "airscale_find_mobile_phone",
+      "anchor": "airscale-find-mobile-phone",
+      "category": "contact_and_profile_enrichment",
+      "description": "Find a contact's mobile phone number from their LinkedIn profile URL.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "linkedin_profile_url": {
+            "type": "string",
+            "minLength": 1,
+            "description": "LinkedIn profile URL of the contact"
+          }
+        },
+        "required": [
+          "linkedin_profile_url"
+        ],
+        "additionalProperties": false
+      },
+      "spend": {
+        "kind": "variable",
+        "summary": "40 credits per successful result"
+      },
+      "asynchronous": false,
+      "operationId": "findMobilePhone",
+      "apiPage": "/api-reference/mobile-finder"
+    },
+    {
+      "name": "airscale_find_personal_email",
+      "anchor": "airscale-find-personal-email",
+      "category": "contact_and_profile_enrichment",
+      "description": "Find a contact's personal email from their LinkedIn profile URL.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "linkedin_profile_url": {
+            "type": "string",
+            "minLength": 1,
+            "description": "LinkedIn profile URL of the contact"
+          }
+        },
+        "required": [
+          "linkedin_profile_url"
+        ],
+        "additionalProperties": false
+      },
+      "spend": {
+        "kind": "variable",
+        "summary": "3-12 credits per successful result"
+      },
+      "asynchronous": false,
+      "operationId": "findPersonalEmail",
+      "apiPage": "/api-reference/personal-email"
+    },
+    {
+      "name": "airscale_find_people_by_url",
+      "anchor": "airscale-find-people-by-url",
+      "category": "contact_and_profile_enrichment",
+      "description": "Find a person's LinkedIn profile URL from their name and company.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "first_name": {
+            "type": "string",
+            "minLength": 1
+          },
+          "last_name": {
+            "type": "string",
+            "minLength": 1
+          },
+          "company_name": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "required": [
+          "first_name",
+          "last_name",
+          "company_name"
+        ],
+        "additionalProperties": false
+      },
+      "spend": {
+        "kind": "variable",
+        "summary": "0.5 credits per successful result"
+      },
+      "asynchronous": false,
+      "operationId": "findPeopleProfileUrl",
+      "apiPage": "/api-reference/people-url-finder"
+    },
+    {
+      "name": "airscale_extract_people_profile",
+      "anchor": "airscale-extract-people-profile",
+      "category": "contact_and_profile_enrichment",
+      "description": "Extract a full LinkedIn person profile from its URL.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "linkedin_profile_url": {
+            "type": "string",
+            "minLength": 1,
+            "description": "LinkedIn person profile URL"
+          },
+          "webhook_url": {
+            "type": "string",
+            "format": "uri",
+            "description": "Optional webhook to receive the profile"
+          }
+        },
+        "required": [
+          "linkedin_profile_url"
+        ],
+        "additionalProperties": false
+      },
+      "spend": {
+        "kind": "variable",
+        "summary": "URL-selected pricing; person-profile successes cost 1 credit by default and workspace-specific pricing may differ"
+      },
+      "asynchronous": false,
+      "operationId": "extractPersonProfile",
+      "apiPage": "/api-reference/extract-people-profile"
+    },
+    {
+      "name": "airscale_extract_company_profile",
+      "anchor": "airscale-extract-company-profile",
+      "category": "contact_and_profile_enrichment",
+      "description": "Extract a full LinkedIn company profile from its URL.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "linkedin_profile_url": {
+            "type": "string",
+            "minLength": 1,
+            "description": "LinkedIn company page URL"
+          },
+          "webhook_url": {
+            "type": "string",
+            "format": "uri",
+            "description": "Optional webhook to receive the profile"
+          }
+        },
+        "required": [
+          "linkedin_profile_url"
+        ],
+        "additionalProperties": false
+      },
+      "spend": {
+        "kind": "variable",
+        "summary": "URL-selected pricing; company or school-profile successes cost 0.5 credits and workspace-specific pricing may differ"
+      },
+      "asynchronous": false,
+      "operationId": "extractCompanyProfile",
+      "apiPage": "/api-reference/extract-company-profile"
+    },
+    {
+      "name": "airscale_reverse_email",
+      "anchor": "airscale-reverse-email",
+      "category": "contact_and_profile_enrichment",
+      "description": "Resolve an email address to a LinkedIn profile. Returns the entire enriched profile, not only the URL.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "email": {
+            "type": "string",
+            "format": "email",
+            "description": "Email address to resolve to a LinkedIn profile"
+          }
+        },
+        "required": [
+          "email"
+        ],
+        "additionalProperties": false
+      },
+      "spend": {
+        "kind": "variable",
+        "summary": "2 credits per returned profile"
+      },
+      "asynchronous": false,
+      "operationId": "reverseEmailLookup",
+      "apiPage": "/api-reference/reverse-email"
+    },
+    {
+      "name": "airscale_reverse_phone",
+      "anchor": "airscale-reverse-phone",
+      "category": "contact_and_profile_enrichment",
+      "description": "Resolve a phone number to a LinkedIn profile. Returns the entire enriched profile, not only the URL.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "mobile_phone": {
+            "type": "string",
+            "minLength": 1,
+            "description": "Phone number with country code, e.g. +33610607076"
+          }
+        },
+        "required": [
+          "mobile_phone"
+        ],
+        "additionalProperties": false
+      },
+      "spend": {
+        "kind": "variable",
+        "summary": "10 credits per returned profile"
+      },
+      "asynchronous": false,
+      "operationId": "reversePhoneLookup",
+      "apiPage": "/api-reference/reverse-phone"
+    },
+    {
+      "name": "airscale_start_companies_export",
+      "anchor": "airscale-start-companies-export",
+      "category": "async_exports_and_managed_batches",
+      "description": "Start an async paid export of Find Companies results to CSV or JSONL. Returns an export_id; poll airscale_get_export_status.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "filters": {
+            "type": "object",
+            "properties": {
+              "country": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  }
+                ],
+                "description": "Country names or ISO codes, e.g. [\"France\", \"US\"]"
+              },
+              "region": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  }
+                ],
+                "description": "Region values from filter-values, e.g. [\"California|US\"] or [\"us-ca\"]"
+              },
+              "city": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  }
+                ],
+                "description": "City|Region|Country values from filter-values, e.g. [\"San Francisco|California|US\"]"
+              },
+              "industry": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  }
+                ],
+                "description": "Canonical industry values from filter-values"
+              },
+              "size": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  }
+                ],
+                "description": "Employee size ranges, e.g. [\"11-50\"]"
+              },
+              "revenue": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  }
+                ],
+                "description": "Revenue ranges, e.g. [\"1M-5M\"]"
+              },
+              "age": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  }
+                ],
+                "description": "Company age ranges in years, e.g. [\"3-6\"]"
+              },
+              "techStack": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  }
+                ],
+                "description": "Technology values from filter-values"
+              },
+              "keywords": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  }
+                ],
+                "description": "Free-text keywords found on the company website"
+              },
+              "topics": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  }
+                ],
+                "description": "Bombora intent topics from filter-values"
+              },
+              "events": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  }
+                ],
+                "description": "Recent company events, e.g. [\"new_funding_round\"]"
+              },
+              "locations": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  }
+                ],
+                "description": "Number of company locations, e.g. [\"2-5\"]"
+              },
+              "companyName": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  }
+                ],
+                "description": "Company names to include (free text)"
+              },
+              "eventWindow": {
+                "type": "string",
+                "enum": [
+                  "30 days",
+                  "60 days",
+                  "90 days"
+                ],
+                "description": "Defaults to 30 days"
+              },
+              "locationMatch": {
+                "type": "string",
+                "enum": [
+                  "hqOnly",
+                  "hqOperating"
+                ],
+                "description": "Defaults to hqOnly"
+              },
+              "hasWebsite": {
+                "type": [
+                  "boolean",
+                  "null"
+                ],
+                "description": "JSON true, false, or null"
+              },
+              "isPublicCompany": {
+                "type": [
+                  "boolean",
+                  "null"
+                ],
+                "description": "JSON true, false, or null"
+              }
+            },
+            "additionalProperties": false,
+            "description": "Same filters as airscale_find_companies."
+          },
+          "max_rows": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 10000,
+            "description": "Maximum rows to export, 1..10000. Defaults to 1000."
+          },
+          "format": {
+            "type": "string",
+            "enum": [
+              "csv",
+              "jsonl"
+            ],
+            "description": "Export file format. Defaults to csv."
+          },
+          "fields": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 1
+            },
+            "maxItems": 100,
+            "description": "Optional top-level fields to include."
+          },
+          "confirm_credit_spend": {
+            "type": "boolean",
+            "description": "Must be true to start a paid fresh-row export."
+          }
+        },
+        "additionalProperties": false
+      },
+      "spend": {
+        "kind": "paid_export",
+        "summary": "Up to 0.1 credits per exported company",
+        "confirmationField": "confirm_credit_spend"
+      },
+      "asynchronous": true,
+      "operationId": null,
+      "apiPage": null
+    },
+    {
+      "name": "airscale_start_people_export",
+      "anchor": "airscale-start-people-export",
+      "category": "async_exports_and_managed_batches",
+      "description": "Start an async paid export of Find People results to CSV or JSONL. Returns an export_id; poll airscale_get_export_status.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "query": {
+            "type": "object",
+            "properties": {
+              "firstname": {
+                "type": "object",
+                "properties": {
+                  "include": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    },
+                    "maxItems": 200
+                  },
+                  "exclude": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    },
+                    "maxItems": 200
+                  }
+                },
+                "additionalProperties": false,
+                "description": "Include/exclude arrays of strings, max 200 values each"
+              },
+              "lastname": {
+                "type": "object",
+                "properties": {
+                  "include": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    },
+                    "maxItems": 200
+                  },
+                  "exclude": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    },
+                    "maxItems": 200
+                  }
+                },
+                "additionalProperties": false,
+                "description": "Include/exclude arrays of strings, max 200 values each"
+              },
+              "JobTitle": {
+                "type": "object",
+                "properties": {
+                  "include": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    },
+                    "maxItems": 200
+                  },
+                  "exclude": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    },
+                    "maxItems": 200
+                  }
+                },
+                "additionalProperties": false,
+                "description": "Include/exclude arrays of strings, max 200 values each"
+              },
+              "companyDomain": {
+                "type": "object",
+                "properties": {
+                  "include": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    },
+                    "maxItems": 200
+                  },
+                  "exclude": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    },
+                    "maxItems": 200
+                  }
+                },
+                "additionalProperties": false,
+                "description": "Company domain, e.g. airscale.io"
+              },
+              "companyLinkedinUrl": {
+                "type": "object",
+                "properties": {
+                  "include": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    },
+                    "maxItems": 200
+                  },
+                  "exclude": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    },
+                    "maxItems": 200
+                  }
+                },
+                "additionalProperties": false,
+                "description": "Include/exclude arrays of strings, max 200 values each"
+              },
+              "school": {
+                "type": "object",
+                "properties": {
+                  "include": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    },
+                    "maxItems": 200
+                  },
+                  "exclude": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    },
+                    "maxItems": 200
+                  }
+                },
+                "additionalProperties": false,
+                "description": "Include/exclude arrays of strings, max 200 values each"
+              },
+              "languages": {
+                "type": "object",
+                "properties": {
+                  "include": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    },
+                    "maxItems": 200
+                  },
+                  "exclude": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    },
+                    "maxItems": 200
+                  }
+                },
+                "additionalProperties": false,
+                "description": "Include/exclude arrays of strings, max 200 values each"
+              },
+              "skills": {
+                "type": "object",
+                "properties": {
+                  "include": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    },
+                    "maxItems": 200
+                  },
+                  "exclude": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    },
+                    "maxItems": 200
+                  }
+                },
+                "additionalProperties": false,
+                "description": "Include/exclude arrays of strings, max 200 values each"
+              },
+              "location": {
+                "type": "object",
+                "properties": {
+                  "include": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    },
+                    "maxItems": 200
+                  },
+                  "exclude": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    },
+                    "maxItems": 200
+                  }
+                },
+                "additionalProperties": false,
+                "description": "City, region, or country"
+              },
+              "keyword": {
+                "type": "object",
+                "properties": {
+                  "include": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    },
+                    "maxItems": 200
+                  },
+                  "exclude": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    },
+                    "maxItems": 200
+                  }
+                },
+                "additionalProperties": false,
+                "description": "Searches the full profile: titles, bio, skills, education"
+              },
+              "currentCompanyName": {
+                "type": "object",
+                "properties": {
+                  "include": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    },
+                    "maxItems": 200
+                  },
+                  "exclude": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    },
+                    "maxItems": 200
+                  }
+                },
+                "additionalProperties": false,
+                "description": "Include/exclude arrays of strings, max 200 values each"
+              },
+              "currentCompany.type": {
+                "type": "object",
+                "properties": {
+                  "include": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    },
+                    "maxItems": 200
+                  },
+                  "exclude": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    },
+                    "maxItems": 200
+                  }
+                },
+                "additionalProperties": false,
+                "description": "Include/exclude arrays of strings, max 200 values each"
+              },
+              "currentCompany.industry": {
+                "type": "object",
+                "properties": {
+                  "include": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    },
+                    "maxItems": 200
+                  },
+                  "exclude": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    },
+                    "maxItems": 200
+                  }
+                },
+                "additionalProperties": false,
+                "description": "Include/exclude arrays of strings, max 200 values each"
+              },
+              "currentCompany.location": {
+                "type": "object",
+                "properties": {
+                  "include": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    },
+                    "maxItems": 200
+                  },
+                  "exclude": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    },
+                    "maxItems": 200
+                  }
+                },
+                "additionalProperties": false,
+                "description": "Current company headquarters location"
+              },
+              "currentCompany.keyword": {
+                "type": "object",
+                "properties": {
+                  "include": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    },
+                    "maxItems": 200
+                  },
+                  "exclude": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    },
+                    "maxItems": 200
+                  }
+                },
+                "additionalProperties": false,
+                "description": "Searches the current company profile"
+              },
+              "totalYearsOfExperience": {
+                "type": "object",
+                "properties": {
+                  ">": {
+                    "type": "integer"
+                  },
+                  ">=": {
+                    "type": "integer"
+                  },
+                  "<": {
+                    "type": "integer"
+                  },
+                  "<=": {
+                    "type": "integer"
+                  }
+                },
+                "additionalProperties": false,
+                "description": "Integer range using >, >=, <, and/or <= operators"
+              },
+              "timeInCurrentCompany": {
+                "type": "object",
+                "properties": {
+                  ">": {
+                    "type": "integer"
+                  },
+                  ">=": {
+                    "type": "integer"
+                  },
+                  "<": {
+                    "type": "integer"
+                  },
+                  "<=": {
+                    "type": "integer"
+                  }
+                },
+                "additionalProperties": false,
+                "description": "Integer range using >, >=, <, and/or <= operators"
+              },
+              "currentCompany.headcount": {
+                "type": "object",
+                "properties": {
+                  ">": {
+                    "type": "integer"
+                  },
+                  ">=": {
+                    "type": "integer"
+                  },
+                  "<": {
+                    "type": "integer"
+                  },
+                  "<=": {
+                    "type": "integer"
+                  }
+                },
+                "additionalProperties": false,
+                "description": "Integer range using >, >=, <, and/or <= operators"
+              },
+              "currentCompany.revenue": {
+                "type": "object",
+                "properties": {
+                  ">": {
+                    "type": "integer"
+                  },
+                  ">=": {
+                    "type": "integer"
+                  },
+                  "<": {
+                    "type": "integer"
+                  },
+                  "<=": {
+                    "type": "integer"
+                  }
+                },
+                "additionalProperties": false,
+                "description": "Integer range using >, >=, <, and/or <= operators"
+              },
+              "currentCompany.headcountGrowth": {
+                "type": "object",
+                "properties": {
+                  "min": {
+                    "type": "number",
+                    "minimum": -100,
+                    "maximum": 10000
+                  },
+                  "max": {
+                    "type": "number",
+                    "minimum": -100,
+                    "maximum": 10000
+                  },
+                  "timespan": {
+                    "type": "string",
+                    "enum": [
+                      "6months",
+                      "12months",
+                      "24months"
+                    ]
+                  }
+                },
+                "required": [
+                  "timespan"
+                ],
+                "additionalProperties": false,
+                "description": "Headcount growth bounds from -100 to 10000 and a 6, 12, or 24 month timespan"
+              }
+            },
+            "additionalProperties": false,
+            "description": "Same query as airscale_find_people."
+          },
+          "max_rows": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 10000,
+            "description": "Maximum rows to export, 1..10000. Defaults to 1000."
+          },
+          "format": {
+            "type": "string",
+            "enum": [
+              "csv",
+              "jsonl"
+            ],
+            "description": "Export file format. Defaults to csv."
+          },
+          "fields": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 1
+            },
+            "maxItems": 100,
+            "description": "Optional top-level fields to include."
+          },
+          "confirm_credit_spend": {
+            "type": "boolean",
+            "description": "Must be true to start a paid fresh-row export."
+          }
+        },
+        "required": [
+          "query"
+        ],
+        "additionalProperties": false
+      },
+      "spend": {
+        "kind": "paid_export",
+        "summary": "Up to 0.1 credits per exported lead",
+        "confirmationField": "confirm_credit_spend"
+      },
+      "asynchronous": true,
+      "operationId": null,
+      "apiPage": null
+    },
+    {
+      "name": "airscale_create_contact_enrichment_batch",
+      "anchor": "airscale-create-contact-enrichment-batch",
+      "category": "async_exports_and_managed_batches",
+      "description": "Create a server-side batch for CSV/file/table contact inputs with more than 20 rows before starting a managed bulk work-email enrichment export.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 200,
+            "description": "Optional user-facing batch name."
+          }
+        },
+        "additionalProperties": false
+      },
+      "spend": {
+        "kind": "free",
+        "summary": "Free; no enrichment credits charged"
+      },
+      "asynchronous": false,
+      "operationId": null,
+      "apiPage": null
+    },
+    {
+      "name": "airscale_add_contacts_to_enrichment_batch",
+      "anchor": "airscale-add-contacts-to-enrichment-batch",
+      "category": "async_exports_and_managed_batches",
+      "description": "Add CSV/file/table contacts to a managed enrichment batch in chunks of up to 250. Use this for more than 20 rows instead of repeated single-contact lookup tools.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "batch_id": {
+            "type": "string",
+            "minLength": 1,
+            "description": "Batch id returned by airscale_create_contact_enrichment_batch."
+          },
+          "contacts": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "custom_id": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "linkedin_profile_url": {
+                  "anyOf": [
+                    {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                },
+                "first_name": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "last_name": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "domain": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "company_name": {
+                  "type": "string",
+                  "minLength": 1
+                }
+              },
+              "additionalProperties": false
+            },
+            "minItems": 1,
+            "maxItems": 250,
+            "description": "Contacts to add. Send uploaded CSV rows in chunks of up to 250."
+          }
+        },
+        "required": [
+          "batch_id",
+          "contacts"
+        ],
+        "additionalProperties": false
+      },
+      "spend": {
+        "kind": "free",
+        "summary": "Free; no enrichment credits charged"
+      },
+      "asynchronous": false,
+      "operationId": null,
+      "apiPage": null
+    },
+    {
+      "name": "airscale_start_contact_enrichment_export",
+      "anchor": "airscale-start-contact-enrichment-export",
+      "category": "async_exports_and_managed_batches",
+      "description": "Start an async paid work-email enrichment export for a CSV/file/table contact batch with more than 20 rows after checking available credits. Returns an export_id; poll airscale_get_export_status, then use airscale_get_export_file.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "batch_id": {
+            "type": "string",
+            "minLength": 1,
+            "description": "Batch id to enrich."
+          },
+          "enrichments": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "const": "work_email"
+            },
+            "minItems": 1,
+            "maxItems": 1,
+            "description": "Phase 1 supports only work_email."
+          },
+          "format": {
+            "type": "string",
+            "enum": [
+              "csv",
+              "jsonl"
+            ],
+            "description": "Export file format. Defaults to csv."
+          },
+          "fields": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 1
+            },
+            "maxItems": 100,
+            "description": "Optional top-level fields to include."
+          },
+          "confirm_credit_spend": {
+            "type": "boolean",
+            "description": "Must be true to start paid contact enrichment."
+          }
+        },
+        "required": [
+          "batch_id"
+        ],
+        "additionalProperties": false
+      },
+      "spend": {
+        "kind": "paid_export",
+        "summary": "Up to 2 credits per contact",
+        "confirmationField": "confirm_credit_spend"
+      },
+      "asynchronous": true,
+      "operationId": null,
+      "apiPage": null
+    },
+    {
+      "name": "airscale_get_export_status",
+      "anchor": "airscale-get-export-status",
+      "category": "async_exports_and_managed_batches",
+      "description": "Check an async companies, people, or contact-enrichment export job without returning exported rows.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "export_id": {
+            "type": "string",
+            "minLength": 1,
+            "description": "Export id returned by a start export tool."
+          }
+        },
+        "required": [
+          "export_id"
+        ],
+        "additionalProperties": false
+      },
+      "spend": {
+        "kind": "free",
+        "summary": "Free; no credits charged"
+      },
+      "asynchronous": false,
+      "operationId": null,
+      "apiPage": null
+    },
+    {
+      "name": "airscale_get_export_file",
+      "anchor": "airscale-get-export-file",
+      "category": "async_exports_and_managed_batches",
+      "description": "Get the download URL and MCP resource link for a completed companies, people, or contact-enrichment export file.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "export_id": {
+            "type": "string",
+            "minLength": 1,
+            "description": "Completed export id."
+          }
+        },
+        "required": [
+          "export_id"
+        ],
+        "additionalProperties": false
+      },
+      "spend": {
+        "kind": "free",
+        "summary": "Free; no credits charged"
+      },
+      "asynchronous": false,
+      "operationId": null,
+      "apiPage": null
+    }
+  ]
+}
