@@ -58,6 +58,28 @@ function assertPublicOperationMetadata(operation) {
   assert.ok(operation.description.length > 0);
 }
 
+function assertNoProviderIdentityExamples(operation) {
+  const examples = [
+    ...Object.values(operation.requestBody?.content?.["application/json"]?.examples ?? {}),
+    ...Object.values(operation.responses).flatMap((response) =>
+      Object.values(response.content?.["application/json"]?.examples ?? {})
+    )
+  ];
+
+  function inspect(value) {
+    if (!value || typeof value !== "object") return;
+    for (const [key, child] of Object.entries(value)) {
+      if (key === "provider" || key === "verifier") {
+        assert.equal(child, null, `${key} examples must not contain an identity value`);
+      } else {
+        inspect(child);
+      }
+    }
+  }
+
+  for (const example of examples) inspect(example.value);
+}
+
 function assertJsonErrors(operation, statuses) {
   for (const status of statuses.filter((value) => value !== "401")) {
     assert.equal(typeof operation.responses[status].description, "string");
@@ -160,7 +182,15 @@ test("account and contact operations share permissive public schemas", () => {
     additionalProperties: true,
     properties: {
       status: { type: "string", const: "success" },
-      email: { type: "string", format: "email" }
+      email: { type: "string", format: "email" },
+      email_status: {
+        type: "string",
+        description: "The value is \"valid\" on a successful result."
+      },
+      provider: { type: "string" },
+      verifier: { type: "string" },
+      catch_all: { type: "string", enum: ["yes", "no"] },
+      linkedin_profile_url: { $ref: "#/components/schemas/LinkedInPersonUrl" }
     }
   });
   assert.deepEqual(baseSpec.components.schemas.NotFoundEmail, {
@@ -172,6 +202,13 @@ test("account and contact operations share permissive public schemas", () => {
       email: { type: "null" }
     }
   });
+});
+
+test("account and contact operation examples omit provider identities", () => {
+  const spec = accountContactSpec();
+  for (const path of ACCOUNT_CONTACT_PATHS) {
+    assertNoProviderIdentityExamples(spec.paths[path].post);
+  }
 });
 
 test("Account Credits operation models the stable balance contract", () => {
@@ -275,7 +312,10 @@ test("Contact Email Bulk operation accepts bounded batches and returns only 202"
   assert.equal(schema.properties.inputs.minItems, 1);
   assert.equal(schema.properties.inputs.maxItems, 100);
   assert.equal(itemSchema.additionalProperties, false);
-  assert.equal(itemSchema.properties.custom_id.type, "string");
+  assert.deepEqual(itemSchema.properties.custom_id, {
+    not: { type: "null" },
+    description: "Any non-null JSON value is echoed unchanged."
+  });
   assert.equal(itemSchema.required, undefined);
   assert.deepEqual(itemSchema.anyOf, [
     { required: ["linkedin_profile_url"] },
@@ -284,14 +324,14 @@ test("Contact Email Bulk operation accepts bounded batches and returns only 202"
       anyOf: [{ required: ["domain"] }, { required: ["company_name"] }]
     }
   ]);
-  for (const property of ["custom_id", "first_name", "last_name", "domain", "company_name"]) {
+  for (const property of ["first_name", "last_name", "domain", "company_name"]) {
     assert.equal(itemSchema.properties[property].minLength, 1);
   }
   assert.deepEqual(operation.requestBody.content["application/json"].examples.batch.value, {
     webhook_url: "https://webhook.example.test/email-results",
     inputs: [
       { custom_id: "contact-001", linkedin_profile_url: "https://www.linkedin.com/in/example-person-000000" },
-      { custom_id: "contact-002", first_name: "Sample", last_name: "Contact", company_name: "Example Company" }
+      { custom_id: 2002, first_name: "Sample", last_name: "Contact", company_name: "Example Company" }
     ]
   });
   assert.equal(operation.responses["200"], undefined);
@@ -339,8 +379,7 @@ test("Contact Mobile operation requires a profile and models success and miss en
   assert.deepEqual(successContent.examples.success.value, {
     status: "success",
     linkedin_profile_url: "https://www.linkedin.com/in/example-person-000000",
-    phone_numbers: "+12025550123",
-    provider: "provider-example"
+    phone_numbers: "+12025550123"
   });
   assert.deepEqual(successContent.examples.notFound.value, {
     status: "not_found",

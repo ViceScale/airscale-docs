@@ -42,7 +42,15 @@ export const baseSpec = {
         additionalProperties: true,
         properties: {
           status: { type: "string", const: "success" },
-          email: { type: "string", format: "email" }
+          email: { type: "string", format: "email" },
+          email_status: {
+            type: "string",
+            description: "The value is \"valid\" on a successful result."
+          },
+          provider: { type: "string" },
+          verifier: { type: "string" },
+          catch_all: { type: "string", enum: ["yes", "no"] },
+          linkedin_profile_url: { $ref: "#/components/schemas/LinkedInPersonUrl" }
         }
       },
       NotFoundEmail: {

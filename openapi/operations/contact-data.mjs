@@ -48,7 +48,12 @@ function emailIdentificationSchema({ includeCustomId = false } = {}) {
     type: "object",
     additionalProperties: false,
     properties: {
-      ...(includeCustomId ? { custom_id: { type: "string", minLength: 1 } } : {}),
+      ...(includeCustomId ? {
+        custom_id: {
+          not: { type: "null" },
+          description: "Any non-null JSON value is echoed unchanged."
+        }
+      } : {}),
       linkedin_profile_url: { $ref: "#/components/schemas/LinkedInPersonUrl" },
       first_name: { type: "string", minLength: 1 },
       last_name: { type: "string", minLength: 1 },
@@ -168,7 +173,7 @@ export const contactDataOperations = [
               webhook_url: "https://webhook.example.test/email-results",
               inputs: [
                 { custom_id: "contact-001", linkedin_profile_url: PROFILE_EXAMPLE },
-                { custom_id: "contact-002", first_name: "Sample", last_name: "Contact", company_name: "Example Company" }
+                { custom_id: 2002, first_name: "Sample", last_name: "Contact", company_name: "Example Company" }
               ]
             }
           }
@@ -257,8 +262,7 @@ export const contactDataOperations = [
                   value: {
                     status: "success",
                     linkedin_profile_url: PROFILE_EXAMPLE,
-                    phone_numbers: "+12025550123",
-                    provider: "provider-example"
+                    phone_numbers: "+12025550123"
                   }
                 },
                 notFound: {
