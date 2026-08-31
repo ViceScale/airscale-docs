@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 import Ajv2020 from "ajv/dist/2020.js";
+import addFormats from "ajv-formats";
 import SwaggerParser from "@apidevtools/swagger-parser";
 import { baseSpec } from "../openapi/base.mjs";
 import { accountOperations } from "../openapi/operations/account.mjs";
@@ -77,11 +78,20 @@ function requestSchema(operation) {
 }
 
 function schemaValidator(schema) {
-  const ajv = new Ajv2020({ strict: false, validateFormats: false });
+  const ajv = new Ajv2020({ strict: false });
+  addFormats(ajv);
   return ajv.compile({
     ...structuredClone(schema),
     components: { schemas: structuredClone(baseSpec.components.schemas) }
   });
+}
+
+function runtimeGrowthBoundsAreOrdered(value) {
+  return !(Object.hasOwn(value, "min") && Object.hasOwn(value, "max")) || value.min <= value.max;
+}
+
+function runtimeFilterValuesQuery({ q, query }) {
+  return String(q ?? query ?? "").trim();
 }
 
 function requestValidator(schema) {
@@ -132,6 +142,59 @@ function assertExamplePrivacy(exampleValues) {
       inspect(child);
     }
   }
+  for (const example of exampleValues) inspect(example);
+}
+
+function assertExampleDataSafety(exampleValues) {
+  const isReservedEmailHost = (hostname) => (
+    /(?:^|\.)example\.(?:com|org|net|test)$/i.test(hostname)
+    || /\.example$/i.test(hostname)
+  );
+  const isApprovedWebHost = (hostname) => (
+    /(?:^|\.)example\.(?:com|org)$/i.test(hostname)
+    || /\.example$/i.test(hostname)
+    || hostname === "airscale.io"
+  );
+  const inspect = (value, key = "") => {
+    if (Array.isArray(value)) {
+      for (const child of value) inspect(child, key);
+      return;
+    }
+    if (value && typeof value === "object") {
+      for (const [childKey, child] of Object.entries(value)) inspect(child, childKey);
+      return;
+    }
+    if (typeof value !== "string") return;
+
+    const lowerKey = key.toLowerCase();
+    if (lowerKey.includes("email") && value.includes("@")) {
+      const hostname = value.split("@").at(-1);
+      assert.ok(isReservedEmailHost(hostname), `non-reserved example email: ${value}`);
+    }
+    if (lowerKey.includes("phone")) {
+      assert.equal(value, "+12025550147", `non-approved example phone: ${value}`);
+    }
+    if (/linkedin\.com/i.test(value)) {
+      const parsed = new URL(value.startsWith("http") ? value : `https://${value}`);
+      assert.match(parsed.pathname, /(?:^|[-_/])example(?:[-_/]|$)/i, `non-synthetic LinkedIn slug: ${value}`);
+      return;
+    }
+
+    const isWebField = /(?:url|website|domain|source)/i.test(lowerKey);
+    if (!isWebField) return;
+    let hostname;
+    try {
+      hostname = value.includes("://") ? new URL(value).hostname : value;
+    } catch {
+      return;
+    }
+    if (!hostname.includes(".")) return;
+    assert.ok(
+      isApprovedWebHost(hostname),
+      `non-approved example web host: ${hostname}`
+    );
+  };
+
   for (const example of exampleValues) inspect(example);
 }
 
@@ -953,17 +1016,18 @@ test("search and discovery shared schemas preserve the public filter and result 
 
   assert.deepEqual(schemas.IncludeExcludeFilter, {
     type: "object",
+    description: "Use include, exclude, or both. Empty arrays and empty string values are accepted by the runtime, but meaningful non-empty values are recommended.",
     additionalProperties: false,
     properties: {
       include: {
         type: "array",
         maxItems: 200,
-        items: { type: "string", minLength: 1 }
+        items: { type: "string" }
       },
       exclude: {
         type: "array",
         maxItems: 200,
-        items: { type: "string", minLength: 1 }
+        items: { type: "string" }
       }
     },
     anyOf: [{ required: ["include"] }, { required: ["exclude"] }]
@@ -982,6 +1046,10 @@ test("search and discovery shared schemas preserve the public filter and result 
   assert.equal(schemas.GrowthFilter.type, "object");
   assert.equal(schemas.GrowthFilter.additionalProperties, false);
   assert.match(schemas.GrowthFilter.description, /min must be less than or equal to max/i);
+  assert.equal(
+    schemas.GrowthFilter["x-airscale-runtime-constraint"],
+    "When both are present, min must be less than or equal to max."
+  );
   assert.deepEqual(schemas.GrowthFilter.required, ["timespan"]);
   assert.deepEqual(schemas.GrowthFilter.anyOf, [{ required: ["min"] }, { required: ["max"] }]);
   assert.deepEqual(schemas.GrowthFilter.properties.timespan.enum, ["6months", "12months", "24months"]);
@@ -992,6 +1060,17 @@ test("search and discovery shared schemas preserve the public filter and result 
       maximum: 10000
     });
   }
+  const validateGrowth = schemaValidator({ $ref: "#/components/schemas/GrowthFilter" });
+  for (const timespan of ["6months", "12months", "24months"]) {
+    assert.equal(validateGrowth({ min: -100, max: 10000, timespan }), true, timespan);
+  }
+  assert.equal(validateGrowth({ min: -100.01, timespan: "6months" }), false);
+  assert.equal(validateGrowth({ max: 10000.01, timespan: "6months" }), false);
+  assert.equal(validateGrowth({ timespan: "6months" }), false);
+  assert.equal(validateGrowth({ min: 10, timespan: "3months" }), false);
+  const reversedGrowth = { min: 20, max: 10, timespan: "12months" };
+  assert.equal(validateGrowth(reversedGrowth), true, "portable JSON Schema cannot compare sibling numeric properties");
+  assert.equal(runtimeGrowthBoundsAreOrdered(reversedGrowth), false, "the pinned runtime rejects reversed growth bounds");
   assert.equal(schemas.FlexibleResult.type, "object");
   assert.equal(schemas.FlexibleResult.additionalProperties, true);
   assert.equal(schemas.FlexibleResult.required, undefined);
@@ -1036,14 +1115,26 @@ test("Find People models the complete public query and page contract", () => {
   assert.equal(query.additionalProperties, false);
   assert.deepEqual(Object.keys(query.properties), [...includeExcludeFilters, ...integerRangeFilters, ...growthFilters]);
   for (const property of includeExcludeFilters) {
-    assert.deepEqual(query.properties[property], { $ref: "#/components/schemas/IncludeExcludeFilter" });
+    assert.deepEqual(query.properties[property].allOf, [{ $ref: "#/components/schemas/IncludeExcludeFilter" }]);
+    assert.ok(query.properties[property].description.length > 0, property);
   }
   for (const property of integerRangeFilters) {
-    assert.deepEqual(query.properties[property], { $ref: "#/components/schemas/IntegerRangeFilter" });
+    assert.deepEqual(query.properties[property].allOf, [{ $ref: "#/components/schemas/IntegerRangeFilter" }]);
+    assert.ok(query.properties[property].description.length > 0, property);
   }
   for (const property of growthFilters) {
-    assert.deepEqual(query.properties[property], { $ref: "#/components/schemas/GrowthFilter" });
+    assert.deepEqual(query.properties[property].allOf, [{ $ref: "#/components/schemas/GrowthFilter" }]);
+    assert.ok(query.properties[property].description.length > 0, property);
   }
+  assert.match(query.properties.jobTitle.description, /current role/i);
+  assert.match(query.properties.location.description, /person or current-role location/i);
+  assert.match(query.properties["currentCompany.location"].description, /current company headquarters/i);
+  assert.match(query.properties["pastCompany.location"].description, /previous company headquarters/i);
+  assert.match(query.properties.companyDomain.description, /hostname/i);
+  assert.match(query.properties.companyDomain.description, /companyLinkedinUrl/);
+  assert.match(query.properties.companyLinkedinUrl.description, /companyDomain/);
+  assert.match(query.properties.totalYearsOfExperience.description, /total years of experience/i);
+  assert.match(query.properties["currentCompany.headcountGrowth"].description, /current company headcount growth/i);
   assert.deepEqual(operation.requestBody.content["application/json"].examples.audience.value, {
     query: {
       jobTitle: { include: ["Revenue Operations Manager"] },
@@ -1066,7 +1157,7 @@ test("Find People models the complete public query and page contract", () => {
   assertJsonErrors(operation, errorStatuses(operation));
 });
 
-test("Find People query filters and Search pagination enforce runtime boundaries", () => {
+test("Find People models documented pagination and source-compatible filter boundaries", () => {
   const search = moduleOperation("POST", "/v1/find-people");
   assert.ok(search, "missing POST /v1/find-people");
   const validate = requestValidator(requestSchema(search));
@@ -1078,9 +1169,14 @@ test("Find People query filters and Search pagination enforce runtime boundaries
   assert.equal(validate({ ...base, size: 0 }), false);
   assert.equal(validate({ ...base, size: 101 }), false);
   assert.equal(validate({ query: { jobTitle: { include: [...values200, "One too many"] } } }), false);
+  assert.equal(validate({ query: { jobTitle: { exclude: [...values200, "One too many"] } } }), false);
   assert.equal(validate({ query: { jobTitle: {} } }), false);
   assert.equal(validate({ query: { jobTitle: { include: [] } } }), true, "source accepts a present empty include array");
-  assert.equal(validate({ query: { jobTitle: { include: [""] } } }), false);
+  assert.equal(validate({ query: { jobTitle: { exclude: [] } } }), true, "source accepts a present empty exclude array");
+  assert.equal(validate({ query: { jobTitle: { include: [""] } } }), true, "source accepts empty string values");
+  assert.equal(validate({ query: { jobTitle: { exclude: [""] } } }), true, "source accepts empty string values");
+  assert.equal(validate({ query: { jobTitle: { include: [42] } } }), false);
+  assert.equal(validate({ query: { jobTitle: { exclude: [false] } } }), false);
   assert.equal(validate({ query: { unsupported: { include: ["value"] } } }), false);
   assert.equal(validate({ query: { totalYearsOfExperience: { ">=": 5, "<": 20 } } }), true);
   assert.equal(validate({ query: { totalYearsOfExperience: { eq: 5 } } }), false);
@@ -1139,8 +1235,20 @@ test("Find Companies models public filters, cursor precedence, and stable result
   assert.match(operation.description, /256 KiB/);
   assert.deepEqual(schema.required, ["filters"]);
   assert.equal(schema.additionalProperties, false);
-  assert.deepEqual(schema.properties.page, { type: "integer", minimum: 0, default: 0 });
-  assert.deepEqual(schema.properties.size, { type: "integer", minimum: 1, maximum: 100, default: 50 });
+  assert.equal(schema.properties.page.default, 0);
+  assert.deepEqual(schema.properties.page.oneOf, [
+    { type: "integer", minimum: 0 },
+    { type: "string", pattern: "^(?:0|[1-9][0-9]*)$" }
+  ]);
+  assert.match(schema.properties.page.description, /canonical decimal strings/i);
+  assert.match(schema.properties.page.description, /runtime Number\(\) accepts additional spellings/i);
+  assert.equal(schema.properties.size.default, 50);
+  assert.deepEqual(schema.properties.size.oneOf, [
+    { type: "integer", minimum: 1, maximum: 100 },
+    { type: "string", pattern: "^(?:[1-9]|[1-9][0-9]|100)$" }
+  ]);
+  assert.match(schema.properties.size.description, /canonical decimal strings/i);
+  assert.match(schema.properties.size.description, /runtime Number\(\) accepts additional spellings/i);
   assert.equal(schema.properties.cursor.pattern, "^fc_");
   assert.match(schema.properties.cursor.description, /saved page size takes precedence/i);
   assert.equal(filters.type, "object");
@@ -1151,23 +1259,40 @@ test("Find Companies models public filters, cursor precedence, and stable result
     "topics", "events", "locations", "companyName", "eventWindow", "locationMatch", "hasWebsite",
     "isPublicCompany"
   ]);
-  assert.deepEqual(filters.properties.eventWindow, {
-    type: "string",
-    enum: ["30 days", "60 days", "90 days"],
-    default: "30 days"
-  });
-  assert.deepEqual(filters.properties.locationMatch, {
-    type: "string",
-    enum: ["hqOnly", "hqOperating"],
-    default: "hqOnly"
-  });
+  assert.deepEqual(filters.properties.eventWindow.oneOf, [
+    { type: "string", enum: ["30 days", "60 days", "90 days"] },
+    { type: "null" },
+    { type: "string", pattern: "^\\s*$" }
+  ]);
+  assert.equal(filters.properties.eventWindow.default, "30 days");
+  assert.match(filters.properties.eventWindow.description, /null or blank/i);
+  assert.deepEqual(filters.properties.locationMatch.oneOf, [
+    { type: "string", enum: ["hqOnly", "hqOperating"] },
+    { type: "null" },
+    { type: "string", pattern: "^\\s*$" }
+  ]);
+  assert.equal(filters.properties.locationMatch.default, "hqOnly");
+  assert.match(filters.properties.locationMatch.description, /null or blank/i);
   for (const property of ["hasWebsite", "isPublicCompany"]) {
-    assert.deepEqual(filters.properties[property], { type: ["boolean", "null"] });
+    assert.deepEqual(filters.properties[property].type, ["boolean", "null"]);
+    assert.ok(filters.properties[property].description.length > 0);
   }
+  assert.match(filters.properties.country.description, /ISO alpha-2/i);
+  for (const property of ["city", "region", "industry", "topics", "techStack"]) {
+    assert.match(filters.properties[property].description, /GET \/v1\/find-companies\/filter-values/);
+  }
+  assert.match(filters.properties.size.description, /employee/i);
+  assert.match(filters.properties.revenue.description, /revenue/i);
+  assert.match(filters.properties.age.description, /company age/i);
+  assert.match(filters.properties.events.description, /recent company event/i);
+  assert.match(filters.properties.locations.description, /number of company locations/i);
+  assert.match(filters.properties.companyName.description, /company name/i);
+  assert.match(filters.properties.locationMatch.description, /headquarters/i);
+  assert.match(filters.properties.locationMatch.description, /operating locations/i);
   const requestExample = operation.requestBody.content["application/json"].examples.audience.value;
   assert.deepEqual(requestExample.filters.country, ["FR"]);
   const responseExample = operation.responses["200"].content["application/json"].examples.reservedData.value;
-  assert.equal(responseExample.rows[0].domain, "example.test");
+  assert.equal(responseExample.rows[0].domain, "example.com");
   assert.deepEqual(
     JSON.parse(Buffer.from(responseExample.next_cursor.slice(3), "base64url").toString("utf8")),
     { v: 1, mode: "page", page: 1, pageSize: 25, providerSize: 10000 }
@@ -1189,11 +1314,11 @@ test("Find Companies models public filters, cursor precedence, and stable result
   assertJsonErrors(operation, errorStatuses(operation));
 });
 
-test("Find Companies pagination and fixed presets reject undocumented values", () => {
+test("Find Companies models canonical public coercions and fixed presets", () => {
   const operation = moduleOperation("POST", "/v1/find-companies");
   assert.ok(operation, "missing POST /v1/find-companies");
   const validate = requestValidator(requestSchema(operation));
-  const base = { filters: { country: "Example Country" } };
+  const base = { filters: { country: "FR" } };
   const accepted = {
     size: ["1-10", "11-50", "51-200", "201-500", "501-1000", "1001-5000", "5001-10000", "10001+"],
     revenue: ["0-500K", "500K-1M", "1M-5M", "5M-10M", "10M-25M", "25M-75M", "75M-200M", "200M-500M", "500M-1B", "1B-10B", "10B-100B", "100B-1T", "1T-10T", "10T+"],
@@ -1201,13 +1326,21 @@ test("Find Companies pagination and fixed presets reject undocumented values", (
     locations: ["0-1", "2-5", "6-20", "21-50", "51-100", "101-1000", "1001+"]
   };
 
-  assert.equal(validate({ ...base, page: 0, size: 1 }), true);
-  assert.equal(validate({ ...base, size: 100, cursor: "fc_synthetic" }), true);
-  assert.equal(validate({ ...base, page: -1 }), false);
-  assert.equal(validate({ ...base, size: 0 }), false);
-  assert.equal(validate({ ...base, size: 101 }), false);
+  for (const page of [0, 25, "0", "25"]) assert.equal(validate({ ...base, page }), true, `page ${JSON.stringify(page)}`);
+  for (const page of [-1, "-1", "01", "+1", "1.0", " 1 "]) assert.equal(validate({ ...base, page }), false, `page ${JSON.stringify(page)}`);
+  for (const size of [1, 100, "1", "100"]) assert.equal(validate({ ...base, size }), true, `size ${JSON.stringify(size)}`);
+  for (const size of [0, 101, "0", "101", "01", "+1", "1.0", " 1 "]) assert.equal(validate({ ...base, size }), false, `size ${JSON.stringify(size)}`);
+  assert.equal(validate({ ...base, size: "100", cursor: "fc_synthetic" }), true);
   assert.equal(validate({ ...base, cursor: "not-a-company-cursor" }), false);
   assert.equal(validate({ filters: { eventWindow: "30 days" } }), false, "defaults alone are not a real filter");
+  for (const eventWindow of [null, "", "   ", "30 days", "60 days", "90 days"]) {
+    assert.equal(validate({ filters: { country: "FR", eventWindow } }), true, `eventWindow ${JSON.stringify(eventWindow)}`);
+  }
+  assert.equal(validate({ filters: { country: "FR", eventWindow: "120 days" } }), false);
+  for (const locationMatch of [null, "", "   ", "hqOnly", "hqOperating"]) {
+    assert.equal(validate({ filters: { country: "FR", locationMatch } }), true, `locationMatch ${JSON.stringify(locationMatch)}`);
+  }
+  assert.equal(validate({ filters: { country: "FR", locationMatch: "operatingOnly" } }), false);
   for (const [property, values] of Object.entries(accepted)) {
     assert.equal(validate({ filters: { [property]: values[0] } }), true, `${property} scalar`);
     assert.equal(validate({ filters: { [property]: values } }), true, `${property} array`);
@@ -1232,10 +1365,28 @@ test("Company Filter-values models alias coercion and public option metadata", (
   assert.deepEqual(parameters.filter.schema.enum, ["city", "region", "industry", "topics", "techStack"]);
   for (const alias of ["q", "query"]) {
     assert.equal(parameters[alias].required, false);
-    assert.equal(parameters[alias].schema.minLength, 2);
-    assert.equal(parameters[alias].schema.maxLength, 120);
+    assert.equal(parameters[alias].schema.type, "string");
+    assert.equal(parameters[alias].schema.pattern, "^\\s*\\S[\\s\\S]{0,118}\\S\\s*$");
     assert.match(parameters[alias].description, /at least one of q or query is required/i);
   }
+  assert.equal(
+    parameters.q.description,
+    "At least one of q or query is required and must contain 2 to 120 characters after trimming. When q is present it is read first; a blank q suppresses query and returns 400."
+  );
+  assert.equal(
+    parameters.query.description,
+    "At least one of q or query is required and must contain 2 to 120 characters after trimming. query is used only when q is absent."
+  );
+  const validateQ = schemaValidator(parameters.q.schema);
+  for (const value of ["ab", "  ab  ", "a b", "x".repeat(120), `  ${"x".repeat(120)}  `]) {
+    assert.equal(validateQ(value), true, `query text ${JSON.stringify(value)}`);
+  }
+  for (const value of ["", " ", " a ", "x".repeat(121)]) {
+    assert.equal(validateQ(value), false, `query text ${JSON.stringify(value)}`);
+  }
+  assert.equal(runtimeFilterValuesQuery({ query: "valid query" }), "valid query");
+  assert.equal(runtimeFilterValuesQuery({ q: "primary", query: "fallback" }), "primary");
+  assert.equal(runtimeFilterValuesQuery({ q: "   ", query: "valid query" }), "");
   assert.equal(parameters.limit.required, false);
   assert.match(parameters.limit.description, /non-numeric/i);
   assert.match(parameters.limit.description, /explicit empty/i);
@@ -1283,7 +1434,7 @@ test("Company Filter-values models alias coercion and public option metadata", (
   assertJsonErrors(operation, errorStatuses(operation));
 });
 
-test("Airsearch constrains public prompts and schema hints while preserving dynamic output keys", () => {
+test("Airsearch reserves envelope names and models URL or public-label sources", () => {
   const operation = moduleOperation("POST", "/v1/airsearch");
   assert.ok(operation, "missing POST /v1/airsearch");
   const schema = requestSchema(operation);
@@ -1301,6 +1452,16 @@ test("Airsearch constrains public prompts and schema hints while preserving dyna
   assert.equal(schema.properties.prompt.minLength, 1);
   assert.ok(schema.properties.prompt.pattern);
   assert.equal(schema.properties.schema.type, "object");
+  const reservedOutputNames = [
+    "status", "response", "reasoning", "sources", "confidence_score", "certainty_tag", "duration_ms"
+  ];
+  assert.deepEqual(schema.properties.schema.propertyNames, {
+    minLength: 1,
+    pattern: "\\S",
+    not: { enum: reservedOutputNames }
+  });
+  assert.match(schema.properties.schema.description, /reserved/i);
+  assert.match(schema.properties.schema.description, /must not collide/i);
   assert.deepEqual(schema.properties.schema.additionalProperties, {
     type: "string",
     minLength: 1,
@@ -1314,6 +1475,17 @@ test("Airsearch constrains public prompts and schema hints while preserving dyna
   assert.equal(validate({ prompt: "Research a synthetic company.", schema: { website: "" } }), false);
   assert.equal(validate({ prompt: "Research a synthetic company.", schema: { website: "   " } }), false);
   assert.equal(validate({ prompt: "Research a synthetic company.", schema: { website: 42 } }), false);
+  for (const reserved of reservedOutputNames) {
+    assert.equal(
+      validate({ prompt: "Research a synthetic company.", schema: { [reserved]: "string" } }),
+      false,
+      reserved
+    );
+  }
+  assert.equal(
+    validate({ prompt: "Research a synthetic company.", schema: { company_name: "string", founded_year: "int" } }),
+    true
+  );
 
   assert.deepEqual(response.required, [
     "status", "response", "reasoning", "sources", "confidence_score", "certainty_tag", "duration_ms"
@@ -1326,18 +1498,38 @@ test("Airsearch constrains public prompts and schema hints while preserving dyna
   assert.deepEqual(response.properties.reasoning, { type: ["string", "null"] });
   assert.deepEqual(response.properties.sources, {
     type: "array",
-    items: { type: "string", format: "uri" }
+    items: {
+      type: "string",
+      minLength: 1,
+      description: "A public source URL or source label such as serp_snippets."
+    }
   });
   assert.deepEqual(response.properties.confidence_score, { type: "number", minimum: 0, maximum: 1 });
   assert.deepEqual(response.properties.certainty_tag, { type: "string", enum: ["low", "medium", "high"] });
   assert.deepEqual(response.properties.duration_ms, { type: "number", minimum: 0 });
   assert.deepEqual(response.additionalProperties, { type: ["string", "null"] });
+  const sourceBackedFixture = {
+    status: "success",
+    response: "Airscale is a sales data enrichment platform.",
+    category: "sales data enrichment platform",
+    reasoning: "The web page and public search snippets agree.",
+    sources: ["https://airscale.io", "serp_snippets"],
+    confidence_score: 0.92,
+    certainty_tag: "high",
+    duration_ms: 8420
+  };
+  const validateResponse = schemaValidator(response);
+  assert.equal(validateResponse(sourceBackedFixture), true, JSON.stringify(validateResponse.errors));
+  assert.deepEqual(
+    operation.responses["200"].content["application/json"].examples.success.value,
+    sourceBackedFixture
+  );
   assert.deepEqual(errorStatuses(operation), ["400", "401", "403", "413", "429", "500", "502", "503", "504"]);
   assertUnauthorizedReference(operation);
   assertJsonErrors(operation, errorStatuses(operation));
 });
 
-test("all Search and discovery request and response examples are schema-valid and synthetic", () => {
+test("all Search and discovery examples are schema-valid and structurally synthetic", () => {
   const examples = [];
   for (const entry of searchDiscoveryOperations) {
     const operation = entry.operation;
@@ -1349,6 +1541,26 @@ test("all Search and discovery request and response examples are schema-valid an
   assert.equal(searchDiscoveryOperations.length, 5);
   assert.doesNotThrow(() => assertExamplePrivacy(examples));
   assert.doesNotThrow(() => assertNoExecutableExamples(examples));
+  assert.doesNotThrow(() => assertExampleDataSafety(examples));
+});
+
+test("example safety rejects routable identities while allowing approved documentation values", () => {
+  const approved = [{
+    email: "person@example.com",
+    linkedin_profile_url: "https://www.linkedin.com/in/example-person-000000",
+    phone_number: "+12025550147",
+    website: "https://product.example",
+    domain: "example.org",
+    sources: ["https://airscale.io", "serp_snippets"]
+  }];
+  assert.doesNotThrow(() => assertExampleDataSafety(approved));
+  assert.throws(() => assertExampleDataSafety([{ email: "person@company.com" }]), /non-reserved example email/);
+  assert.throws(
+    () => assertExampleDataSafety([{ linkedin_profile_url: "https://www.linkedin.com/in/person-name" }]),
+    /non-synthetic LinkedIn slug/
+  );
+  assert.throws(() => assertExampleDataSafety([{ phone: "+12025550123" }]), /non-approved example phone/);
+  assert.throws(() => assertExampleDataSafety([{ website: "https://company.com" }]), /non-approved example web host/);
 });
 
 test("committed OpenAPI 3.1 artifact matches the pinned 15-operation catalog exactly", async () => {

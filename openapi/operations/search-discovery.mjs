@@ -87,6 +87,48 @@ const growthFilters = [
   "pastCompany.headcountGrowth"
 ];
 
+const findPeopleFilterDescriptions = {
+  firstname: "Matches a person's first name.",
+  lastname: "Matches a person's last name.",
+  jobTitle: "Matches the person's current role or job title.",
+  school: "Matches a school name on the person's profile.",
+  languages: "Matches a language name or code on the person's profile.",
+  skills: "Matches a skill name on the person's profile.",
+  location: "Matches the person or current-role location. Country names and ISO alpha-2 codes are accepted.",
+  keyword: "Matches text on the person's profile.",
+  currentCompanyName: "Matches the person's current company name.",
+  companyDomain: "Matches a current company domain; URL input is normalized to its hostname. Values merge with companyLinkedinUrl into one current-company identifier filter.",
+  companyLinkedinUrl: "Matches a current company profile URL or identifier. Values merge with companyDomain into one current-company identifier filter.",
+  "currentCompany.type": "Matches the current company type.",
+  "currentCompany.industry": "Matches the current company industry.",
+  "currentCompany.location": "Matches the current company headquarters location.",
+  "currentCompany.keyword": "Matches text on the current company profile.",
+  pastJobTitle: "Matches a title in a previous position.",
+  pastCompanyName: "Matches a previous company name.",
+  pastCompanyId: "Matches a previous company identifier.",
+  pastCompanyWebsite: "Matches a previous company website or domain.",
+  pastCompanyUrn: "Matches a previous company URN.",
+  "pastCompany.type": "Matches a previous company type.",
+  "pastCompany.industry": "Matches a previous company industry.",
+  "pastCompany.location": "Matches a previous company headquarters location.",
+  "pastCompany.keyword": "Matches text on a previous company profile.",
+  totalYearsOfExperience: "Matches the person's total years of experience.",
+  timeInCurrentCompany: "Matches years spent at the current company.",
+  "currentCompany.headcount": "Matches current company employee count.",
+  "currentCompany.revenue": "Matches current company revenue.",
+  "pastCompany.headcount": "Matches previous company employee count.",
+  "pastCompany.revenue": "Matches previous company revenue.",
+  "currentCompany.headcountGrowth": "Matches current company headcount growth for a supported timespan.",
+  "pastCompany.headcountGrowth": "Matches previous company headcount growth for a supported timespan."
+};
+
+function describedRef(schemaName, description) {
+  return {
+    description,
+    allOf: [{ $ref: `#/components/schemas/${schemaName}` }]
+  };
+}
+
 const findPeopleQuerySchema = {
   type: "object",
   minProperties: 1,
@@ -94,15 +136,15 @@ const findPeopleQuerySchema = {
   properties: {
     ...Object.fromEntries(includeExcludeFilters.map((name) => [
       name,
-      { $ref: "#/components/schemas/IncludeExcludeFilter" }
+      describedRef("IncludeExcludeFilter", findPeopleFilterDescriptions[name])
     ])),
     ...Object.fromEntries(integerRangeFilters.map((name) => [
       name,
-      { $ref: "#/components/schemas/IntegerRangeFilter" }
+      describedRef("IntegerRangeFilter", findPeopleFilterDescriptions[name])
     ])),
     ...Object.fromEntries(growthFilters.map((name) => [
       name,
-      { $ref: "#/components/schemas/GrowthFilter" }
+      describedRef("GrowthFilter", findPeopleFilterDescriptions[name])
     ]))
   }
 };
@@ -208,42 +250,68 @@ const companyEventValues = [
 const companyListFilterNames = [
   "country", "region", "city", "industry", "techStack", "keywords", "topics", "companyName"
 ];
-const stringOrStringArrayRef = { $ref: "#/components/schemas/StringOrStringArray" };
 const companyRealFilterNames = [
   ...companyListFilterNames,
   "size", "revenue", "age", "events", "locations", "hasWebsite", "isPublicCompany"
 ];
+const findCompaniesFilterDescriptions = {
+  country: "Matches a recognized country name or ISO alpha-2 code.",
+  region: "Matches a canonical region code, Region|Country value, or a region name scoped by country. Discover canonical values with GET /v1/find-companies/filter-values.",
+  city: "Matches a resolvable city value. Discover accepted values with GET /v1/find-companies/filter-values.",
+  industry: "Matches a canonical company industry. Discover accepted values with GET /v1/find-companies/filter-values.",
+  size: "Matches a fixed employee-count range.",
+  revenue: "Matches a fixed company revenue range.",
+  age: "Matches a fixed company age range.",
+  techStack: "Matches a technology used by the company. Discover accepted values with GET /v1/find-companies/filter-values.",
+  keywords: "Matches text found on the company website.",
+  topics: "Matches a canonical business-intent topic. Discover accepted values with GET /v1/find-companies/filter-values.",
+  events: "Matches a fixed recent company event.",
+  locations: "Matches a fixed range for the number of company locations.",
+  companyName: "Matches the company name.",
+  eventWindow: "Sets the recent-event window. Null or blank values use the default 30 days.",
+  locationMatch: "Controls whether location filters match headquarters only or headquarters and operating locations. Null or blank values use the default hqOnly.",
+  hasWebsite: "Matches companies by whether a website is present; null leaves this criterion unset.",
+  isPublicCompany: "Matches companies by public-company status; null leaves this criterion unset."
+};
 
 const findCompaniesFiltersSchema = {
   type: "object",
   minProperties: 1,
   additionalProperties: false,
   properties: {
-    country: stringOrStringArrayRef,
-    region: stringOrStringArrayRef,
-    city: stringOrStringArrayRef,
-    industry: stringOrStringArrayRef,
-    size: stringOrArrayEnum(companySizeValues),
-    revenue: stringOrArrayEnum(companyRevenueValues),
-    age: stringOrArrayEnum(companyAgeValues),
-    techStack: stringOrStringArrayRef,
-    keywords: stringOrStringArrayRef,
-    topics: stringOrStringArrayRef,
-    events: stringOrArrayEnum(companyEventValues),
-    locations: stringOrArrayEnum(companyLocationValues),
-    companyName: stringOrStringArrayRef,
+    country: describedRef("StringOrStringArray", findCompaniesFilterDescriptions.country),
+    region: describedRef("StringOrStringArray", findCompaniesFilterDescriptions.region),
+    city: describedRef("StringOrStringArray", findCompaniesFilterDescriptions.city),
+    industry: describedRef("StringOrStringArray", findCompaniesFilterDescriptions.industry),
+    size: { description: findCompaniesFilterDescriptions.size, ...stringOrArrayEnum(companySizeValues) },
+    revenue: { description: findCompaniesFilterDescriptions.revenue, ...stringOrArrayEnum(companyRevenueValues) },
+    age: { description: findCompaniesFilterDescriptions.age, ...stringOrArrayEnum(companyAgeValues) },
+    techStack: describedRef("StringOrStringArray", findCompaniesFilterDescriptions.techStack),
+    keywords: describedRef("StringOrStringArray", findCompaniesFilterDescriptions.keywords),
+    topics: describedRef("StringOrStringArray", findCompaniesFilterDescriptions.topics),
+    events: { description: findCompaniesFilterDescriptions.events, ...stringOrArrayEnum(companyEventValues) },
+    locations: { description: findCompaniesFilterDescriptions.locations, ...stringOrArrayEnum(companyLocationValues) },
+    companyName: describedRef("StringOrStringArray", findCompaniesFilterDescriptions.companyName),
     eventWindow: {
-      type: "string",
-      enum: ["30 days", "60 days", "90 days"],
+      description: findCompaniesFilterDescriptions.eventWindow,
+      oneOf: [
+        { type: "string", enum: ["30 days", "60 days", "90 days"] },
+        { type: "null" },
+        { type: "string", pattern: "^\\s*$" }
+      ],
       default: "30 days"
     },
     locationMatch: {
-      type: "string",
-      enum: ["hqOnly", "hqOperating"],
+      description: findCompaniesFilterDescriptions.locationMatch,
+      oneOf: [
+        { type: "string", enum: ["hqOnly", "hqOperating"] },
+        { type: "null" },
+        { type: "string", pattern: "^\\s*$" }
+      ],
       default: "hqOnly"
     },
-    hasWebsite: { type: ["boolean", "null"] },
-    isPublicCompany: { type: ["boolean", "null"] }
+    hasWebsite: { type: ["boolean", "null"], description: findCompaniesFilterDescriptions.hasWebsite },
+    isPublicCompany: { type: ["boolean", "null"], description: findCompaniesFilterDescriptions.isPublicCompany }
   },
   anyOf: companyRealFilterNames.map((name) => (
     name === "hasWebsite" || name === "isPublicCompany"
@@ -286,13 +354,18 @@ const filterValuesResponseSchema = {
   }
 };
 
-const queryAliasDescription = "At least one of q or query is required. This alias supplies the search text.";
+const filterValuesQueryPattern = "^\\s*\\S[\\s\\S]{0,118}\\S\\s*$";
+const filterValuesQDescription = "At least one of q or query is required and must contain 2 to 120 characters after trimming. When q is present it is read first; a blank q suppresses query and returns 400.";
+const filterValuesAliasDescription = "At least one of q or query is required and must contain 2 to 120 characters after trimming. query is used only when q is absent.";
 const repeatedContextSchema = {
   oneOf: [
     { type: "string" },
     { type: "array", items: { type: "string" } }
   ]
 };
+const airsearchReservedOutputNames = [
+  "status", "response", "reasoning", "sources", "confidence_score", "certainty_tag", "duration_ms"
+];
 
 const airsearchRequestSchema = {
   type: "object",
@@ -307,13 +380,17 @@ const airsearchRequestSchema = {
     },
     schema: {
       type: "object",
-      propertyNames: { minLength: 1, pattern: "\\S" },
+      propertyNames: {
+        minLength: 1,
+        pattern: "\\S",
+        not: { enum: airsearchReservedOutputNames }
+      },
       additionalProperties: {
         type: "string",
         minLength: 1,
         pattern: "\\S"
       },
-      description: "Maps arbitrary requested output names to non-empty type keywords or plain-language descriptions."
+      description: "Maps arbitrary requested output names to non-empty type keywords or plain-language descriptions. Stable envelope names are reserved because dynamic requested fields must not collide with status, response, reasoning, sources, confidence_score, certainty_tag, or duration_ms."
     }
   }
 };
@@ -330,7 +407,14 @@ const airsearchResponseSchema = {
       ]
     },
     reasoning: { type: ["string", "null"] },
-    sources: { type: "array", items: { type: "string", format: "uri" } },
+    sources: {
+      type: "array",
+      items: {
+        type: "string",
+        minLength: 1,
+        description: "A public source URL or source label such as serp_snippets."
+      }
+    },
     confidence_score: { type: "number", minimum: 0, maximum: 1 },
     certainty_tag: { type: "string", enum: ["low", "medium", "high"] },
     duration_ms: { type: "number", minimum: 0 }
@@ -457,8 +541,22 @@ export const searchDiscoveryOperations = [
           additionalProperties: false,
           properties: {
             filters: findCompaniesFiltersSchema,
-            page: { type: "integer", minimum: 0, default: 0 },
-            size: { type: "integer", minimum: 1, maximum: 100, default: 50 },
+            page: {
+              description: "A zero-based page supplied as an integer JSON number or one of the equivalent canonical decimal strings. OpenAPI intentionally uses canonical decimal strings even though runtime Number() accepts additional spellings.",
+              oneOf: [
+                { type: "integer", minimum: 0 },
+                { type: "string", pattern: "^(?:0|[1-9][0-9]*)$" }
+              ],
+              default: 0
+            },
+            size: {
+              description: "A page size from 1 through 100 supplied as an integer JSON number or one of the equivalent canonical decimal strings. OpenAPI intentionally uses canonical decimal strings even though runtime Number() accepts additional spellings.",
+              oneOf: [
+                { type: "integer", minimum: 1, maximum: 100 },
+                { type: "string", pattern: "^(?:[1-9]|[1-9][0-9]|100)$" }
+              ],
+              default: 50
+            },
             cursor: {
               type: "string",
               pattern: "^fc_",
@@ -505,8 +603,8 @@ export const searchDiscoveryOperations = [
                     rows: [
                       {
                         name: "Example Company",
-                        domain: "example.test",
-                        website: "https://www.example.test",
+                        domain: "example.com",
+                        website: "https://example.com",
                         countryName: "Example Country",
                         cityName: "Example City"
                       }
@@ -547,15 +645,15 @@ export const searchDiscoveryOperations = [
           name: "q",
           in: "query",
           required: false,
-          description: queryAliasDescription,
-          schema: { type: "string", minLength: 2, maxLength: 120 }
+          description: filterValuesQDescription,
+          schema: { type: "string", pattern: filterValuesQueryPattern }
         },
         {
           name: "query",
           in: "query",
           required: false,
-          description: queryAliasDescription,
-          schema: { type: "string", minLength: 2, maxLength: 120 }
+          description: filterValuesAliasDescription,
+          schema: { type: "string", pattern: filterValuesQueryPattern }
         },
         {
           name: "limit",
@@ -644,13 +742,11 @@ export const searchDiscoveryOperations = [
         airsearchRequestSchema,
         {
           structuredResearch: {
-            summary: "Research a reserved example domain",
+            summary: "Research the documented Airscale origin",
             value: {
-              prompt: "Summarize the public product description on https://example.com.",
+              prompt: "What category does Airscale use to describe its service at https://airscale.io?",
               schema: {
-                company_name: "string",
-                website: "url",
-                summary: "Short product summary"
+                category: "string"
               }
             }
           }
@@ -668,13 +764,11 @@ export const searchDiscoveryOperations = [
                   summary: "Synthetic successful research",
                   value: {
                     status: "success",
-                    response: "Example Company publishes a synthetic product description.",
-                    company_name: "Example Company",
-                    website: "https://example.com",
-                    summary: "A synthetic product summary.",
-                    reasoning: "The reserved example page directly supports the summary.",
-                    sources: ["https://example.com"],
-                    confidence_score: 0.94,
+                    response: "Airscale is a sales data enrichment platform.",
+                    category: "sales data enrichment platform",
+                    reasoning: "The web page and public search snippets agree.",
+                    sources: ["https://airscale.io", "serp_snippets"],
+                    confidence_score: 0.92,
                     certainty_tag: "high",
                     duration_ms: 8420
                   }
@@ -684,9 +778,7 @@ export const searchDiscoveryOperations = [
                   value: {
                     status: "not_found",
                     response: "No relevant information found.",
-                    company_name: null,
-                    website: null,
-                    summary: null,
+                    category: null,
                     reasoning: null,
                     sources: [],
                     confidence_score: 0.1,
@@ -699,9 +791,7 @@ export const searchDiscoveryOperations = [
                   value: {
                     status: "timeout",
                     response: "No relevant information found.",
-                    company_name: null,
-                    website: null,
-                    summary: null,
+                    category: null,
                     reasoning: null,
                     sources: [],
                     confidence_score: 0,

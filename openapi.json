@@ -1814,100 +1814,260 @@
                     "additionalProperties": false,
                     "properties": {
                       "firstname": {
-                        "$ref": "#/components/schemas/IncludeExcludeFilter"
+                        "description": "Matches a person's first name.",
+                        "allOf": [
+                          {
+                            "$ref": "#/components/schemas/IncludeExcludeFilter"
+                          }
+                        ]
                       },
                       "lastname": {
-                        "$ref": "#/components/schemas/IncludeExcludeFilter"
+                        "description": "Matches a person's last name.",
+                        "allOf": [
+                          {
+                            "$ref": "#/components/schemas/IncludeExcludeFilter"
+                          }
+                        ]
                       },
                       "jobTitle": {
-                        "$ref": "#/components/schemas/IncludeExcludeFilter"
+                        "description": "Matches the person's current role or job title.",
+                        "allOf": [
+                          {
+                            "$ref": "#/components/schemas/IncludeExcludeFilter"
+                          }
+                        ]
                       },
                       "school": {
-                        "$ref": "#/components/schemas/IncludeExcludeFilter"
+                        "description": "Matches a school name on the person's profile.",
+                        "allOf": [
+                          {
+                            "$ref": "#/components/schemas/IncludeExcludeFilter"
+                          }
+                        ]
                       },
                       "languages": {
-                        "$ref": "#/components/schemas/IncludeExcludeFilter"
+                        "description": "Matches a language name or code on the person's profile.",
+                        "allOf": [
+                          {
+                            "$ref": "#/components/schemas/IncludeExcludeFilter"
+                          }
+                        ]
                       },
                       "skills": {
-                        "$ref": "#/components/schemas/IncludeExcludeFilter"
+                        "description": "Matches a skill name on the person's profile.",
+                        "allOf": [
+                          {
+                            "$ref": "#/components/schemas/IncludeExcludeFilter"
+                          }
+                        ]
                       },
                       "location": {
-                        "$ref": "#/components/schemas/IncludeExcludeFilter"
+                        "description": "Matches the person or current-role location. Country names and ISO alpha-2 codes are accepted.",
+                        "allOf": [
+                          {
+                            "$ref": "#/components/schemas/IncludeExcludeFilter"
+                          }
+                        ]
                       },
                       "keyword": {
-                        "$ref": "#/components/schemas/IncludeExcludeFilter"
+                        "description": "Matches text on the person's profile.",
+                        "allOf": [
+                          {
+                            "$ref": "#/components/schemas/IncludeExcludeFilter"
+                          }
+                        ]
                       },
                       "currentCompanyName": {
-                        "$ref": "#/components/schemas/IncludeExcludeFilter"
+                        "description": "Matches the person's current company name.",
+                        "allOf": [
+                          {
+                            "$ref": "#/components/schemas/IncludeExcludeFilter"
+                          }
+                        ]
                       },
                       "companyDomain": {
-                        "$ref": "#/components/schemas/IncludeExcludeFilter"
+                        "description": "Matches a current company domain; URL input is normalized to its hostname. Values merge with companyLinkedinUrl into one current-company identifier filter.",
+                        "allOf": [
+                          {
+                            "$ref": "#/components/schemas/IncludeExcludeFilter"
+                          }
+                        ]
                       },
                       "companyLinkedinUrl": {
-                        "$ref": "#/components/schemas/IncludeExcludeFilter"
+                        "description": "Matches a current company profile URL or identifier. Values merge with companyDomain into one current-company identifier filter.",
+                        "allOf": [
+                          {
+                            "$ref": "#/components/schemas/IncludeExcludeFilter"
+                          }
+                        ]
                       },
                       "currentCompany.type": {
-                        "$ref": "#/components/schemas/IncludeExcludeFilter"
+                        "description": "Matches the current company type.",
+                        "allOf": [
+                          {
+                            "$ref": "#/components/schemas/IncludeExcludeFilter"
+                          }
+                        ]
                       },
                       "currentCompany.industry": {
-                        "$ref": "#/components/schemas/IncludeExcludeFilter"
+                        "description": "Matches the current company industry.",
+                        "allOf": [
+                          {
+                            "$ref": "#/components/schemas/IncludeExcludeFilter"
+                          }
+                        ]
                       },
                       "currentCompany.location": {
-                        "$ref": "#/components/schemas/IncludeExcludeFilter"
+                        "description": "Matches the current company headquarters location.",
+                        "allOf": [
+                          {
+                            "$ref": "#/components/schemas/IncludeExcludeFilter"
+                          }
+                        ]
                       },
                       "currentCompany.keyword": {
-                        "$ref": "#/components/schemas/IncludeExcludeFilter"
+                        "description": "Matches text on the current company profile.",
+                        "allOf": [
+                          {
+                            "$ref": "#/components/schemas/IncludeExcludeFilter"
+                          }
+                        ]
                       },
                       "pastJobTitle": {
-                        "$ref": "#/components/schemas/IncludeExcludeFilter"
+                        "description": "Matches a title in a previous position.",
+                        "allOf": [
+                          {
+                            "$ref": "#/components/schemas/IncludeExcludeFilter"
+                          }
+                        ]
                       },
                       "pastCompanyName": {
-                        "$ref": "#/components/schemas/IncludeExcludeFilter"
+                        "description": "Matches a previous company name.",
+                        "allOf": [
+                          {
+                            "$ref": "#/components/schemas/IncludeExcludeFilter"
+                          }
+                        ]
                       },
                       "pastCompanyId": {
-                        "$ref": "#/components/schemas/IncludeExcludeFilter"
+                        "description": "Matches a previous company identifier.",
+                        "allOf": [
+                          {
+                            "$ref": "#/components/schemas/IncludeExcludeFilter"
+                          }
+                        ]
                       },
                       "pastCompanyWebsite": {
-                        "$ref": "#/components/schemas/IncludeExcludeFilter"
+                        "description": "Matches a previous company website or domain.",
+                        "allOf": [
+                          {
+                            "$ref": "#/components/schemas/IncludeExcludeFilter"
+                          }
+                        ]
                       },
                       "pastCompanyUrn": {
-                        "$ref": "#/components/schemas/IncludeExcludeFilter"
+                        "description": "Matches a previous company URN.",
+                        "allOf": [
+                          {
+                            "$ref": "#/components/schemas/IncludeExcludeFilter"
+                          }
+                        ]
                       },
                       "pastCompany.type": {
-                        "$ref": "#/components/schemas/IncludeExcludeFilter"
+                        "description": "Matches a previous company type.",
+                        "allOf": [
+                          {
+                            "$ref": "#/components/schemas/IncludeExcludeFilter"
+                          }
+                        ]
                       },
                       "pastCompany.industry": {
-                        "$ref": "#/components/schemas/IncludeExcludeFilter"
+                        "description": "Matches a previous company industry.",
+                        "allOf": [
+                          {
+                            "$ref": "#/components/schemas/IncludeExcludeFilter"
+                          }
+                        ]
                       },
                       "pastCompany.location": {
-                        "$ref": "#/components/schemas/IncludeExcludeFilter"
+                        "description": "Matches a previous company headquarters location.",
+                        "allOf": [
+                          {
+                            "$ref": "#/components/schemas/IncludeExcludeFilter"
+                          }
+                        ]
                       },
                       "pastCompany.keyword": {
-                        "$ref": "#/components/schemas/IncludeExcludeFilter"
+                        "description": "Matches text on a previous company profile.",
+                        "allOf": [
+                          {
+                            "$ref": "#/components/schemas/IncludeExcludeFilter"
+                          }
+                        ]
                       },
                       "totalYearsOfExperience": {
-                        "$ref": "#/components/schemas/IntegerRangeFilter"
+                        "description": "Matches the person's total years of experience.",
+                        "allOf": [
+                          {
+                            "$ref": "#/components/schemas/IntegerRangeFilter"
+                          }
+                        ]
                       },
                       "timeInCurrentCompany": {
-                        "$ref": "#/components/schemas/IntegerRangeFilter"
+                        "description": "Matches years spent at the current company.",
+                        "allOf": [
+                          {
+                            "$ref": "#/components/schemas/IntegerRangeFilter"
+                          }
+                        ]
                       },
                       "currentCompany.headcount": {
-                        "$ref": "#/components/schemas/IntegerRangeFilter"
+                        "description": "Matches current company employee count.",
+                        "allOf": [
+                          {
+                            "$ref": "#/components/schemas/IntegerRangeFilter"
+                          }
+                        ]
                       },
                       "currentCompany.revenue": {
-                        "$ref": "#/components/schemas/IntegerRangeFilter"
+                        "description": "Matches current company revenue.",
+                        "allOf": [
+                          {
+                            "$ref": "#/components/schemas/IntegerRangeFilter"
+                          }
+                        ]
                       },
                       "pastCompany.headcount": {
-                        "$ref": "#/components/schemas/IntegerRangeFilter"
+                        "description": "Matches previous company employee count.",
+                        "allOf": [
+                          {
+                            "$ref": "#/components/schemas/IntegerRangeFilter"
+                          }
+                        ]
                       },
                       "pastCompany.revenue": {
-                        "$ref": "#/components/schemas/IntegerRangeFilter"
+                        "description": "Matches previous company revenue.",
+                        "allOf": [
+                          {
+                            "$ref": "#/components/schemas/IntegerRangeFilter"
+                          }
+                        ]
                       },
                       "currentCompany.headcountGrowth": {
-                        "$ref": "#/components/schemas/GrowthFilter"
+                        "description": "Matches current company headcount growth for a supported timespan.",
+                        "allOf": [
+                          {
+                            "$ref": "#/components/schemas/GrowthFilter"
+                          }
+                        ]
                       },
                       "pastCompany.headcountGrowth": {
-                        "$ref": "#/components/schemas/GrowthFilter"
+                        "description": "Matches previous company headcount growth for a supported timespan.",
+                        "allOf": [
+                          {
+                            "$ref": "#/components/schemas/GrowthFilter"
+                          }
+                        ]
                       }
                     }
                   },
@@ -2103,100 +2263,260 @@
                     "additionalProperties": false,
                     "properties": {
                       "firstname": {
-                        "$ref": "#/components/schemas/IncludeExcludeFilter"
+                        "description": "Matches a person's first name.",
+                        "allOf": [
+                          {
+                            "$ref": "#/components/schemas/IncludeExcludeFilter"
+                          }
+                        ]
                       },
                       "lastname": {
-                        "$ref": "#/components/schemas/IncludeExcludeFilter"
+                        "description": "Matches a person's last name.",
+                        "allOf": [
+                          {
+                            "$ref": "#/components/schemas/IncludeExcludeFilter"
+                          }
+                        ]
                       },
                       "jobTitle": {
-                        "$ref": "#/components/schemas/IncludeExcludeFilter"
+                        "description": "Matches the person's current role or job title.",
+                        "allOf": [
+                          {
+                            "$ref": "#/components/schemas/IncludeExcludeFilter"
+                          }
+                        ]
                       },
                       "school": {
-                        "$ref": "#/components/schemas/IncludeExcludeFilter"
+                        "description": "Matches a school name on the person's profile.",
+                        "allOf": [
+                          {
+                            "$ref": "#/components/schemas/IncludeExcludeFilter"
+                          }
+                        ]
                       },
                       "languages": {
-                        "$ref": "#/components/schemas/IncludeExcludeFilter"
+                        "description": "Matches a language name or code on the person's profile.",
+                        "allOf": [
+                          {
+                            "$ref": "#/components/schemas/IncludeExcludeFilter"
+                          }
+                        ]
                       },
                       "skills": {
-                        "$ref": "#/components/schemas/IncludeExcludeFilter"
+                        "description": "Matches a skill name on the person's profile.",
+                        "allOf": [
+                          {
+                            "$ref": "#/components/schemas/IncludeExcludeFilter"
+                          }
+                        ]
                       },
                       "location": {
-                        "$ref": "#/components/schemas/IncludeExcludeFilter"
+                        "description": "Matches the person or current-role location. Country names and ISO alpha-2 codes are accepted.",
+                        "allOf": [
+                          {
+                            "$ref": "#/components/schemas/IncludeExcludeFilter"
+                          }
+                        ]
                       },
                       "keyword": {
-                        "$ref": "#/components/schemas/IncludeExcludeFilter"
+                        "description": "Matches text on the person's profile.",
+                        "allOf": [
+                          {
+                            "$ref": "#/components/schemas/IncludeExcludeFilter"
+                          }
+                        ]
                       },
                       "currentCompanyName": {
-                        "$ref": "#/components/schemas/IncludeExcludeFilter"
+                        "description": "Matches the person's current company name.",
+                        "allOf": [
+                          {
+                            "$ref": "#/components/schemas/IncludeExcludeFilter"
+                          }
+                        ]
                       },
                       "companyDomain": {
-                        "$ref": "#/components/schemas/IncludeExcludeFilter"
+                        "description": "Matches a current company domain; URL input is normalized to its hostname. Values merge with companyLinkedinUrl into one current-company identifier filter.",
+                        "allOf": [
+                          {
+                            "$ref": "#/components/schemas/IncludeExcludeFilter"
+                          }
+                        ]
                       },
                       "companyLinkedinUrl": {
-                        "$ref": "#/components/schemas/IncludeExcludeFilter"
+                        "description": "Matches a current company profile URL or identifier. Values merge with companyDomain into one current-company identifier filter.",
+                        "allOf": [
+                          {
+                            "$ref": "#/components/schemas/IncludeExcludeFilter"
+                          }
+                        ]
                       },
                       "currentCompany.type": {
-                        "$ref": "#/components/schemas/IncludeExcludeFilter"
+                        "description": "Matches the current company type.",
+                        "allOf": [
+                          {
+                            "$ref": "#/components/schemas/IncludeExcludeFilter"
+                          }
+                        ]
                       },
                       "currentCompany.industry": {
-                        "$ref": "#/components/schemas/IncludeExcludeFilter"
+                        "description": "Matches the current company industry.",
+                        "allOf": [
+                          {
+                            "$ref": "#/components/schemas/IncludeExcludeFilter"
+                          }
+                        ]
                       },
                       "currentCompany.location": {
-                        "$ref": "#/components/schemas/IncludeExcludeFilter"
+                        "description": "Matches the current company headquarters location.",
+                        "allOf": [
+                          {
+                            "$ref": "#/components/schemas/IncludeExcludeFilter"
+                          }
+                        ]
                       },
                       "currentCompany.keyword": {
-                        "$ref": "#/components/schemas/IncludeExcludeFilter"
+                        "description": "Matches text on the current company profile.",
+                        "allOf": [
+                          {
+                            "$ref": "#/components/schemas/IncludeExcludeFilter"
+                          }
+                        ]
                       },
                       "pastJobTitle": {
-                        "$ref": "#/components/schemas/IncludeExcludeFilter"
+                        "description": "Matches a title in a previous position.",
+                        "allOf": [
+                          {
+                            "$ref": "#/components/schemas/IncludeExcludeFilter"
+                          }
+                        ]
                       },
                       "pastCompanyName": {
-                        "$ref": "#/components/schemas/IncludeExcludeFilter"
+                        "description": "Matches a previous company name.",
+                        "allOf": [
+                          {
+                            "$ref": "#/components/schemas/IncludeExcludeFilter"
+                          }
+                        ]
                       },
                       "pastCompanyId": {
-                        "$ref": "#/components/schemas/IncludeExcludeFilter"
+                        "description": "Matches a previous company identifier.",
+                        "allOf": [
+                          {
+                            "$ref": "#/components/schemas/IncludeExcludeFilter"
+                          }
+                        ]
                       },
                       "pastCompanyWebsite": {
-                        "$ref": "#/components/schemas/IncludeExcludeFilter"
+                        "description": "Matches a previous company website or domain.",
+                        "allOf": [
+                          {
+                            "$ref": "#/components/schemas/IncludeExcludeFilter"
+                          }
+                        ]
                       },
                       "pastCompanyUrn": {
-                        "$ref": "#/components/schemas/IncludeExcludeFilter"
+                        "description": "Matches a previous company URN.",
+                        "allOf": [
+                          {
+                            "$ref": "#/components/schemas/IncludeExcludeFilter"
+                          }
+                        ]
                       },
                       "pastCompany.type": {
-                        "$ref": "#/components/schemas/IncludeExcludeFilter"
+                        "description": "Matches a previous company type.",
+                        "allOf": [
+                          {
+                            "$ref": "#/components/schemas/IncludeExcludeFilter"
+                          }
+                        ]
                       },
                       "pastCompany.industry": {
-                        "$ref": "#/components/schemas/IncludeExcludeFilter"
+                        "description": "Matches a previous company industry.",
+                        "allOf": [
+                          {
+                            "$ref": "#/components/schemas/IncludeExcludeFilter"
+                          }
+                        ]
                       },
                       "pastCompany.location": {
-                        "$ref": "#/components/schemas/IncludeExcludeFilter"
+                        "description": "Matches a previous company headquarters location.",
+                        "allOf": [
+                          {
+                            "$ref": "#/components/schemas/IncludeExcludeFilter"
+                          }
+                        ]
                       },
                       "pastCompany.keyword": {
-                        "$ref": "#/components/schemas/IncludeExcludeFilter"
+                        "description": "Matches text on a previous company profile.",
+                        "allOf": [
+                          {
+                            "$ref": "#/components/schemas/IncludeExcludeFilter"
+                          }
+                        ]
                       },
                       "totalYearsOfExperience": {
-                        "$ref": "#/components/schemas/IntegerRangeFilter"
+                        "description": "Matches the person's total years of experience.",
+                        "allOf": [
+                          {
+                            "$ref": "#/components/schemas/IntegerRangeFilter"
+                          }
+                        ]
                       },
                       "timeInCurrentCompany": {
-                        "$ref": "#/components/schemas/IntegerRangeFilter"
+                        "description": "Matches years spent at the current company.",
+                        "allOf": [
+                          {
+                            "$ref": "#/components/schemas/IntegerRangeFilter"
+                          }
+                        ]
                       },
                       "currentCompany.headcount": {
-                        "$ref": "#/components/schemas/IntegerRangeFilter"
+                        "description": "Matches current company employee count.",
+                        "allOf": [
+                          {
+                            "$ref": "#/components/schemas/IntegerRangeFilter"
+                          }
+                        ]
                       },
                       "currentCompany.revenue": {
-                        "$ref": "#/components/schemas/IntegerRangeFilter"
+                        "description": "Matches current company revenue.",
+                        "allOf": [
+                          {
+                            "$ref": "#/components/schemas/IntegerRangeFilter"
+                          }
+                        ]
                       },
                       "pastCompany.headcount": {
-                        "$ref": "#/components/schemas/IntegerRangeFilter"
+                        "description": "Matches previous company employee count.",
+                        "allOf": [
+                          {
+                            "$ref": "#/components/schemas/IntegerRangeFilter"
+                          }
+                        ]
                       },
                       "pastCompany.revenue": {
-                        "$ref": "#/components/schemas/IntegerRangeFilter"
+                        "description": "Matches previous company revenue.",
+                        "allOf": [
+                          {
+                            "$ref": "#/components/schemas/IntegerRangeFilter"
+                          }
+                        ]
                       },
                       "currentCompany.headcountGrowth": {
-                        "$ref": "#/components/schemas/GrowthFilter"
+                        "description": "Matches current company headcount growth for a supported timespan.",
+                        "allOf": [
+                          {
+                            "$ref": "#/components/schemas/GrowthFilter"
+                          }
+                        ]
                       },
                       "pastCompany.headcountGrowth": {
-                        "$ref": "#/components/schemas/GrowthFilter"
+                        "description": "Matches previous company headcount growth for a supported timespan.",
+                        "allOf": [
+                          {
+                            "$ref": "#/components/schemas/GrowthFilter"
+                          }
+                        ]
                       }
                     }
                   }
@@ -2356,18 +2676,39 @@
                     "additionalProperties": false,
                     "properties": {
                       "country": {
-                        "$ref": "#/components/schemas/StringOrStringArray"
+                        "description": "Matches a recognized country name or ISO alpha-2 code.",
+                        "allOf": [
+                          {
+                            "$ref": "#/components/schemas/StringOrStringArray"
+                          }
+                        ]
                       },
                       "region": {
-                        "$ref": "#/components/schemas/StringOrStringArray"
+                        "description": "Matches a canonical region code, Region|Country value, or a region name scoped by country. Discover canonical values with GET /v1/find-companies/filter-values.",
+                        "allOf": [
+                          {
+                            "$ref": "#/components/schemas/StringOrStringArray"
+                          }
+                        ]
                       },
                       "city": {
-                        "$ref": "#/components/schemas/StringOrStringArray"
+                        "description": "Matches a resolvable city value. Discover accepted values with GET /v1/find-companies/filter-values.",
+                        "allOf": [
+                          {
+                            "$ref": "#/components/schemas/StringOrStringArray"
+                          }
+                        ]
                       },
                       "industry": {
-                        "$ref": "#/components/schemas/StringOrStringArray"
+                        "description": "Matches a canonical company industry. Discover accepted values with GET /v1/find-companies/filter-values.",
+                        "allOf": [
+                          {
+                            "$ref": "#/components/schemas/StringOrStringArray"
+                          }
+                        ]
                       },
                       "size": {
+                        "description": "Matches a fixed employee-count range.",
                         "oneOf": [
                           {
                             "type": "string",
@@ -2402,6 +2743,7 @@
                         ]
                       },
                       "revenue": {
+                        "description": "Matches a fixed company revenue range.",
                         "oneOf": [
                           {
                             "type": "string",
@@ -2448,6 +2790,7 @@
                         ]
                       },
                       "age": {
+                        "description": "Matches a fixed company age range.",
                         "oneOf": [
                           {
                             "type": "string",
@@ -2476,15 +2819,31 @@
                         ]
                       },
                       "techStack": {
-                        "$ref": "#/components/schemas/StringOrStringArray"
+                        "description": "Matches a technology used by the company. Discover accepted values with GET /v1/find-companies/filter-values.",
+                        "allOf": [
+                          {
+                            "$ref": "#/components/schemas/StringOrStringArray"
+                          }
+                        ]
                       },
                       "keywords": {
-                        "$ref": "#/components/schemas/StringOrStringArray"
+                        "description": "Matches text found on the company website.",
+                        "allOf": [
+                          {
+                            "$ref": "#/components/schemas/StringOrStringArray"
+                          }
+                        ]
                       },
                       "topics": {
-                        "$ref": "#/components/schemas/StringOrStringArray"
+                        "description": "Matches a canonical business-intent topic. Discover accepted values with GET /v1/find-companies/filter-values.",
+                        "allOf": [
+                          {
+                            "$ref": "#/components/schemas/StringOrStringArray"
+                          }
+                        ]
                       },
                       "events": {
+                        "description": "Matches a fixed recent company event.",
                         "oneOf": [
                           {
                             "type": "string",
@@ -2583,6 +2942,7 @@
                         ]
                       },
                       "locations": {
+                        "description": "Matches a fixed range for the number of company locations.",
                         "oneOf": [
                           {
                             "type": "string",
@@ -2615,22 +2975,51 @@
                         ]
                       },
                       "companyName": {
-                        "$ref": "#/components/schemas/StringOrStringArray"
+                        "description": "Matches the company name.",
+                        "allOf": [
+                          {
+                            "$ref": "#/components/schemas/StringOrStringArray"
+                          }
+                        ]
                       },
                       "eventWindow": {
-                        "type": "string",
-                        "enum": [
-                          "30 days",
-                          "60 days",
-                          "90 days"
+                        "description": "Sets the recent-event window. Null or blank values use the default 30 days.",
+                        "oneOf": [
+                          {
+                            "type": "string",
+                            "enum": [
+                              "30 days",
+                              "60 days",
+                              "90 days"
+                            ]
+                          },
+                          {
+                            "type": "null"
+                          },
+                          {
+                            "type": "string",
+                            "pattern": "^\\s*$"
+                          }
                         ],
                         "default": "30 days"
                       },
                       "locationMatch": {
-                        "type": "string",
-                        "enum": [
-                          "hqOnly",
-                          "hqOperating"
+                        "description": "Controls whether location filters match headquarters only or headquarters and operating locations. Null or blank values use the default hqOnly.",
+                        "oneOf": [
+                          {
+                            "type": "string",
+                            "enum": [
+                              "hqOnly",
+                              "hqOperating"
+                            ]
+                          },
+                          {
+                            "type": "null"
+                          },
+                          {
+                            "type": "string",
+                            "pattern": "^\\s*$"
+                          }
                         ],
                         "default": "hqOnly"
                       },
@@ -2638,13 +3027,15 @@
                         "type": [
                           "boolean",
                           "null"
-                        ]
+                        ],
+                        "description": "Matches companies by whether a website is present; null leaves this criterion unset."
                       },
                       "isPublicCompany": {
                         "type": [
                           "boolean",
                           "null"
-                        ]
+                        ],
+                        "description": "Matches companies by public-company status; null leaves this criterion unset."
                       }
                     },
                     "anyOf": [
@@ -2736,14 +3127,32 @@
                     ]
                   },
                   "page": {
-                    "type": "integer",
-                    "minimum": 0,
+                    "description": "A zero-based page supplied as an integer JSON number or one of the equivalent canonical decimal strings. OpenAPI intentionally uses canonical decimal strings even though runtime Number() accepts additional spellings.",
+                    "oneOf": [
+                      {
+                        "type": "integer",
+                        "minimum": 0
+                      },
+                      {
+                        "type": "string",
+                        "pattern": "^(?:0|[1-9][0-9]*)$"
+                      }
+                    ],
                     "default": 0
                   },
                   "size": {
-                    "type": "integer",
-                    "minimum": 1,
-                    "maximum": 100,
+                    "description": "A page size from 1 through 100 supplied as an integer JSON number or one of the equivalent canonical decimal strings. OpenAPI intentionally uses canonical decimal strings even though runtime Number() accepts additional spellings.",
+                    "oneOf": [
+                      {
+                        "type": "integer",
+                        "minimum": 1,
+                        "maximum": 100
+                      },
+                      {
+                        "type": "string",
+                        "pattern": "^(?:[1-9]|[1-9][0-9]|100)$"
+                      }
+                    ],
                     "default": 50
                   },
                   "cursor": {
@@ -2821,8 +3230,8 @@
                       "rows": [
                         {
                           "name": "Example Company",
-                          "domain": "example.test",
-                          "website": "https://www.example.test",
+                          "domain": "example.com",
+                          "website": "https://example.com",
                           "countryName": "Example Country",
                           "cityName": "Example City"
                         }
@@ -2944,22 +3353,20 @@
             "name": "q",
             "in": "query",
             "required": false,
-            "description": "At least one of q or query is required. This alias supplies the search text.",
+            "description": "At least one of q or query is required and must contain 2 to 120 characters after trimming. When q is present it is read first; a blank q suppresses query and returns 400.",
             "schema": {
               "type": "string",
-              "minLength": 2,
-              "maxLength": 120
+              "pattern": "^\\s*\\S[\\s\\S]{0,118}\\S\\s*$"
             }
           },
           {
             "name": "query",
             "in": "query",
             "required": false,
-            "description": "At least one of q or query is required. This alias supplies the search text.",
+            "description": "At least one of q or query is required and must contain 2 to 120 characters after trimming. query is used only when q is absent.",
             "schema": {
               "type": "string",
-              "minLength": 2,
-              "maxLength": 120
+              "pattern": "^\\s*\\S[\\s\\S]{0,118}\\S\\s*$"
             }
           },
           {
@@ -3230,26 +3637,35 @@
                     "type": "object",
                     "propertyNames": {
                       "minLength": 1,
-                      "pattern": "\\S"
+                      "pattern": "\\S",
+                      "not": {
+                        "enum": [
+                          "status",
+                          "response",
+                          "reasoning",
+                          "sources",
+                          "confidence_score",
+                          "certainty_tag",
+                          "duration_ms"
+                        ]
+                      }
                     },
                     "additionalProperties": {
                       "type": "string",
                       "minLength": 1,
                       "pattern": "\\S"
                     },
-                    "description": "Maps arbitrary requested output names to non-empty type keywords or plain-language descriptions."
+                    "description": "Maps arbitrary requested output names to non-empty type keywords or plain-language descriptions. Stable envelope names are reserved because dynamic requested fields must not collide with status, response, reasoning, sources, confidence_score, certainty_tag, or duration_ms."
                   }
                 }
               },
               "examples": {
                 "structuredResearch": {
-                  "summary": "Research a reserved example domain",
+                  "summary": "Research the documented Airscale origin",
                   "value": {
-                    "prompt": "Summarize the public product description on https://example.com.",
+                    "prompt": "What category does Airscale use to describe its service at https://airscale.io?",
                     "schema": {
-                      "company_name": "string",
-                      "website": "url",
-                      "summary": "Short product summary"
+                      "category": "string"
                     }
                   }
                 }
@@ -3298,7 +3714,8 @@
                       "type": "array",
                       "items": {
                         "type": "string",
-                        "format": "uri"
+                        "minLength": 1,
+                        "description": "A public source URL or source label such as serp_snippets."
                       }
                     },
                     "confidence_score": {
@@ -3331,15 +3748,14 @@
                     "summary": "Synthetic successful research",
                     "value": {
                       "status": "success",
-                      "response": "Example Company publishes a synthetic product description.",
-                      "company_name": "Example Company",
-                      "website": "https://example.com",
-                      "summary": "A synthetic product summary.",
-                      "reasoning": "The reserved example page directly supports the summary.",
+                      "response": "Airscale is a sales data enrichment platform.",
+                      "category": "sales data enrichment platform",
+                      "reasoning": "The web page and public search snippets agree.",
                       "sources": [
-                        "https://example.com"
+                        "https://airscale.io",
+                        "serp_snippets"
                       ],
-                      "confidence_score": 0.94,
+                      "confidence_score": 0.92,
                       "certainty_tag": "high",
                       "duration_ms": 8420
                     }
@@ -3349,9 +3765,7 @@
                     "value": {
                       "status": "not_found",
                       "response": "No relevant information found.",
-                      "company_name": null,
-                      "website": null,
-                      "summary": null,
+                      "category": null,
                       "reasoning": null,
                       "sources": [],
                       "confidence_score": 0.1,
@@ -3364,9 +3778,7 @@
                     "value": {
                       "status": "timeout",
                       "response": "No relevant information found.",
-                      "company_name": null,
-                      "website": null,
-                      "summary": null,
+                      "category": null,
                       "reasoning": null,
                       "sources": [],
                       "confidence_score": 0,
@@ -3485,22 +3897,21 @@
       },
       "IncludeExcludeFilter": {
         "type": "object",
+        "description": "Use include, exclude, or both. Empty arrays and empty string values are accepted by the runtime, but meaningful non-empty values are recommended.",
         "additionalProperties": false,
         "properties": {
           "include": {
             "type": "array",
             "maxItems": 200,
             "items": {
-              "type": "string",
-              "minLength": 1
+              "type": "string"
             }
           },
           "exclude": {
             "type": "array",
             "maxItems": 200,
             "items": {
-              "type": "string",
-              "minLength": 1
+              "type": "string"
             }
           }
         },
@@ -3539,6 +3950,7 @@
       "GrowthFilter": {
         "type": "object",
         "description": "Headcount growth bounds for one supported timespan. When both bounds are present, min must be less than or equal to max.",
+        "x-airscale-runtime-constraint": "When both are present, min must be less than or equal to max.",
         "additionalProperties": false,
         "required": [
           "timespan"

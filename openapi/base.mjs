@@ -32,17 +32,18 @@ export const baseSpec = {
       },
       IncludeExcludeFilter: {
         type: "object",
+        description: "Use include, exclude, or both. Empty arrays and empty string values are accepted by the runtime, but meaningful non-empty values are recommended.",
         additionalProperties: false,
         properties: {
           include: {
             type: "array",
             maxItems: 200,
-            items: { type: "string", minLength: 1 }
+            items: { type: "string" }
           },
           exclude: {
             type: "array",
             maxItems: 200,
-            items: { type: "string", minLength: 1 }
+            items: { type: "string" }
           }
         },
         anyOf: [{ required: ["include"] }, { required: ["exclude"] }]
@@ -61,6 +62,7 @@ export const baseSpec = {
       GrowthFilter: {
         type: "object",
         description: "Headcount growth bounds for one supported timespan. When both bounds are present, min must be less than or equal to max.",
+        "x-airscale-runtime-constraint": "When both are present, min must be less than or equal to max.",
         additionalProperties: false,
         required: ["timespan"],
         properties: {
