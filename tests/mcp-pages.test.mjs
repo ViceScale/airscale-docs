@@ -582,3 +582,63 @@ test("synthetic-data policy rejects mixed pages with a real identity or phone nu
     /Satya Nadella must be explicitly synthetic/
   );
 });
+
+test("agent resources distinguish the operational product server from the documentation MCP", () => {
+  const path = "mcp/agent-resources";
+  const { body, frontmatter } = readPage(path);
+  assert.deepEqual(frontmatter, {
+    title: "Agent resources",
+    description: "Find the human-readable and machine-readable Airscale references intended for AI agents.",
+    canonical: "https://airscale.mintlify.app/mcp/agent-resources"
+  });
+  assert.match(body.trimStart(), /^<Columns cols=\{2\}>/);
+  const [operationalCard, documentationCard] = directColumnBodies(body, path);
+  assert.match(operationalCard, /authenticated product server/i);
+  assert.match(operationalCard, /https:\/\/mcp\.airscale\.io\/mcp/);
+  assert.match(operationalCard, /spend Airscale credits/i);
+  assert.match(documentationCard, /read-only documentation/i);
+  assert.match(documentationCard, /https:\/\/airscale\.mintlify\.app\/mcp/);
+  assert.match(documentationCard, /does not execute Airscale product tools/i);
+
+  const resourcePaths = [
+    "https://airscale.mintlify.app/openapi.json",
+    "https://airscale.mintlify.app/mcp-tools.json",
+    "https://airscale.mintlify.app/llms.txt",
+    "https://airscale.mintlify.app/llms-full.txt",
+    "https://airscale.mintlify.app/mcp/agent-resources.md",
+    "https://airscale.mintlify.app/skill.md",
+    "https://airscale.mintlify.app/.well-known/agent-skills/index.json",
+    "https://airscale.mintlify.app/.well-known/api-catalog",
+    "https://airscale.mintlify.app/.well-known/mcp/server-card.json",
+    "https://airscale.mintlify.app/.well-known/agent-card.json"
+  ];
+  assertOrdered(body, ["## Machine-readable resources", ...resourcePaths, "## Connect the documentation MCP"], path);
+  assert.match(body, /Accept: text\/markdown/);
+  assert.match(body, /Documentation MCP server card[\s\S]{0,220}Mintlify automatically serves/i);
+
+  const connectionSection = body.slice(body.indexOf("## Connect the documentation MCP"));
+  assert.match(connectionSection, /https:\/\/airscale\.mintlify\.app\/mcp/);
+  assert.match(connectionSection, /Claude Code/);
+  assert.match(connectionSection, /Codex/);
+  assert.doesNotMatch(connectionSection, /https:\/\/mcp\.airscale\.io\/mcp/);
+  assert.doesNotMatch(connectionSection, /AIRSCALE_API_KEY|YOUR_API_KEY|Authorization\s*:\s*Bearer/i);
+});
+
+test("custom agent files preserve the preview and noindex trust boundary", () => {
+  const paths = [
+    "llms.txt",
+    "llms-full.txt",
+    "skill.md",
+    ".well-known/api-catalog",
+    ".well-known/agent-card.json"
+  ];
+  for (const path of paths) {
+    assert.ok(existsSync(path), `${path} must exist`);
+    const source = readFileSync(path, "utf8");
+    assert.doesNotMatch(source, /https:\/\/docs\.airscale\.io/i);
+    assertNoStaticCredentials(source, path);
+  }
+  const config = JSON.parse(readFileSync("docs.json", "utf8"));
+  assert.equal(config.seo.indexing, "navigable");
+  assert.equal(config.seo.metatags.robots, "noindex, follow");
+});

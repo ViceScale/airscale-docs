@@ -797,7 +797,7 @@ function readJournal(journalPath, targetPaths, io, label = "transaction journal"
     journal?.version !== JOURNAL_VERSION
     || typeof journal.committed !== "boolean"
     || !Array.isArray(journal.entries)
-    || journal.entries.length !== 2
+    || journal.entries.length !== targetPaths.length
   ) {
     throw new Error(`${label} has an unsupported shape`);
   }
@@ -889,10 +889,10 @@ function cleanUnpublishedJournalStage(targetPaths, journalPath, io, recoverableT
     );
   }
   const temporaryCandidates = targetPaths.map((targetPath) => transactionArtifactCandidates(targetPath, ".tmp", io));
-  const hasExactCompletePair = temporaryCandidates.every((candidates) => (
+  const hasExactCompleteSet = temporaryCandidates.every((candidates) => (
     candidates.length === 1 && candidates[0].token === token
   ));
-  if (!hasExactCompletePair) {
+  if (!hasExactCompleteSet) {
     throw new GeneratedPairTransactionError(
       [],
       "MCP output transaction recovery was incomplete; staged journal had incomplete or mismatched temporary evidence"
@@ -972,7 +972,7 @@ function cleanUnpublishedJournalStage(targetPaths, journalPath, io, recoverableT
   }
 }
 
-function cleanUnpublishedTemporaryPair(targetPaths, io, recoverableTransactionTokens) {
+function cleanUnpublishedTemporarySet(targetPaths, io, recoverableTransactionTokens) {
   const temporaryCandidates = targetPaths.map((targetPath) => transactionArtifactCandidates(targetPath, ".tmp", io));
   const backupCandidates = targetPaths.flatMap((targetPath) => transactionArtifactCandidates(targetPath, ".bak", io));
   if (temporaryCandidates.every((candidates) => candidates.length === 0) && backupCandidates.length === 0) return;
@@ -982,12 +982,12 @@ function cleanUnpublishedTemporaryPair(targetPaths, io, recoverableTransactionTo
       "MCP output transaction recovery was incomplete; pre-journal backups were preserved"
     );
   }
-  // Without a journal, ownership is established only by a complete pair whose
+  // Without a journal, ownership is established only by a complete output set whose
   // exact target-derived names carry the same strict token. A sole or
   // mismatched temporary file may belong to another process, so preserve it.
-  const completePair = temporaryCandidates.every((candidates) => candidates.length === 1)
+  const completeSet = temporaryCandidates.every((candidates) => candidates.length === 1)
     && new Set(temporaryCandidates.map(([candidate]) => candidate.token)).size === 1;
-  if (!completePair) {
+  if (!completeSet) {
     throw new GeneratedPairTransactionError(
       [],
       "MCP output transaction recovery was incomplete; ambiguous pre-journal temporary artifacts were preserved"
@@ -1052,7 +1052,7 @@ export function recoverGeneratedPair(targetPaths, io, { recoverableTransactionTo
   }
   cleanUnpublishedJournalStage(targetPaths, journalPath, io, recoverableTransactionTokens);
   if (!lstatIfPresent(journalPath, io)) {
-    cleanUnpublishedTemporaryPair(targetPaths, io, recoverableTransactionTokens);
+    cleanUnpublishedTemporarySet(targetPaths, io, recoverableTransactionTokens);
     return;
   }
 
@@ -1117,9 +1117,9 @@ export function recoverGeneratedPair(targetPaths, io, { recoverableTransactionTo
     throw new GeneratedPairTransactionError([error], `MCP output transaction recovery was incomplete: ${error.message}`);
   }
 
-  // Two output paths cannot switch in one filesystem atomic operation. The
+  // Multiple output paths cannot switch in one filesystem atomic operation. The
   // durable journal makes the observable intermediate states deterministic:
-  // a later writer rolls back unless both temporary files were installed,
+  // a later writer rolls back unless all temporary files were installed,
   // while --check always fails closed and never attempts recovery.
   const recoveryErrors = [];
 
@@ -1310,16 +1310,15 @@ function writeGeneratedPairLocked(outputs, { io, transactionToken, transactionPh
     transactionPhaseHook?.("backup");
     assertGeneratedPairWriterLock(writerLock, targetPaths, io);
 
-    io.renameSync(entries[0].temporaryPath, entries[0].targetPath);
-    assertRegularArtifact(entries[0].targetPath, "installed transaction output", io, { required: true });
-    fsyncDirectories([entries[0].targetPath], io);
-    transactionPhaseHook?.("first-install");
-    assertGeneratedPairWriterLock(writerLock, targetPaths, io);
-    assertInstalledEntryIdentities(entries.slice(0, 1), io);
-
-    io.renameSync(entries[1].temporaryPath, entries[1].targetPath);
-    assertRegularArtifact(entries[1].targetPath, "installed transaction output", io, { required: true });
-    fsyncDirectories([entries[1].targetPath], io);
+    for (const [index, entry] of entries.entries()) {
+      io.renameSync(entry.temporaryPath, entry.targetPath);
+      assertRegularArtifact(entry.targetPath, "installed transaction output", io, { required: true });
+      fsyncDirectories([entry.targetPath], io);
+      if (index === 0) transactionPhaseHook?.("first-install");
+      else if (entries.length > 2) transactionPhaseHook?.(`install-${index + 1}`);
+      assertGeneratedPairWriterLock(writerLock, targetPaths, io);
+      assertInstalledEntryIdentities(entries.slice(0, index + 1), io);
+    }
     assertInstalledEntryIdentities(entries, io);
     const journalUpdatePath = `${journalPath}.next`;
     io.writeFileSync(
@@ -1440,7 +1439,23 @@ function writeGeneratedPairLocked(outputs, { io, transactionToken, transactionPh
   finishJournal(entries, journalPath, journalIdentity, null, io);
 }
 
-export function writeGeneratedPair(outputs, options) {
+export function writeGeneratedSet(outputs, options) {
+  if (!Array.isArray(outputs) || outputs.length < 2) {
+    throw new GeneratedPairTransactionError([], "generated output transactions require at least two outputs");
+  }
+  if (outputs.some((output) => (
+    !output
+    || typeof output !== "object"
+    || typeof output.targetPath !== "string"
+    || output.targetPath.length === 0
+    || typeof output.contents !== "string"
+  ))) {
+    throw new GeneratedPairTransactionError([], "generated output transactions require string target paths and contents");
+  }
+  const distinctTargets = new Set(outputs.map(({ targetPath }) => targetPath));
+  if (distinctTargets.size !== outputs.length) {
+    throw new GeneratedPairTransactionError([], "generated output transaction targets must be distinct");
+  }
   const { io, transactionToken, writerLock = null } = options;
   const targetPaths = outputs.map(({ targetPath }) => targetPath);
   if (writerLock && writerLock.transactionToken !== transactionToken) {
@@ -1471,4 +1486,8 @@ export function writeGeneratedPair(outputs, options) {
       }
     }
   }
+}
+
+export function writeGeneratedPair(outputs, options) {
+  return writeGeneratedSet(outputs, options);
 }

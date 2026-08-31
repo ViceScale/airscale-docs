@@ -12,7 +12,9 @@
     "openapi:build": "node scripts/build-openapi.mjs --write",
     "openapi:check": "node scripts/build-openapi.mjs --check",
     "mcp:build": "node scripts/build-mcp-catalog.mjs --write",
-    "mcp:check": "node scripts/build-mcp-catalog.mjs --check"
+    "mcp:check": "node scripts/build-mcp-catalog.mjs --check",
+    "agents:build": "node scripts/build-agent-files.mjs --write",
+    "agents:check": "node scripts/build-agent-files.mjs --check"
   },
   "dependencies": {
     "@xmldom/xmldom": "0.9.12"
