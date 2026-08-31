@@ -65,6 +65,35 @@ function moduleOperation(method, path) {
   return searchDiscoveryOperations.find((entry) => entry.method === method && entry.path === path)?.operation;
 }
 
+const MINT_CODE_SAMPLE_LANGUAGE_KEYS = new Map([
+  ["bash", "bash"],
+  ["curl", "bash"],
+  ["javascript", "javascript"],
+  ["js", "javascript"],
+  ["node", "node"],
+  ["nodejs", "node"],
+  ["node.js", "node"],
+  ["python", "python"],
+  ["py", "python"]
+]);
+
+function mintCodeSampleLanguageKey(language) {
+  return MINT_CODE_SAMPLE_LANGUAGE_KEYS.get(language.toLowerCase()) ?? language.toLowerCase();
+}
+
+function authoredSamplesByMintSelector(operation, selectorLanguages) {
+  const samples = operation["x-codeSamples"].map((sample) => ({
+    ...sample,
+    mintLanguageKey: mintCodeSampleLanguageKey(sample.lang)
+  }));
+  return Object.fromEntries(selectorLanguages.map((selectorLanguage) => [
+    selectorLanguage,
+    samples
+      .filter((sample) => sample.mintLanguageKey === mintCodeSampleLanguageKey(selectorLanguage))
+      .map((sample) => sample.label)
+  ]));
+}
+
 function operationFromSpec(spec, method, path) {
   return spec.paths[path]?.[method.toLowerCase()];
 }
@@ -1382,6 +1411,7 @@ test("Company Filter-values models alias coercion and public option metadata", (
   const operation = moduleOperation("GET", "/v1/find-companies/filter-values");
   assert.ok(operation, "missing GET /v1/find-companies/filter-values");
   const parameters = Object.fromEntries(operation.parameters.map((parameter) => [parameter.name, parameter]));
+  const docsConfig = JSON.parse(readFileSync("docs.json", "utf8"));
 
   assert.equal(operation.operationId, "listFindCompanyFilterValues");
   assert.deepEqual(operation.tags, ["Search and discovery"]);
@@ -1390,10 +1420,19 @@ test("Company Filter-values models alias coercion and public option metadata", (
   assertPublicOperationMetadata(operation);
   assert.equal(operation.requestBody, undefined);
   assert.deepEqual(
+    authoredSamplesByMintSelector(operation, docsConfig.api.examples.languages),
+    {
+      curl: ["cURL"],
+      node: ["Node.js"],
+      python: ["Python"]
+    },
+    "every configured Mint selector must consume its authored sample instead of autogenerating a fallback"
+  );
+  assert.deepEqual(
     operation["x-codeSamples"]?.map(({ label, lang }) => ({ label, lang })),
     [
       { label: "cURL", lang: "bash" },
-      { label: "Node.js", lang: "javascript" },
+      { label: "Node.js", lang: "node" },
       { label: "Python", lang: "python" }
     ]
   );

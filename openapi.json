@@ -3349,7 +3349,7 @@
           },
           {
             "label": "Node.js",
-            "lang": "javascript",
+            "lang": "node",
             "source": "const url = new URL(\"https://api.airscale.io/v1/find-companies/filter-values\");\nurl.searchParams.set(\"filter\", \"industry\");\nurl.searchParams.set(\"q\", \"example\");\n\nconst response = await fetch(url, {\n  headers: {\n    Authorization: `Bearer ${process.env.AIRSCALE_API_KEY}`\n  }\n});\nconst data = await response.json();\nconsole.log(data);"
           },
           {

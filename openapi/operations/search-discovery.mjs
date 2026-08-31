@@ -651,7 +651,7 @@ export const searchDiscoveryOperations = [
         },
         {
           label: "Node.js",
-          lang: "javascript",
+          lang: "node",
           source: [
             'const url = new URL("https://api.airscale.io/v1/find-companies/filter-values");',
             'url.searchParams.set("filter", "industry");',
