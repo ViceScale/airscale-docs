@@ -2,161 +2,19 @@
 title: "Company profile"
 description: "Extract a structured company profile from a company profile URL."
 canonical: "https://airscale.mintlify.app/api-reference/extract-company-profile"
+openapi: "/openapi.json POST /v1/company"
 ---
 
-Submit a company or school profile URL and receive normalized organization, headcount, location, and industry data.
+Extract a structured organization profile from a recognized LinkedIn `/company/` or `/school/` URL.
 
-<Badge color="blue">POST</Badge> `/v1/company`
+<Note>
+The limit is 3,000 requests per minute per workspace. The submitted URL selects the response schema and successful-call credit cost: `/company/` and `/school/` successes cost 0.5 credits, while `/in/` successes cost 1 credit by default. Workspace-specific pricing can differ, and unsuccessful requests are not charged.
+</Note>
 
-| Property | Value |
-| --- | --- |
-| Method | `POST` |
-| Endpoint | `https://api.airscale.io/v1/company` |
-| Execution | Synchronous |
-| Authentication | Bearer API key |
-| Rate limit | 3,000 requests per minute per workspace |
-| Request body limit | 256 KiB |
-| Airscale credit cost | URL-selected: `/in/` successes cost 1 credit by default (workspace-specific pricing may differ); `/company/` or `/school/` successes cost 0.5 credits; unsuccessful requests are not charged. |
+The optional modes are `p1`, `p2`, and `p3`. Omit `mode` for the default extraction workflow, whose successful shape can vary; use `p2` or `p3` when you need the normalized schema. The submitted URL, not the route name, selects company versus person output.
 
-## Request
-
-| Field | Type | Required | Description |
-| --- | --- | --- | --- |
-| `linkedin_profile_url` | string | Yes | Recognized LinkedIn `/in/`, `/company/`, or `/school/` profile URL. The submitted URL determines the response schema and successful-call credit cost; use `/company/` or `/school/` for the organization schema shown on this page. |
-| `mode` | string | No | Extraction mode. Allowed values are `p1`, `p2`, or `p3`; omit it to use the default extraction workflow. |
-
-The URL is trimmed before validation. URLs without a scheme are accepted, and recognized LinkedIn URLs are normalized to `https://www.linkedin.com/{type}/{slug}`. Query strings and path content after the profile slug are not included in the canonical URL.
-
-Omit `mode` to use the default behavior. Its response shape follows the successful extraction mode and may vary. Set `mode` to `p2` or `p3` to request the normalized schema documented below.
-
-```json
-{
-  "linkedin_profile_url": "https://www.linkedin.com/company/example-company-000000",
-  "mode": "p3"
-}
-```
-
-## Response
-
-Response shape follows the successful extraction mode. The detailed example and field table below show the normalized schema returned when `p2` or `p3` succeeds. A successful `p1` response remains a top-level object but may use different field names. Omitting `mode` invokes the default behavior, whose successful shape can therefore vary.
-
-A successful normalized extraction returns `200 OK` with the company profile object at the top level:
-
-```json
-{
-  "url": "https://www.linkedin.com/company/example-company-000000",
-  "name": "Example Company",
-  "universalName": "example-company-000000",
-  "type": "Privately Held",
-  "objectUrn": 100000000,
-  "description": "Builds example products for software teams.",
-  "phone": "+12025550147",
-  "followers": null,
-  "website": "https://example.com",
-  "logo": "https://cdn.example.com/companies/example-company.png",
-  "tagline": "Example products for modern teams",
-  "foundedYear": 2024,
-  "staff": {
-    "total": 42,
-    "range": null
-  },
-  "locations": {
-    "headquarter": {
-      "country": "United States",
-      "geographicArea": "CA",
-      "city": "Example City",
-      "postalCode": "00000",
-      "line1": "1 Example Street",
-      "line2": null,
-      "isPrimary": true
-    },
-    "other": []
-  },
-  "fundingData": null,
-  "specialities": ["Example software"],
-  "industries": ["Software Development"],
-  "hashtags": ["example"]
-}
-```
-
-| Field | Type | Description |
-| --- | --- | --- |
-| `url` | string or null | Canonical company or school profile URL. |
-| `name` | string or null | Organization name. |
-| `universalName` | string or null | Public organization slug when available. |
-| `description` | string or null | Organization description. |
-| `website` | string or null | Organization website. |
-| `foundedYear` | number or null | Founding year when available. |
-| `staff` | object | Staff total and size range. |
-| `locations` | object | Headquarters and other normalized locations. |
-| `industries` | array or null | Industry labels. |
-| `specialities` | array or null | Organization specialties, using the response field's source spelling. |
-
-The submitted recognized profile URL determines the response schema on either profile route. A `/company/` or `/school/` URL uses the organization fields shown above. An `/in/` URL uses the [People profile](/api-reference/extract-people-profile) response schema instead, even when the request is sent to `/v1/company`. The URL type also determines the credit cost for a successful call.
-
-The endpoint returns errors rather than a `200 OK` no-result envelope when the submitted profile cannot be extracted. These unsuccessful requests are not charged.
-
-## Errors
-
-| Status | Cause | Recovery |
-| --- | --- | --- |
-| `400 Bad Request` | The JSON is invalid, `linkedin_profile_url` is missing or malformed, `mode` is not `p1`, `p2`, or `p3`, or the upstream source identifies an invalid profile. | Send valid JSON with a recognized LinkedIn `/in/`, `/company/`, or `/school/` URL, choosing the URL type for the response schema you need. |
-| `401 Unauthorized` | The Bearer token is missing or invalid. | Add the current workspace API key to the `Authorization` header. |
-| `403 Forbidden` | The workspace cannot cover the successful-call cost selected by the submitted URL type. | Add enough credits for the selected URL type, then retry the request. |
-| `404 Not Found` | The profile could not be extracted after the available lookup paths completed. | Confirm that the public profile URL is current and uses the intended profile type. |
-| `413 Content Too Large` | The request body exceeds 256 KiB. | Remove unrelated fields and resend the request. |
-| `429 Too Many Requests` | The workspace reached 3,000 requests in the current minute. | Retry after the minute window with bounded exponential backoff. |
-| `502 Bad Gateway` | API-key validation or upstream configuration is temporarily unavailable. | Confirm the API key, then retry with bounded backoff. |
-| `503 Service Unavailable` | The selected extraction path or credit settlement service is temporarily unavailable. | Retry the same URL with bounded backoff; omit `mode` if you do not require a specific mode. |
-| `500 Internal Server Error` | An unexpected worker error occurred. | Retry once with bounded backoff, then contact support with the timestamp. |
-
-## Examples
-
-<CodeGroup>
-```bash cURL
-curl --request POST \
-  --url https://api.airscale.io/v1/company \
-  --header "Authorization: Bearer $AIRSCALE_API_KEY" \
-  --header "Content-Type: application/json" \
-  --data '{"linkedin_profile_url":"https://www.linkedin.com/company/example-company-000000","mode":"p3"}'
-```
-
-```python Python
-import os
-import requests
-
-response = requests.post(
-    "https://api.airscale.io/v1/company",
-    headers={"Authorization": f"Bearer {os.environ['AIRSCALE_API_KEY']}"},
-    json={
-        "linkedin_profile_url": "https://www.linkedin.com/company/example-company-000000",
-        "mode": "p3",
-    },
-    timeout=60,
-)
-response.raise_for_status()
-print(response.json())
-```
-
-```javascript Node.js
-const apiKey = process.env.AIRSCALE_API_KEY;
-const response = await fetch("https://api.airscale.io/v1/company", {
-  method: "POST",
-  headers: {
-    Authorization: `Bearer ${apiKey}`,
-    "Content-Type": "application/json",
-  },
-  body: JSON.stringify({
-    linkedin_profile_url: "https://www.linkedin.com/company/example-company-000000",
-    mode: "p3",
-  }),
-});
-
-if (!response.ok) throw new Error(`Company extraction failed with HTTP ${response.status}`);
-console.log(await response.json());
-```
-</CodeGroup>
+Extraction failures return an error rather than a `200 OK` no-result envelope. Retry transient extraction or settlement failures with bounded backoff, and omit `mode` if you do not require a specific mode.
 
 ## Next step
 
-Use [Reverse email](/api-reference/reverse-email) when an email address is the identifier you have for a person.
+Use [People profile](/api-reference/extract-people-profile) for the person-focused guidance, or [Find companies](/api-reference/find-companies) to discover organizations first.

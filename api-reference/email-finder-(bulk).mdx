@@ -2,193 +2,23 @@
 title: "Bulk email finder"
 description: "Find professional email addresses for a batch of people."
 canonical: "https://airscale.mintlify.app/api-reference/email-finder-(bulk)"
+openapi: "/openapi.json POST /v1/email-bulk"
 ---
 
-Submit a batch of people and receive one asynchronous professional-email result per item at your webhook.
+Submit up to 100 people and receive one asynchronous professional-email result per item at your webhook.
 
-<Badge color="blue">POST</Badge> `/v1/email-bulk`
+<Note>
+The limit is 3,000 input items per minute per workspace. Each item with `status: "success"` costs 2 credits; misses and timeouts are not charged.
+</Note>
 
-| Property | Value |
-| --- | --- |
-| Method | `POST` |
-| Endpoint | `https://api.airscale.io/v1/email-bulk` |
-| Execution | Asynchronous; results are delivered to `webhook_url` |
-| Authentication | Bearer API key |
-| Maximum batch | 100 input items per request |
-| Rate limit | 3,000 input items per minute per workspace |
-| Request body limit | 256 KiB |
-| Airscale credit cost | 2 credits per item with `status: "success"`; misses and timeouts are not charged. |
-
-## Request
-
-The top-level body contains the callback URL and a non-empty `inputs` array.
-
-| Field | Type | Required | Description |
-| --- | --- | --- | --- |
-| `webhook_url` | string | Yes | String beginning with `http` that receives one JSON `POST` for each item. |
-| `inputs` | array | Yes | Between 1 and 100 person-identification objects. |
-
-Each item should identify a person by `linkedin_profile_url`, or by `first_name` and `last_name` plus either `domain` or `company_name`.
-
-| Item field | Type | Required | Description |
-| --- | --- | --- | --- |
-| `custom_id` | any JSON value | No | Any non-null JSON value is echoed unchanged. If omitted or `null`, the item's zero-based array index is used. |
-| `linkedin_profile_url` | string | Required for profile lookup | LinkedIn person profile URL. |
-| `first_name` | string | Required for name lookup | Person's first name. |
-| `last_name` | string | Required for name lookup | Person's last name. |
-| `domain` | string | Conditional | Company domain. Provide this or `company_name` for name lookup. |
-| `company_name` | string | Conditional | Company name. Provide this or `domain` for name lookup. |
-
-```json
-{
-  "webhook_url": "https://webhooks.example.com/airscale/email-results",
-  "inputs": [
-    {
-      "custom_id": "contact-001",
-      "linkedin_profile_url": "https://www.linkedin.com/in/example-person-000000"
-    },
-    {
-      "custom_id": 2002,
-      "first_name": "Sample",
-      "last_name": "Contact",
-      "domain": "example.com"
-    }
-  ]
-}
-```
+The acceptance response only confirms that the batch was queued. Processing continues after that response, and each item is delivered separately to `webhook_url`.
 
 <Warning>
-Return a `2xx` response promptly for each callback. Automatic webhook retries are not part of this endpoint's contract, so use `custom_id` to reconcile expected and received results.
+Return a `2xx` response promptly for every callback. Automatic webhook retries are not part of this operation's contract, so persist callbacks and use `custom_id` to reconcile expected and received results.
 </Warning>
 
-## Response
-
-An accepted batch returns `202 Accepted`. Processing continues after this response:
-
-```json
-{
-  "status": "accepted",
-  "count": 2
-}
-```
-
-| Field | Type | Description |
-| --- | --- | --- |
-| `status` | string | `accepted` when the batch has been queued. |
-| `count` | number | Number of accepted input items. |
-
-For each successful item, Airscale sends:
-
-```json
-{
-  "custom_id": "contact-001",
-  "status": "success",
-  "email": "example.person@example.com",
-  "email_status": "valid",
-  "provider": "Prospeo",
-  "verifier": "Bounceban"
-}
-```
-
-For a miss or timeout, `email` is `null`:
-
-```json
-{
-  "custom_id": 2002,
-  "status": "not_found",
-  "email": null
-}
-```
-
-| Webhook field | Type | Description |
-| --- | --- | --- |
-| `custom_id` | any JSON value | Supplied non-null value echoed unchanged; otherwise the item's zero-based array index. |
-| `status` | string | `success`, `not_found`, `timeout`, or `error`. |
-| `email` | string or null | Professional email on success; otherwise `null`. |
-| `email_status` | string | `valid` on success. |
-| `provider` | string | Public source label on success. |
-| `verifier` | string | Public verification-service label on success. |
-| `error` | string | Present as `insufficient_credits` when the remaining batch balance cannot reserve the next item. |
-
-## Errors
-
-| Status | Cause | Recovery |
-| --- | --- | --- |
-| `400 Bad Request` | The JSON is invalid; `inputs` is missing, not an array, empty, or over 100 items; or `webhook_url` is missing, not a string, or does not begin with `http`. | Send valid JSON with 1–100 items and a `webhook_url` string beginning with `http`. |
-| `401 Unauthorized` | The Bearer token is missing or invalid. | Add the current workspace API key to the `Authorization` header. |
-| `403 Forbidden` | The workspace has fewer than 2 credits when the batch is submitted. | Add credits before submitting another batch. |
-| `413 Content Too Large` | The request body exceeds 256 KiB. | Reduce the batch size or remove unrelated fields. |
-| `429 Too Many Requests` | The batch would exceed 3,000 input items in the current minute. | Wait for the next minute window, then submit the remaining items. |
-| `502 Bad Gateway` | API-key validation is temporarily unavailable. | Retry with bounded backoff after confirming the key is current. |
-| `500 Internal Server Error` | An unexpected worker error occurred before acceptance. | Retry once with bounded backoff, then contact support with the timestamp. |
-
-## Examples
-
-<CodeGroup>
-```bash cURL
-curl --request POST \
-  --url https://api.airscale.io/v1/email-bulk \
-  --header "Authorization: Bearer $AIRSCALE_API_KEY" \
-  --header "Content-Type: application/json" \
-  --data '{
-    "webhook_url": "https://webhooks.example.com/airscale/email-results",
-    "inputs": [
-      {
-        "custom_id": "contact-001",
-        "first_name": "Example",
-        "last_name": "Person",
-        "company_name": "Example Labs"
-      }
-    ]
-  }'
-```
-
-```python Python
-import os
-import requests
-
-response = requests.post(
-    "https://api.airscale.io/v1/email-bulk",
-    headers={"Authorization": f"Bearer {os.environ['AIRSCALE_API_KEY']}"},
-    json={
-        "webhook_url": "https://webhooks.example.com/airscale/email-results",
-        "inputs": [{
-            "custom_id": "contact-001",
-            "first_name": "Example",
-            "last_name": "Person",
-            "company_name": "Example Labs",
-        }],
-    },
-    timeout=30,
-)
-response.raise_for_status()
-print(response.json())
-```
-
-```javascript Node.js
-const apiKey = process.env.AIRSCALE_API_KEY;
-const response = await fetch("https://api.airscale.io/v1/email-bulk", {
-  method: "POST",
-  headers: {
-    Authorization: `Bearer ${apiKey}`,
-    "Content-Type": "application/json",
-  },
-  body: JSON.stringify({
-    webhook_url: "https://webhooks.example.com/airscale/email-results",
-    inputs: [{
-      custom_id: "contact-001",
-      first_name: "Example",
-      last_name: "Person",
-      company_name: "Example Labs",
-    }],
-  }),
-});
-
-if (!response.ok) throw new Error(`Bulk request failed with HTTP ${response.status}`);
-console.log(await response.json());
-```
-</CodeGroup>
+If the remaining balance cannot reserve the next item, its callback reports `insufficient_credits`. Add credits before submitting unfinished items again.
 
 ## Next step
 
-Use [Email finder](/api-reference/email-finder) when you need an immediate result for one person.
+Use [Email finder](/api-reference/email-finder) for a synchronous single-person lookup, or review [Rate limits](/api-reference/rate-limits) before batching requests.

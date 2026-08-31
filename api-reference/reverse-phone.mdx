@@ -2,130 +2,18 @@
 title: "Reverse phone"
 description: "Find a person profile from a phone number."
 canonical: "https://airscale.mintlify.app/api-reference/reverse-phone"
+openapi: "/openapi.json POST /v1/reverse-phone"
 ---
 
 Submit a phone number and receive the matching person profile when one can be resolved.
 
-<Badge color="blue">POST</Badge> `/v1/reverse-phone`
+<Note>
+The limit is 2,000 requests per minute per workspace. A returned profile costs 10 credits; `not_found` and errors are not charged.
+</Note>
 
-| Property | Value |
-| --- | --- |
-| Method | `POST` |
-| Endpoint | `https://api.airscale.io/v1/reverse-phone` |
-| Execution | Synchronous, with a 55-second lookup budget |
-| Authentication | Bearer API key |
-| Rate limit | 2,000 requests per minute per workspace |
-| Request body limit | 256 KiB |
-| Airscale credit cost | 10 credits only when a profile is returned; `not_found` and errors are not charged. |
+A `not_found` result can represent a true miss or lookup paths that were exhausted or failed. When a match is expected, make one bounded-backoff retry. If it persists, verify that you sent the intended normalized number before retrying again.
 
-## Request
-
-| Field | Type | Required | Description |
-| --- | --- | --- | --- |
-| `mobile_phone` | string | Yes | Phone number to resolve. |
-
-`mobile_phone` must be a non-empty string and is trimmed before lookup. Use an E.164-style test number, such as `+12025550147`, in integrations and fixtures. The endpoint does not enforce E.164 validation, so validate and normalize phone numbers before sending them.
-
-```json
-{
-  "mobile_phone": "+12025550147"
-}
-```
-
-## Response
-
-A successful lookup returns `200 OK`. Available profile fields remain at the top level for compatibility and are also copied into the canonical `body` object. The response includes `url` only when the match contains a non-empty professional profile URL, and adds `identifier` when it can derive one.
-
-```json
-{
-  "id": "person-example-000000",
-  "full_name": "Example Person",
-  "link": {
-    "linkedin": "https://www.linkedin.com/in/example-person-000000"
-  },
-  "url": "https://www.linkedin.com/in/example-person-000000",
-  "identifier": "person-example-000000",
-  "body": {
-    "id": "person-example-000000",
-    "full_name": "Example Person",
-    "link": {
-      "linkedin": "https://www.linkedin.com/in/example-person-000000"
-    },
-    "url": "https://www.linkedin.com/in/example-person-000000",
-    "identifier": "person-example-000000"
-  }
-}
-```
-
-| Field | Type | Description |
-| --- | --- | --- |
-| `url` | string, when available | Canonical professional profile URL when the successful match includes one. |
-| `identifier` | string, when available | Existing profile identifier or identifier derived from the returned profile. |
-| `body` | object | Canonical success envelope containing the available profile fields. |
-| Additional top-level fields | varies | Available profile fields retained for compatibility. |
-| `status` | string | Present on a miss as `not_found`; it is not part of the success envelope. |
-
-When no lookup path produces a profile, the endpoint returns `200 OK`. This can represent a true miss or lookup paths that were exhausted or failed. The response has `status: "not_found"` and does not charge credits. When a match is expected, make one bounded-backoff retry. If the result persists, verify that `mobile_phone` contains the intended normalized number before retrying again.
-
-```json
-{
-  "status": "not_found"
-}
-```
-
-## Errors
-
-| Status | Cause | Recovery |
-| --- | --- | --- |
-| `400 Bad Request` | The JSON is invalid, or `mobile_phone` is missing or empty. | Send a non-empty string such as `+12025550147`. |
-| `401 Unauthorized` | The Bearer token is missing or invalid. | Add the current workspace API key to the `Authorization` header. |
-| `403 Forbidden` | The workspace has fewer than 10 credits, or the balance cannot cover settlement. | Add credits before retrying. |
-| `413 Content Too Large` | The request body exceeds 256 KiB. | Remove unrelated fields and resend the request. |
-| `429 Too Many Requests` | The workspace reached 2,000 requests in the current minute. | Retry after the minute window with bounded exponential backoff. |
-| `502 Bad Gateway` | API-key validation is temporarily unavailable. | Confirm the API key, then retry with bounded backoff. |
-| `503 Service Unavailable` | A successful result could not complete credit settlement. | Retry the same number after the credit service recovers. |
-| `500 Internal Server Error` | Required lookup configuration is unavailable or an unexpected worker error occurred. | Retry once, then contact support with the timestamp if the error persists. |
-
-## Examples
-
-<CodeGroup>
-```bash cURL
-curl --request POST \
-  --url https://api.airscale.io/v1/reverse-phone \
-  --header "Authorization: Bearer $AIRSCALE_API_KEY" \
-  --header "Content-Type: application/json" \
-  --data '{"mobile_phone":"+12025550147"}'
-```
-
-```python Python
-import os
-import requests
-
-response = requests.post(
-    "https://api.airscale.io/v1/reverse-phone",
-    headers={"Authorization": f"Bearer {os.environ['AIRSCALE_API_KEY']}"},
-    json={"mobile_phone": "+12025550147"},
-    timeout=60,
-)
-response.raise_for_status()
-print(response.json())
-```
-
-```javascript Node.js
-const apiKey = process.env.AIRSCALE_API_KEY;
-const response = await fetch("https://api.airscale.io/v1/reverse-phone", {
-  method: "POST",
-  headers: {
-    Authorization: `Bearer ${apiKey}`,
-    "Content-Type": "application/json",
-  },
-  body: JSON.stringify({ mobile_phone: "+12025550147" }),
-});
-
-if (!response.ok) throw new Error(`Reverse-phone lookup failed with HTTP ${response.status}`);
-console.log(await response.json());
-```
-</CodeGroup>
+Wait for the credit service to recover before retrying a settlement failure with the same number.
 
 ## Next step
 
