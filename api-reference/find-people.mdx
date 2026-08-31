@@ -1,16 +1,14 @@
 ---
 title: "Find people"
-description: "Search and count people using person, role, and company filters."
+description: "Search people using person, role, and company filters."
 canonical: "https://airscale.mintlify.app/api-reference/find-people"
 ---
 
-Search for people who match structured profile and company criteria, or count the same audience before retrieving records.
+Search for people who match structured profile and company criteria.
 
 ## Contract summary
 
 <Badge color="blue">POST</Badge> `/v1/find-people`
-
-<Badge color="blue">POST</Badge> `/v1/find-people/count`
 
 | Property | Value |
 | --- | --- |
@@ -19,16 +17,10 @@ Search for people who match structured profile and company criteria, or count th
 | Rate limit | 6 requests per second per workspace |
 | Request body limit | 256 KiB |
 | Search credit cost | 0.1 credits per returned lead; no charge when no leads are returned. |
-| Count credit cost | No charge; Count does not debit Airscale credits. |
 
-## Search and Count endpoint comparison
-
-| Endpoint | Outcome | Pagination | Credits |
-| --- | --- | --- | --- |
-| `POST /v1/find-people` | Returns matching lead records. | `size` and `cursor` | 0.1 credits per returned lead. |
-| `POST /v1/find-people/count` | Returns only the matching total. | None | No charge. |
-
-Both endpoints use the same `query` filter contract.
+<Info>
+Need an audience estimate first? [Count people](/api-reference/find-people/count) accepts the same `query` filters without returning records or charging credits.
+</Info>
 
 ## Request
 
@@ -236,20 +228,6 @@ Additional lead fields can be present when data is available.
 }
 ```
 
-## Count response
-
-A successful Count request returns `200 OK` with only `total`.
-
-| Field | Type | Description |
-| --- | --- | --- |
-| `total` | number | Total number of matching people. |
-
-```json
-{
-  "total": 124
-}
-```
-
 ## Errors
 
 | Status | Cause | Recovery |
@@ -257,7 +235,7 @@ A successful Count request returns `200 OK` with only `total`.
 | `400 Bad Request` | Invalid JSON, a missing or invalid `query`, an unsupported filter, an invalid filter shape, invalid `size`, or a non-string `cursor`. | Read the response `details`, keep only a supported filter, and send its valid shape. |
 | `401 Unauthorized` | The Bearer token is missing or invalid. | Copy the current key from Airscale Settings and update the server-side secret. |
 | `403 Forbidden` | Search has fewer than 0.1 credits available or its credit reservation cannot be completed. | Add credits before retrying Search, or use free Count when only the audience size is needed. |
-| `404 Not Found` | The HTTP method or path does not match either public endpoint. | Use `POST` with one of the documented paths. |
+| `404 Not Found` | The HTTP method or path does not match the public endpoint. | Use `POST /v1/find-people`. |
 | `413 Content Too Large` | The request body exceeds 256 KiB. | Reduce the number of filter values or split the audience into smaller requests. |
 | `429 Too Many Requests` | The workspace sent more than 6 requests in the current second. | Retry in the next second with bounded exponential backoff. |
 | `502 Bad Gateway` | The downstream search service is unreachable. | Retry the same request with bounded exponential backoff. |
@@ -267,12 +245,11 @@ A successful Count request returns `200 OK` with only `total`.
 
 | Rule | Value |
 | --- | --- |
-| Requests | 6 per second per workspace across Search and Count. |
+| Requests | 6 per second per workspace. This limit is shared with Count people. |
 | Request body | 256 KiB maximum. |
 | Values per `include` or `exclude` array | 200 maximum. |
 | Search page size | 1 to 100; default 100. |
 | Search billing | 0.1 credits for each lead returned. Empty result pages are not charged. |
-| Count billing | Free. The Count path neither reserves nor debits Airscale credits. |
 
 ## Examples
 
@@ -310,22 +287,6 @@ console.log(await response.json());
 ```
 </CodeGroup>
 
-Count the same audience without retrieving leads:
-
-<CodeGroup>
-```bash cURL
-curl --request POST "https://api.airscale.io/v1/find-people/count" \
-  --header "Authorization: Bearer $AIRSCALE_API_KEY" \
-  --header "Content-Type: application/json" \
-  --data '{
-    "query": {
-      "jobTitle": { "include": ["Revenue Operations Manager"] },
-      "location": { "include": ["France"] }
-    }
-  }'
-```
-</CodeGroup>
-
 ## Next step
 
-Use [Find companies](/api-reference/find-companies) to discover organizations before building a people audience, or review [Rate limits](/api-reference/rate-limits) before adding concurrency.
+Use [Count people](/api-reference/find-people/count) to estimate the same audience for free, [Find companies](/api-reference/find-companies) to discover organizations, or [Rate limits](/api-reference/rate-limits) before adding concurrency.

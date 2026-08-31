@@ -1,0 +1,26 @@
+---
+title: "Company filter values"
+description: "Search supported values for Find Companies filters."
+canonical: "https://airscale.mintlify.app/api-reference/find-companies/filter-values"
+openapi: "/openapi.json GET /v1/find-companies/filter-values"
+---
+
+Discover accepted values before adding a city, region, industry, topic, or technology filter to [Find companies](/api-reference/find-companies).
+
+<Note>
+Filter-values is free and has no request body. It does not reserve or debit Airscale credits.
+</Note>
+
+## Choose useful context
+
+Use `country` and `region` to narrow location suggestions. A bare region name needs country context. The `q` parameter takes precedence when both `q` and its `query` alias are present; a blank `q` still suppresses `query` and returns `400 Bad Request`.
+
+The operation shares a limit of 6 requests per second per workspace with Find companies. After a `429 Too Many Requests` response, wait for the next second and retry with bounded exponential backoff.
+
+<Info>
+This preview renders non-executing examples. It does not send a request or ask for an API key.
+</Info>
+
+## Next step
+
+Copy the returned `value` into the matching filter on [Find companies](/api-reference/find-companies).

@@ -4,13 +4,20 @@ import test from "node:test";
 
 const GROUPS = [
   ["Start here", ["api-reference/api-overview", "api-reference/authentication", "api-reference/rate-limits"]],
-  ["Search and discovery", ["api-reference/find-people", "api-reference/find-companies", "api-reference/airsearch"]],
+  ["Search and discovery", [
+    "api-reference/find-people",
+    "api-reference/find-people/count",
+    "api-reference/find-companies",
+    "api-reference/find-companies/filter-values",
+    "api-reference/airsearch"
+  ]],
   ["Contact data", ["api-reference/email-finder", "api-reference/email-finder-(bulk)", "api-reference/mobile-finder", "api-reference/personal-email", "api-reference/people-url-finder"]],
   ["Profiles and reverse lookup", ["api-reference/extract-people-profile", "api-reference/extract-company-profile", "api-reference/reverse-email", "api-reference/reverse-phone"]],
   ["Account", ["api-reference/credit-count"]]
 ];
 
 const PAGE_PATHS = GROUPS.flatMap(([, pages]) => pages);
+const GUIDE_PATHS = ["api-reference/api-overview", "api-reference/authentication", "api-reference/rate-limits"];
 const API_REFERENCE_TABS = [{
   tab: "API Reference",
   groups: GROUPS.map(([group, pages]) => ({ group, pages }))
@@ -158,6 +165,16 @@ function readPage(path) {
   return { source, body: match[2], frontmatter };
 }
 
+function mdxPagePaths(directory = "api-reference") {
+  return readdirSync(directory, { withFileTypes: true })
+    .flatMap((entry) => {
+      const path = `${directory}/${entry.name}`;
+      if (entry.isDirectory()) return mdxPagePaths(path);
+      return entry.isFile() && entry.name.endsWith(".mdx") ? [path.slice(0, -4)] : [];
+    })
+    .sort();
+}
+
 function localDocumentationLinks(source) {
   const markdownLinks = Array.from(source.matchAll(/\[[^\]]*\]\((\/api-reference\/(?:[^()\s?#]+|\([^()\s?#]*\))+)(?:[?#][^)]*)?\)/g), ([, href]) => href);
   const componentLinks = Array.from(source.matchAll(/<[A-Za-z][\w.:-]*\b[^>]*\bhref=(["'])(\/api-reference\/[^"'?#]+)(?:[?#][^"']*)?\1[^>]*>/g), ([, , href]) => href);
@@ -303,14 +320,17 @@ function assertEndpointPageContract(source, contract, path) {
 function assertEndpointPageContentSystem(path, contract, manifest) {
   const { source, body, frontmatter } = readPage(path);
   const pageName = path.replace("api-reference/", "");
-  const evidence = manifest.pages[pageName];
+  const catalog = JSON.parse(readFileSync("contracts/public-api-operations.json", "utf8"));
+  const operation = catalog.operations.find(({ page }) => page === path);
+  const evidence = manifest.pages[operation?.sourcePage ?? pageName];
+  const endpoints = operation ? [{ method: operation.method, path: operation.path }] : evidence?.endpoints ?? [];
 
   assert.equal(frontmatter.description, contract.description, `${path} must use the approved description`);
   assert.ok(frontmatter.description, `${path} must have a description`);
   assert.doesNotMatch(body, /^#\s+/m, `${path} must not repeat its title as a body H1`);
   assert.ok(!localDocumentationLinks(source).includes(`/${path}`), `${path} must not link to itself`);
   assert.ok(evidence, `${path} must have contract evidence`);
-  for (const endpoint of evidence.endpoints) {
+  for (const endpoint of endpoints) {
     assert.match(source, new RegExp(`\\b${endpoint.method}\\b`), `${path} must document ${endpoint.method}`);
     assert.ok(source.includes(endpoint.path), `${path} must document ${endpoint.path}`);
     assert.ok(
@@ -392,6 +412,28 @@ test("brand configuration and assets match Airscale", () => {
     assert.ok(existsSync(`.${asset}`), `${asset} must exist`);
   }
   assert.doesNotMatch(JSON.stringify(config.logo), /mintlify\.s3|bubble\.io/);
+});
+
+test("Mintlify uses the approved non-executing OpenAPI example configuration", () => {
+  const configSource = readFileSync("docs.json", "utf8");
+  const config = JSON.parse(configSource);
+
+  assert.deepEqual(config.api, {
+    openapi: "openapi.json",
+    playground: { display: "simple" },
+    examples: {
+      languages: ["curl", "node", "python"],
+      defaults: "required",
+      prefill: true,
+      autogenerate: true
+    }
+  });
+  assert.equal(Object.hasOwn(config.api.playground, "mode"), false);
+  assert.doesNotMatch(configSource, /hideApiMarker/);
+
+  for (const path of mdxPagePaths()) {
+    assert.doesNotMatch(readFileSync(`${path}.mdx`, "utf8"), /hideApiMarker/, `${path} must preserve native API markers`);
+  }
 });
 
 test("brand SVGs preserve the Airscale symbol and safe local source", () => {
@@ -559,14 +601,43 @@ test("navigation rejects unexpected tabs", () => {
   assert.throws(() => assertApprovedNavigationTabs(extraTabs));
 });
 
-test("exactly the approved 16 pages exist", () => {
-  const actualPages = readdirSync("api-reference")
-    .filter((file) => file.endsWith(".mdx"))
-    .map((file) => `api-reference/${file.slice(0, -4)}`)
-    .sort();
+test("exactly the approved 18 pages exist", () => {
+  const actualPages = mdxPagePaths();
 
   assert.deepEqual(actualPages, [...PAGE_PATHS].sort());
   assert.ok(!actualPages.includes("api-reference/leads-finder"));
+});
+
+test("15 operation pages bind one exact OpenAPI operation and three guide pages stay unbound", () => {
+  const catalog = JSON.parse(readFileSync("contracts/public-api-operations.json", "utf8"));
+  const expectedBindings = new Map(catalog.operations.map(({ method, path, page }) => [
+    page,
+    `/openapi.json ${method} ${path}`
+  ]));
+  const actualBindings = new Map();
+
+  for (const path of PAGE_PATHS) {
+    const { frontmatter } = readPage(path);
+    if (frontmatter.openapi) actualBindings.set(path, frontmatter.openapi);
+  }
+
+  assert.equal(expectedBindings.size, 15);
+  assert.equal(actualBindings.size, 15);
+  assert.deepEqual(actualBindings, expectedBindings);
+  for (const path of GUIDE_PATHS) {
+    assert.equal(Object.hasOwn(readPage(path).frontmatter, "openapi"), false, `${path} must remain a guide page`);
+  }
+});
+
+test("new child routes bind the count and filter-values methods exactly", () => {
+  assert.equal(
+    readPage("api-reference/find-people/count").frontmatter.openapi,
+    "/openapi.json POST /v1/find-people/count"
+  );
+  assert.equal(
+    readPage("api-reference/find-companies/filter-values").frontmatter.openapi,
+    "/openapi.json GET /v1/find-companies/filter-values"
+  );
 });
 
 test("every page has baseline-safe MDX", () => {
@@ -581,16 +652,22 @@ test("every page has baseline-safe MDX", () => {
 
 test("every page passes editorial and contract invariants", () => {
   const manifest = JSON.parse(readFileSync("contracts/public-api-contracts.json", "utf8"));
+  const catalog = JSON.parse(readFileSync("contracts/public-api-operations.json", "utf8"));
   assert.deepEqual(
     Object.keys(manifest.pages).sort(),
-    PAGE_PATHS.map((path) => path.replace("api-reference/", "")).sort(),
-    "the contract manifest must cover exactly the published pages"
+    [...new Set([
+      ...GUIDE_PATHS.map((path) => path.replace("api-reference/", "")),
+      ...catalog.operations.map(({ sourcePage }) => sourcePage)
+    ])].sort(),
+    "the contract manifest must cover every guide and operation source page"
   );
 
   for (const path of PAGE_PATHS) {
     const { source, body, frontmatter } = readPage(path);
     const pageName = path.replace("api-reference/", "");
-    const evidence = manifest.pages[pageName];
+    const operation = catalog.operations.find(({ page }) => page === path);
+    const evidence = manifest.pages[operation?.sourcePage ?? pageName];
+    const endpoints = operation ? [{ method: operation.method, path: operation.path }] : evidence?.endpoints ?? [];
 
     assert.ok(frontmatter.description, `${path} must have a description`);
     assert.doesNotMatch(body, /^#\s+/m, `${path} must not repeat its title as a body H1`);
@@ -603,7 +680,7 @@ test("every page passes editorial and contract invariants", () => {
     );
     assert.ok(evidence, `${path} must have contract evidence`);
 
-    for (const endpoint of evidence.endpoints) {
+    for (const endpoint of endpoints) {
       assert.match(source, new RegExp(`\\b${endpoint.method}\\b`), `${path} must document ${endpoint.method}`);
       assert.ok(source.includes(endpoint.path), `${path} must document ${endpoint.path}`);
     }
@@ -715,23 +792,22 @@ test("foundation pages teach a safe first request", () => {
 test("search and discovery pages preserve their complete contracts", () => {
   const contracts = {
     "api-reference/find-people": {
-      description: "Search and count people using person, role, and company filters.",
+      description: "Search people using person, role, and company filters.",
       responseHeading: "Search response",
       requestEndHeading: "Search response",
       responseEndHeading: "Errors",
       errorsEndHeading: "Examples",
       sectionOrder: [
-        "Contract summary", "Search and Count endpoint comparison", "Request", "Filter shapes",
+        "Contract summary", "Request", "Filter shapes",
         "Person filters", "Current company filters", "Past experience filters", "Pagination",
-        "Search response", "Count response", "Errors", "Rate limits and credits", "Examples", "Next step"
+        "Search response", "Errors", "Rate limits and credits", "Examples", "Next step"
       ],
       summaryRows: [
         ["Authentication", "Bearer API key"],
         ["Execution", "Synchronous"],
         ["Rate limit", "6 requests per second per workspace"],
         ["Request body limit", "256 KiB"],
-        ["Search credit cost", "0.1 credits per returned lead; no charge when no leads are returned."],
-        ["Count credit cost", "No charge; Count does not debit Airscale credits."]
+        ["Search credit cost", "0.1 credits per returned lead; no charge when no leads are returned."]
       ],
       requestRows: [
         ["`query`", "object", "Yes"],
@@ -788,10 +864,10 @@ test("search and discovery pages preserve their complete contracts", () => {
         "`pastJobTitle`", "`pastCompany.headcountGrowth`", "## Pagination", "`next_cursor`"
       ],
       responseFragments: [
-        "`200 OK`", "`total`", "`leads`", "`next_cursor`", "## Count response", "`200 OK`", "`total`"
+        "`200 OK`", "`total`", "`leads`", "`next_cursor`"
       ],
       exampleFragments: [
-        "https://api.airscale.io/v1/find-people", "https://api.airscale.io/v1/find-people/count"
+        "https://api.airscale.io/v1/find-people"
       ],
       forbiddenPatterns: [
         /\bsame prior role\b/i,
@@ -834,8 +910,7 @@ test("search and discovery pages preserve their complete contracts", () => {
             next_cursor: String
           },
           exact: false
-        },
-        { label: "count result", shape: { total: Number }, exact: true }
+        }
       ],
       errorCauseFragments: {
         "400 Bad Request": ["JSON", "`query`", "unsupported filter", "filter shape", "`size`", "`cursor`"],
@@ -865,16 +940,15 @@ test("search and discovery pages preserve their complete contracts", () => {
       description: "Search companies using firmographic, location, event, intent, and technology filters.",
       errorsEndHeading: "Examples",
       sectionOrder: [
-        "Contract summary", "Search and Filter-values endpoint comparison", "Request", "Filter field table",
-        "Filter discovery", "Pagination", "Response", "Errors", "Rate limits and credits", "Examples", "Next step"
+        "Contract summary", "Request", "Filter field table", "Pagination", "Response",
+        "Errors", "Rate limits and credits", "Examples", "Next step"
       ],
       summaryRows: [
         ["Authentication", "Bearer API key"],
         ["Execution", "Synchronous"],
         ["Rate limit", "6 requests per second per workspace"],
         ["Request body limit", "256 KiB"],
-        ["Search credit cost", "0.1 credits per returned company; no charge when no companies are returned."],
-        ["Filter-values credit cost", "No charge."]
+        ["Search credit cost", "0.1 credits per returned company; no charge when no companies are returned."]
       ],
       requestRows: [
         ["`filters`", "object", "Yes"],
@@ -897,20 +971,7 @@ test("search and discovery pages preserve their complete contracts", () => {
         ["`eventWindow`", "string"],
         ["`locationMatch`", "string"],
         ["`hasWebsite`", "boolean or null"],
-        ["`isPublicCompany`", "boolean or null"],
-        ["`filter`", "string", "Yes"],
-        ["`q`", "string", "Yes"],
-        [
-          "`limit`", "integer", "No",
-          "Omitted, non-numeric, or non-integer values default to `20`; an explicit empty `?limit=` converts to `0` and clamps to `1`; integers below `1` clamp to `1`, and integers above `100` clamp to `100`."
-        ],
-        ["`label`", "string", "Always"],
-        ["`value`", "string", "Always"],
-        ["`query`", "string", "Autocomplete options only"],
-        ["`city`", "string", "City options, when resolved"],
-        ["`region`", "string", "City or region options, when resolved"],
-        ["`countryCode`", "string", "City or region options, when resolved"],
-        ["`regionCode`", "string", "City or region options, when resolved"]
+        ["`isPublicCompany`", "boolean or null"]
       ],
       responseRows: [
         ["`rows`", "array"],
@@ -929,17 +990,13 @@ test("search and discovery pages preserve their complete contracts", () => {
         "At least one real filter", "`page`", "defaults to `0`", "`size`", "1 to 100", "defaults to `50`", "`cursor`",
         "`country`", "`region`", "`city`", "`industry`", "`size`", "`revenue`", "`age`", "`techStack`",
         "`keywords`", "`topics`", "`events`", "`locations`", "`companyName`", "`eventWindow`", "`locationMatch`",
-        "`hasWebsite`", "`isPublicCompany`", "## Filter discovery", "`city`", "`region`", "`industry`", "`topics`",
-        "`techStack`", "2 to 120 characters", "`limit`", "non-numeric", "non-integer", "default to `20`",
-        "explicit empty `?limit=`", "converts to `0`", "clamps to `1`", "below `1`", "clamp to `1`",
-        "above `100`", "clamp to `100`", "`label`", "Always", "`value`",
-        "Autocomplete options only", "## Pagination", "10,000 companies", "`fc_`"
+        "`hasWebsite`", "`isPublicCompany`", "## Pagination", "10,000 companies", "`fc_`"
       ],
       responseFragments: [
         "`200 OK`", "sanitized", "`rows`", "`total`", "`page`", "`size`", "`next_cursor`"
       ],
       exampleFragments: [
-        "https://api.airscale.io/v1/find-companies", "https://api.airscale.io/v1/find-companies/filter-values"
+        "https://api.airscale.io/v1/find-companies"
       ],
       forbiddenPatterns: [
         /\b(?:IcyPeas|Explorium|OpenAI|RapidAPI|Serper|Jina)\b/i,
@@ -966,29 +1023,6 @@ test("search and discovery pages preserve their complete contracts", () => {
           exact: true
         }
       ],
-      requestSectionExamples: [
-        {
-          label: "local filter-value option",
-          shape: {
-            filter: "industry",
-            query: "software",
-            values: [{ label: "data security software products", value: "data security software products" }]
-          },
-          exact: true
-        },
-        {
-          label: "autocomplete location option",
-          shape: {
-            filter: "city",
-            query: "san",
-            values: [{
-              query: "san", label: "San Francisco", value: "San Francisco, CA, US",
-              city: "San Francisco", region: "CA", regionCode: "us-ca", countryCode: "us"
-            }]
-          },
-          exact: true
-        }
-      ],
       responseExamples: [
         {
           label: "company result page",
@@ -1006,13 +1040,13 @@ test("search and discovery pages preserve their complete contracts", () => {
         }
       ],
       errorCauseFragments: {
-        "400 Bad Request": ["JSON", "unknown filter", "unsupported value", "`size`", "`cursor`", "filter-values"],
+        "400 Bad Request": ["JSON", "unknown filter", "unsupported value", "`size`", "`cursor`"],
         "401 Unauthorized": ["Bearer token", "missing", "invalid"],
         "403 Forbidden": ["Search", "fewer than 0.1 credits", "credit settlement"],
         "413 Content Too Large": ["exceeds 256 KiB"],
         "429 Too Many Requests": ["6 requests", "current second"],
         "500 Internal Server Error": ["server configuration", "unexpected worker error"],
-        "502 Bad Gateway": ["API-key validation", "Search", "Filter-values"],
+        "502 Bad Gateway": ["API-key validation", "Search"],
         "503 Service Unavailable": ["credit service", "successful Search"]
       },
       errorRecoveryFragments: {
@@ -1027,9 +1061,7 @@ test("search and discovery pages preserve their complete contracts", () => {
       additionalMutations: {
         summary: (source) => source.replace("0.1 credits per returned company", "0.2 credits per returned company"),
         response: (source) => source.replace('"total": 240', '"total": "240"'),
-        errors: (source) => source.replace("`502 Bad Gateway`", "`504 Gateway Timeout`"),
-        "filter-values limit coercion": (source) => source.replace("integers below `1` clamp to `1`", "integers below `1` are rejected"),
-        "empty filter-values limit": (source) => source.replace("an explicit empty `?limit=` converts to `0` and clamps to `1`", "an explicit empty `?limit=` defaults to `20`")
+        errors: (source) => source.replace("`502 Bad Gateway`", "`504 Gateway Timeout`")
       }
     },
     "api-reference/airsearch": {

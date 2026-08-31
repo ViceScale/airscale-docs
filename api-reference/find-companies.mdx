@@ -10,8 +10,6 @@ Build a company audience from validated firmographic, geographic, event, intent,
 
 <Badge color="blue">POST</Badge> `/v1/find-companies`
 
-<Badge color="blue">GET</Badge> `/v1/find-companies/filter-values`
-
 | Property | Value |
 | --- | --- |
 | Authentication | Bearer API key |
@@ -19,16 +17,10 @@ Build a company audience from validated firmographic, geographic, event, intent,
 | Rate limit | 6 requests per second per workspace |
 | Request body limit | 256 KiB |
 | Search credit cost | 0.1 credits per returned company; no charge when no companies are returned. |
-| Filter-values credit cost | No charge. |
 
-## Search and Filter-values endpoint comparison
-
-| Endpoint | Outcome | Input | Credits |
-| --- | --- | --- | --- |
-| `POST /v1/find-companies` | Returns company records that match the filters. | JSON body | 0.1 credits per returned company. |
-| `GET /v1/find-companies/filter-values` | Discovers accepted city, region, industry, topic, or technology values. | Query parameters | No charge. |
-
-Use Filter-values when a Search filter accepts a controlled or location-aware value.
+<Info>
+Need an accepted city, region, industry, topic, or technology value? Use the free [Company filter values](/api-reference/find-companies/filter-values) operation before searching.
+</Info>
 
 ## Request
 
@@ -162,67 +154,6 @@ This complete example keeps all supported filter categories together. Remove key
 }
 ```
 
-## Filter discovery
-
-Filter-values accepts the following query parameters:
-
-| Parameter | Type | Required | Description |
-| --- | --- | --- | --- |
-| `filter` | string | Yes | `city`, `region`, `industry`, `topics`, or `techStack`. |
-| `q` | string | Yes | Search text from 2 to 120 characters. `query` is also accepted. |
-| `limit` | integer | No | Omitted, non-numeric, or non-integer values default to `20`; an explicit empty `?limit=` converts to `0` and clamps to `1`; integers below `1` clamp to `1`, and integers above `100` clamp to `100`. |
-| `country` | string | No | Repeat or comma-separate country context. |
-| `region` | string | No | Repeat or comma-separate region context. A bare region name needs country context. |
-
-The response identifies the filter and query and returns normalized options. Option fields depend on whether values come from a local canonical list or autocomplete.
-
-| Field | Type | Presence | Description |
-| --- | --- | --- | --- |
-| `label` | string | Always | Display text for the option. |
-| `value` | string | Always | Value to send in a Search filter. |
-| `query` | string | Autocomplete options only | Autocomplete query associated with the option. |
-| `city` | string | City options, when resolved | Parsed city name. |
-| `region` | string | City or region options, when resolved | Parsed region label. |
-| `countryCode` | string | City or region options, when resolved | Lowercase ISO alpha-2 country code. |
-| `regionCode` | string | City or region options, when resolved | Canonical region code such as `us-ca`. |
-
-Local industry and topic options contain only `label` and `value`:
-
-```json
-{
-  "filter": "industry",
-  "query": "software",
-  "values": [
-    {
-      "label": "data security software products",
-      "value": "data security software products"
-    }
-  ]
-}
-```
-
-Autocomplete location options include `query` and any location metadata that can be resolved:
-
-```json
-{
-  "filter": "city",
-  "query": "san",
-  "values": [
-    {
-      "query": "san",
-      "label": "San Francisco",
-      "value": "San Francisco, CA, US",
-      "city": "San Francisco",
-      "region": "CA",
-      "regionCode": "us-ca",
-      "countryCode": "us"
-    }
-  ]
-}
-```
-
-Industry and topic discovery use the same response envelope. Technology, city, and region options are deduplicated and filtered by the supplied location context.
-
 ## Pagination
 
 For the first request, use `page: 0` and a `size` from 1 to 100. When `next_cursor` is present, send it unchanged as `cursor` with the same filters. Cursor pagination preserves the original page size and can traverse up to 10,000 companies for one search.
@@ -282,24 +213,23 @@ Rows can contain additional business fields when available.
 
 | Status | Cause | Recovery |
 | --- | --- | --- |
-| `400 Bad Request` | Invalid JSON, an unknown filter, an unsupported value, invalid `size`, invalid `cursor`, or invalid filter-values parameters. | Read the response `message`, use a supported filter, and select a documented value or Filter-values option. |
+| `400 Bad Request` | Invalid JSON, an unknown filter, an unsupported value, invalid `size`, or an invalid `cursor`. | Read the response `message`, use a supported filter, and select a documented value. |
 | `401 Unauthorized` | The Bearer token is missing or invalid. | Copy the current key from Airscale Settings and update the server-side secret. |
 | `403 Forbidden` | Search has fewer than 0.1 credits before execution or credit settlement cannot cover returned rows. | Add credits, then retry Search. |
 | `413 Content Too Large` | The request body exceeds 256 KiB. | Remove unused values or split the audience into smaller requests. |
 | `429 Too Many Requests` | The workspace sent more than 6 requests in the current second. | Retry in the next second with bounded exponential backoff. |
 | `500 Internal Server Error` | A server configuration check or unexpected worker error prevented execution. | Contact Airscale support with the response status and request time. |
-| `502 Bad Gateway` | API-key validation, Search, or Filter-values is temporarily unavailable. | Retry the same request with bounded backoff. |
+| `502 Bad Gateway` | API-key validation or Search is temporarily unavailable. | Retry the same request with bounded backoff. |
 | `503 Service Unavailable` | The credit service could not settle a successful Search. | Retry the same filters after the credit service recovers. |
 
 ## Rate limits and credits
 
 | Rule | Value |
 | --- | --- |
-| Requests | 6 per second per workspace across Search and Filter-values. |
+| Requests | 6 per second per workspace. This limit is shared with Company filter values. |
 | Request body | 256 KiB maximum for Search. |
 | Search billing | 0.1 credits per returned company. Zero returned rows cost zero credits. |
 | Search preflight | At least 0.1 credits must be available. |
-| Filter-values billing | Free; discovery does not debit credits. |
 | Page size | 1 to 100; default 50. |
 | Search traversal | Up to 10,000 companies through the opaque cursor flow. |
 
@@ -341,20 +271,6 @@ console.log(await response.json());
 ```
 </CodeGroup>
 
-Discover a city value before adding it to Search:
-
-<CodeGroup>
-```bash cURL
-curl --get "https://api.airscale.io/v1/find-companies/filter-values" \
-  --header "Authorization: Bearer $AIRSCALE_API_KEY" \
-  --data-urlencode "filter=city" \
-  --data-urlencode "q=san" \
-  --data-urlencode "country=US" \
-  --data-urlencode "region=us-ca" \
-  --data-urlencode "limit=10"
-```
-</CodeGroup>
-
 ## Next step
 
-Use [Find people](/api-reference/find-people) to search for roles at the companies you identified, or review [Authentication](/api-reference/authentication) before integrating the endpoint.
+Use [Company filter values](/api-reference/find-companies/filter-values) to discover accepted values, [Find people](/api-reference/find-people) to search for roles at identified companies, or [Authentication](/api-reference/authentication) before integrating the endpoint.

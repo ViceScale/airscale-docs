@@ -41,6 +41,22 @@
       }
     }
   },
+  "api": {
+    "openapi": "openapi.json",
+    "playground": {
+      "display": "simple"
+    },
+    "examples": {
+      "languages": [
+        "curl",
+        "node",
+        "python"
+      ],
+      "defaults": "required",
+      "prefill": true,
+      "autogenerate": true
+    }
+  },
   "navbar": {
     "links": [
       {
@@ -71,7 +87,9 @@
             "group": "Search and discovery",
             "pages": [
               "api-reference/find-people",
+              "api-reference/find-people/count",
               "api-reference/find-companies",
+              "api-reference/find-companies/filter-values",
               "api-reference/airsearch"
             ]
           },

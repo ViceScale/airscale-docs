@@ -1,0 +1,26 @@
+---
+title: "Count people"
+description: "Count people matching person, role, and company filters."
+canonical: "https://airscale.mintlify.app/api-reference/find-people/count"
+openapi: "/openapi.json POST /v1/find-people/count"
+---
+
+Estimate an audience before retrieving any lead records. Count accepts the same person, role, current-company, and past-experience filters as [Find people](/api-reference/find-people).
+
+<Note>
+Count is free. It neither reserves nor debits Airscale credits, and its response contains only the matching total.
+</Note>
+
+## Reuse a search audience
+
+Send the same `query` object you plan to use for Find people. Count has no pagination fields because it returns no lead page; keep `size` and `cursor` on the search request instead.
+
+The Count and Find people operations share a limit of 6 requests per second per workspace. After a `429 Too Many Requests` response, wait for the next second and retry with bounded exponential backoff.
+
+<Info>
+This preview renders non-executing examples. It does not send a request or ask for an API key.
+</Info>
+
+## Next step
+
+Use [Find people](/api-reference/find-people) with the same `query` when you are ready to retrieve the matching records.
