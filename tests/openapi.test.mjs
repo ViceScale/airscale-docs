@@ -376,10 +376,12 @@ test("Contact Mobile operation requires a profile and models success and miss en
     ["status", "linkedin_profile_url", "phone_numbers", "provider"],
     ["status", "linkedin_profile_url", "phone_numbers", "provider"]
   ]);
+  assert.equal(Object.hasOwn(successContent.examples.success.value, "provider"), true);
   assert.deepEqual(successContent.examples.success.value, {
     status: "success",
     linkedin_profile_url: "https://www.linkedin.com/in/example-person-000000",
-    phone_numbers: "+12025550123"
+    phone_numbers: "+12025550123",
+    provider: null
   });
   assert.deepEqual(successContent.examples.notFound.value, {
     status: "not_found",

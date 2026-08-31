@@ -262,7 +262,8 @@ export const contactDataOperations = [
                   value: {
                     status: "success",
                     linkedin_profile_url: PROFILE_EXAMPLE,
-                    phone_numbers: "+12025550123"
+                    phone_numbers: "+12025550123",
+                    provider: null
                   }
                 },
                 notFound: {
