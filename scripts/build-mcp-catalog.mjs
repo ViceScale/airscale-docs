@@ -1424,7 +1424,7 @@ function renderToolBlock(tool) {
   };
   const parts = [
     `<a id="${tool.anchor}"></a>`,
-    `## \`${tool.name}\``,
+    `### \`${tool.name}\``,
     "**MCP tool**",
     escapeMdxProse(tool.description),
     `- **Category:** ${CATEGORY_TITLES.get(tool.category)}`,
@@ -1442,11 +1442,11 @@ function renderToolBlock(tool) {
   }
 
   parts.push(
-    "### Inputs",
+    "#### Inputs",
     renderInputTable(tool),
-    "### Minimal `tools/call` example",
+    "#### Minimal `tools/call` example",
     `\`\`\`json\n${JSON.stringify(example, null, 2)}\n\`\`\``,
-    "### Expected result",
+    "#### Expected result",
     RESULT_BEHAVIOR[tool.name] ?? "Returns the runtime MCP result for the supplied arguments."
   );
 
@@ -1480,7 +1480,7 @@ export function renderCatalog(contract) {
 
   for (const group of CATEGORY_GROUPS) {
     const tools = contract.tools.filter(({ category }) => category === group.key);
-    sections.push(`# ${group.title}\n\n${renderCategorySummary(tools)}`);
+    sections.push(`## ${group.title}\n\n${renderCategorySummary(tools)}`);
     for (const tool of tools) sections.push(renderToolBlock(tool));
   }
   return `${sections.join("\n\n").trimEnd()}\n`;
@@ -1518,7 +1518,7 @@ function validateRenderedPair(contract, catalog, publicManifest) {
   }
   for (const tool of contract.tools) {
     if (countOccurrences(catalog, `<a id="${tool.anchor}"></a>`) !== 1) throw new Error(`Rendered catalog anchor drift: ${tool.anchor}`);
-    if (countOccurrences(catalog, `## \`${tool.name}\``) !== 1) throw new Error(`Rendered catalog heading drift: ${tool.name}`);
+    if (countOccurrences(catalog, `### \`${tool.name}\``) !== 1) throw new Error(`Rendered catalog heading drift: ${tool.name}`);
   }
   let parsed;
   try {

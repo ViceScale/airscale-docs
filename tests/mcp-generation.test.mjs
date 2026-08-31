@@ -365,7 +365,7 @@ test("catalog renderer emits the exact page framing, category order, headings, a
 
   let previousCategoryIndex = -1;
   for (const group of CATEGORY_GROUPS) {
-    const categoryIndex = source.indexOf(`# ${group.title}\n`);
+    const categoryIndex = source.indexOf(`## ${group.title}\n`);
     assert.ok(categoryIndex > previousCategoryIndex, `${group.title} must preserve category order`);
     previousCategoryIndex = categoryIndex;
     const firstAnchorIndex = source.indexOf(`<a id=`, categoryIndex);
@@ -379,7 +379,7 @@ test("catalog renderer emits the exact page framing, category order, headings, a
 
   for (const tool of contract.tools) {
     assert.equal(occurrences(source, `<a id="${tool.anchor}"></a>`), 1, `${tool.name} anchor`);
-    assert.equal(occurrences(source, `## \`${tool.name}\``), 1, `${tool.name} heading`);
+    assert.equal(occurrences(source, `### \`${tool.name}\``), 1, `${tool.name} heading`);
   }
 });
 
@@ -390,16 +390,16 @@ test("every tool block keeps purpose, label, metadata, top-level inputs, result 
   for (const [index, tool] of contract.tools.entries()) {
     const block = toolBlock(source, tool, contract.tools[index + 1]);
     const categoryTitle = CATEGORY_GROUPS.find(({ key }) => key === tool.category).title;
-    assert.ok(block.indexOf(`<a id="${tool.anchor}"></a>`) < block.indexOf(`## \`${tool.name}\``));
+    assert.ok(block.indexOf(`<a id="${tool.anchor}"></a>`) < block.indexOf(`### \`${tool.name}\``));
     assert.match(block, /\*\*MCP tool\*\*/);
     assert.ok(block.includes(tool.description), `${tool.name} runtime description`);
     assert.ok(block.includes(`**Category:** ${categoryTitle}`), `${tool.name} category`);
     assert.ok(block.includes(`**Credit behavior:** ${tool.spend.summary}`), `${tool.name} spend`);
     assert.ok(block.includes(`**Execution:** ${tool.asynchronous ? "Asynchronous" : "Synchronous"}`));
     assert.match(block, /\*\*Authentication:\*\*[^\n]+never include an API key in tool arguments/i);
-    assert.match(block, /### Inputs\n\n\| Field \| Type \| Required \| Description \| Constraints \|/);
-    assert.match(block, /### Minimal `tools\/call` example/);
-    assert.match(block, /### Expected result\n\n[^\n]+/);
+    assert.match(block, /#### Inputs\n\n\| Field \| Type \| Required \| Description \| Constraints \|/);
+    assert.match(block, /#### Minimal `tools\/call` example/);
+    assert.match(block, /#### Expected result\n\n[^\n]+/);
 
     const required = new Set(tool.inputSchema.required ?? []);
     for (const property of Object.keys(tool.inputSchema.properties ?? {})) {

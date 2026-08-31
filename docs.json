@@ -119,6 +119,37 @@
             ]
           }
         ]
+      },
+      {
+        "tab": "MCP & Agents",
+        "groups": [
+          {
+            "group": "Start",
+            "pages": [
+              "mcp/airscale-mcp-server",
+              "mcp/tools"
+            ]
+          },
+          {
+            "group": "Connect",
+            "pages": [
+              "mcp/connect-airscale-mcp-to-chatgpt",
+              "mcp/connect-airscale-mcp-to-claude"
+            ]
+          },
+          {
+            "group": "Use",
+            "pages": [
+              "mcp/how-to-use-the-airscale-mcp"
+            ]
+          },
+          {
+            "group": "For agents",
+            "pages": [
+              "mcp/agent-resources"
+            ]
+          }
+        ]
       }
     ]
   }

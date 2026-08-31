@@ -14,7 +14,7 @@ Review each tool's credit behavior before approval. Paid export starts require `
 Authenticate through the MCP connection. OAuth clients complete authentication in the browser; API keys never belong in tool arguments.
 </Note>
 
-# Workspace
+## Workspace
 
 | Tool | Purpose | Credit behavior | Execution |
 | --- | --- | --- | --- |
@@ -22,7 +22,7 @@ Authenticate through the MCP connection. OAuth clients complete authentication i
 
 <a id="airscale-check-credits"></a>
 
-## `airscale_check_credits`
+### `airscale_check_credits`
 
 **MCP tool**
 
@@ -42,13 +42,13 @@ Check how many credits remain in the workspace.
 Credit behavior: Free; checking the balance does not debit credits.
 </Note>
 
-### Inputs
+#### Inputs
 
 | Field | Type | Required | Description | Constraints |
 | --- | --- | --- | --- | --- |
 | _No input fields_ | — | — | Pass an empty JSON object. | additional properties are not allowed |
 
-### Minimal `tools/call` example
+#### Minimal `tools/call` example
 
 ```json
 {
@@ -62,13 +62,13 @@ Credit behavior: Free; checking the balance does not debit credits.
 }
 ```
 
-### Expected result
+#### Expected result
 
 Returns the workspace's current Airscale credit balance without spending credits.
 
 **Related API reference:** [getCredits](/api-reference/credit-count)
 
-# Search and research
+## Search and research
 
 | Tool | Purpose | Credit behavior | Execution |
 | --- | --- | --- | --- |
@@ -80,7 +80,7 @@ Returns the workspace's current Airscale credit balance without spending credits
 
 <a id="airscale-find-people"></a>
 
-## `airscale_find_people`
+### `airscale_find_people`
 
 **MCP tool**
 
@@ -100,7 +100,7 @@ Search people with public Find People filters for profile, current company, expe
 Credit behavior: 0.1 credits per returned lead.
 </Note>
 
-### Inputs
+#### Inputs
 
 | Field | Type | Required | Description | Constraints |
 | --- | --- | --- | --- | --- |
@@ -108,7 +108,7 @@ Credit behavior: 0.1 credits per returned lead.
 | `size` | `integer` | No | Results per page, 1..100. Defaults to 100 | minimum: 1; maximum: 100 |
 | `cursor` | `string` | No | next_cursor from the previous response | — |
 
-### Minimal `tools/call` example
+#### Minimal `tools/call` example
 
 ```json
 {
@@ -131,7 +131,7 @@ Credit behavior: 0.1 credits per returned lead.
 }
 ```
 
-### Expected result
+#### Expected result
 
 Returns one page of matching people and a cursor when another page is available.
 
@@ -139,7 +139,7 @@ Returns one page of matching people and a cursor when another page is available.
 
 <a id="airscale-count-find-people"></a>
 
-## `airscale_count_find_people`
+### `airscale_count_find_people`
 
 **MCP tool**
 
@@ -159,13 +159,13 @@ Count people matching find-people query filters. Free, no credits charged.
 Credit behavior: Free; no credits charged.
 </Note>
 
-### Inputs
+#### Inputs
 
 | Field | Type | Required | Description | Constraints |
 | --- | --- | --- | --- | --- |
 | `query` | `object` | Yes | At least one filter required | allowed properties: `firstname`, `lastname`, `JobTitle`, `companyDomain`, `companyLinkedinUrl`, `school`, `languages`, `skills`, `location`, `keyword`, `currentCompanyName`, `currentCompany.type`, `currentCompany.industry`, `currentCompany.location`, `currentCompany.keyword`, `totalYearsOfExperience`, `timeInCurrentCompany`, `currentCompany.headcount`, `currentCompany.revenue`, `currentCompany.headcountGrowth`; nested required fields: `currentCompany.headcountGrowth.timespan`; additional properties are not allowed |
 
-### Minimal `tools/call` example
+#### Minimal `tools/call` example
 
 ```json
 {
@@ -187,7 +187,7 @@ Credit behavior: Free; no credits charged.
 }
 ```
 
-### Expected result
+#### Expected result
 
 Returns the number of people matching the supplied query filters.
 
@@ -195,7 +195,7 @@ Returns the number of people matching the supplied query filters.
 
 <a id="airscale-find-companies"></a>
 
-## `airscale_find_companies`
+### `airscale_find_companies`
 
 **MCP tool**
 
@@ -215,7 +215,7 @@ Search companies by firmographic, location, event, intent, technology, and websi
 Credit behavior: 0.1 credits per returned company.
 </Note>
 
-### Inputs
+#### Inputs
 
 | Field | Type | Required | Description | Constraints |
 | --- | --- | --- | --- | --- |
@@ -224,7 +224,7 @@ Credit behavior: 0.1 credits per returned company.
 | `size` | `integer` | No | Companies per page, 1..100. Defaults to 50 | minimum: 1; maximum: 100 |
 | `cursor` | `string` | No | next_cursor from the previous response; used instead of page | — |
 
-### Minimal `tools/call` example
+#### Minimal `tools/call` example
 
 ```json
 {
@@ -243,7 +243,7 @@ Credit behavior: 0.1 credits per returned company.
 }
 ```
 
-### Expected result
+#### Expected result
 
 Returns one page of matching companies and pagination metadata for any remaining results.
 
@@ -251,7 +251,7 @@ Returns one page of matching companies and pagination metadata for any remaining
 
 <a id="airscale-find-companies-filter-values"></a>
 
-## `airscale_find_companies_filter_values`
+### `airscale_find_companies_filter_values`
 
 **MCP tool**
 
@@ -271,7 +271,7 @@ Discover accepted values for find-companies filters (city, region, industry, top
 Credit behavior: Free; no credits charged.
 </Note>
 
-### Inputs
+#### Inputs
 
 | Field | Type | Required | Description | Constraints |
 | --- | --- | --- | --- | --- |
@@ -281,7 +281,7 @@ Credit behavior: Free; no credits charged.
 | `country` | `string` | No | Country name or ISO code to narrow location results | — |
 | `region` | `string` | No | Region code or value to narrow city results, e.g. "us-ca" | — |
 
-### Minimal `tools/call` example
+#### Minimal `tools/call` example
 
 ```json
 {
@@ -298,7 +298,7 @@ Credit behavior: Free; no credits charged.
 }
 ```
 
-### Expected result
+#### Expected result
 
 Returns accepted values for the selected company filter and search text.
 
@@ -306,7 +306,7 @@ Returns accepted values for the selected company filter and search text.
 
 <a id="airscale-airsearch"></a>
 
-## `airscale_airsearch`
+### `airscale_airsearch`
 
 **MCP tool**
 
@@ -326,14 +326,14 @@ AI web research agent: ask a natural-language question and optionally specify st
 Credit behavior: 2 credits per call.
 </Note>
 
-### Inputs
+#### Inputs
 
 | Field | Type | Required | Description | Constraints |
 | --- | --- | --- | --- | --- |
 | `prompt` | `string` | Yes | Natural-language research question or instruction | minimum length: 1 |
 | `schema` | `object` | No | Fields to extract: keys are output names, values are types (string, url, email, number, int, float, boolean, date, phone) or free-text descriptions. If omitted, the agent infers fields | — |
 
-### Minimal `tools/call` example
+#### Minimal `tools/call` example
 
 ```json
 {
@@ -349,13 +349,13 @@ Credit behavior: 2 credits per call.
 }
 ```
 
-### Expected result
+#### Expected result
 
 Returns the research answer and any structured fields requested in the prompt schema.
 
 **Related API reference:** [airsearch](/api-reference/airsearch)
 
-# Contact and profile enrichment
+## Contact and profile enrichment
 
 | Tool | Purpose | Credit behavior | Execution |
 | --- | --- | --- | --- |
@@ -371,7 +371,7 @@ Returns the research answer and any structured fields requested in the prompt sc
 
 <a id="airscale-find-email"></a>
 
-## `airscale_find_email`
+### `airscale_find_email`
 
 **MCP tool**
 
@@ -391,7 +391,7 @@ Find a contact's professional email. Provide either a LinkedIn profile URL, or f
 Credit behavior: 2 credits per successful result.
 </Note>
 
-### Inputs
+#### Inputs
 
 | Field | Type | Required | Description | Constraints |
 | --- | --- | --- | --- | --- |
@@ -401,7 +401,7 @@ Credit behavior: 2 credits per successful result.
 | `domain` | `string` | No | Company domain, e.g. airscale.io | minimum length: 1 |
 | `company_name` | `string` | No | No runtime description supplied. | minimum length: 1 |
 
-### Minimal `tools/call` example
+#### Minimal `tools/call` example
 
 ```json
 {
@@ -419,7 +419,7 @@ Credit behavior: 2 credits per successful result.
 }
 ```
 
-### Expected result
+#### Expected result
 
 Returns a professional email result when found, or a documented not-found result.
 
@@ -427,7 +427,7 @@ Returns a professional email result when found, or a documented not-found result
 
 <a id="airscale-find-email-bulk"></a>
 
-## `airscale_find_email_bulk`
+### `airscale_find_email_bulk`
 
 **MCP tool**
 
@@ -447,14 +447,14 @@ Find professional emails for multiple contacts. Returns immediately; results are
 Credit behavior: 2 credits per successful input.
 </Note>
 
-### Inputs
+#### Inputs
 
 | Field | Type | Required | Description | Constraints |
 | --- | --- | --- | --- | --- |
 | `webhook_url` | `string` | Yes | Results are POSTed here, one payload per input | format: `uri` |
 | `inputs` | `array<object>` | Yes | Contacts to enrich | minimum items: 1; item type: `object` |
 
-### Minimal `tools/call` example
+#### Minimal `tools/call` example
 
 ```json
 {
@@ -478,7 +478,7 @@ Credit behavior: 2 credits per successful input.
 }
 ```
 
-### Expected result
+#### Expected result
 
 Returns an acceptance result immediately; one result per input is delivered to the webhook URL.
 
@@ -486,7 +486,7 @@ Returns an acceptance result immediately; one result per input is delivered to t
 
 <a id="airscale-find-mobile-phone"></a>
 
-## `airscale_find_mobile_phone`
+### `airscale_find_mobile_phone`
 
 **MCP tool**
 
@@ -506,13 +506,13 @@ Find a contact's mobile phone number from their LinkedIn profile URL.
 Credit behavior: 40 credits per successful result.
 </Note>
 
-### Inputs
+#### Inputs
 
 | Field | Type | Required | Description | Constraints |
 | --- | --- | --- | --- | --- |
 | `linkedin_profile_url` | `string` | Yes | LinkedIn profile URL of the contact | minimum length: 1 |
 
-### Minimal `tools/call` example
+#### Minimal `tools/call` example
 
 ```json
 {
@@ -528,7 +528,7 @@ Credit behavior: 40 credits per successful result.
 }
 ```
 
-### Expected result
+#### Expected result
 
 Returns the discovered mobile phone result, or a documented not-found result.
 
@@ -536,7 +536,7 @@ Returns the discovered mobile phone result, or a documented not-found result.
 
 <a id="airscale-find-personal-email"></a>
 
-## `airscale_find_personal_email`
+### `airscale_find_personal_email`
 
 **MCP tool**
 
@@ -556,13 +556,13 @@ Find a contact's personal email from their LinkedIn profile URL.
 Credit behavior: 3-12 credits per successful result.
 </Note>
 
-### Inputs
+#### Inputs
 
 | Field | Type | Required | Description | Constraints |
 | --- | --- | --- | --- | --- |
 | `linkedin_profile_url` | `string` | Yes | LinkedIn profile URL of the contact | minimum length: 1 |
 
-### Minimal `tools/call` example
+#### Minimal `tools/call` example
 
 ```json
 {
@@ -578,7 +578,7 @@ Credit behavior: 3-12 credits per successful result.
 }
 ```
 
-### Expected result
+#### Expected result
 
 Returns the discovered personal email result, or a documented not-found result.
 
@@ -586,7 +586,7 @@ Returns the discovered personal email result, or a documented not-found result.
 
 <a id="airscale-find-people-by-url"></a>
 
-## `airscale_find_people_by_url`
+### `airscale_find_people_by_url`
 
 **MCP tool**
 
@@ -606,7 +606,7 @@ Find a person's LinkedIn profile URL from their name and company.
 Credit behavior: 0.5 credits per successful result.
 </Note>
 
-### Inputs
+#### Inputs
 
 | Field | Type | Required | Description | Constraints |
 | --- | --- | --- | --- | --- |
@@ -614,7 +614,7 @@ Credit behavior: 0.5 credits per successful result.
 | `last_name` | `string` | Yes | No runtime description supplied. | minimum length: 1 |
 | `company_name` | `string` | Yes | No runtime description supplied. | minimum length: 1 |
 
-### Minimal `tools/call` example
+#### Minimal `tools/call` example
 
 ```json
 {
@@ -632,7 +632,7 @@ Credit behavior: 0.5 credits per successful result.
 }
 ```
 
-### Expected result
+#### Expected result
 
 Returns a matching LinkedIn person-profile URL, or a documented not-found result.
 
@@ -640,7 +640,7 @@ Returns a matching LinkedIn person-profile URL, or a documented not-found result
 
 <a id="airscale-extract-people-profile"></a>
 
-## `airscale_extract_people_profile`
+### `airscale_extract_people_profile`
 
 **MCP tool**
 
@@ -660,14 +660,14 @@ Extract a full LinkedIn person profile from its URL.
 Credit behavior: URL-selected pricing; person-profile successes cost 1 credit by default and workspace-specific pricing may differ.
 </Note>
 
-### Inputs
+#### Inputs
 
 | Field | Type | Required | Description | Constraints |
 | --- | --- | --- | --- | --- |
 | `linkedin_profile_url` | `string` | Yes | LinkedIn person profile URL | minimum length: 1 |
 | `webhook_url` | `string` | No | Optional webhook to receive the profile | format: `uri` |
 
-### Minimal `tools/call` example
+#### Minimal `tools/call` example
 
 ```json
 {
@@ -683,7 +683,7 @@ Credit behavior: URL-selected pricing; person-profile successes cost 1 credit by
 }
 ```
 
-### Expected result
+#### Expected result
 
 Returns the extracted person profile for the supplied LinkedIn URL.
 
@@ -691,7 +691,7 @@ Returns the extracted person profile for the supplied LinkedIn URL.
 
 <a id="airscale-extract-company-profile"></a>
 
-## `airscale_extract_company_profile`
+### `airscale_extract_company_profile`
 
 **MCP tool**
 
@@ -711,14 +711,14 @@ Extract a full LinkedIn company profile from its URL.
 Credit behavior: URL-selected pricing; company or school-profile successes cost 0.5 credits and workspace-specific pricing may differ.
 </Note>
 
-### Inputs
+#### Inputs
 
 | Field | Type | Required | Description | Constraints |
 | --- | --- | --- | --- | --- |
 | `linkedin_profile_url` | `string` | Yes | LinkedIn company page URL | minimum length: 1 |
 | `webhook_url` | `string` | No | Optional webhook to receive the profile | format: `uri` |
 
-### Minimal `tools/call` example
+#### Minimal `tools/call` example
 
 ```json
 {
@@ -734,7 +734,7 @@ Credit behavior: URL-selected pricing; company or school-profile successes cost 
 }
 ```
 
-### Expected result
+#### Expected result
 
 Returns the extracted company or school profile for the supplied LinkedIn URL.
 
@@ -742,7 +742,7 @@ Returns the extracted company or school profile for the supplied LinkedIn URL.
 
 <a id="airscale-reverse-email"></a>
 
-## `airscale_reverse_email`
+### `airscale_reverse_email`
 
 **MCP tool**
 
@@ -762,13 +762,13 @@ Resolve an email address to a LinkedIn profile. Returns the entire enriched prof
 Credit behavior: 2 credits per returned profile.
 </Note>
 
-### Inputs
+#### Inputs
 
 | Field | Type | Required | Description | Constraints |
 | --- | --- | --- | --- | --- |
 | `email` | `string` | Yes | Email address to resolve to a LinkedIn profile | format: `email` |
 
-### Minimal `tools/call` example
+#### Minimal `tools/call` example
 
 ```json
 {
@@ -784,7 +784,7 @@ Credit behavior: 2 credits per returned profile.
 }
 ```
 
-### Expected result
+#### Expected result
 
 Returns the enriched person profile resolved from the email address, not only a profile URL.
 
@@ -792,7 +792,7 @@ Returns the enriched person profile resolved from the email address, not only a 
 
 <a id="airscale-reverse-phone"></a>
 
-## `airscale_reverse_phone`
+### `airscale_reverse_phone`
 
 **MCP tool**
 
@@ -812,13 +812,13 @@ Resolve a phone number to a LinkedIn profile. Returns the entire enriched profil
 Credit behavior: 10 credits per returned profile.
 </Note>
 
-### Inputs
+#### Inputs
 
 | Field | Type | Required | Description | Constraints |
 | --- | --- | --- | --- | --- |
 | `mobile_phone` | `string` | Yes | Phone number with country code, e.g. +33610607076 | minimum length: 1 |
 
-### Minimal `tools/call` example
+#### Minimal `tools/call` example
 
 ```json
 {
@@ -834,13 +834,13 @@ Credit behavior: 10 credits per returned profile.
 }
 ```
 
-### Expected result
+#### Expected result
 
 Returns the enriched person profile resolved from the phone number, not only a profile URL.
 
 **Related API reference:** [reversePhoneLookup](/api-reference/reverse-phone)
 
-# Async exports and managed batches
+## Async exports and managed batches
 
 | Tool | Purpose | Credit behavior | Execution |
 | --- | --- | --- | --- |
@@ -854,7 +854,7 @@ Returns the enriched person profile resolved from the phone number, not only a p
 
 <a id="airscale-start-companies-export"></a>
 
-## `airscale_start_companies_export`
+### `airscale_start_companies_export`
 
 **MCP tool**
 
@@ -878,7 +878,7 @@ Credit behavior: Up to 0.1 credits per exported company.
 This starts paid export work. Review the maximum possible credit spend, then set `confirm_credit_spend: true` only after approval.
 </Warning>
 
-### Inputs
+#### Inputs
 
 | Field | Type | Required | Description | Constraints |
 | --- | --- | --- | --- | --- |
@@ -888,7 +888,7 @@ This starts paid export work. Review the maximum possible credit spend, then set
 | `fields` | `array<string>` | No | Optional top-level fields to include. | maximum items: 100; item type: `string` |
 | `confirm_credit_spend` | `boolean` | No | Must be true to start a paid fresh-row export. | — |
 
-### Minimal `tools/call` example
+#### Minimal `tools/call` example
 
 ```json
 {
@@ -909,13 +909,13 @@ This starts paid export work. Review the maximum possible credit spend, then set
 }
 ```
 
-### Expected result
+#### Expected result
 
 Returns an `export_id`; poll `airscale_get_export_status` before requesting the file.
 
 <a id="airscale-start-people-export"></a>
 
-## `airscale_start_people_export`
+### `airscale_start_people_export`
 
 **MCP tool**
 
@@ -939,7 +939,7 @@ Credit behavior: Up to 0.1 credits per exported lead.
 This starts paid export work. Review the maximum possible credit spend, then set `confirm_credit_spend: true` only after approval.
 </Warning>
 
-### Inputs
+#### Inputs
 
 | Field | Type | Required | Description | Constraints |
 | --- | --- | --- | --- | --- |
@@ -949,7 +949,7 @@ This starts paid export work. Review the maximum possible credit spend, then set
 | `fields` | `array<string>` | No | Optional top-level fields to include. | maximum items: 100; item type: `string` |
 | `confirm_credit_spend` | `boolean` | No | Must be true to start a paid fresh-row export. | — |
 
-### Minimal `tools/call` example
+#### Minimal `tools/call` example
 
 ```json
 {
@@ -974,13 +974,13 @@ This starts paid export work. Review the maximum possible credit spend, then set
 }
 ```
 
-### Expected result
+#### Expected result
 
 Returns an `export_id`; poll `airscale_get_export_status` before requesting the file.
 
 <a id="airscale-create-contact-enrichment-batch"></a>
 
-## `airscale_create_contact_enrichment_batch`
+### `airscale_create_contact_enrichment_batch`
 
 **MCP tool**
 
@@ -1000,13 +1000,13 @@ Create a server-side batch for CSV/file/table contact inputs with more than 20 r
 Credit behavior: Free; no enrichment credits charged.
 </Note>
 
-### Inputs
+#### Inputs
 
 | Field | Type | Required | Description | Constraints |
 | --- | --- | --- | --- | --- |
 | `name` | `string` | No | Optional user-facing batch name. | minimum length: 1; maximum length: 200 |
 
-### Minimal `tools/call` example
+#### Minimal `tools/call` example
 
 ```json
 {
@@ -1022,13 +1022,13 @@ Credit behavior: Free; no enrichment credits charged.
 }
 ```
 
-### Expected result
+#### Expected result
 
 Returns a managed `batch_id` that can receive contact chunks before enrichment starts.
 
 <a id="airscale-add-contacts-to-enrichment-batch"></a>
 
-## `airscale_add_contacts_to_enrichment_batch`
+### `airscale_add_contacts_to_enrichment_batch`
 
 **MCP tool**
 
@@ -1048,14 +1048,14 @@ Add CSV/file/table contacts to a managed enrichment batch in chunks of up to 250
 Credit behavior: Free; no enrichment credits charged.
 </Note>
 
-### Inputs
+#### Inputs
 
 | Field | Type | Required | Description | Constraints |
 | --- | --- | --- | --- | --- |
 | `batch_id` | `string` | Yes | Batch id returned by airscale_create_contact_enrichment_batch. | minimum length: 1 |
 | `contacts` | `array<object>` | Yes | Contacts to add. Send uploaded CSV rows in chunks of up to 250. | minimum items: 1; maximum items: 250; item type: `object` |
 
-### Minimal `tools/call` example
+#### Minimal `tools/call` example
 
 ```json
 {
@@ -1079,13 +1079,13 @@ Credit behavior: Free; no enrichment credits charged.
 }
 ```
 
-### Expected result
+#### Expected result
 
 Returns the updated managed-batch state after accepting the contact chunk.
 
 <a id="airscale-start-contact-enrichment-export"></a>
 
-## `airscale_start_contact_enrichment_export`
+### `airscale_start_contact_enrichment_export`
 
 **MCP tool**
 
@@ -1109,7 +1109,7 @@ Credit behavior: Up to 2 credits per contact.
 This starts paid export work. Review the maximum possible credit spend, then set `confirm_credit_spend: true` only after approval.
 </Warning>
 
-### Inputs
+#### Inputs
 
 | Field | Type | Required | Description | Constraints |
 | --- | --- | --- | --- | --- |
@@ -1119,7 +1119,7 @@ This starts paid export work. Review the maximum possible credit spend, then set
 | `fields` | `array<string>` | No | Optional top-level fields to include. | maximum items: 100; item type: `string` |
 | `confirm_credit_spend` | `boolean` | No | Must be true to start paid contact enrichment. | — |
 
-### Minimal `tools/call` example
+#### Minimal `tools/call` example
 
 ```json
 {
@@ -1140,13 +1140,13 @@ This starts paid export work. Review the maximum possible credit spend, then set
 }
 ```
 
-### Expected result
+#### Expected result
 
 Returns an `export_id`; poll status, then request the completed export file.
 
 <a id="airscale-get-export-status"></a>
 
-## `airscale_get_export_status`
+### `airscale_get_export_status`
 
 **MCP tool**
 
@@ -1166,13 +1166,13 @@ Check an async companies, people, or contact-enrichment export job without retur
 Credit behavior: Free; no credits charged.
 </Note>
 
-### Inputs
+#### Inputs
 
 | Field | Type | Required | Description | Constraints |
 | --- | --- | --- | --- | --- |
 | `export_id` | `string` | Yes | Export id returned by a start export tool. | minimum length: 1 |
 
-### Minimal `tools/call` example
+#### Minimal `tools/call` example
 
 ```json
 {
@@ -1188,13 +1188,13 @@ Credit behavior: Free; no credits charged.
 }
 ```
 
-### Expected result
+#### Expected result
 
 Returns the export state and progress metadata, including the server-provided polling interval when present.
 
 <a id="airscale-get-export-file"></a>
 
-## `airscale_get_export_file`
+### `airscale_get_export_file`
 
 **MCP tool**
 
@@ -1214,13 +1214,13 @@ Get the download URL and MCP resource link for a completed companies, people, or
 Credit behavior: Free; no credits charged.
 </Note>
 
-### Inputs
+#### Inputs
 
 | Field | Type | Required | Description | Constraints |
 | --- | --- | --- | --- | --- |
 | `export_id` | `string` | Yes | Completed export id. | minimum length: 1 |
 
-### Minimal `tools/call` example
+#### Minimal `tools/call` example
 
 ```json
 {
@@ -1236,6 +1236,6 @@ Credit behavior: Free; no credits charged.
 }
 ```
 
-### Expected result
+#### Expected result
 
 Returns a download URL and MCP resource link after the export has completed.
