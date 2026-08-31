@@ -81,12 +81,24 @@ function assertTask3ExamplePrivacy(exampleValues) {
   const serialized = JSON.stringify(exampleValues);
   for (const [label, pattern] of [
     ["real provider identity", /\b(?:Prospeo|Icypeas|RapidAPI|Leadmagic|SalesQL|Limadata|ContactOut|Wiza|Forager|Bounceban|Findymail|Trykitt|Kitt|A-?Leads)\b/i],
-    ["internal identity", /\b(?:provider_internal|HistoricalImport|EmailLogCache|Supabase|Bubble|Durable Object)\b/i],
+    ["internal identity", /\b(?:HistoricalImport|EmailLogCache|Supabase|Bubble|Durable Object)\b/i],
     ["bearer credential", /\bBearer\s+[A-Za-z0-9._~-]+/i],
     ["named credential", /"(?:api[_-]?key|authorization|secret|password|token)"\s*:\s*"[^"\s]+"/i]
   ]) {
     assert.doesNotMatch(serialized, pattern, label);
   }
+
+  const privateIdentityFields = new Set(["provider", "verifier", "provider_internal"]);
+  function inspect(value) {
+    if (!value || typeof value !== "object") return;
+    for (const [key, child] of Object.entries(value)) {
+      if (privateIdentityFields.has(key) && child !== null) {
+        assert.fail(`non-null ${key} example field`);
+      }
+      inspect(child);
+    }
+  }
+  for (const example of exampleValues) inspect(example);
 }
 
 function inTemporaryDirectory(run) {
@@ -235,6 +247,9 @@ test("account and contact named examples reject provider identities and credenti
   assert.throws(() => assertTask3ExamplePrivacy([...examples, { provider_internal: "HistoricalImport" }]), /internal identity/);
   assert.throws(() => assertTask3ExamplePrivacy([...examples, { authorization: "Bearer synthetic-token" }]), /bearer credential/);
   assert.throws(() => assertTask3ExamplePrivacy([...examples, { api_key: "sk-synthetic-credential" }]), /named credential/);
+  assert.throws(() => assertTask3ExamplePrivacy([...examples, { nested: { provider: "SalesQL_cached" } }]), /non-null provider/);
+  assert.throws(() => assertTask3ExamplePrivacy([...examples, { nested: { verifier: "synthetic-verifier" } }]), /non-null verifier/);
+  assert.throws(() => assertTask3ExamplePrivacy([...examples, { nested: { provider_internal: "InternalOnly" } }]), /non-null provider_internal/);
 });
 
 test("Account Credits operation models the stable balance contract", () => {
