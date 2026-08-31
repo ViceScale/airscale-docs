@@ -109,8 +109,14 @@ function readPage(path) {
 }
 
 function documentedExamples(source) {
-  const fenced = Array.from(source.matchAll(/^```[^\n]*\n([\s\S]*?)^```/gm), ([, content]) => content);
-  const prompts = Array.from(source.matchAll(/^>\s+(.+)$/gm), ([, content]) => content);
+  const fenced = Array.from(
+    source.matchAll(/^```[^\n]*\n([\s\S]*?)^```/gm),
+    ([, content]) => ({ content, kind: "fence" })
+  );
+  const prompts = Array.from(
+    source.matchAll(/^>\s+(.+)$/gm),
+    ([, content]) => ({ content, kind: "prompt" })
+  );
   return [...fenced, ...prompts];
 }
 
@@ -134,6 +140,16 @@ function assertJsonIdentitiesAreSynthetic(value, path, exampleIndex) {
   }
 
   const entries = Object.entries(value);
+  for (const [key, nested] of entries) {
+    if (!/^(?:full_?name|name)$/i.test(key)) continue;
+    for (const fullName of identityValues(nested)) {
+      assert.ok(
+        SYNTHETIC_FULL_NAMES.has(fullName),
+        `${path} example ${exampleIndex} identity ${fullName} must be explicitly synthetic`
+      );
+    }
+  }
+
   const firstEntry = entries.find(([key]) => /^(?:first_?name|firstname)$/i.test(key));
   const lastEntry = entries.find(([key]) => /^(?:last_?name|lastname)$/i.test(key));
   if (firstEntry && lastEntry) {
@@ -157,7 +173,7 @@ function assertExamplesUseSyntheticData(source, path) {
   const examples = documentedExamples(source);
   assert.ok(examples.length > 0, `${path} must contain at least one documented example`);
 
-  for (const [index, example] of examples.entries()) {
+  for (const [index, { content: example, kind }] of examples.entries()) {
     for (const domain of example.match(/\b(?:[a-z0-9-]+\.)+[a-z]{2,}\b/gi) ?? []) {
       if (domain.toLowerCase() === "mcp.airscale.io") continue;
       assert.match(
@@ -167,24 +183,21 @@ function assertExamplesUseSyntheticData(source, path) {
       );
     }
 
-    assert.doesNotMatch(
-      example,
-      /(?:\+\d[\d\s().-]{6,}\d|\b\d{3}[-. ]\d{3}[-. ]\d{4}\b)/,
-      `${path} example ${index} must not contain a phone number`
-    );
-
-    const promptIdentities = new Set();
-    for (const pattern of [
-      /\bnamed\s+([A-Z][A-Za-z'-]+)\s+([A-Z][A-Za-z'-]+)\b/g,
-      /\b(?:find|enrich|resolve|research|contact)\s+(?:someone\s+)?(?:named\s+)?([A-Z][A-Za-z'-]+)\s+([A-Z][A-Za-z'-]+)\b/g
-    ]) {
-      for (const match of example.matchAll(pattern)) promptIdentities.add(`${match[1]} ${match[2]}`);
+    for (const match of example.matchAll(/(?<![\w])\+?\d[\d\s().-]{5,}\d(?![\w])/g)) {
+      if ((match[0].match(/\d/g) ?? []).length >= 8) {
+        assert.fail(`${path} example ${index} must not contain a phone number`);
+      }
     }
-    for (const fullName of promptIdentities) {
-      assert.ok(
-        SYNTHETIC_FULL_NAMES.has(fullName),
-        `${path} example ${index} identity ${fullName} must be explicitly synthetic`
-      );
+
+    if (kind === "prompt") {
+      const prose = example.replace(/`[^`]*`/g, " ").replace(/\bAirscale MCP\b/g, " ");
+      for (const match of prose.matchAll(/\b([A-Z][a-z]+(?:['-][A-Za-z]+)?)\s+([A-Z][a-z]+(?:['-][A-Za-z]+)?)\b/g)) {
+        const fullName = `${match[1]} ${match[2]}`;
+        assert.ok(
+          SYNTHETIC_FULL_NAMES.has(fullName),
+          `${path} example ${index} identity ${fullName} must be explicitly synthetic`
+        );
+      }
     }
 
     if (example.trimStart().startsWith("{")) {
@@ -434,7 +447,9 @@ test("Claude setup distinguishes hosted OAuth from Claude Code header authentica
 
 test("Claude setup branches individual and organization-hosted connector flows", () => {
   const { body } = readPage("mcp/connect-airscale-mcp-to-claude");
-  assert.match(body, /Pro or Max[\s\S]{0,240}(?:add|create)[\s\S]{0,100}custom connector/i);
+  assert.match(body, /Free[\s\S]{0,120}Pro[\s\S]{0,80}Max/i);
+  assert.match(body, /Free[\s\S]{0,160}(?:one|1) custom connector/i);
+  assert.match(body, /Free, Pro, or Max[\s\S]{0,240}(?:add|create)[\s\S]{0,100}custom connector/i);
   assert.match(body, /Team or Enterprise[\s\S]{0,240}(?:Owner|Primary Owner)[\s\S]{0,160}Custom[\s\S]{0,80}Web/i);
   assert.match(body, /member[\s\S]{0,180}Connect[\s\S]{0,120}authenticate/i);
   assert.match(body, /https:\/\/support\.claude\.com\/en\/articles\/11175166/);
@@ -518,6 +533,28 @@ test("synthetic-data policy rejects mixed pages with a real identity or phone nu
     ),
     /Satya Nadella must be explicitly synthetic/
   );
+  for (const prompt of [
+    "Look up Satya Nadella.",
+    "Search for Satya Nadella.",
+    "Get the profile for Satya Nadella."
+  ]) {
+    assert.throws(
+      () => assertExamplesUseSyntheticData(`${body}\n> ${prompt}`, "mixed prompt fixture"),
+      /Satya Nadella must be explicitly synthetic/
+    );
+  }
+  for (const payload of [
+    { full_name: "Satya Nadella" },
+    { name: "Satya Nadella" }
+  ]) {
+    assert.throws(
+      () => assertExamplesUseSyntheticData(
+        `${body}\n\`\`\`json\n${JSON.stringify(payload)}\n\`\`\``,
+        "mixed named payload fixture"
+      ),
+      /Satya Nadella must be explicitly synthetic/
+    );
+  }
   assert.throws(
     () => assertExamplesUseSyntheticData(
       `${body}\n> Enrich the contact at +1 212 867 5309.`,
@@ -525,6 +562,15 @@ test("synthetic-data policy rejects mixed pages with a real identity or phone nu
     ),
     /must not contain a phone number/
   );
+  for (const phone of ["33612345678", "020 7946 0958"]) {
+    assert.throws(
+      () => assertExamplesUseSyntheticData(
+        `${body}\n> Enrich the contact at ${phone}.`,
+        "mixed international phone fixture"
+      ),
+      /must not contain a phone number/
+    );
+  }
   assert.throws(
     () => assertExamplesUseSyntheticData(
       `${body}\n\`\`\`json\n${JSON.stringify({
