@@ -11,7 +11,7 @@ Search companies by firmographic, location, event, intent, and technology filter
 Search shares a limit of 6 requests per second per workspace with [Company filter values](/api-reference/find-companies/filter-values). It costs 0.1 credits per returned company; zero returned rows cost zero credits. At least 0.1 credits must be available before Search begins.
 </Note>
 
-When `next_cursor` is present, send it unchanged as `cursor` with the same filters. Do not decode, construct, or edit the cursor. Cursor pagination preserves the original page size and can traverse up to 10,000 companies for one search.
+When `next_cursor` is not `null`, send the exact value unchanged as `cursor` with the same filters. Do not decode, construct, or edit the cursor. Cursor pagination preserves the original page size and can traverse up to 10,000 companies for one search.
 
 After a `429`, wait for the next second and retry with bounded exponential backoff. Retry a settlement failure only after the credit service recovers.
 

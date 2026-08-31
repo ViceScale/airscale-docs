@@ -414,7 +414,18 @@ test("guide pages teach authentication, safe retries, and a first request", () =
 const DURABLE_OPERATION_GUIDANCE = {
   "api-reference/credit-count": [/no request body/i, /does not debit Airscale credits/i],
   "api-reference/email-finder": [/3,000 requests per minute/i, /2 credits/i, /`not_found` is not charged/i, /bounded backoff/i],
-  "api-reference/email-finder-(bulk)": [/asynchronous/i, /webhook/i, /100 people/i, /3,000 input items per minute/i, /automatic webhook retries/i, /`custom_id`/i],
+  "api-reference/email-finder-(bulk)": [
+    /asynchronous/i,
+    /webhook/i,
+    /100 people/i,
+    /3,000 input items per minute/i,
+    /automatic webhook retries/i,
+    /every callback echoes `custom_id`/i,
+    /omitted or `null`.*zero-based input index/is,
+    /`status: "success"`.*`email`.*`email_status: "valid"`.*`provider`.*`verifier`/is,
+    /`status: "error"`.*`error: "insufficient_credits"`.*`email: null`/is,
+    /`status: "not_found"` or `status: "timeout"`.*`email: null`/is
+  ],
   "api-reference/mobile-finder": [/3,000 requests per minute/i, /40 credits/i, /`not_found` is not charged/i, /bounded backoff/i],
   "api-reference/personal-email": [/2,000 requests per minute/i, /3 and 12 credits/i, /minimum balance/i, /usage recording/i, /before retrying/i],
   "api-reference/people-url-finder": [/6 requests per second/i, /0\.5 credits/i, /`not_found` is not charged/i, /bounded exponential backoff/i],
@@ -424,7 +435,7 @@ const DURABLE_OPERATION_GUIDANCE = {
   "api-reference/reverse-phone": [/2,000 requests per minute/i, /10 credits/i, /true miss.*exhausted or failed/i, /one bounded-backoff retry/i, /normalized number/i],
   "api-reference/find-people": [/6 requests per second/i, /0\.1 credits per returned lead/i, /empty result pages are not charged/i, /send it unchanged as `cursor`/i, /Count people/i],
   "api-reference/find-people/count": [/Count is free/i, /same `query`/i, /no pagination fields/i, /6 requests per second/i],
-  "api-reference/find-companies": [/6 requests per second/i, /0\.1 credits per returned company/i, /zero returned rows cost zero credits/i, /send it unchanged as `cursor`/i, /10,000 companies/i],
+  "api-reference/find-companies": [/6 requests per second/i, /0\.1 credits per returned company/i, /zero returned rows cost zero credits/i, /when `next_cursor` is not `null`.*send the exact value unchanged as `cursor`/is, /10,000 companies/i],
   "api-reference/find-companies/filter-values": [/free and has no request body/i, /6 requests per second/i, /`q` parameter takes precedence/i],
   "api-reference/airsearch": [/300 requests per minute/i, /1 credit/i, /`not_found` and `timeout` are not charged/i, /reservation is settled only for `success`/i, /initial-stage timeout.*`504 Gateway Timeout`/i]
 };

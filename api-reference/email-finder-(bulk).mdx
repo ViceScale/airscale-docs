@@ -13,11 +13,19 @@ The limit is 3,000 input items per minute per workspace. Each item with `status:
 
 The acceptance response only confirms that the batch was queued. Processing continues after that response, and each item is delivered separately to `webhook_url`.
 
+## Webhook callbacks
+
+Every callback echoes `custom_id`. When the submitted value is omitted or `null`, Airscale uses that item's zero-based input index.
+
+- A found email has `status: "success"`, the resolved `email`, `email_status: "valid"`, and the public `provider` and `verifier` labels.
+- An item skipped after the remaining batch balance drops below 2 credits has `status: "error"`, `error: "insufficient_credits"`, and `email: null`.
+- A miss or exhausted lookup has `status: "not_found"` or `status: "timeout"`, respectively, with `email: null`.
+
 <Warning>
 Return a `2xx` response promptly for every callback. Automatic webhook retries are not part of this operation's contract, so persist callbacks and use `custom_id` to reconcile expected and received results.
 </Warning>
 
-If the remaining balance cannot reserve the next item, its callback reports `insufficient_credits`. Add credits before submitting unfinished items again.
+Add credits before submitting skipped items again.
 
 ## Next step
 
