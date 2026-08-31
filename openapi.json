@@ -195,7 +195,7 @@
                   "value": {
                     "first_name": "Example",
                     "last_name": "Person",
-                    "domain": "example.test"
+                    "domain": "example.org"
                   }
                 }
               }
@@ -222,7 +222,7 @@
                     "summary": "Email found",
                     "value": {
                       "status": "success",
-                      "email": "example.person@example.test"
+                      "email": "example.person@example.org"
                     }
                   },
                   "notFound": {
@@ -404,7 +404,7 @@
                 "batch": {
                   "summary": "Two synthetic contacts",
                   "value": {
-                    "webhook_url": "https://webhook.example.test/email-results",
+                    "webhook_url": "https://webhook.example.org/email-results",
                     "inputs": [
                       {
                         "custom_id": "contact-001",
@@ -635,7 +635,7 @@
                     "value": {
                       "status": "success",
                       "linkedin_profile_url": "https://www.linkedin.com/in/example-person-000000",
-                      "phone_numbers": "+12025550123",
+                      "phone_numbers": "+12025550147",
                       "provider": null
                     }
                   },
@@ -821,7 +821,7 @@
                     "summary": "Personal email found",
                     "value": {
                       "status": "success",
-                      "email": "personal.example@example.test"
+                      "email": "personal.example@example.org"
                     }
                   },
                   "notFound": {
@@ -1335,7 +1335,7 @@
                       "url": "https://www.linkedin.com/company/example-company-000000",
                       "name": "Example Company",
                       "universalName": "example-company-000000",
-                      "website": "https://www.example.test",
+                      "website": "https://www.example.org",
                       "description": "Synthetic company profile for API documentation.",
                       "staff": {
                         "total": 120,
@@ -1478,7 +1478,7 @@
                 "email": {
                   "summary": "Synthetic email",
                   "value": {
-                    "email": " Example.Person@Example.Test "
+                    "email": " Example.Person@Example.Org "
                   }
                 }
               }

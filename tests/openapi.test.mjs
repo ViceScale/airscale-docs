@@ -445,7 +445,7 @@ test("Contact Email operation accepts profile or complete name identification", 
   assert.deepEqual(operation.requestBody.content["application/json"].examples.byName.value, {
     first_name: "Example",
     last_name: "Person",
-    domain: "example.test"
+    domain: "example.org"
   });
   assert.deepEqual(operation.responses["200"].content["application/json"].schema.oneOf, [
     { $ref: "#/components/schemas/SuccessEmail" },
@@ -453,7 +453,7 @@ test("Contact Email operation accepts profile or complete name identification", 
   ]);
   assert.deepEqual(operation.responses["200"].content["application/json"].examples.success.value, {
     status: "success",
-    email: "example.person@example.test"
+    email: "example.person@example.org"
   });
   assert.deepEqual(operation.responses["200"].content["application/json"].examples.notFound.value, {
     status: "not_found",
@@ -497,7 +497,7 @@ test("Contact Email Bulk operation accepts bounded batches and returns only 202"
     assert.equal(itemSchema.properties[property].minLength, 1);
   }
   assert.deepEqual(operation.requestBody.content["application/json"].examples.batch.value, {
-    webhook_url: "https://webhook.example.test/email-results",
+    webhook_url: "https://webhook.example.org/email-results",
     inputs: [
       { custom_id: "contact-001", linkedin_profile_url: "https://www.linkedin.com/in/example-person-000000" },
       { custom_id: 2002, first_name: "Sample", last_name: "Contact", company_name: "Example Company" }
@@ -561,7 +561,7 @@ test("Contact Mobile operation requires a profile and models success and miss en
   assert.deepEqual(successContent.examples.success.value, {
     status: "success",
     linkedin_profile_url: "https://www.linkedin.com/in/example-person-000000",
-    phone_numbers: "+12025550123",
+    phone_numbers: "+12025550147",
     provider: null
   });
   assert.deepEqual(successContent.examples.notFound.value, {
@@ -627,7 +627,7 @@ test("Contact Personal Email operation accepts boolean or string verification", 
   }
   assert.deepEqual(successContent.examples.success.value, {
     status: "success",
-    email: "personal.example@example.test"
+    email: "personal.example@example.org"
   });
   assert.deepEqual(successContent.examples.notFound.value, { status: "not_found", email: null });
   assert.deepEqual(errorStatuses(operation), ["400", "401", "403", "413", "429", "500", "502", "503"]);
@@ -772,7 +772,7 @@ test("profile routes share URL-selected response semantics while keeping page-sp
         url: "https://www.linkedin.com/company/example-company-000000",
         name: "Example Company",
         universalName: "example-company-000000",
-        website: "https://www.example.test",
+        website: "https://www.example.org",
         description: "Synthetic company profile for API documentation.",
         staff: { total: 120, range: "51-200" },
         locations: {
@@ -859,7 +859,7 @@ test("reverse email models source-compatible input and object-or-string results"
     ]
   });
   assert.deepEqual(operation.requestBody.content["application/json"].examples.email.value, {
-    email: " Example.Person@Example.Test "
+    email: " Example.Person@Example.Org "
   });
   assert.deepEqual(responseContent.examples.success.value, {
     url: "https://www.linkedin.com/in/example-person-000000",

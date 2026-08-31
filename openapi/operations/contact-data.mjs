@@ -82,7 +82,7 @@ const emailResultContent = {
     examples: {
       success: {
         summary: "Email found",
-        value: { status: "success", email: "example.person@example.test" }
+        value: { status: "success", email: "example.person@example.org" }
       },
       notFound: {
         summary: "No email found",
@@ -128,7 +128,7 @@ export const contactDataOperations = [
           },
           byName: {
             summary: "Identify by name and domain",
-            value: { first_name: "Example", last_name: "Person", domain: "example.test" }
+            value: { first_name: "Example", last_name: "Person", domain: "example.org" }
           }
         },
         "Provide either a recognized non-empty person profile, or first and last name with a domain or company name. Both complete forms may be supplied together. The JSON body must not exceed 256 KiB."
@@ -171,7 +171,7 @@ export const contactDataOperations = [
           batch: {
             summary: "Two synthetic contacts",
             value: {
-              webhook_url: "https://webhook.example.test/email-results",
+              webhook_url: "https://webhook.example.org/email-results",
               inputs: [
                 { custom_id: "contact-001", linkedin_profile_url: PROFILE_EXAMPLE },
                 { custom_id: 2002, first_name: "Sample", last_name: "Contact", company_name: "Example Company" }
@@ -263,7 +263,7 @@ export const contactDataOperations = [
                   value: {
                     status: "success",
                     linkedin_profile_url: PROFILE_EXAMPLE,
-                    phone_numbers: "+12025550123",
+                    phone_numbers: "+12025550147",
                     provider: null
                   }
                 },
@@ -343,7 +343,7 @@ export const contactDataOperations = [
               examples: {
                 success: {
                   summary: "Personal email found",
-                  value: { status: "success", email: "personal.example@example.test" }
+                  value: { status: "success", email: "personal.example@example.org" }
                 },
                 notFound: {
                   summary: "No personal email found",

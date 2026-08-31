@@ -82,7 +82,7 @@ const companyExample = {
   url: "https://www.linkedin.com/company/example-company-000000",
   name: "Example Company",
   universalName: "example-company-000000",
-  website: "https://www.example.test",
+  website: "https://www.example.org",
   description: "Synthetic company profile for API documentation.",
   staff: { total: 120, range: "51-200" },
   locations: {
@@ -210,7 +210,7 @@ export const profileLookupOperations = [
         {
           email: {
             summary: "Synthetic email",
-            value: { email: " Example.Person@Example.Test " }
+            value: { email: " Example.Person@Example.Org " }
           }
         },
         "The email is trimmed and lowercased before lookup. It must have a non-empty local part, an @ sign, and a domain containing a dot."
