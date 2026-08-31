@@ -75,13 +75,18 @@ function assertRealDirectExample(value, label) {
 }
 
 function assertExampleContainerShapes(container, label) {
+  const values = [];
   if (Object.hasOwn(container, "example")) {
     assertRealDirectExample(container.example, `${label} example`);
+    values.push({ label: `${label} example`, value: container.example });
   }
   for (const [name, exampleObject] of Object.entries(container.examples ?? {})) {
     const exampleLabel = `${label} example ${name}`;
-    assertRealDirectExample(namedExampleValue(exampleObject, exampleLabel), exampleLabel);
+    const value = namedExampleValue(exampleObject, exampleLabel);
+    assertRealDirectExample(value, exampleLabel);
+    values.push({ label: exampleLabel, value });
   }
+  return values;
 }
 
 function assertSchemaExampleShapes(schema, label, seen = new Set()) {
@@ -124,17 +129,27 @@ function assertAuthoredExampleShapes(openapiDocument) {
       }
     }
     for (const [index, parameter] of parameters.entries()) {
-      if (!parameter.schema) continue;
       const parameterLabel = `${operationLabel} parameter ${parameter.name ?? index}`;
-      assertExampleContainerShapes(parameter, parameterLabel);
-      assertSchemaExampleShapes(parameter.schema, parameterLabel, seenSchemas);
+      if (parameter.schema) {
+        assertExampleContainerShapes(parameter, parameterLabel);
+        assertSchemaExampleShapes(parameter.schema, parameterLabel, seenSchemas);
+      }
+      for (const [mediaType, content] of Object.entries(parameter.content ?? {})) {
+        for (const example of assertExampleContainerShapes(content, `${parameterLabel} ${mediaType}`)) {
+          assertSafeExampleValue(example.value, example.label);
+        }
+        assertSchemaExampleShapes(content.schema, `${parameterLabel} ${mediaType}`, seenSchemas);
+      }
     }
   }
   for (const [name, schema] of Object.entries(openapiDocument.components?.schemas ?? {})) {
     assertSchemaExampleShapes(schema, `component schema ${name}`, seenSchemas);
   }
   for (const [name, exampleObject] of Object.entries(openapiDocument.components?.examples ?? {})) {
-    namedExampleValue(exampleObject, `component example ${name}`);
+    const label = `component example ${name}`;
+    const value = namedExampleValue(exampleObject, label);
+    assertRealDirectExample(value, label);
+    assertSafeExampleValue(value, label);
   }
 }
 
@@ -153,6 +168,21 @@ function validateExampleContainer(container, schema, label, values) {
     assertValid(schema, value, exampleLabel);
     values.push({ label: exampleLabel, value });
     count += 1;
+  }
+  return count;
+}
+
+function validateParameterExamples(parameter, label, values, seenSchemas) {
+  let count = 0;
+  if (parameter.schema) {
+    count += validateExampleContainer(parameter, parameter.schema, label, values);
+    count += collectSchemaExamples(parameter.schema, label, values, seenSchemas);
+  }
+  for (const [mediaType, content] of Object.entries(parameter.content ?? {})) {
+    const contentLabel = `${label} ${mediaType}`;
+    assert.ok(content.schema, `${contentLabel}: parameter content needs a schema`);
+    count += validateExampleContainer(content, content.schema, contentLabel, values);
+    count += collectSchemaExamples(content.schema, contentLabel, values, seenSchemas);
   }
   return count;
 }
@@ -192,11 +222,14 @@ function collectSchemaExamples(schema, label, values, seen = new Set()) {
 }
 
 function isReservedExampleHost(hostname) {
-  return /(?:^|\.)example\.(?:com|org)$/i.test(hostname) || /\.example$/i.test(hostname);
+  const normalized = hostname.toLowerCase().replace(/\.$/, "");
+  return /(?:^|\.)example\.(?:com|org|net)$/.test(normalized)
+    || /(?:^|\.)[^.]+\.test$/.test(normalized)
+    || /\.example$/.test(normalized);
 }
 
 function isApprovedExampleEmailHost(hostname) {
-  return /(?:^|\.)example\.(?:com|org)$/i.test(hostname);
+  return isReservedExampleHost(hostname);
 }
 
 function isLinkedInHostname(hostname) {
@@ -204,13 +237,45 @@ function isLinkedInHostname(hostname) {
   return normalized === "linkedin.com" || normalized.endsWith(".linkedin.com");
 }
 
-function parseLinkedInUrl(value) {
-  try {
-    const parsed = new URL(/^https?:\/\//i.test(value) ? value : `https://${value}`);
-    return isLinkedInHostname(parsed.hostname) ? parsed : null;
-  } catch {
+function isUrlBearingKey(normalizedKey) {
+  return normalizedKey === "url"
+    || normalizedKey.endsWith("url")
+    || normalizedKey.includes("website")
+    || normalizedKey.includes("domain")
+    || normalizedKey === "link"
+    || normalizedKey.endsWith("link")
+    || normalizedKey.startsWith("linkedin")
+    || normalizedKey === "source"
+    || normalizedKey === "sources";
+}
+
+function parseExampleUrl(value, normalizedKey, label) {
+  const normalizedValue = isUrlBearingKey(normalizedKey) ? value.trim() : value;
+  let candidate;
+  if (/^[a-z][a-z0-9+.-]*:\/\//i.test(normalizedValue)) {
+    candidate = normalizedValue;
+  } else if (normalizedValue.startsWith("//")) {
+    candidate = `https:${normalizedValue}`;
+  } else if (
+    isUrlBearingKey(normalizedKey)
+    && /^[a-z0-9-]+(?:\.[a-z0-9-]+)*(?::[0-9]+)?(?:[/?#][^\s]*)?$/i.test(normalizedValue)
+  ) {
+    candidate = `https://${normalizedValue}`;
+  } else {
     return null;
   }
+
+  let parsed;
+  try {
+    parsed = new URL(candidate);
+  } catch {
+    assert.fail(`${label}: malformed URL value`);
+  }
+  assert.ok(
+    parsed.protocol === "http:" || parsed.protocol === "https:",
+    `${label}: URL scheme must be http or https`
+  );
+  return parsed;
 }
 
 function assertSyntheticLinkedIn(parsed, label) {
@@ -236,33 +301,31 @@ function assertSafeExampleValue(value, label, key = "") {
   }
   if (typeof value !== "string") return;
 
+  const normalizedKey = key.toLowerCase().replaceAll(/[^a-z]/g, "");
+
   if (!APPROVED_BEARER_PLACEHOLDERS.has(value)) {
     assert.doesNotMatch(value, DISALLOWED_EXAMPLE, `${label}: credential or consumer-domain value is forbidden`);
   }
   assert.doesNotMatch(value, PROVIDER_IDENTITIES, `${label}: provider/internal identity is forbidden`);
 
   for (const match of value.matchAll(/[A-Z0-9._%+-]+@([A-Z0-9.-]+\.[A-Z]{2,})/gi)) {
-    assert.ok(isApprovedExampleEmailHost(match[1]), `${label}: email must use example.com or example.org`);
+    assert.ok(isApprovedExampleEmailHost(match[1]), `${label}: email must use an RFC-reserved example host`);
   }
 
-  const normalizedKey = key.toLowerCase().replaceAll(/[^a-z]/g, "");
   if (["phone", "phonenumber", "phonenumbers", "mobilephone", "mobilephonenumber", "mobilephonenumbers"].includes(normalizedKey)) {
     assert.equal(value, APPROVED_PHONE, `${label}: phone must use the approved non-routable fixture`);
   }
 
-  const linkedInUrl = parseLinkedInUrl(value);
-  if (linkedInUrl) {
-    assertSyntheticLinkedIn(linkedInUrl, label);
-    return;
-  }
-
-  if (/^https?:\/\//i.test(value)) {
-    const hostname = new URL(value).hostname;
-    assert.ok(isReservedExampleHost(hostname), `${label}: URL origin ${hostname} is not an approved example origin`);
-  }
-
-  if (normalizedKey.includes("domain") && /^[a-z0-9.-]+\.[a-z]{2,}$/i.test(value)) {
-    assert.ok(isReservedExampleHost(value), `${label}: domain must use example.com or example.org`);
+  const parsedUrl = parseExampleUrl(value, normalizedKey, label);
+  if (parsedUrl) {
+    if (isLinkedInHostname(parsedUrl.hostname)) {
+      assertSyntheticLinkedIn(parsedUrl, label);
+    } else {
+      assert.ok(
+        isReservedExampleHost(parsedUrl.hostname),
+        `${label}: URL origin ${parsedUrl.hostname} is not an approved example origin`
+      );
+    }
   }
 
   if (/^(?:authorization|apikey|accesstoken|secret|password|token)$/i.test(normalizedKey)) {
@@ -331,15 +394,8 @@ test("all public operation examples validate against their dereferenced schemas"
     assert.ok(successExamples >= 1, `${operationLabel}: 200 or 202 response needs at least one example`);
 
     for (const [index, parameter] of parameters.entries()) {
-      if (!parameter.schema) continue;
-      parameterExamples += validateExampleContainer(
+      parameterExamples += validateParameterExamples(
         parameter,
-        parameter.schema,
-        `${operationLabel} parameter ${parameter.name ?? index}`,
-        exampleValues
-      );
-      parameterExamples += collectSchemaExamples(
-        parameter.schema,
         `${operationLabel} parameter ${parameter.name ?? index}`,
         exampleValues,
         seenSchemas
@@ -410,6 +466,121 @@ test("Bearer placeholders are allowed only as exact whole-string values", () => 
     assert.throws(
       () => assertSafeExampleValue({ note: value }, "Bearer mutant"),
       /credential or consumer-domain value is forbidden/
+    );
+  }
+});
+
+test("URL-bearing fields normalize absolute, scheme-relative, and bare-host values", () => {
+  for (const [label, value] of [
+    ["LinkedIn lookalike", { linkedin_profile_url: "notlinkedin.com/in/real-person" }],
+    ["camel-case LinkedIn lookalike", { linkedinProfile: "notlinkedin.com/in/real-person" }],
+    ["bare website", { website: "real-company.com" }],
+    ["scheme-relative website", { website: "//real-company.com/path" }]
+  ]) {
+    assert.throws(
+      () => assertSafeExampleValue(value, `${label} mutant`),
+      /not an approved example origin/
+    );
+  }
+  assert.throws(
+    () => assertSafeExampleValue(
+      { linkedin_profile_url: "//linkedin.com/in/real-person" },
+      "LinkedIn slug mutant"
+    ),
+    /synthetic example slug/
+  );
+  for (const value of [
+    { linkedin_profile_url: "linkedin.com/in/example-person" },
+    { linkedin_profile_url: "//www.linkedin.com/in/example-person" },
+    { website: "example.net" },
+    { website: "//company.test/path" }
+  ]) {
+    assert.doesNotThrow(() => assertSafeExampleValue(value, "valid URL control"));
+  }
+  assert.doesNotThrow(() => assertSafeExampleValue(
+    { prompt: "Compare real-company.com positioning with the synthetic fixture." },
+    "prose control"
+  ));
+});
+
+test("parameter content examples use their media schema and enter the privacy walk", () => {
+  const inspect = (parameter) => {
+    const values = [];
+    const count = validateParameterExamples(parameter, "fixture parameter", values, new Set());
+    for (const { label, value } of values) assertSafeExampleValue(value, label);
+    return count;
+  };
+  const parameter = {
+    name: "filter",
+    in: "query",
+    content: {
+      "application/json": {
+        schema: {
+          type: "object",
+          required: ["website"],
+          additionalProperties: false,
+          properties: { website: { type: "string" } }
+        },
+        examples: {
+          valid: { value: { website: "example.net" } }
+        }
+      }
+    }
+  };
+  assert.equal(inspect(parameter), 1);
+
+  parameter.content["application/json"].examples.invalidSchema = {
+    value: { website: 42 }
+  };
+  assert.throws(() => inspect(parameter), /must be string/);
+  delete parameter.content["application/json"].examples.invalidSchema;
+
+  parameter.content["application/json"].examples.unsafe = {
+    value: { website: "real-company.com" }
+  };
+  assert.throws(() => inspect(parameter), /not an approved example origin/);
+});
+
+test("unreferenced component examples enter the privacy safety walk", () => {
+  assert.throws(
+    () => assertAuthoredExampleShapes({
+      paths: {},
+      components: {
+        examples: {
+          unsafe: {
+            value: { website: "real-company.com" }
+          }
+        }
+      }
+    }),
+    /not an approved example origin/
+  );
+});
+
+test("reserved example hosts are accepted without suffix lookalikes", () => {
+  for (const value of [
+    { website: "https://example.com/path" },
+    { website: "https://docs.example.org/path" },
+    { website: "https://example.net/path" },
+    { website: "https://docs.example.net/path" },
+    { website: "https://company.test/path" },
+    { website: "//company.test/path" },
+    { website: "docs.example" },
+    { email: "person@example.net" },
+    { email: "person@company.test" }
+  ]) {
+    assert.doesNotThrow(() => assertSafeExampleValue(value, "reserved host control"));
+  }
+  for (const value of [
+    { website: "https://notexample.com/path" },
+    { website: "https://example.com.evil/path" },
+    { website: "example.net.evil" },
+    { email: "person@example.net.evil" },
+    { email: "person@company.test.evil" }
+  ]) {
+    assert.throws(
+      () => assertSafeExampleValue(value, "suffix lookalike mutant"),
+      /not an approved example origin|email must use/
     );
   }
 });
