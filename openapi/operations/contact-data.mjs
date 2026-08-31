@@ -1,5 +1,5 @@
 const PROFILE_EXAMPLE = "https://www.linkedin.com/in/example-person-000000";
-const PERSONAL_EMAIL_PROFILE_PATTERN = "^\\s*(?:[Hh][Tt][Tt][Pp][Ss]?:\\/\\/)?(?:[Ww]{3}\\.)?[Ll][Ii][Nn][Kk][Ee][Dd][Ii][Nn]\\.[Cc][Oo][Mm]\\/in\\/(?:[A-Za-z0-9_-]|%[0-9A-Fa-f]{2})+\\/?\\s*$";
+const PERSONAL_EMAIL_PROFILE_PATTERN = "^\\s*(?:[Hh][Tt][Tt][Pp][Ss]?:\\/\\/)?(?:[^\\s\\/@:]+(?::[^\\s\\/@]*)?@)?(?:[Ww]{3}\\.)?[Ll][Ii][Nn][Kk][Ee][Dd][Ii][Nn]\\.[Cc][Oo][Mm](?::(?:0*[0-9]{1,4}|0*(?:[1-5][0-9]{4}|6[0-4][0-9]{3}|65[0-4][0-9]{2}|655[0-2][0-9]|6553[0-5])))?\\/in\\/(?:[A-Za-z0-9_-]|%[0-9A-Fa-f]{2})+\\/?(?:\\?[^\\s#]*)?(?:#[^\\s]*)?\\s*$";
 const VERIFICATION_DESCRIPTION = "Verification is enabled only for boolean true or the case-insensitive string \"yes\"; all other values leave verification disabled.";
 
 const errorDescriptions = {
@@ -301,7 +301,7 @@ export const contactDataOperations = [
           additionalProperties: false,
           properties: {
             linkedin_profile_url: {
-              description: "A LinkedIn person-profile input accepted by the personal-email endpoint after trimming whitespace.",
+              description: "A LinkedIn person-profile input accepted and canonicalized after trimming whitespace. Valid URL user info, numeric ports, queries, and fragments are accepted but omitted from the canonical profile URL.",
               allOf: [
                 { $ref: "#/components/schemas/LinkedInPersonUrl" },
                 { pattern: PERSONAL_EMAIL_PROFILE_PATTERN }

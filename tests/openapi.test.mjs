@@ -77,6 +77,18 @@ function assertJsonErrors(operation, statuses) {
   }
 }
 
+function assertTask3ExamplePrivacy(exampleValues) {
+  const serialized = JSON.stringify(exampleValues);
+  for (const [label, pattern] of [
+    ["real provider identity", /\b(?:Prospeo|Icypeas|RapidAPI|Leadmagic|SalesQL|Limadata|ContactOut|Wiza|Forager|Bounceban|Findymail|Trykitt|Kitt|A-?Leads)\b/i],
+    ["internal identity", /\b(?:provider_internal|HistoricalImport|EmailLogCache|Supabase|Bubble|Durable Object)\b/i],
+    ["bearer credential", /\bBearer\s+[A-Za-z0-9._~-]+/i],
+    ["named credential", /"(?:api[_-]?key|authorization|secret|password|token)"\s*:\s*"[^"\s]+"/i]
+  ]) {
+    assert.doesNotMatch(serialized, pattern, label);
+  }
+}
+
 function inTemporaryDirectory(run) {
   const directory = mkdtempSync(join(tmpdir(), "openapi-builder-"));
   try {
@@ -189,6 +201,40 @@ test("account and contact operations share permissive public schemas", () => {
       email: { type: "null" }
     }
   });
+});
+
+test("account and contact named examples reject provider identities and credentials", () => {
+  const spec = accountContactSpec();
+  const credits = spec.paths["/v1/credits"].post;
+  const email = spec.paths["/v1/email"].post;
+  const bulk = spec.paths["/v1/email-bulk"].post;
+  const phone = spec.paths["/v1/phone"].post;
+  const personal = spec.paths["/v1/personal-email"].post;
+  const profileUrl = spec.paths["/v1/url-search-people"].post;
+  const examples = [
+    credits.responses["200"].content["application/json"].examples.success.value,
+    email.requestBody.content["application/json"].examples.byProfile.value,
+    email.requestBody.content["application/json"].examples.byName.value,
+    email.responses["200"].content["application/json"].examples.success.value,
+    email.responses["200"].content["application/json"].examples.notFound.value,
+    bulk.requestBody.content["application/json"].examples.batch.value,
+    bulk.responses["202"].content["application/json"].examples.accepted.value,
+    phone.requestBody.content["application/json"].examples.profile.value,
+    phone.responses["200"].content["application/json"].examples.success.value,
+    phone.responses["200"].content["application/json"].examples.notFound.value,
+    personal.requestBody.content["application/json"].examples.profile.value,
+    personal.responses["200"].content["application/json"].examples.success.value,
+    personal.responses["200"].content["application/json"].examples.notFound.value,
+    profileUrl.requestBody.content["application/json"].examples.person.value,
+    profileUrl.responses["200"].content["application/json"].examples.success.value,
+    profileUrl.responses["200"].content["application/json"].examples.notFound.value
+  ];
+
+  assert.doesNotThrow(() => assertTask3ExamplePrivacy(examples));
+  assert.throws(() => assertTask3ExamplePrivacy([...examples, { provider: "Prospeo" }]), /real provider identity/);
+  assert.throws(() => assertTask3ExamplePrivacy([...examples, { provider_internal: "HistoricalImport" }]), /internal identity/);
+  assert.throws(() => assertTask3ExamplePrivacy([...examples, { authorization: "Bearer synthetic-token" }]), /bearer credential/);
+  assert.throws(() => assertTask3ExamplePrivacy([...examples, { api_key: "sk-synthetic-credential" }]), /named credential/);
 });
 
 test("Account Credits operation models the stable balance contract", () => {
@@ -400,11 +446,11 @@ test("Contact Personal Email operation accepts boolean or string verification", 
   assert.deepEqual(schema.required, ["linkedin_profile_url"]);
   assert.equal(schema.additionalProperties, false);
   assert.deepEqual(schema.properties.linkedin_profile_url, {
-    description: "A LinkedIn person-profile input accepted by the personal-email endpoint after trimming whitespace.",
+    description: "A LinkedIn person-profile input accepted and canonicalized after trimming whitespace. Valid URL user info, numeric ports, queries, and fragments are accepted but omitted from the canonical profile URL.",
     allOf: [
       { $ref: "#/components/schemas/LinkedInPersonUrl" },
       {
-        pattern: "^\\s*(?:[Hh][Tt][Tt][Pp][Ss]?:\\/\\/)?(?:[Ww]{3}\\.)?[Ll][Ii][Nn][Kk][Ee][Dd][Ii][Nn]\\.[Cc][Oo][Mm]\\/in\\/(?:[A-Za-z0-9_-]|%[0-9A-Fa-f]{2})+\\/?\\s*$"
+        pattern: "^\\s*(?:[Hh][Tt][Tt][Pp][Ss]?:\\/\\/)?(?:[^\\s\\/@:]+(?::[^\\s\\/@]*)?@)?(?:[Ww]{3}\\.)?[Ll][Ii][Nn][Kk][Ee][Dd][Ii][Nn]\\.[Cc][Oo][Mm](?::(?:0*[0-9]{1,4}|0*(?:[1-5][0-9]{4}|6[0-4][0-9]{3}|65[0-4][0-9]{2}|655[0-2][0-9]|6553[0-5])))?\\/in\\/(?:[A-Za-z0-9_-]|%[0-9A-Fa-f]{2})+\\/?(?:\\?[^\\s#]*)?(?:#[^\\s]*)?\\s*$"
       }
     ]
   });
@@ -453,7 +499,11 @@ test("Contact Personal Email profile URLs match runtime normalization semantics"
     "https://www.linkedin.com/in/example-person",
     "http://linkedin.com/in/example_person-2/",
     "linkedin.com/in/example%2Dperson",
-    "  HtTpS://WWW.LINKEDIN.COM/in/example-person/  "
+    "  HtTpS://WWW.LINKEDIN.COM/in/example-person/  ",
+    "https://www.linkedin.com/in/example-person?source=test",
+    "https://www.linkedin.com/in/example-person#section",
+    "https://linkedin.com:443/in/example-person",
+    "https://user:pass@linkedin.com/in/example-person"
   ]) {
     assert.equal(validate({ linkedin_profile_url }), true, linkedin_profile_url);
   }
@@ -462,10 +512,10 @@ test("Contact Personal Email profile URLs match runtime normalization semantics"
     "https://www.linkedin.com/company/example",
     "https://example.com/in/example-person",
     "not-a-profile",
-    "https://www.linkedin.com/in/example-person?source=test",
-    "https://www.linkedin.com/in/example-person#section",
     "https://www.linkedin.com/IN/example-person",
-    "https://www.linkedin.com/in/example/person"
+    "https://www.linkedin.com/in/example/person",
+    "https://linkedin.com:abc/in/example-person",
+    "https://linkedin.com:65536/in/example-person"
   ]) {
     assert.equal(validate({ linkedin_profile_url }), false, linkedin_profile_url);
   }
