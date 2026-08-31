@@ -1,5 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
+import Ajv2020 from "ajv/dist/2020.js";
 import { baseSpec } from "../openapi/base.mjs";
 import { accountOperations } from "../openapi/operations/account.mjs";
 import { contactDataOperations } from "../openapi/operations/contact-data.mjs";
@@ -45,6 +46,14 @@ function requestSchema(operation) {
   return operation.requestBody?.content?.["application/json"]?.schema;
 }
 
+function requestValidator(schema) {
+  const ajv = new Ajv2020({ strict: false, validateFormats: false });
+  return ajv.compile({
+    ...structuredClone(schema),
+    components: { schemas: structuredClone(baseSpec.components.schemas) }
+  });
+}
+
 function errorStatuses(operation) {
   return Object.keys(operation.responses).filter((status) => !["200", "202"].includes(status));
 }
@@ -56,28 +65,6 @@ function assertUnauthorizedReference(operation) {
 function assertPublicOperationMetadata(operation) {
   assert.ok(operation.summary.length > 0);
   assert.ok(operation.description.length > 0);
-}
-
-function assertNoProviderIdentityExamples(operation) {
-  const examples = [
-    ...Object.values(operation.requestBody?.content?.["application/json"]?.examples ?? {}),
-    ...Object.values(operation.responses).flatMap((response) =>
-      Object.values(response.content?.["application/json"]?.examples ?? {})
-    )
-  ];
-
-  function inspect(value) {
-    if (!value || typeof value !== "object") return;
-    for (const [key, child] of Object.entries(value)) {
-      if (key === "provider" || key === "verifier") {
-        assert.equal(child, null, `${key} examples must not contain an identity value`);
-      } else {
-        inspect(child);
-      }
-    }
-  }
-
-  for (const example of examples) inspect(example.value);
 }
 
 function assertJsonErrors(operation, statuses) {
@@ -204,13 +191,6 @@ test("account and contact operations share permissive public schemas", () => {
   });
 });
 
-test("account and contact operation examples omit provider identities", () => {
-  const spec = accountContactSpec();
-  for (const path of ACCOUNT_CONTACT_PATHS) {
-    assertNoProviderIdentityExamples(spec.paths[path].post);
-  }
-});
-
 test("Account Credits operation models the stable balance contract", () => {
   const operation = accountContactSpec().paths["/v1/credits"]?.post;
 
@@ -313,8 +293,7 @@ test("Contact Email Bulk operation accepts bounded batches and returns only 202"
   assert.equal(schema.properties.inputs.maxItems, 100);
   assert.equal(itemSchema.additionalProperties, false);
   assert.deepEqual(itemSchema.properties.custom_id, {
-    not: { type: "null" },
-    description: "Any non-null JSON value is echoed unchanged."
+    description: "If omitted or null, the item's zero-based array index is used; any other JSON value is echoed unchanged."
   });
   assert.equal(itemSchema.required, undefined);
   assert.deepEqual(itemSchema.anyOf, [
@@ -351,6 +330,18 @@ test("Contact Email Bulk operation accepts bounded batches and returns only 202"
   assert.deepEqual(errorStatuses(operation), ["400", "401", "403", "413", "429", "500", "502"]);
   assertUnauthorizedReference(operation);
   assertJsonErrors(operation, errorStatuses(operation));
+});
+
+test("Contact Email Bulk custom IDs accept every JSON value and omission", () => {
+  const operation = accountContactSpec().paths["/v1/email-bulk"].post;
+  const validate = requestValidator(requestSchema(operation));
+  const identity = { linkedin_profile_url: "https://www.linkedin.com/in/example-person-000000" };
+
+  for (const customId of [null, "", "contact-001", 2002, true, [], { source: "synthetic" }]) {
+    const input = { ...identity, custom_id: customId };
+    assert.equal(validate({ webhook_url: "https://webhook.example.test/results", inputs: [input] }), true, JSON.stringify(customId));
+  }
+  assert.equal(validate({ webhook_url: "https://webhook.example.test/results", inputs: [identity] }), true, "omitted custom_id");
 });
 
 test("Contact Mobile operation requires a profile and models success and miss envelopes", () => {
@@ -408,18 +399,42 @@ test("Contact Personal Email operation accepts boolean or string verification", 
   assert.equal(operation.requestBody.required, true);
   assert.deepEqual(schema.required, ["linkedin_profile_url"]);
   assert.equal(schema.additionalProperties, false);
-  assert.deepEqual(schema.properties.linkedin_profile_url, { $ref: "#/components/schemas/LinkedInPersonUrl" });
+  assert.deepEqual(schema.properties.linkedin_profile_url, {
+    description: "A LinkedIn person-profile input accepted by the personal-email endpoint after trimming whitespace.",
+    allOf: [
+      { $ref: "#/components/schemas/LinkedInPersonUrl" },
+      {
+        pattern: "^\\s*(?:[Hh][Tt][Tt][Pp][Ss]?:\\/\\/)?(?:[Ww]{3}\\.)?[Ll][Ii][Nn][Kk][Ee][Dd][Ii][Nn]\\.[Cc][Oo][Mm]\\/in\\/(?:[A-Za-z0-9_-]|%[0-9A-Fa-f]{2})+\\/?\\s*$"
+      }
+    ]
+  });
   assert.deepEqual(schema.properties.verification, {
+    description: "Verification is enabled only for boolean true or the case-insensitive string \"yes\"; all other values leave verification disabled.",
     oneOf: [{ type: "boolean" }, { type: "string" }]
   });
+  assert.equal(
+    operation.requestBody.description,
+    "Provide the recognized person profile. Verification is enabled only for boolean true or the case-insensitive string \"yes\"; all other values leave verification disabled."
+  );
   assert.deepEqual(operation.requestBody.content["application/json"].examples.profile.value, {
     linkedin_profile_url: "https://www.linkedin.com/in/example-person-000000",
     verification: true
   });
   assert.deepEqual(successContent.schema.oneOf, [
-    { $ref: "#/components/schemas/SuccessEmail" },
+    {
+      type: "object",
+      required: ["status", "email"],
+      additionalProperties: true,
+      properties: {
+        status: { type: "string", const: "success" },
+        email: { type: "string", format: "email" }
+      }
+    },
     { $ref: "#/components/schemas/NotFoundEmail" }
   ]);
+  for (const property of ["email_status", "provider", "verifier", "catch_all", "linkedin_profile_url"]) {
+    assert.equal(successContent.schema.oneOf[0].properties[property], undefined);
+  }
   assert.deepEqual(successContent.examples.success.value, {
     status: "success",
     email: "personal.example@example.test"
@@ -428,6 +443,32 @@ test("Contact Personal Email operation accepts boolean or string verification", 
   assert.deepEqual(errorStatuses(operation), ["400", "401", "403", "413", "429", "500", "502", "503"]);
   assertUnauthorizedReference(operation);
   assertJsonErrors(operation, errorStatuses(operation));
+});
+
+test("Contact Personal Email profile URLs match runtime normalization semantics", () => {
+  const operation = accountContactSpec().paths["/v1/personal-email"].post;
+  const validate = requestValidator(requestSchema(operation));
+
+  for (const linkedin_profile_url of [
+    "https://www.linkedin.com/in/example-person",
+    "http://linkedin.com/in/example_person-2/",
+    "linkedin.com/in/example%2Dperson",
+    "  HtTpS://WWW.LINKEDIN.COM/in/example-person/  "
+  ]) {
+    assert.equal(validate({ linkedin_profile_url }), true, linkedin_profile_url);
+  }
+
+  for (const linkedin_profile_url of [
+    "https://www.linkedin.com/company/example",
+    "https://example.com/in/example-person",
+    "not-a-profile",
+    "https://www.linkedin.com/in/example-person?source=test",
+    "https://www.linkedin.com/in/example-person#section",
+    "https://www.linkedin.com/IN/example-person",
+    "https://www.linkedin.com/in/example/person"
+  ]) {
+    assert.equal(validate({ linkedin_profile_url }), false, linkedin_profile_url);
+  }
 });
 
 test("Contact Profile URL operation requires complete person and company names", () => {

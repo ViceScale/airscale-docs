@@ -1,4 +1,6 @@
 const PROFILE_EXAMPLE = "https://www.linkedin.com/in/example-person-000000";
+const PERSONAL_EMAIL_PROFILE_PATTERN = "^\\s*(?:[Hh][Tt][Tt][Pp][Ss]?:\\/\\/)?(?:[Ww]{3}\\.)?[Ll][Ii][Nn][Kk][Ee][Dd][Ii][Nn]\\.[Cc][Oo][Mm]\\/in\\/(?:[A-Za-z0-9_-]|%[0-9A-Fa-f]{2})+\\/?\\s*$";
+const VERIFICATION_DESCRIPTION = "Verification is enabled only for boolean true or the case-insensitive string \"yes\"; all other values leave verification disabled.";
 
 const errorDescriptions = {
   400: "The JSON body is invalid or required identification fields are missing.",
@@ -50,8 +52,7 @@ function emailIdentificationSchema({ includeCustomId = false } = {}) {
     properties: {
       ...(includeCustomId ? {
         custom_id: {
-          not: { type: "null" },
-          description: "Any non-null JSON value is echoed unchanged."
+          description: "If omitted or null, the item's zero-based array index is used; any other JSON value is echoed unchanged."
         }
       } : {}),
       linkedin_profile_url: { $ref: "#/components/schemas/LinkedInPersonUrl" },
@@ -299,8 +300,15 @@ export const contactDataOperations = [
           required: ["linkedin_profile_url"],
           additionalProperties: false,
           properties: {
-            linkedin_profile_url: { $ref: "#/components/schemas/LinkedInPersonUrl" },
+            linkedin_profile_url: {
+              description: "A LinkedIn person-profile input accepted by the personal-email endpoint after trimming whitespace.",
+              allOf: [
+                { $ref: "#/components/schemas/LinkedInPersonUrl" },
+                { pattern: PERSONAL_EMAIL_PROFILE_PATTERN }
+              ]
+            },
             verification: {
+              description: VERIFICATION_DESCRIPTION,
               oneOf: [{ type: "boolean" }, { type: "string" }]
             }
           }
@@ -311,7 +319,7 @@ export const contactDataOperations = [
             value: { linkedin_profile_url: PROFILE_EXAMPLE, verification: true }
           }
         },
-        "Provide the recognized person profile. verification may be a boolean or string."
+        `Provide the recognized person profile. ${VERIFICATION_DESCRIPTION}`
       ),
       responses: {
         200: {
@@ -320,7 +328,15 @@ export const contactDataOperations = [
             "application/json": {
               schema: {
                 oneOf: [
-                  { $ref: "#/components/schemas/SuccessEmail" },
+                  {
+                    type: "object",
+                    required: ["status", "email"],
+                    additionalProperties: true,
+                    properties: {
+                      status: { type: "string", const: "success" },
+                      email: { type: "string", format: "email" }
+                    }
+                  },
                   { $ref: "#/components/schemas/NotFoundEmail" }
                 ]
               },
