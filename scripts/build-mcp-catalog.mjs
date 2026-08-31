@@ -176,11 +176,185 @@ function resolveLocalReference(reference, rootSchema, toolName, path) {
   return resolved;
 }
 
-function mergeSynthesizedValues(left, right) {
-  if (left && right && typeof left === "object" && typeof right === "object" && !Array.isArray(left) && !Array.isArray(right)) {
-    return { ...left, ...right };
+const MAX_SYNTHESIS_CANDIDATES = 128;
+const SCHEMA_ANNOTATION_KEYS = new Set([
+  "$defs",
+  "$id",
+  "$schema",
+  "definitions",
+  "deprecated",
+  "description",
+  "examples",
+  "example",
+  "readOnly",
+  "title",
+  "writeOnly"
+]);
+
+function uniqueCandidates(values) {
+  const seen = new Set();
+  const result = [];
+  for (const value of values) {
+    const key = JSON.stringify(value);
+    if (seen.has(key)) continue;
+    seen.add(key);
+    result.push(value);
+    if (result.length >= MAX_SYNTHESIS_CANDIDATES) break;
   }
-  return right === undefined || right === null ? left : right;
+  return result;
+}
+
+function assertionSiblings(schema, omittedKeyword) {
+  return Object.fromEntries(Object.entries(schema).filter(([key]) => (
+    key !== omittedKeyword && !SCHEMA_ANNOTATION_KEYS.has(key)
+  )));
+}
+
+function hasAssertions(schema) {
+  return Object.keys(schema).length > 0;
+}
+
+function withAbsoluteLocalReferences(value, rootSchemaId) {
+  if (Array.isArray(value)) return value.map((child) => withAbsoluteLocalReferences(child, rootSchemaId));
+  if (!value || typeof value !== "object") return value;
+  return Object.fromEntries(Object.entries(value).map(([key, child]) => [
+    key,
+    key === "$ref" && typeof child === "string" && child.startsWith("#")
+      ? `${rootSchemaId}${child}`
+      : withAbsoluteLocalReferences(child, rootSchemaId)
+  ]));
+}
+
+function candidateValidator(schema, context) {
+  if (schema === true) return () => true;
+  if (schema === false) return () => false;
+  const cached = context.validatorCache.get(schema);
+  if (cached) return cached;
+  const validate = schema === context.rootSchema
+    ? context.ajv.getSchema(context.rootSchemaId)
+    : context.ajv.compile(withAbsoluteLocalReferences(schema, context.rootSchemaId));
+  if (!validate) throw new Error(`registered root schema is unavailable at ${context.rootSchemaId}`);
+  context.validatorCache.set(schema, validate);
+  return validate;
+}
+
+function validCandidateValues(schema, context) {
+  const validate = candidateValidator(schema, context);
+  return candidateValues(schema, context).filter((candidate) => validate(candidate));
+}
+
+function isPlainObject(value) {
+  return Boolean(value) && typeof value === "object" && !Array.isArray(value);
+}
+
+function cartesianMergeObjects(pools) {
+  let combinations = [{}];
+  let sawObjectPool = false;
+  for (const pool of pools) {
+    const objects = pool.filter(isPlainObject);
+    if (objects.length === 0) continue;
+    sawObjectPool = true;
+    const next = [];
+    for (const combination of combinations) {
+      for (const object of objects) {
+        next.push({ ...combination, ...object });
+        if (next.length >= MAX_SYNTHESIS_CANDIDATES) break;
+      }
+      if (next.length >= MAX_SYNTHESIS_CANDIDATES) break;
+    }
+    combinations = next;
+  }
+  return sawObjectPool ? combinations : [];
+}
+
+function conjunctiveCandidates(schemas, context) {
+  const pools = schemas.map((schema) => validCandidateValues(schema, context));
+  return uniqueCandidates([
+    ...cartesianMergeObjects(pools),
+    ...numericIntersectionCandidates(schemas, context),
+    ...pools.flat()
+  ]);
+}
+
+function collectConjunctiveAssertions(schema, context, referenceStack = new Set(), assertions = []) {
+  if (!schema || typeof schema !== "object" || Array.isArray(schema)) return assertions;
+  if (assertions.length >= MAX_SYNTHESIS_CANDIDATES) return assertions;
+  if (schema.$ref) {
+    if (referenceStack.has(schema.$ref)) {
+      throw new ExampleSynthesisError(
+        context.toolName,
+        context.path.join("."),
+        `recursive schema reference ${schema.$ref} cannot be synthesized`
+      );
+    }
+    const nextStack = new Set([...referenceStack, schema.$ref]);
+    collectConjunctiveAssertions(
+      resolveLocalReference(schema.$ref, context.rootSchema, context.toolName, context.path.join(".")),
+      context,
+      nextStack,
+      assertions
+    );
+    const siblings = assertionSiblings(schema, "$ref");
+    if (hasAssertions(siblings)) collectConjunctiveAssertions(siblings, context, nextStack, assertions);
+    return assertions;
+  }
+  if (Array.isArray(schema.allOf)) {
+    for (const branch of schema.allOf) {
+      collectConjunctiveAssertions(branch, context, referenceStack, assertions);
+      if (assertions.length >= MAX_SYNTHESIS_CANDIDATES) break;
+    }
+    const siblings = assertionSiblings(schema, "allOf");
+    if (hasAssertions(siblings)) collectConjunctiveAssertions(siblings, context, referenceStack, assertions);
+    return assertions;
+  }
+  assertions.push(schema);
+  return assertions;
+}
+
+function strongerLowerBound(current, value, exclusive) {
+  if (!Number.isFinite(value)) return current;
+  if (!current || value > current.value || (value === current.value && exclusive && !current.exclusive)) {
+    return { value, exclusive };
+  }
+  return current;
+}
+
+function strongerUpperBound(current, value, exclusive) {
+  if (!Number.isFinite(value)) return current;
+  if (!current || value < current.value || (value === current.value && exclusive && !current.exclusive)) {
+    return { value, exclusive };
+  }
+  return current;
+}
+
+function numericIntersectionCandidates(schemas, context) {
+  const assertions = schemas.flatMap((schema) => collectConjunctiveAssertions(schema, context));
+  const numericAssertions = assertions.filter(schemaLooksNumeric);
+  if (numericAssertions.length === 0) return [];
+
+  let lower;
+  let upper;
+  let integer = false;
+  const multiples = [];
+  for (const schema of numericAssertions) {
+    const types = Array.isArray(schema.type) ? schema.type : [schema.type];
+    if (types.includes("integer")) integer = true;
+    lower = strongerLowerBound(lower, schema.minimum, false);
+    lower = strongerLowerBound(lower, schema.exclusiveMinimum, true);
+    upper = strongerUpperBound(upper, schema.maximum, false);
+    upper = strongerUpperBound(upper, schema.exclusiveMaximum, true);
+    if (Number.isFinite(schema.multipleOf) && schema.multipleOf > 0 && !multiples.includes(schema.multipleOf)) {
+      multiples.push(schema.multipleOf);
+    }
+  }
+
+  const intersection = { type: integer ? "integer" : "number" };
+  if (lower) intersection[lower.exclusive ? "exclusiveMinimum" : "minimum"] = lower.value;
+  if (upper) intersection[upper.exclusive ? "exclusiveMaximum" : "maximum"] = upper.value;
+  return uniqueCandidates([
+    ...numericCandidates(intersection, integer),
+    ...multiples.flatMap((multipleOf) => numericCandidates({ ...intersection, multipleOf }, integer))
+  ]);
 }
 
 function preferredString(path, schema) {
@@ -223,114 +397,245 @@ function numericValue(schema, integer) {
   return value;
 }
 
+function numericCandidates(schema, integer) {
+  const step = 1;
+  const candidates = [numericValue(schema, integer)];
+  if (schema.minimum !== undefined) candidates.push(schema.minimum, schema.minimum + step);
+  if (schema.exclusiveMinimum !== undefined) candidates.push(schema.exclusiveMinimum, schema.exclusiveMinimum + step);
+  if (schema.maximum !== undefined) candidates.push(schema.maximum, schema.maximum - step, schema.maximum + step);
+  if (schema.exclusiveMaximum !== undefined) {
+    candidates.push(schema.exclusiveMaximum, schema.exclusiveMaximum - step, schema.exclusiveMaximum + step);
+  }
+  if (Number.isFinite(schema.multipleOf) && schema.multipleOf > 0) {
+    const lower = schema.exclusiveMinimum ?? schema.minimum ?? 0;
+    let nearest = Math.ceil(lower / schema.multipleOf) * schema.multipleOf;
+    if (schema.exclusiveMinimum !== undefined && nearest <= schema.exclusiveMinimum) nearest += schema.multipleOf;
+    candidates.push(nearest, nearest + schema.multipleOf);
+    const upper = schema.exclusiveMaximum ?? schema.maximum;
+    if (Number.isFinite(upper)) {
+      let nearestBelow = Math.floor(upper / schema.multipleOf) * schema.multipleOf;
+      if (schema.exclusiveMaximum !== undefined && nearestBelow >= schema.exclusiveMaximum) {
+        nearestBelow -= schema.multipleOf;
+      }
+      candidates.push(nearestBelow, nearestBelow - schema.multipleOf);
+    }
+  }
+  candidates.push(0, 1, -1);
+  return uniqueCandidates(candidates
+    .filter(Number.isFinite)
+    .map((value) => integer ? Math.trunc(value) : value));
+}
+
+function stringCandidates(schema, path) {
+  const preferred = fitStringBounds(preferredString(path, schema), schema);
+  const candidates = [preferred];
+  if (schema.minLength !== undefined) {
+    candidates.push("x".repeat(schema.minLength));
+    candidates.push("x".repeat(schema.minLength + 1));
+  }
+  if (schema.maxLength !== undefined && Number.isFinite(schema.maxLength)) {
+    candidates.push("x".repeat(schema.maxLength));
+    if (schema.maxLength > 0) candidates.push("x".repeat(schema.maxLength - 1));
+  }
+  candidates.push("example", "x", "");
+  return uniqueCandidates(candidates.map((value) => fitStringBounds(value, schema)));
+}
+
 function schemaLooksObjectLike(schema) {
-  return schema?.type === "object" || schema?.properties || schema?.required || schema?.minProperties;
+  return schema?.type === "object" || schema?.properties || schema?.required || schema?.minProperties || schema?.maxProperties;
 }
 
 function schemaLooksArrayLike(schema) {
-  return schema?.type === "array" || schema?.items || schema?.minItems;
+  return schema?.type === "array" || schema?.items || schema?.minItems || schema?.maxItems;
 }
 
-function synthesizeValue(schema, context) {
+function schemaLooksNumeric(schema) {
+  return schema?.type === "integer"
+    || schema?.type === "number"
+    || schema?.minimum !== undefined
+    || schema?.maximum !== undefined
+    || schema?.exclusiveMinimum !== undefined
+    || schema?.exclusiveMaximum !== undefined
+    || schema?.multipleOf !== undefined;
+}
+
+function schemaLooksStringLike(schema) {
+  return schema?.type === "string"
+    || schema?.minLength !== undefined
+    || schema?.maxLength !== undefined
+    || schema?.pattern !== undefined
+    || schema?.format !== undefined;
+}
+
+function objectCandidates(schema, context) {
   const { rootSchema, toolName, path, preferNonEmpty = false } = context;
-  if (schema === false) throw new ExampleSynthesisError(toolName, path.join("."), "the schema rejects every value");
-  if (schema === true) return null;
-  if (!schema || typeof schema !== "object") {
+  const properties = schema.properties ?? {};
+  const selected = [...(schema.required ?? [])];
+  const minimumPropertyCount = schema.minProperties ?? 0;
+  const descriptionRequiresOne = /at least one[^.]*required/i.test(schema.description ?? "");
+  const desiredCount = Math.max(minimumPropertyCount, descriptionRequiresOne || preferNonEmpty ? 1 : 0);
+  for (const property of Object.keys(properties)) {
+    if (selected.length >= desiredCount) break;
+    if (!selected.includes(property)) selected.push(property);
+  }
+
+  let candidates = [{}];
+  for (const property of selected) {
+    if (!Object.hasOwn(properties, property)) {
+      throw new ExampleSynthesisError(toolName, [...path, property].join("."), "required property has no schema");
+    }
+    const propertyCandidates = validCandidateValues(properties[property], {
+      ...context,
+      rootSchema,
+      toolName,
+      path: [...path, property],
+      preferNonEmpty: true
+    });
+    if (propertyCandidates.length === 0) return [];
+    const next = [];
+    for (const candidate of candidates) {
+      for (const propertyCandidate of propertyCandidates) {
+        next.push({ ...candidate, [property]: clone(propertyCandidate) });
+        if (next.length >= MAX_SYNTHESIS_CANDIDATES) break;
+      }
+      if (next.length >= MAX_SYNTHESIS_CANDIDATES) break;
+    }
+    candidates = next;
+  }
+  return candidates;
+}
+
+function arrayCandidates(schema, context) {
+  const { preferNonEmpty = false, path } = context;
+  const preferredCount = schema.minItems ?? (preferNonEmpty ? 1 : 0);
+  const counts = uniqueCandidates([
+    preferredCount,
+    schema.minItems,
+    preferNonEmpty ? 1 : 0,
+    0,
+    1,
+    schema.maxItems
+  ].filter((value) => Number.isInteger(value) && value >= 0));
+  const results = [];
+  for (const count of counts) {
+    if (count === 0) {
+      results.push([]);
+      continue;
+    }
+    if (schema.items === undefined) continue;
+    const itemCandidates = validCandidateValues(schema.items, {
+      ...context,
+      path: [...path, "0"],
+      preferNonEmpty: true
+    });
+    if (itemCandidates.length === 0) continue;
+    const variants = Math.min(itemCandidates.length, 4);
+    for (let offset = 0; offset < variants; offset += 1) {
+      results.push(Array.from({ length: count }, (_, index) => clone(
+        itemCandidates[schema.uniqueItems ? (index + offset) % itemCandidates.length : offset]
+      )));
+      if (results.length >= MAX_SYNTHESIS_CANDIDATES) break;
+    }
+    if (results.length >= MAX_SYNTHESIS_CANDIDATES) break;
+  }
+  return uniqueCandidates(results);
+}
+
+function candidateValues(schema, context) {
+  const { rootSchema, toolName, path } = context;
+  if (schema === false) return [];
+  if (schema === true) return [null, false, 0, "", [], {}];
+  if (!schema || typeof schema !== "object" || Array.isArray(schema)) {
     throw new ExampleSynthesisError(toolName, path.join("."), "the schema is not an object or boolean schema");
   }
 
-  if (Object.hasOwn(schema, "const")) return clone(schema.const);
-  if (Array.isArray(schema.enum) && schema.enum.length > 0) return clone(schema.enum[0]);
+  if (Object.hasOwn(schema, "const")) return [clone(schema.const)];
+  if (Array.isArray(schema.enum)) return uniqueCandidates(schema.enum.map(clone));
   if (schema.$ref) {
-    const resolved = resolveLocalReference(schema.$ref, rootSchema, toolName, path.join("."));
-    const siblings = { ...schema };
-    delete siblings.$ref;
-    return Object.keys(siblings).length === 0
-      ? synthesizeValue(resolved, context)
-      : synthesizeValue({ allOf: [resolved, siblings] }, context);
-  }
-
-  if (Array.isArray(schema.allOf)) {
-    let value;
-    for (const branch of schema.allOf) {
-      value = mergeSynthesizedValues(value, synthesizeValue(branch, context));
+    if (context.referenceStack.has(schema.$ref)) {
+      throw new ExampleSynthesisError(toolName, path.join("."), `recursive schema reference ${schema.$ref} cannot be synthesized`);
     }
-    return value;
+    const resolved = resolveLocalReference(schema.$ref, rootSchema, toolName, path.join("."));
+    const siblings = assertionSiblings(schema, "$ref");
+    const nextContext = { ...context, referenceStack: new Set([...context.referenceStack, schema.$ref]) };
+    return hasAssertions(siblings)
+      ? conjunctiveCandidates([resolved, siblings], nextContext)
+      : validCandidateValues(resolved, nextContext);
+  }
+  if (Array.isArray(schema.allOf)) {
+    const siblings = assertionSiblings(schema, "allOf");
+    return conjunctiveCandidates([
+      ...schema.allOf,
+      ...(hasAssertions(siblings) ? [siblings] : [])
+    ], context);
   }
   for (const keyword of ["anyOf", "oneOf"]) {
     if (!Array.isArray(schema[keyword])) continue;
-    const failures = [];
+    const siblings = assertionSiblings(schema, keyword);
+    const candidates = [];
     for (const branch of schema[keyword]) {
-      try {
-        return synthesizeValue(branch, context);
-      } catch (error) {
-        failures.push(error);
-      }
+      const combined = hasAssertions(siblings) ? { allOf: [branch, siblings] } : branch;
+      candidates.push(...validCandidateValues(combined, context));
+      if (keyword === "oneOf") candidates.push(...candidateValues(combined, context));
     }
-    throw new ExampleSynthesisError(toolName, path.join("."), `no ${keyword} branch can be synthesized`, {
-      cause: failures[0]
-    });
+    return uniqueCandidates(candidates);
   }
 
   const declaredTypes = Array.isArray(schema.type) ? schema.type : schema.type ? [schema.type] : [];
-  const type = declaredTypes.find((candidate) => candidate !== "null")
-    ?? declaredTypes[0]
-    ?? (schemaLooksObjectLike(schema) ? "object" : schemaLooksArrayLike(schema) ? "array" : undefined);
-
-  if (type === "object") {
-    const properties = schema.properties ?? {};
-    const selected = [...(schema.required ?? [])];
-    const minimumPropertyCount = schema.minProperties ?? 0;
-    const descriptionRequiresOne = /at least one[^.]*required/i.test(schema.description ?? "");
-    const desiredCount = Math.max(minimumPropertyCount, descriptionRequiresOne || preferNonEmpty ? 1 : 0);
-    for (const property of Object.keys(properties)) {
-      if (selected.length >= desiredCount) break;
-      if (!selected.includes(property)) selected.push(property);
-    }
-    const result = {};
-    for (const property of selected) {
-      if (!Object.hasOwn(properties, property)) {
-        throw new ExampleSynthesisError(toolName, [...path, property].join("."), "required property has no schema");
-      }
-      result[property] = synthesizeValue(properties[property], {
-        rootSchema,
-        toolName,
-        path: [...path, property],
-        preferNonEmpty: true
-      });
-    }
-    return result;
+  const inferredType = schemaLooksObjectLike(schema)
+    ? "object"
+    : schemaLooksArrayLike(schema)
+      ? "array"
+      : schemaLooksNumeric(schema)
+        ? "number"
+        : schemaLooksStringLike(schema)
+          ? "string"
+          : undefined;
+  const types = uniqueCandidates([
+    ...declaredTypes.filter((candidate) => candidate !== "null"),
+    ...declaredTypes.filter((candidate) => candidate === "null"),
+    inferredType
+  ].filter(Boolean));
+  const candidates = [];
+  for (const type of types) {
+    if (type === "object") candidates.push(...objectCandidates(schema, context));
+    else if (type === "array") candidates.push(...arrayCandidates(schema, context));
+    else if (type === "string") candidates.push(...stringCandidates(schema, path));
+    else if (type === "integer") candidates.push(...numericCandidates(schema, true));
+    else if (type === "number") candidates.push(...numericCandidates(schema, false));
+    else if (type === "boolean") candidates.push(false, true);
+    else if (type === "null") candidates.push(null);
   }
-  if (type === "array") {
-    const count = schema.minItems ?? (preferNonEmpty ? 1 : 0);
-    if (count === 0) return [];
-    if (schema.items === undefined) {
-      throw new ExampleSynthesisError(toolName, path.join("."), "required array items have no schema");
-    }
-    return Array.from({ length: count }, (_, index) => synthesizeValue(schema.items, {
-      rootSchema,
-      toolName,
-      path: [...path, String(index)],
-      preferNonEmpty: true
-    }));
-  }
-  if (type === "string") return fitStringBounds(preferredString(path, schema), schema);
-  if (type === "integer") return numericValue(schema, true);
-  if (type === "number") return numericValue(schema, false);
-  if (type === "boolean") return false;
-  if (type === "null") return null;
+  if (types.length === 0) candidates.push(null, false, 0, 1, "example", "", [], {});
+  return uniqueCandidates(candidates);
+}
 
-  throw new ExampleSynthesisError(toolName, path.join("."), "no supported type, const, enum, reference, or combinator is available");
+function synthesizeValue(schema, context) {
+  const candidates = validCandidateValues(schema, context);
+  if (candidates.length > 0) return clone(candidates[0]);
+  throw new ExampleSynthesisError(
+    context.toolName,
+    context.path.join("."),
+    "no deterministic candidate satisfies the complete schema"
+  );
 }
 
 function synthesizeArguments(tool) {
   let argumentsValue;
   try {
+    const ajv = new Ajv2020({ strict: false });
+    addFormats(ajv);
+    const rootSchemaId = `https://airscale.example/mcp-input/${encodeURIComponent(tool.name)}`;
+    ajv.addSchema(clone(tool.inputSchema), rootSchemaId);
     argumentsValue = synthesizeValue(tool.inputSchema, {
       rootSchema: tool.inputSchema,
       toolName: tool.name,
       path: ["arguments"],
-      preferNonEmpty: false
+      preferNonEmpty: false,
+      ajv,
+      rootSchemaId,
+      validatorCache: new WeakMap(),
+      referenceStack: new Set()
     });
     if (!argumentsValue || typeof argumentsValue !== "object" || Array.isArray(argumentsValue)) {
       throw new ExampleSynthesisError(tool.name, "arguments", "the top-level tool input must synthesize to an object");

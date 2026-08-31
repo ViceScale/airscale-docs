@@ -99,6 +99,21 @@ function deepFreeze(value) {
   return value;
 }
 
+function synthesizeFixtureArguments(inputSchema) {
+  const contract = readContract();
+  contract.tools[0].inputSchema = inputSchema;
+  return markdownJsonExamples(renderCatalog(contract))[0].params.arguments;
+}
+
+function assertSynthesizedFixture(inputSchema, expected) {
+  const ajv = new Ajv2020({ strict: false });
+  addFormats(ajv);
+  const validate = ajv.compile(inputSchema);
+  const actual = synthesizeFixtureArguments(inputSchema);
+  assert.equal(validate(actual), true, ajv.errorsText(validate.errors));
+  assert.deepEqual(actual, expected);
+}
+
 function inTemporaryDirectory(callback) {
   const directory = mkdtempSync(join(tmpdir(), "airscale-mcp-catalog-"));
   return Promise.resolve()
@@ -263,6 +278,167 @@ test("example synthesis fails closed with a named error when a required value ca
     additionalProperties: false
   };
   assert.throws(() => renderCatalog(broken), ExampleSynthesisError);
+});
+
+test("example synthesis resolves local refs together with their sibling constraints", () => {
+  assertSynthesizedFixture({
+    type: "object",
+    $defs: {
+      nonnegativeInteger: { type: "integer", minimum: 0 }
+    },
+    required: ["value"],
+    properties: {
+      value: {
+        $ref: "#/$defs/nonnegativeInteger",
+        minimum: 5,
+        maximum: 10
+      }
+    },
+    additionalProperties: false
+  }, { value: 5 });
+});
+
+test("example synthesis resolves root-local JSON Pointer refs with sibling constraints", () => {
+  assertSynthesizedFixture({
+    $id: "https://schemas.example.test/mcp-input",
+    type: "object",
+    required: ["value"],
+    properties: {
+      template: { type: "integer", minimum: 5 },
+      value: {
+        $ref: "#/properties/template",
+        maximum: 10
+      }
+    },
+    additionalProperties: false
+  }, { value: 5 });
+});
+
+test("example synthesis intersects numeric allOf constraints", () => {
+  assertSynthesizedFixture({
+    type: "object",
+    required: ["value"],
+    properties: {
+      value: {
+        allOf: [
+          { type: "integer", minimum: 5 },
+          { type: "integer", maximum: 10 }
+        ]
+      }
+    },
+    additionalProperties: false
+  }, { value: 5 });
+});
+
+test("example synthesis derives a valid multiple inside an allOf intersection", () => {
+  assertSynthesizedFixture({
+    type: "object",
+    required: ["value"],
+    properties: {
+      value: {
+        allOf: [
+          { type: "integer", minimum: 10 },
+          { type: "integer", multipleOf: 7 }
+        ]
+      }
+    },
+    additionalProperties: false
+  }, { value: 14 });
+});
+
+test("example synthesis tries a later anyOf branch when the first candidate fails sibling constraints", () => {
+  assertSynthesizedFixture({
+    type: "object",
+    required: ["value"],
+    properties: {
+      value: {
+        anyOf: [
+          { type: "integer", minimum: 0, maximum: 0 },
+          { type: "integer", minimum: 5, maximum: 5 }
+        ],
+        minimum: 5
+      }
+    },
+    additionalProperties: false
+  }, { value: 5 });
+});
+
+test("example synthesis combines later anyOf branch bounds with sibling multiples", () => {
+  assertSynthesizedFixture({
+    type: "object",
+    required: ["value"],
+    properties: {
+      value: {
+        anyOf: [
+          { const: 0 },
+          { type: "integer", minimum: 10 }
+        ],
+        minimum: 10,
+        multipleOf: 7
+      }
+    },
+    additionalProperties: false
+  }, { value: 14 });
+});
+
+test("example synthesis finds a oneOf candidate that matches exactly one overlapping branch", () => {
+  assertSynthesizedFixture({
+    type: "object",
+    required: ["value"],
+    properties: {
+      value: {
+        oneOf: [
+          { type: "integer", minimum: 0 },
+          { type: "integer", minimum: 0, maximum: 0 }
+        ]
+      }
+    },
+    additionalProperties: false
+  }, { value: 1 });
+});
+
+test("example synthesis tests values immediately outside overlapping oneOf boundaries", () => {
+  assertSynthesizedFixture({
+    type: "object",
+    required: ["value"],
+    properties: {
+      value: {
+        oneOf: [
+          { type: "integer", minimum: 100 },
+          { type: "integer", minimum: 100, maximum: 200 }
+        ]
+      }
+    },
+    additionalProperties: false
+  }, { value: 201 });
+});
+
+test("example synthesis explicitly covers arrays, objects, enums, consts, and formats", () => {
+  assertSynthesizedFixture({
+    type: "object",
+    required: ["items", "settings", "choice", "fixed", "email", "webhook_url"],
+    properties: {
+      items: { type: "array", minItems: 2, items: { type: "string", minLength: 1 } },
+      settings: {
+        type: "object",
+        required: ["enabled"],
+        properties: { enabled: { type: "boolean" } },
+        additionalProperties: false
+      },
+      choice: { type: "string", enum: ["first", "second"] },
+      fixed: { const: "constant" },
+      email: { type: "string", format: "email" },
+      webhook_url: { type: "string", format: "uri" }
+    },
+    additionalProperties: false
+  }, {
+    items: ["example", "example"],
+    settings: { enabled: false },
+    choice: "first",
+    fixed: "constant",
+    email: "person@example.com",
+    webhook_url: "https://hooks.example.com/airscale"
+  });
 });
 
 test("public manifest exposes only public metadata, exact schemas, and documentation-safe links", () => {
