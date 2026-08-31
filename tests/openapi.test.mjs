@@ -601,8 +601,10 @@ test("profile and reverse lookup shared schemas preserve variable public payload
   assert.equal(schemas.VariablePersonProfile.required, undefined);
   assert.deepEqual(schemas.VariablePersonProfile.properties.url, { type: ["string", "null"] });
   assert.deepEqual(schemas.VariablePersonProfile.properties.identifier, { type: ["string", "null"] });
-  assert.deepEqual(schemas.VariablePersonProfile.properties.profile, { type: "object", additionalProperties: true });
-  assert.deepEqual(schemas.VariablePersonProfile.properties.link, { type: "object", additionalProperties: true });
+  for (const property of ["profile", "link", "firstname", "lastname", "headline", "industry", "location"]) {
+    assert.equal(typeof schemas.VariablePersonProfile.properties[property].description, "string", property);
+    assert.equal(schemas.VariablePersonProfile.properties[property].type, undefined, property);
+  }
 
   assert.equal(schemas.VariableCompanyProfile.type, "object");
   assert.equal(schemas.VariableCompanyProfile.additionalProperties, true);
@@ -763,6 +765,16 @@ test("reverse email models source-compatible input and object-or-string results"
   assertUnauthorizedReference(operation);
   assertJsonErrors(operation, errorStatuses(operation));
 
+  const validateResponse = schemaValidator(responseContent.schema);
+  const passThroughResponse = {
+    url: null,
+    identifier: null,
+    profile: null,
+    link: null,
+    location: "Example City"
+  };
+  assert.equal(validateResponse(passThroughResponse), true, JSON.stringify(validateResponse.errors));
+
   const validate = requestValidator(schema);
   for (const email of [
     "person@example.test",
@@ -797,6 +809,7 @@ test("reverse phone accepts non-E.164 inputs and models success or exact not_fou
   assert.equal(operation["x-airscale-credit-cost"], "10 credits only when a profile is returned; not_found and errors are not charged.");
   assertPublicOperationMetadata(operation);
   assert.match(operation.requestBody.description, /trim/);
+  assert.match(operation.requestBody.description, /lowercase strings "null" and "undefined"/);
   assert.doesNotMatch(operation.requestBody.description, /E\.164/i);
   assert.equal(operation.requestBody.required, true);
   assert.deepEqual(schema.required, ["mobile_phone"]);
@@ -814,6 +827,10 @@ test("reverse phone accepts non-E.164 inputs and models success or exact not_fou
     type: "object",
     additionalProperties: true
   });
+  for (const property of ["url", "identifier", "link", "firstname", "lastname"]) {
+    assert.equal(typeof responseContent.schema.oneOf[0].properties[property].description, "string", property);
+    assert.equal(responseContent.schema.oneOf[0].properties[property].type, undefined, property);
+  }
   assert.deepEqual(responseContent.schema.oneOf[1], { $ref: "#/components/schemas/NotFoundStatus" });
   assert.deepEqual(responseContent.examples.success.value, {
     url: "https://www.linkedin.com/in/example-person-000000",
@@ -834,11 +851,28 @@ test("reverse phone accepts non-E.164 inputs and models success or exact not_fou
   assertUnauthorizedReference(operation);
   assertJsonErrors(operation, errorStatuses(operation));
 
+  const validateResponse = schemaValidator(responseContent.schema);
+  const passThroughResponse = {
+    link: null,
+    body: {
+      id: 42001,
+      arbitrary_provider_field: ["synthetic", { nested: true }]
+    }
+  };
+  assert.equal(validateResponse(passThroughResponse), true, JSON.stringify(validateResponse.errors));
+
   const validate = requestValidator(schema);
-  for (const mobile_phone of ["+12025550147", "020 7946 0958", "extension 42", " 555-0147 "]) {
+  for (const mobile_phone of [
+    "+12025550147",
+    "020 7946 0958",
+    "extension 42",
+    " 555-0147 ",
+    "NULL",
+    "undefined-value"
+  ]) {
     assert.equal(validate({ mobile_phone }), true, mobile_phone);
   }
-  for (const mobile_phone of ["", " ", "\t\n"]) {
+  for (const mobile_phone of ["", " ", "\t\n", "null", " undefined "]) {
     assert.equal(validate({ mobile_phone }), false, JSON.stringify(mobile_phone));
   }
 });

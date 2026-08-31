@@ -140,11 +140,11 @@ const reversePhoneSuccessSchema = {
   additionalProperties: true,
   properties: {
     body: { type: "object", additionalProperties: true },
-    url: { type: ["string", "null"] },
-    identifier: { type: ["string", "null"] },
-    link: { type: "object", additionalProperties: true },
-    firstname: { type: ["string", "null"] },
-    lastname: { type: ["string", "null"] }
+    url: { description: "A pass-through public profile URL value when supplied by the lookup source." },
+    identifier: { description: "A pass-through public profile identifier when supplied by the lookup source." },
+    link: { description: "A pass-through link value whose type and shape vary by lookup source." },
+    firstname: { description: "A pass-through public first-name value when supplied by the lookup source." },
+    lastname: { description: "A pass-through public last-name value when supplied by the lookup source." }
   }
 };
 
@@ -268,7 +268,7 @@ export const profileLookupOperations = [
             mobile_phone: {
               type: "string",
               minLength: 1,
-              pattern: "^(?=.*\\S)[\\s\\S]+$"
+              pattern: "^(?!\\s*(?:null|undefined)\\s*$)(?=.*\\S)[\\s\\S]+$"
             }
           }
         },
@@ -278,7 +278,7 @@ export const profileLookupOperations = [
             value: { mobile_phone: "+12025550147" }
           }
         },
-        "The mobile_phone value is trimmed before lookup and must contain at least one non-whitespace character."
+        "The mobile_phone value is trimmed before lookup and must contain at least one non-whitespace character. The exact trimmed lowercase strings \"null\" and \"undefined\" are treated as missing input."
       ),
       responses: {
         200: {

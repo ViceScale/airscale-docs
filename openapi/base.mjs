@@ -68,13 +68,13 @@ export const baseSpec = {
         properties: {
           url: { type: ["string", "null"] },
           identifier: { type: ["string", "null"] },
-          profile: { type: "object", additionalProperties: true },
-          link: { type: "object", additionalProperties: true },
-          firstname: { type: ["string", "null"] },
-          lastname: { type: ["string", "null"] },
-          headline: { type: ["string", "null"] },
-          industry: { type: ["string", "null"] },
-          location: { type: ["object", "null"], additionalProperties: true }
+          profile: { description: "A pass-through profile value whose type and shape vary by response source." },
+          link: { description: "A pass-through link value whose type and shape vary by response source." },
+          firstname: { description: "A pass-through public first-name value whose type varies by response source." },
+          lastname: { description: "A pass-through public last-name value whose type varies by response source." },
+          headline: { description: "A pass-through public headline value whose type varies by response source." },
+          industry: { description: "A pass-through public industry value whose type varies by response source." },
+          location: { description: "A pass-through public location value whose type and shape vary by response source." }
         }
       },
       VariableCompanyProfile: {
