@@ -1,11 +1,110 @@
 ---
 title: "Connect Airscale MCP to ChatGPT"
-description: "Understand the browser OAuth connection between ChatGPT and the Airscale MCP server."
+description: "Connect ChatGPT to Airscale through browser OAuth and validate the connection without spending credits."
 canonical: "https://airscale.mintlify.app/mcp/connect-airscale-mcp-to-chatgpt"
 ---
 
-## Connect ChatGPT through OAuth
+## What this enables
 
-ChatGPT connects to the remote Airscale MCP server through a browser OAuth flow. Airscale asks you to sign in and approve workspace access; you do not paste an API key into ChatGPT or include one in tool arguments.
+Airscale MCP lets ChatGPT use 22 typed tools for people and company search, contact enrichment, profile extraction, web research, and asynchronous exports. The tools operate against the Airscale workspace you authorize.
 
-Before connecting, review the [Airscale MCP server](/mcp/airscale-mcp-server) overview and the [MCP tool catalog](/mcp/tools), especially the credit behavior of any tool you plan to approve.
+## Server URL
+
+Use the official remote MCP endpoint exactly as shown:
+
+```text
+https://mcp.airscale.io/mcp
+```
+
+## Prerequisites
+
+- An Airscale account with access to the workspace you want to use.
+- API access enabled and an active workspace credential in Airscale.
+- A ChatGPT workspace that exposes custom remote MCP apps to your account.
+- Permission from your ChatGPT administrator if custom apps are managed centrally.
+
+ChatGPT product availability and UI labels can change. If a label below is different, look for the area that manages apps, connectors, developer features, or custom MCP servers.
+
+## Authentication
+
+ChatGPT uses browser OAuth for this connection. The browser asks you to sign in to Airscale, select a workspace, and authorize ChatGPT. Do not paste an Airscale API key into ChatGPT. Credentials are never MCP tool arguments.
+
+<Note>
+  The selected Airscale workspace still needs API access. Airscale resolves the workspace credential on the server after OAuth; ChatGPT does not configure or store it as part of this setup.
+</Note>
+
+## Connect Airscale MCP
+
+<Steps>
+  <Step title="Open ChatGPT settings">
+    Sign in to ChatGPT on the web and open settings from the profile or workspace menu.
+  </Step>
+  <Step title="Allow custom MCP apps">
+    Open the area for apps or connectors and enable the developer or custom-MCP capability if your workspace exposes one. Review any third-party server warning before continuing.
+  </Step>
+  <Step title="Create the Airscale app">
+    Add a custom app or remote MCP server. Name it **Airscale MCP** and enter `https://mcp.airscale.io/mcp` as the server URL. Leave optional advanced fields unchanged unless your organization has a specific policy.
+  </Step>
+  <Step title="Authorize Airscale in the browser">
+    Continue to the Airscale sign-in page, choose the intended workspace, and approve access. After Airscale confirms the connection, return to ChatGPT.
+  </Step>
+  <Step title="Enable Airscale in a new conversation">
+    Start a new conversation and select Airscale MCP from the available apps, connectors, or developer tools. Confirm that its tool list is available before sending a request.
+  </Step>
+</Steps>
+
+## Verify the connection for free
+
+Make the first request read-only and non-billable:
+
+> Use `airscale_check_credits` to show my current Airscale credit balance. Do not call another tool.
+
+If ChatGPT returns the balance for the workspace you selected, the connection is ready. This check does not debit credits.
+
+## Starter prompts
+
+These prompts keep the intended tool and scope explicit. The identities and domains are synthetic.
+
+> Use Airscale MCP to count people named Jordan Example who work at `northstar.example`. Do not run a paid search.
+
+> Use `airscale_find_companies_filter_values` to show accepted industry values related to software. Do not call another tool.
+
+> Plan a search for up to five companies matching `sample-company.test`. Show the proposed Airscale tool and arguments, but wait for my approval before running it.
+
+For a complete staged sequence, follow the [safe MCP workflow](/mcp/how-to-use-the-airscale-mcp).
+
+## Credits and approval
+
+The credit check, people count, company filter-value discovery, export status, and export-file retrieval are free. Search and enrichment tools can consume credits; Airsearch costs 2 credits per call. Managed contact enrichment is work-email-only in its current phase.
+
+Paid export starts fail closed until `confirm_credit_spend` is `true`. Before approving one, review the exact filters, `max_rows`, and maximum possible cost. An export can support up to 10,000 rows, but use the smallest limit that serves the task.
+
+<Warning>
+  Review ChatGPT's proposed tool name and arguments before approving a paid action. Do not start a second export while the first is queued or running.
+</Warning>
+
+## Troubleshooting
+
+<AccordionGroup>
+  <Accordion title="Custom MCP controls are not visible">
+    Confirm that your ChatGPT account and workspace expose custom remote MCP apps. A workspace administrator may need to enable the feature. Because labels change, check the apps, connectors, or developer settings rather than relying on one menu name.
+  </Accordion>
+  <Accordion title="The browser authorization does not finish">
+    Return to ChatGPT after Airscale displays its confirmation page. If the connection still appears pending, remove it and repeat the OAuth flow while signed in to the intended Airscale workspace.
+  </Accordion>
+  <Accordion title="Airscale tools do not appear">
+    Confirm the server URL, refresh or reconnect the app, and start a new conversation so ChatGPT reloads the MCP tool list.
+  </Accordion>
+  <Accordion title="Authentication succeeds but a tool fails">
+    Confirm that the selected Airscale workspace has API access, an active workspace credential, and enough credits for the proposed paid tool. Re-run `airscale_check_credits` before retrying.
+  </Accordion>
+  <Accordion title="An export remains queued">
+    Keep the same export identifier and ask ChatGPT to poll `airscale_get_export_status` using the returned `poll_after_seconds`. Do not create a duplicate paid job.
+  </Accordion>
+</AccordionGroup>
+
+## Next steps
+
+- Review exact inputs and credit behavior in the [MCP tool catalog](/mcp/tools).
+- Use the [safe MCP workflow](/mcp/how-to-use-the-airscale-mcp) before running a search or export.
+- Return to the [Airscale MCP server overview](/mcp/airscale-mcp-server) for security and authentication guidance.

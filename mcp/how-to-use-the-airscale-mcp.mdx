@@ -1,11 +1,138 @@
 ---
 title: "Use the Airscale MCP"
-description: "Plan a free-first, credit-aware workflow across Airscale MCP search, enrichment, and export tools."
+description: "Follow a free-first, bounded workflow for Airscale MCP searches, enrichment, and asynchronous exports."
 canonical: "https://airscale.mintlify.app/mcp/how-to-use-the-airscale-mcp"
 ---
 
-## Start with a free, bounded workflow
+Use this sequence when an AI client can call Airscale MCP on your behalf. It turns a broad request into a bounded sample, makes the maximum possible charge visible, and prevents duplicate asynchronous jobs.
 
-A safe Airscale MCP workflow begins with a free credit check, uses free count or filter discovery where possible, and then runs a narrow sample before any larger request. Review the selected tool's inputs and credit behavior in the [MCP tool catalog](/mcp/tools).
+<Warning>
+  Every prompt and tool payload below is illustrative and non-executing. Do not execute it against a live workspace without reviewing the current [MCP tool catalog](/mcp/tools), available credits, filters, and approval scope. All identities and domains are synthetic.
+</Warning>
 
-The [Airscale MCP server](/mcp/airscale-mcp-server) overview explains authentication, explicit spend approval, and the asynchronous export lifecycle that applies after the sample is correct.
+## Verify the connection for free
+
+Begin with the free workspace balance tool and prohibit fallback calls:
+
+> Use `airscale_check_credits` to show my current credit balance. Do not call another tool.
+
+Confirm that the returned workspace is the one you intend to use. If authentication fails, fix the connection before asking the client to retry any paid operation.
+
+## Count or discover filters
+
+Use a free planning tool before a paid search when one applies:
+
+- `airscale_count_find_people` checks the size of a people cohort.
+- `airscale_find_companies_filter_values` discovers valid city, region, industry, topic, or technology values.
+
+An illustrative people count for synthetic data:
+
+```json
+{
+  "tool": "airscale_count_find_people",
+  "arguments": {
+    "query": {
+      "firstname": { "include": ["Jordan"] },
+      "lastname": { "include": ["Example"] },
+      "companyDomain": { "include": ["northstar.example"] }
+    }
+  }
+}
+```
+
+Counting does not reserve results or guarantee that a later search returns the same total. It gives you a denominator for choosing the next scope.
+
+## Run a narrow sample
+
+Request only enough rows to validate filter precision and result shape. This illustrative sample can return at most five people:
+
+```json
+{
+  "tool": "airscale_find_people",
+  "arguments": {
+    "query": {
+      "companyDomain": { "include": ["northstar.example"] },
+      "JobTitle": { "include": ["Example Operations Director"] }
+    },
+    "size": 5
+  }
+}
+```
+
+`airscale_find_people` charges 0.1 credits per returned lead. A five-row limit bounds this sample to at most 0.5 credits.
+
+## Refine the request
+
+Inspect the sample before increasing scope:
+
+- Are the titles, locations, and company filters represented as intended?
+- Are exclusions needed to remove obvious false positives?
+- Do you need every returned field, or can the export be narrower?
+- Is the requested output a chat-sized sample or a downloadable file?
+
+Change one condition at a time and repeat the smallest useful sample. For managed contact enrichment, the current phase is work-email-only; prepare a batch rather than repeatedly invoking single-contact lookup tools for more than 20 rows.
+
+## Review the maximum spend
+
+Read the tool's credit summary and calculate the upper bound from the final row limit before approval. For example, a 20-row people export costs at most 2 credits at 0.1 credits per exported lead. The actual charge can be lower when fewer rows are returned.
+
+People and company exports support up to 10,000 rows, but that ceiling is not a recommended default. Airsearch costs 2 credits per call. Managed contact enrichment can cost up to 2 credits per contact and remains work-email-only in the current phase.
+
+<Note>
+  Ask the client to repeat the final filters, `max_rows`, format, requested fields, and maximum possible credits. Approval applies only to that reviewed payload.
+</Note>
+
+## Start the export
+
+Only after approval, start one asynchronous job with explicit confirmation. This illustrative payload keeps the same synthetic filter and caps the export at 20 rows:
+
+```json
+{
+  "tool": "airscale_start_people_export",
+  "arguments": {
+    "query": {
+      "companyDomain": { "include": ["northstar.example"] },
+      "JobTitle": { "include": ["Example Operations Director"] }
+    },
+    "max_rows": 20,
+    "format": "csv",
+    "confirm_credit_spend": true
+  }
+}
+```
+
+Save the returned `export_id`. A successful start means the job was accepted, not that the file is complete. Do not submit the start payload again while this job is queued or running.
+
+## Poll status
+
+Poll the existing job with the identifier returned by the start tool:
+
+```json
+{
+  "tool": "airscale_get_export_status",
+  "arguments": {
+    "export_id": "exp_example_01"
+  }
+}
+```
+
+Use the `poll_after_seconds` value returned by each status response before the next poll. Keep the same `export_id`; do not infer a fixed interval and do not start a replacement job because a large export remains queued briefly.
+
+Continue until the status is terminal. If it fails, report the status and message before deciding whether a new paid job is appropriate.
+
+## Retrieve the file
+
+After status reports completion, ask for the generated resource:
+
+```json
+{
+  "tool": "airscale_get_export_file",
+  "arguments": {
+    "export_id": "exp_example_01"
+  }
+}
+```
+
+The file tool returns a download URL or MCP resource link rather than placing thousands of rows into the conversation. Store the file according to your organization's access, retention, and deletion rules.
+
+For exact tool inputs, result behavior, and credit treatment, use the [MCP tool catalog](/mcp/tools). For client setup, see [Connect ChatGPT](/mcp/connect-airscale-mcp-to-chatgpt) or [Connect Claude](/mcp/connect-airscale-mcp-to-claude).
