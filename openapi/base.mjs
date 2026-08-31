@@ -62,6 +62,44 @@ export const baseSpec = {
           email: { type: "null" }
         }
       },
+      VariablePersonProfile: {
+        type: "object",
+        additionalProperties: true,
+        properties: {
+          url: { type: ["string", "null"] },
+          identifier: { type: ["string", "null"] },
+          profile: { type: "object", additionalProperties: true },
+          link: { type: "object", additionalProperties: true },
+          firstname: { type: ["string", "null"] },
+          lastname: { type: ["string", "null"] },
+          headline: { type: ["string", "null"] },
+          industry: { type: ["string", "null"] },
+          location: { type: ["object", "null"], additionalProperties: true }
+        }
+      },
+      VariableCompanyProfile: {
+        type: "object",
+        additionalProperties: true,
+        properties: {
+          url: { type: ["string", "null"] },
+          name: { type: ["string", "null"] },
+          universalName: { type: ["string", "null"] },
+          website: { type: ["string", "null"] },
+          description: { type: ["string", "null"] },
+          staff: { type: ["object", "null"], additionalProperties: true },
+          locations: { type: ["object", "null"], additionalProperties: true },
+          industries: { type: ["array", "null"], items: {} },
+          specialities: { type: ["array", "null"], items: {} }
+        }
+      },
+      NotFoundStatus: {
+        type: "object",
+        required: ["status"],
+        additionalProperties: false,
+        properties: {
+          status: { type: "string", const: "not_found" }
+        }
+      },
       Error: {
         type: "object",
         additionalProperties: true,

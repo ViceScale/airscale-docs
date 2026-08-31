@@ -1,9 +1,11 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 import Ajv2020 from "ajv/dist/2020.js";
+import SwaggerParser from "@apidevtools/swagger-parser";
 import { baseSpec } from "../openapi/base.mjs";
 import { accountOperations } from "../openapi/operations/account.mjs";
 import { contactDataOperations } from "../openapi/operations/contact-data.mjs";
+import { profileLookupOperations } from "../openapi/operations/profile-lookup.mjs";
 import { buildSpec } from "../scripts/build-openapi.mjs";
 import { outputMatchesSerialized } from "../scripts/build-openapi.mjs";
 import { existsSync, mkdtempSync, readFileSync, readdirSync, rmSync, writeFileSync } from "node:fs";
@@ -19,6 +21,12 @@ const ACCOUNT_CONTACT_PATHS = new Set([
   "/v1/phone",
   "/v1/personal-email",
   "/v1/url-search-people"
+]);
+const PROFILE_LOOKUP_PATHS = new Set([
+  "/v1/profile",
+  "/v1/company",
+  "/v1/reverse-email",
+  "/v1/reverse-phone"
 ]);
 
 function operation(method, path, operationId) {
@@ -42,16 +50,29 @@ function accountContactSpec() {
   return buildSpec({ catalog: partialCatalog, operationModules: [accountOperations, contactDataOperations] });
 }
 
+function profileLookupSpec() {
+  const approvedCatalog = JSON.parse(readFileSync("contracts/public-api-operations.json", "utf8"));
+  const partialCatalog = {
+    operations: approvedCatalog.operations.filter(({ path }) => PROFILE_LOOKUP_PATHS.has(path))
+  };
+  assert.equal(partialCatalog.operations.length, 4);
+  return buildSpec({ catalog: partialCatalog, operationModules: [profileLookupOperations] });
+}
+
 function requestSchema(operation) {
   return operation.requestBody?.content?.["application/json"]?.schema;
 }
 
-function requestValidator(schema) {
+function schemaValidator(schema) {
   const ajv = new Ajv2020({ strict: false, validateFormats: false });
   return ajv.compile({
     ...structuredClone(schema),
     components: { schemas: structuredClone(baseSpec.components.schemas) }
   });
+}
+
+function requestValidator(schema) {
+  return schemaValidator(schema);
 }
 
 function errorStatuses(operation) {
@@ -77,7 +98,7 @@ function assertJsonErrors(operation, statuses) {
   }
 }
 
-function assertTask3ExamplePrivacy(exampleValues) {
+function assertExamplePrivacy(exampleValues) {
   const serialized = JSON.stringify(exampleValues);
   for (const [label, pattern] of [
     ["real provider identity", /\b(?:Prospeo|Icypeas|RapidAPI|Leadmagic|SalesQL|Limadata|ContactOut|Wiza|Forager|Bounceban|Findymail|Trykitt|Kitt|A-?Leads)\b/i],
@@ -242,14 +263,14 @@ test("account and contact named examples reject provider identities and credenti
     profileUrl.responses["200"].content["application/json"].examples.notFound.value
   ];
 
-  assert.doesNotThrow(() => assertTask3ExamplePrivacy(examples));
-  assert.throws(() => assertTask3ExamplePrivacy([...examples, { provider: "Prospeo" }]), /real provider identity/);
-  assert.throws(() => assertTask3ExamplePrivacy([...examples, { provider_internal: "HistoricalImport" }]), /internal identity/);
-  assert.throws(() => assertTask3ExamplePrivacy([...examples, { authorization: "Bearer synthetic-token" }]), /bearer credential/);
-  assert.throws(() => assertTask3ExamplePrivacy([...examples, { api_key: "sk-synthetic-credential" }]), /named credential/);
-  assert.throws(() => assertTask3ExamplePrivacy([...examples, { nested: { provider: "SalesQL_cached" } }]), /non-null provider/);
-  assert.throws(() => assertTask3ExamplePrivacy([...examples, { nested: { verifier: "synthetic-verifier" } }]), /non-null verifier/);
-  assert.throws(() => assertTask3ExamplePrivacy([...examples, { nested: { provider_internal: "InternalOnly" } }]), /non-null provider_internal/);
+  assert.doesNotThrow(() => assertExamplePrivacy(examples));
+  assert.throws(() => assertExamplePrivacy([...examples, { provider: "Prospeo" }]), /real provider identity/);
+  assert.throws(() => assertExamplePrivacy([...examples, { provider_internal: "HistoricalImport" }]), /internal identity/);
+  assert.throws(() => assertExamplePrivacy([...examples, { authorization: "Bearer synthetic-token" }]), /bearer credential/);
+  assert.throws(() => assertExamplePrivacy([...examples, { api_key: "sk-synthetic-credential" }]), /named credential/);
+  assert.throws(() => assertExamplePrivacy([...examples, { nested: { provider: "SalesQL_cached" } }]), /non-null provider/);
+  assert.throws(() => assertExamplePrivacy([...examples, { nested: { verifier: "synthetic-verifier" } }]), /non-null verifier/);
+  assert.throws(() => assertExamplePrivacy([...examples, { nested: { provider_internal: "InternalOnly" } }]), /non-null provider_internal/);
 });
 
 test("Account Credits operation models the stable balance contract", () => {
@@ -570,6 +591,281 @@ test("Contact Profile URL operation requires complete person and company names",
   assert.deepEqual(errorStatuses(operation), ["400", "401", "403", "413", "429", "500", "502", "503"]);
   assertUnauthorizedReference(operation);
   assertJsonErrors(operation, errorStatuses(operation));
+});
+
+test("profile and reverse lookup shared schemas preserve variable public payloads", () => {
+  const schemas = baseSpec.components.schemas;
+
+  assert.equal(schemas.VariablePersonProfile.type, "object");
+  assert.equal(schemas.VariablePersonProfile.additionalProperties, true);
+  assert.equal(schemas.VariablePersonProfile.required, undefined);
+  assert.deepEqual(schemas.VariablePersonProfile.properties.url, { type: ["string", "null"] });
+  assert.deepEqual(schemas.VariablePersonProfile.properties.identifier, { type: ["string", "null"] });
+  assert.deepEqual(schemas.VariablePersonProfile.properties.profile, { type: "object", additionalProperties: true });
+  assert.deepEqual(schemas.VariablePersonProfile.properties.link, { type: "object", additionalProperties: true });
+
+  assert.equal(schemas.VariableCompanyProfile.type, "object");
+  assert.equal(schemas.VariableCompanyProfile.additionalProperties, true);
+  assert.equal(schemas.VariableCompanyProfile.required, undefined);
+  for (const property of ["url", "name", "universalName", "website"]) {
+    assert.deepEqual(schemas.VariableCompanyProfile.properties[property], { type: ["string", "null"] });
+  }
+  for (const property of ["staff", "locations"]) {
+    assert.deepEqual(schemas.VariableCompanyProfile.properties[property], {
+      type: ["object", "null"],
+      additionalProperties: true
+    });
+  }
+  for (const property of ["industries", "specialities"]) {
+    assert.deepEqual(schemas.VariableCompanyProfile.properties[property], {
+      type: ["array", "null"],
+      items: {}
+    });
+  }
+
+  assert.deepEqual(schemas.NotFoundStatus, {
+    type: "object",
+    required: ["status"],
+    additionalProperties: false,
+    properties: { status: { type: "string", const: "not_found" } }
+  });
+});
+
+test("profile routes share URL-selected response semantics while keeping page-specific examples", () => {
+  const spec = profileLookupSpec();
+  const expected = [
+    {
+      path: "/v1/profile",
+      operationId: "extractPersonProfile",
+      request: {
+        linkedin_profile_url: "linkedin.com/in/example-person-000000?source=synthetic",
+        mode: "p3"
+      },
+      response: {
+        url: "https://www.linkedin.com/in/example-person-000000",
+        identifier: "example-person-000000",
+        firstname: "Example",
+        lastname: "Person",
+        headline: "Example role at Example Company",
+        industry: "Software Development",
+        location: { country: "United States", city: "Example City", state: "Example State" }
+      }
+    },
+    {
+      path: "/v1/company",
+      operationId: "extractCompanyProfile",
+      request: {
+        linkedin_profile_url: "https://www.linkedin.com/company/example-company-000000/about/",
+        mode: "p3"
+      },
+      response: {
+        url: "https://www.linkedin.com/company/example-company-000000",
+        name: "Example Company",
+        universalName: "example-company-000000",
+        website: "https://www.example.test",
+        description: "Synthetic company profile for API documentation.",
+        staff: { total: 120, range: "51-200" },
+        locations: {
+          headquarter: { country: "United States", city: "Example City" },
+          other: []
+        },
+        industries: ["Software Development"],
+        specialities: ["Synthetic data"]
+      }
+    }
+  ];
+
+  for (const fixture of expected) {
+    const operation = spec.paths[fixture.path]?.post;
+    const schema = requestSchema(operation);
+    const responseContent = operation.responses["200"].content["application/json"];
+
+    assert.ok(operation);
+    assert.equal(operation.operationId, fixture.operationId);
+    assert.deepEqual(operation.tags, ["Profiles and reverse lookup"]);
+    assert.equal(operation["x-airscale-rate-limit"], "3,000 requests per minute per workspace.");
+    assert.equal(
+      operation["x-airscale-credit-cost"],
+      "URL-selected: /in/ successes cost 1 credit by default (workspace-specific pricing may differ); /company/ or /school/ successes cost 0.5 credits; unsuccessful requests are not charged."
+    );
+    assertPublicOperationMetadata(operation);
+    assert.match(operation.description, /submitted URL/i);
+    assert.match(operation.requestBody.description, /trimmed/i);
+    assert.match(operation.requestBody.description, /missing scheme/i);
+    assert.match(operation.requestBody.description, /linkedin\.com or a subdomain/i);
+    assert.match(operation.requestBody.description, /\/in\//);
+    assert.match(operation.requestBody.description, /\/company\//);
+    assert.match(operation.requestBody.description, /\/school\//);
+    assert.match(operation.requestBody.description, /query and extra path/i);
+    assert.equal(operation.requestBody.required, true);
+    assert.deepEqual(schema.required, ["linkedin_profile_url"]);
+    assert.equal(schema.additionalProperties, false);
+    assert.deepEqual(schema.properties.linkedin_profile_url, { type: "string", minLength: 1 });
+    assert.deepEqual(schema.properties.mode, { type: "string", enum: ["p1", "p2", "p3"] });
+    assert.equal(schema.properties.linkedin_profile_url.pattern, undefined);
+    assert.equal(schema.properties.linkedin_profile_url.format, undefined);
+    assert.deepEqual(operation.requestBody.content["application/json"].examples.profile.value, fixture.request);
+    assert.deepEqual(responseContent.schema, {
+      anyOf: [
+        { $ref: "#/components/schemas/VariablePersonProfile" },
+        { $ref: "#/components/schemas/VariableCompanyProfile" }
+      ]
+    });
+    assert.deepEqual(responseContent.examples.success.value, fixture.response);
+    assert.deepEqual(errorStatuses(operation), ["400", "401", "403", "404", "413", "429", "500", "502", "503"]);
+    assertUnauthorizedReference(operation);
+    assertJsonErrors(operation, errorStatuses(operation));
+
+    const validateRequest = requestValidator(schema);
+    assert.equal(validateRequest(fixture.request), true, JSON.stringify(validateRequest.errors));
+    assert.equal(validateRequest({ linkedin_profile_url: "linkedin.com/school/example-school", mode: "p1" }), true);
+    assert.equal(validateRequest({ linkedin_profile_url: "linkedin.com/in/example", mode: "default" }), false);
+    assert.equal(validateRequest({ mode: "p3" }), false);
+    assert.equal(validateRequest({ linkedin_profile_url: "" }), false);
+  }
+});
+
+test("reverse email models source-compatible input and object-or-string results", () => {
+  const operation = profileLookupSpec().paths["/v1/reverse-email"]?.post;
+  const schema = requestSchema(operation);
+  const responseContent = operation.responses["200"].content["application/json"];
+
+  assert.ok(operation);
+  assert.equal(operation.operationId, "reverseEmailLookup");
+  assert.deepEqual(operation.tags, ["Profiles and reverse lookup"]);
+  assert.equal(operation["x-airscale-rate-limit"], "25 requests per second per workspace.");
+  assert.equal(operation["x-airscale-credit-cost"], "2 credits only when a profile is returned; \"not found\" and errors are not charged.");
+  assertPublicOperationMetadata(operation);
+  assert.match(operation.requestBody.description, /trimmed and lowercased/i);
+  assert.equal(operation.requestBody.required, true);
+  assert.deepEqual(schema.required, ["email"]);
+  assert.equal(schema.additionalProperties, false);
+  assert.equal(schema.properties.email.type, "string");
+  assert.equal(schema.properties.email.format, undefined);
+  assert.deepEqual(responseContent.schema, {
+    oneOf: [
+      { $ref: "#/components/schemas/VariablePersonProfile" },
+      { type: "string", enum: ["not found"] }
+    ]
+  });
+  assert.deepEqual(operation.requestBody.content["application/json"].examples.email.value, {
+    email: " Example.Person@Example.Test "
+  });
+  assert.deepEqual(responseContent.examples.success.value, {
+    url: "https://www.linkedin.com/in/example-person-000000",
+    identifier: "example-person-000000",
+    firstname: "Example",
+    lastname: "Person",
+    headline: "Example role at Example Company"
+  });
+  assert.equal(responseContent.examples.notFound.value, "not found");
+  assert.deepEqual(errorStatuses(operation), ["400", "401", "403", "413", "429", "500", "502", "503"]);
+  assertUnauthorizedReference(operation);
+  assertJsonErrors(operation, errorStatuses(operation));
+
+  const validate = requestValidator(schema);
+  for (const email of [
+    "person@example.test",
+    " Person@Example.Test ",
+    "a+b@sub.example.test"
+  ]) {
+    assert.equal(validate({ email }), true, email);
+  }
+  for (const email of [
+    "",
+    "   ",
+    "person.example.test",
+    "@example.test",
+    "person@",
+    "person@example",
+    "person @example.test",
+    "person@ example.test"
+  ]) {
+    assert.equal(validate({ email }), false, email);
+  }
+});
+
+test("reverse phone accepts non-E.164 inputs and models success or exact not_found", () => {
+  const operation = profileLookupSpec().paths["/v1/reverse-phone"]?.post;
+  const schema = requestSchema(operation);
+  const responseContent = operation.responses["200"].content["application/json"];
+
+  assert.ok(operation);
+  assert.equal(operation.operationId, "reversePhoneLookup");
+  assert.deepEqual(operation.tags, ["Profiles and reverse lookup"]);
+  assert.equal(operation["x-airscale-rate-limit"], "2,000 requests per minute per workspace.");
+  assert.equal(operation["x-airscale-credit-cost"], "10 credits only when a profile is returned; not_found and errors are not charged.");
+  assertPublicOperationMetadata(operation);
+  assert.match(operation.requestBody.description, /trim/);
+  assert.doesNotMatch(operation.requestBody.description, /E\.164/i);
+  assert.equal(operation.requestBody.required, true);
+  assert.deepEqual(schema.required, ["mobile_phone"]);
+  assert.equal(schema.additionalProperties, false);
+  assert.equal(schema.properties.mobile_phone.type, "string");
+  assert.equal(schema.properties.mobile_phone.format, undefined);
+  assert.deepEqual(operation.requestBody.content["application/json"].examples.phone.value, {
+    mobile_phone: "+12025550147"
+  });
+  assert.equal(responseContent.schema.oneOf.length, 2);
+  assert.equal(responseContent.schema.oneOf[0].type, "object");
+  assert.equal(responseContent.schema.oneOf[0].additionalProperties, true);
+  assert.deepEqual(responseContent.schema.oneOf[0].required, ["body"]);
+  assert.deepEqual(responseContent.schema.oneOf[0].properties.body, {
+    type: "object",
+    additionalProperties: true
+  });
+  assert.deepEqual(responseContent.schema.oneOf[1], { $ref: "#/components/schemas/NotFoundStatus" });
+  assert.deepEqual(responseContent.examples.success.value, {
+    url: "https://www.linkedin.com/in/example-person-000000",
+    identifier: "example-person-000000",
+    firstname: "Example",
+    lastname: "Person",
+    link: { linkedin: "https://www.linkedin.com/in/example-person-000000" },
+    body: {
+      url: "https://www.linkedin.com/in/example-person-000000",
+      identifier: "example-person-000000",
+      firstname: "Example",
+      lastname: "Person",
+      link: { linkedin: "https://www.linkedin.com/in/example-person-000000" }
+    }
+  });
+  assert.deepEqual(responseContent.examples.notFound.value, { status: "not_found" });
+  assert.deepEqual(errorStatuses(operation), ["400", "401", "403", "413", "429", "500", "502", "503"]);
+  assertUnauthorizedReference(operation);
+  assertJsonErrors(operation, errorStatuses(operation));
+
+  const validate = requestValidator(schema);
+  for (const mobile_phone of ["+12025550147", "020 7946 0958", "extension 42", " 555-0147 "]) {
+    assert.equal(validate({ mobile_phone }), true, mobile_phone);
+  }
+  for (const mobile_phone of ["", " ", "\t\n"]) {
+    assert.equal(validate({ mobile_phone }), false, JSON.stringify(mobile_phone));
+  }
+});
+
+test("profile and reverse lookup examples are schema-valid, synthetic, and public", async () => {
+  const spec = profileLookupSpec();
+  const examples = [];
+
+  for (const path of PROFILE_LOOKUP_PATHS) {
+    const operation = spec.paths[path].post;
+    const requestContent = operation.requestBody.content["application/json"];
+    const responseContent = operation.responses["200"].content["application/json"];
+    const validateRequest = schemaValidator(requestContent.schema);
+    const validateResponse = schemaValidator(responseContent.schema);
+
+    for (const example of Object.values(requestContent.examples)) {
+      examples.push(example.value);
+      assert.equal(validateRequest(example.value), true, `${path} request: ${JSON.stringify(validateRequest.errors)}`);
+    }
+    for (const example of Object.values(responseContent.examples)) {
+      examples.push(example.value);
+      assert.equal(validateResponse(example.value), true, `${path} response: ${JSON.stringify(validateResponse.errors)}`);
+    }
+  }
+
+  assert.doesNotThrow(() => assertExamplePrivacy(examples));
+  await assert.doesNotReject(() => SwaggerParser.validate(structuredClone(spec)));
 });
 
 test("buildSpec inserts fixture operations in catalog order", () => {
