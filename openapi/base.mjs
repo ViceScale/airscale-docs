@@ -30,6 +30,73 @@ export const baseSpec = {
         type: "string",
         enum: ["success", "not_found", "timeout"]
       },
+      IncludeExcludeFilter: {
+        type: "object",
+        additionalProperties: false,
+        properties: {
+          include: {
+            type: "array",
+            maxItems: 200,
+            items: { type: "string", minLength: 1 }
+          },
+          exclude: {
+            type: "array",
+            maxItems: 200,
+            items: { type: "string", minLength: 1 }
+          }
+        },
+        anyOf: [{ required: ["include"] }, { required: ["exclude"] }]
+      },
+      IntegerRangeFilter: {
+        type: "object",
+        minProperties: 1,
+        additionalProperties: false,
+        properties: {
+          ">": { type: "integer" },
+          ">=": { type: "integer" },
+          "<": { type: "integer" },
+          "<=": { type: "integer" }
+        }
+      },
+      GrowthFilter: {
+        type: "object",
+        description: "Headcount growth bounds for one supported timespan. When both bounds are present, min must be less than or equal to max.",
+        additionalProperties: false,
+        required: ["timespan"],
+        properties: {
+          min: { type: "number", minimum: -100, maximum: 10000 },
+          max: { type: "number", minimum: -100, maximum: 10000 },
+          timespan: { type: "string", enum: ["6months", "12months", "24months"] }
+        },
+        anyOf: [{ required: ["min"] }, { required: ["max"] }]
+      },
+      StringOrStringArray: {
+        oneOf: [
+          { type: "string", minLength: 1 },
+          {
+            type: "array",
+            minItems: 1,
+            items: { type: "string", minLength: 1 }
+          }
+        ]
+      },
+      FlexibleResult: {
+        type: "object",
+        additionalProperties: true,
+        properties: {
+          firstname: { type: ["string", "null"] },
+          lastname: { type: ["string", "null"] },
+          profileUrl: { type: ["string", "null"] },
+          jobTitle: { type: ["string", "null"] },
+          companyName: { type: ["string", "null"] },
+          name: { type: ["string", "null"] },
+          domain: { type: ["string", "null"] },
+          website: { type: ["string", "null"] },
+          countryName: { type: ["string", "null"] },
+          cityName: { type: ["string", "null"] },
+          linkedinProfile: { type: ["string", "null"] }
+        }
+      },
       LinkedInPersonUrl: {
         type: "string",
         minLength: 1,

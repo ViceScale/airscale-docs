@@ -6,6 +6,7 @@ import { baseSpec } from "../openapi/base.mjs";
 import { accountOperations } from "../openapi/operations/account.mjs";
 import { contactDataOperations } from "../openapi/operations/contact-data.mjs";
 import { profileLookupOperations } from "../openapi/operations/profile-lookup.mjs";
+import { searchDiscoveryOperations } from "../openapi/operations/search-discovery.mjs";
 import { buildSpec } from "../scripts/build-openapi.mjs";
 import { outputMatchesSerialized } from "../scripts/build-openapi.mjs";
 import { existsSync, mkdtempSync, readFileSync, readdirSync, rmSync, writeFileSync } from "node:fs";
@@ -57,6 +58,18 @@ function profileLookupSpec() {
   };
   assert.equal(partialCatalog.operations.length, 4);
   return buildSpec({ catalog: partialCatalog, operationModules: [profileLookupOperations] });
+}
+
+function moduleOperation(method, path) {
+  return searchDiscoveryOperations.find((entry) => entry.method === method && entry.path === path)?.operation;
+}
+
+function operationFromSpec(spec, method, path) {
+  return spec.paths[path]?.[method.toLowerCase()];
+}
+
+function committedSpec() {
+  return JSON.parse(readFileSync("openapi.json", "utf8"));
 }
 
 function requestSchema(operation) {
@@ -120,6 +133,39 @@ function assertExamplePrivacy(exampleValues) {
     }
   }
   for (const example of exampleValues) inspect(example);
+}
+
+function collectExampleValues(value, examples = [], parentKey = "") {
+  if (!value || typeof value !== "object") return examples;
+  for (const [key, child] of Object.entries(value)) {
+    if (key === "example") examples.push(child);
+    if (parentKey === "examples" && child && typeof child === "object" && Object.hasOwn(child, "value")) {
+      examples.push(child.value);
+    }
+    collectExampleValues(child, examples, key);
+  }
+  return examples;
+}
+
+function assertNoExecutableExamples(exampleValues) {
+  const serialized = JSON.stringify(exampleValues);
+  for (const pattern of [
+    /\bcurl\b/i,
+    /\bfetch\s*\(/i,
+    /\baxios\b/i,
+    /\b(?:require|import)\s*\(/i,
+    /Authorization\s*:/i
+  ]) {
+    assert.doesNotMatch(serialized, pattern);
+  }
+}
+
+function assertContentExamplesValidate(content, label, examples) {
+  const validate = schemaValidator(content.schema);
+  for (const [name, example] of Object.entries(content.examples ?? {})) {
+    examples.push(example.value);
+    assert.equal(validate(example.value), true, `${label} ${name}: ${JSON.stringify(validate.errors)}`);
+  }
 }
 
 function inTemporaryDirectory(run) {
@@ -900,6 +946,452 @@ test("profile and reverse lookup examples are schema-valid, synthetic, and publi
 
   assert.doesNotThrow(() => assertExamplePrivacy(examples));
   await assert.doesNotReject(() => SwaggerParser.validate(structuredClone(spec)));
+});
+
+test("search and discovery shared schemas preserve the public filter and result shapes", () => {
+  const schemas = baseSpec.components.schemas;
+
+  assert.deepEqual(schemas.IncludeExcludeFilter, {
+    type: "object",
+    additionalProperties: false,
+    properties: {
+      include: {
+        type: "array",
+        maxItems: 200,
+        items: { type: "string", minLength: 1 }
+      },
+      exclude: {
+        type: "array",
+        maxItems: 200,
+        items: { type: "string", minLength: 1 }
+      }
+    },
+    anyOf: [{ required: ["include"] }, { required: ["exclude"] }]
+  });
+  assert.deepEqual(schemas.IntegerRangeFilter, {
+    type: "object",
+    minProperties: 1,
+    additionalProperties: false,
+    properties: {
+      ">": { type: "integer" },
+      ">=": { type: "integer" },
+      "<": { type: "integer" },
+      "<=": { type: "integer" }
+    }
+  });
+  assert.equal(schemas.GrowthFilter.type, "object");
+  assert.equal(schemas.GrowthFilter.additionalProperties, false);
+  assert.match(schemas.GrowthFilter.description, /min must be less than or equal to max/i);
+  assert.deepEqual(schemas.GrowthFilter.required, ["timespan"]);
+  assert.deepEqual(schemas.GrowthFilter.anyOf, [{ required: ["min"] }, { required: ["max"] }]);
+  assert.deepEqual(schemas.GrowthFilter.properties.timespan.enum, ["6months", "12months", "24months"]);
+  for (const property of ["min", "max"]) {
+    assert.deepEqual(schemas.GrowthFilter.properties[property], {
+      type: "number",
+      minimum: -100,
+      maximum: 10000
+    });
+  }
+  assert.equal(schemas.FlexibleResult.type, "object");
+  assert.equal(schemas.FlexibleResult.additionalProperties, true);
+  assert.equal(schemas.FlexibleResult.required, undefined);
+  for (const property of ["provider", "verifier", "provider_internal"]) {
+    assert.equal(schemas.FlexibleResult.properties[property], undefined);
+  }
+});
+
+test("Find People models the complete public query and page contract", () => {
+  const operation = moduleOperation("POST", "/v1/find-people");
+  assert.ok(operation, "missing POST /v1/find-people");
+  const schema = requestSchema(operation);
+  const query = schema.properties.query;
+  const includeExcludeFilters = [
+    "firstname", "lastname", "jobTitle", "school", "languages", "skills", "location", "keyword",
+    "currentCompanyName", "companyDomain", "companyLinkedinUrl", "currentCompany.type",
+    "currentCompany.industry", "currentCompany.location", "currentCompany.keyword", "pastJobTitle",
+    "pastCompanyName", "pastCompanyId", "pastCompanyWebsite", "pastCompanyUrn", "pastCompany.type",
+    "pastCompany.industry", "pastCompany.location", "pastCompany.keyword"
+  ];
+  const integerRangeFilters = [
+    "totalYearsOfExperience", "timeInCurrentCompany", "currentCompany.headcount", "currentCompany.revenue",
+    "pastCompany.headcount", "pastCompany.revenue"
+  ];
+  const growthFilters = ["currentCompany.headcountGrowth", "pastCompany.headcountGrowth"];
+
+  assert.equal(operation.operationId, "findPeople");
+  assert.deepEqual(operation.tags, ["Search and discovery"]);
+  assert.equal(operation["x-airscale-rate-limit"], "6 requests per second per workspace.");
+  assert.equal(operation["x-airscale-credit-cost"], "0.1 credits per returned lead; no charge when no leads are returned.");
+  assertPublicOperationMetadata(operation);
+  assert.match(operation.description, /256 KiB/);
+  assert.equal(operation.requestBody.required, true);
+  assert.deepEqual(schema.required, ["query"]);
+  assert.equal(schema.additionalProperties, false);
+  assert.deepEqual(schema.properties.size, { type: "integer", minimum: 1, maximum: 100, default: 100 });
+  assert.equal(schema.properties.cursor.type, "string");
+  assert.equal(schema.properties.cursor.minLength, 1);
+  assert.match(schema.properties.cursor.description, /opaque/i);
+  assert.equal(query.type, "object");
+  assert.equal(query.minProperties, 1);
+  assert.equal(query.additionalProperties, false);
+  assert.deepEqual(Object.keys(query.properties), [...includeExcludeFilters, ...integerRangeFilters, ...growthFilters]);
+  for (const property of includeExcludeFilters) {
+    assert.deepEqual(query.properties[property], { $ref: "#/components/schemas/IncludeExcludeFilter" });
+  }
+  for (const property of integerRangeFilters) {
+    assert.deepEqual(query.properties[property], { $ref: "#/components/schemas/IntegerRangeFilter" });
+  }
+  for (const property of growthFilters) {
+    assert.deepEqual(query.properties[property], { $ref: "#/components/schemas/GrowthFilter" });
+  }
+  assert.deepEqual(operation.requestBody.content["application/json"].examples.audience.value, {
+    query: {
+      jobTitle: { include: ["Revenue Operations Manager"] },
+      location: { include: ["Example Country"] }
+    },
+    size: 50
+  });
+  assert.deepEqual(operation.responses["200"].content["application/json"].schema, {
+    type: "object",
+    required: ["total", "leads", "next_cursor"],
+    additionalProperties: false,
+    properties: {
+      total: { type: "number" },
+      leads: { type: "array", items: { $ref: "#/components/schemas/FlexibleResult" } },
+      next_cursor: { type: ["string", "null"] }
+    }
+  });
+  assert.deepEqual(errorStatuses(operation), ["400", "401", "403", "404", "413", "429", "502", "503"]);
+  assertUnauthorizedReference(operation);
+  assertJsonErrors(operation, errorStatuses(operation));
+});
+
+test("Find People query filters and Search pagination enforce runtime boundaries", () => {
+  const search = moduleOperation("POST", "/v1/find-people");
+  assert.ok(search, "missing POST /v1/find-people");
+  const validate = requestValidator(requestSchema(search));
+  const values200 = Array.from({ length: 200 }, (_, index) => `Role ${index}`);
+  const base = { query: { jobTitle: { include: ["Founder"] } } };
+
+  assert.equal(validate({ query: { jobTitle: { include: values200 } }, size: 1 }), true);
+  assert.equal(validate({ ...base, size: 100 }), true);
+  assert.equal(validate({ ...base, size: 0 }), false);
+  assert.equal(validate({ ...base, size: 101 }), false);
+  assert.equal(validate({ query: { jobTitle: { include: [...values200, "One too many"] } } }), false);
+  assert.equal(validate({ query: { jobTitle: {} } }), false);
+  assert.equal(validate({ query: { jobTitle: { include: [] } } }), true, "source accepts a present empty include array");
+  assert.equal(validate({ query: { jobTitle: { include: [""] } } }), false);
+  assert.equal(validate({ query: { unsupported: { include: ["value"] } } }), false);
+  assert.equal(validate({ query: { totalYearsOfExperience: { ">=": 5, "<": 20 } } }), true);
+  assert.equal(validate({ query: { totalYearsOfExperience: { eq: 5 } } }), false);
+  assert.equal(validate({ query: { totalYearsOfExperience: { ">=": 5.5 } } }), false);
+  assert.equal(validate({ query: { "currentCompany.headcountGrowth": { min: 10, timespan: "6months" } } }), true);
+  assert.equal(validate({ query: { "currentCompany.headcountGrowth": { max: 20, timespan: "12months" } } }), true);
+  assert.equal(validate({ query: { "currentCompany.headcountGrowth": { timespan: "24months" } } }), false);
+  assert.equal(validate({ query: { "currentCompany.headcountGrowth": { min: 10, timespan: "3months" } } }), false);
+});
+
+test("Count People reuses the exact query contract without Search pagination", () => {
+  const search = moduleOperation("POST", "/v1/find-people");
+  const count = moduleOperation("POST", "/v1/find-people/count");
+  assert.ok(search, "missing POST /v1/find-people");
+  assert.ok(count, "missing POST /v1/find-people/count");
+  const searchSchema = requestSchema(search);
+  const countSchema = requestSchema(count);
+
+  assert.equal(count.operationId, "countPeople");
+  assert.deepEqual(count.tags, ["Search and discovery"]);
+  assert.equal(count["x-airscale-rate-limit"], "6 requests per second per workspace.");
+  assert.equal(count["x-airscale-credit-cost"], "No charge; Count does not debit Airscale credits.");
+  assertPublicOperationMetadata(count);
+  assert.equal(count.requestBody.required, true);
+  assert.deepEqual(countSchema.required, ["query"]);
+  assert.equal(countSchema.additionalProperties, false);
+  assert.deepEqual(Object.keys(countSchema.properties), ["query"]);
+  assert.deepEqual(countSchema.properties.query, searchSchema.properties.query);
+  assert.deepEqual(count.responses["200"].content["application/json"].schema, {
+    type: "object",
+    required: ["total"],
+    additionalProperties: false,
+    properties: { total: { type: "number" } }
+  });
+  assert.deepEqual(errorStatuses(count), ["400", "401", "403", "404", "413", "429", "502", "503"]);
+  assertUnauthorizedReference(count);
+  assertJsonErrors(count, errorStatuses(count));
+
+  const validate = requestValidator(countSchema);
+  assert.equal(validate({ query: { jobTitle: { include: ["Founder"] } } }), true);
+  assert.equal(validate({ query: { jobTitle: { include: ["Founder"] } }, size: 25 }), false);
+  assert.equal(validate({ query: { jobTitle: { include: ["Founder"] } }, cursor: "fp_example" }), false);
+});
+
+test("Find Companies models public filters, cursor precedence, and stable results", () => {
+  const operation = moduleOperation("POST", "/v1/find-companies");
+  assert.ok(operation, "missing POST /v1/find-companies");
+  const schema = requestSchema(operation);
+  const filters = schema.properties.filters;
+
+  assert.equal(operation.operationId, "findCompanies");
+  assert.deepEqual(operation.tags, ["Search and discovery"]);
+  assert.equal(operation["x-airscale-rate-limit"], "6 requests per second per workspace.");
+  assert.equal(operation["x-airscale-credit-cost"], "0.1 credits per returned company; no charge when no companies are returned.");
+  assertPublicOperationMetadata(operation);
+  assert.match(operation.description, /256 KiB/);
+  assert.deepEqual(schema.required, ["filters"]);
+  assert.equal(schema.additionalProperties, false);
+  assert.deepEqual(schema.properties.page, { type: "integer", minimum: 0, default: 0 });
+  assert.deepEqual(schema.properties.size, { type: "integer", minimum: 1, maximum: 100, default: 50 });
+  assert.equal(schema.properties.cursor.pattern, "^fc_");
+  assert.match(schema.properties.cursor.description, /saved page size takes precedence/i);
+  assert.equal(filters.type, "object");
+  assert.equal(filters.minProperties, 1);
+  assert.equal(filters.additionalProperties, false);
+  assert.deepEqual(Object.keys(filters.properties), [
+    "country", "region", "city", "industry", "size", "revenue", "age", "techStack", "keywords",
+    "topics", "events", "locations", "companyName", "eventWindow", "locationMatch", "hasWebsite",
+    "isPublicCompany"
+  ]);
+  assert.deepEqual(filters.properties.eventWindow, {
+    type: "string",
+    enum: ["30 days", "60 days", "90 days"],
+    default: "30 days"
+  });
+  assert.deepEqual(filters.properties.locationMatch, {
+    type: "string",
+    enum: ["hqOnly", "hqOperating"],
+    default: "hqOnly"
+  });
+  for (const property of ["hasWebsite", "isPublicCompany"]) {
+    assert.deepEqual(filters.properties[property], { type: ["boolean", "null"] });
+  }
+  const requestExample = operation.requestBody.content["application/json"].examples.audience.value;
+  assert.deepEqual(requestExample.filters.country, ["FR"]);
+  const responseExample = operation.responses["200"].content["application/json"].examples.reservedData.value;
+  assert.equal(responseExample.rows[0].domain, "example.test");
+  assert.deepEqual(
+    JSON.parse(Buffer.from(responseExample.next_cursor.slice(3), "base64url").toString("utf8")),
+    { v: 1, mode: "page", page: 1, pageSize: 25, providerSize: 10000 }
+  );
+  assert.deepEqual(operation.responses["200"].content["application/json"].schema, {
+    type: "object",
+    required: ["rows", "total", "page", "size", "next_cursor"],
+    additionalProperties: false,
+    properties: {
+      rows: { type: "array", items: { $ref: "#/components/schemas/FlexibleResult" } },
+      total: { type: "number" },
+      page: { type: "number" },
+      size: { type: "number" },
+      next_cursor: { type: ["string", "null"] }
+    }
+  });
+  assert.deepEqual(errorStatuses(operation), ["400", "401", "403", "413", "429", "500", "502", "503"]);
+  assertUnauthorizedReference(operation);
+  assertJsonErrors(operation, errorStatuses(operation));
+});
+
+test("Find Companies pagination and fixed presets reject undocumented values", () => {
+  const operation = moduleOperation("POST", "/v1/find-companies");
+  assert.ok(operation, "missing POST /v1/find-companies");
+  const validate = requestValidator(requestSchema(operation));
+  const base = { filters: { country: "Example Country" } };
+  const accepted = {
+    size: ["1-10", "11-50", "51-200", "201-500", "501-1000", "1001-5000", "5001-10000", "10001+"],
+    revenue: ["0-500K", "500K-1M", "1M-5M", "5M-10M", "10M-25M", "25M-75M", "75M-200M", "200M-500M", "500M-1B", "1B-10B", "10B-100B", "100B-1T", "1T-10T", "10T+"],
+    age: ["0-3", "3-6", "6-10", "10-20", "20+"],
+    locations: ["0-1", "2-5", "6-20", "21-50", "51-100", "101-1000", "1001+"]
+  };
+
+  assert.equal(validate({ ...base, page: 0, size: 1 }), true);
+  assert.equal(validate({ ...base, size: 100, cursor: "fc_synthetic" }), true);
+  assert.equal(validate({ ...base, page: -1 }), false);
+  assert.equal(validate({ ...base, size: 0 }), false);
+  assert.equal(validate({ ...base, size: 101 }), false);
+  assert.equal(validate({ ...base, cursor: "not-a-company-cursor" }), false);
+  assert.equal(validate({ filters: { eventWindow: "30 days" } }), false, "defaults alone are not a real filter");
+  for (const [property, values] of Object.entries(accepted)) {
+    assert.equal(validate({ filters: { [property]: values[0] } }), true, `${property} scalar`);
+    assert.equal(validate({ filters: { [property]: values } }), true, `${property} array`);
+    assert.equal(validate({ filters: { [property]: "invented-value" } }), false, `${property} fixed enum`);
+  }
+});
+
+test("Company Filter-values models alias coercion and public option metadata", () => {
+  const operation = moduleOperation("GET", "/v1/find-companies/filter-values");
+  assert.ok(operation, "missing GET /v1/find-companies/filter-values");
+  const parameters = Object.fromEntries(operation.parameters.map((parameter) => [parameter.name, parameter]));
+
+  assert.equal(operation.operationId, "listFindCompanyFilterValues");
+  assert.deepEqual(operation.tags, ["Search and discovery"]);
+  assert.equal(operation["x-airscale-rate-limit"], "6 requests per second per workspace.");
+  assert.equal(operation["x-airscale-credit-cost"], "No charge; Filter-values does not debit Airscale credits.");
+  assertPublicOperationMetadata(operation);
+  assert.equal(operation.requestBody, undefined);
+  assert.deepEqual(Object.keys(parameters), ["filter", "q", "query", "limit", "country", "region"]);
+  assert.equal(parameters.filter.in, "query");
+  assert.equal(parameters.filter.required, true);
+  assert.deepEqual(parameters.filter.schema.enum, ["city", "region", "industry", "topics", "techStack"]);
+  for (const alias of ["q", "query"]) {
+    assert.equal(parameters[alias].required, false);
+    assert.equal(parameters[alias].schema.minLength, 2);
+    assert.equal(parameters[alias].schema.maxLength, 120);
+    assert.match(parameters[alias].description, /at least one of q or query is required/i);
+  }
+  assert.equal(parameters.limit.required, false);
+  assert.match(parameters.limit.description, /non-numeric/i);
+  assert.match(parameters.limit.description, /explicit empty/i);
+  assert.match(parameters.limit.description, /clamps to 1/i);
+  assert.match(parameters.limit.description, /clamp(?:s)? to 100/i);
+  for (const context of ["country", "region"]) {
+    assert.equal(parameters[context].required, false);
+    assert.match(parameters[context].description, /repeat or comma-separated/i);
+  }
+
+  const validateLimit = schemaValidator(parameters.limit.schema);
+  for (const value of [20, 0, 101, "", "not-a-number", "2.5", "25"]) {
+    assert.equal(validateLimit(value), true, `runtime-coerced limit ${JSON.stringify(value)}`);
+  }
+  assert.equal(validateLimit(null), false);
+
+  assert.deepEqual(operation.responses["200"].content["application/json"].schema, {
+    type: "object",
+    required: ["filter", "query", "values"],
+    additionalProperties: false,
+    properties: {
+      filter: { type: "string", enum: ["city", "region", "industry", "topics", "techStack"] },
+      query: { type: "string" },
+      values: {
+        type: "array",
+        items: {
+          type: "object",
+          required: ["label", "value"],
+          additionalProperties: false,
+          properties: {
+            label: { type: "string" },
+            value: { type: "string" },
+            query: { type: "string" },
+            city: { type: "string" },
+            region: { type: "string" },
+            countryCode: { type: "string" },
+            regionCode: { type: "string" }
+          }
+        }
+      }
+    }
+  });
+  assert.deepEqual(errorStatuses(operation), ["400", "401", "403", "413", "429", "500", "502", "503"]);
+  assertUnauthorizedReference(operation);
+  assertJsonErrors(operation, errorStatuses(operation));
+});
+
+test("Airsearch constrains public prompts and schema hints while preserving dynamic output keys", () => {
+  const operation = moduleOperation("POST", "/v1/airsearch");
+  assert.ok(operation, "missing POST /v1/airsearch");
+  const schema = requestSchema(operation);
+  const response = operation.responses["200"].content["application/json"].schema;
+
+  assert.equal(operation.operationId, "airsearch");
+  assert.deepEqual(operation.tags, ["Search and discovery"]);
+  assert.equal(operation["x-airscale-rate-limit"], "300 requests per minute per workspace.");
+  assert.equal(operation["x-airscale-credit-cost"], "1 credit only for status success; not_found and timeout are not charged.");
+  assertPublicOperationMetadata(operation);
+  assert.match(operation.description, /256 KiB/);
+  assert.deepEqual(schema.required, ["prompt"]);
+  assert.equal(schema.additionalProperties, false);
+  assert.equal(schema.properties.prompt.type, "string");
+  assert.equal(schema.properties.prompt.minLength, 1);
+  assert.ok(schema.properties.prompt.pattern);
+  assert.equal(schema.properties.schema.type, "object");
+  assert.deepEqual(schema.properties.schema.additionalProperties, {
+    type: "string",
+    minLength: 1,
+    pattern: "\\S"
+  });
+
+  const validate = requestValidator(schema);
+  assert.equal(validate({ prompt: "Find the synthetic company summary." }), true);
+  assert.equal(validate({ prompt: "   " }), false);
+  assert.equal(validate({ prompt: "Research a synthetic company.", schema: { website: "url", summary: "Short summary" } }), true);
+  assert.equal(validate({ prompt: "Research a synthetic company.", schema: { website: "" } }), false);
+  assert.equal(validate({ prompt: "Research a synthetic company.", schema: { website: "   " } }), false);
+  assert.equal(validate({ prompt: "Research a synthetic company.", schema: { website: 42 } }), false);
+
+  assert.deepEqual(response.required, [
+    "status", "response", "reasoning", "sources", "confidence_score", "certainty_tag", "duration_ms"
+  ]);
+  assert.deepEqual(response.properties.status, { $ref: "#/components/schemas/Status" });
+  assert.deepEqual(response.properties.response.oneOf, [
+    { type: "string" },
+    { type: "object", additionalProperties: true }
+  ]);
+  assert.deepEqual(response.properties.reasoning, { type: ["string", "null"] });
+  assert.deepEqual(response.properties.sources, {
+    type: "array",
+    items: { type: "string", format: "uri" }
+  });
+  assert.deepEqual(response.properties.confidence_score, { type: "number", minimum: 0, maximum: 1 });
+  assert.deepEqual(response.properties.certainty_tag, { type: "string", enum: ["low", "medium", "high"] });
+  assert.deepEqual(response.properties.duration_ms, { type: "number", minimum: 0 });
+  assert.deepEqual(response.additionalProperties, { type: ["string", "null"] });
+  assert.deepEqual(errorStatuses(operation), ["400", "401", "403", "413", "429", "500", "502", "503", "504"]);
+  assertUnauthorizedReference(operation);
+  assertJsonErrors(operation, errorStatuses(operation));
+});
+
+test("all Search and discovery request and response examples are schema-valid and synthetic", () => {
+  const examples = [];
+  for (const entry of searchDiscoveryOperations) {
+    const operation = entry.operation;
+    const requestContent = operation.requestBody?.content?.["application/json"];
+    if (requestContent) assertContentExamplesValidate(requestContent, `${entry.path} request`, examples);
+    assertContentExamplesValidate(operation.responses["200"].content["application/json"], `${entry.path} response`, examples);
+  }
+
+  assert.equal(searchDiscoveryOperations.length, 5);
+  assert.doesNotThrow(() => assertExamplePrivacy(examples));
+  assert.doesNotThrow(() => assertNoExecutableExamples(examples));
+});
+
+test("committed OpenAPI 3.1 artifact matches the pinned 15-operation catalog exactly", async () => {
+  const parsed = await SwaggerParser.validate("openapi.json");
+  const generated = buildSpec();
+  const committed = committedSpec();
+  const approvedCatalog = JSON.parse(readFileSync("contracts/public-api-operations.json", "utf8"));
+
+  assert.equal(parsed.openapi, "3.1.0");
+  assert.deepEqual(committed.info, baseSpec.info);
+  assert.deepEqual(committed.servers, baseSpec.servers);
+  assert.deepEqual(committed.security, baseSpec.security);
+  assert.equal(approvedCatalog.sourceSha, SOURCE_SHA);
+  assert.equal(approvedCatalog.operations.length, 15);
+
+  const actualOperations = [];
+  for (const [path, pathItem] of Object.entries(committed.paths)) {
+    for (const method of ["get", "post"]) {
+      if (pathItem[method]) actualOperations.push({ method: method.toUpperCase(), path, operation: pathItem[method] });
+    }
+  }
+  assert.equal(actualOperations.length, 15);
+  assert.equal(actualOperations.filter(({ method }) => method === "POST").length, 14);
+  assert.equal(actualOperations.filter(({ method }) => method === "GET").length, 1);
+  assert.deepEqual(
+    actualOperations.map(({ method, path }) => `${method} ${path}`).sort(),
+    approvedCatalog.operations.map(({ method, path }) => `${method} ${path}`).sort()
+  );
+
+  for (const expected of approvedCatalog.operations) {
+    const operation = operationFromSpec(committed, expected.method, expected.path);
+    assert.ok(operation, `${expected.method} ${expected.path}`);
+    assert.equal(operation.operationId, expected.operationId);
+    assert.equal(operation.tags[0], expected.tag);
+    assertPublicOperationMetadata(operation);
+    assert.ok(operation.responses["200"] || operation.responses["202"]);
+    assertUnauthorizedReference(operation);
+  }
+
+  const examples = collectExampleValues(committed);
+  assert.doesNotThrow(() => assertExamplePrivacy(examples));
+  assert.doesNotThrow(() => assertNoExecutableExamples(examples));
+  assert.deepEqual(readFileSync("openapi.json"), Buffer.from(JSON.stringify(generated, null, 2) + "\n", "utf8"));
 });
 
 test("buildSpec inserts fixture operations in catalog order", () => {
