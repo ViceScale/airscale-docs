@@ -1,6 +1,8 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 import { baseSpec } from "../openapi/base.mjs";
+import { accountOperations } from "../openapi/operations/account.mjs";
+import { contactDataOperations } from "../openapi/operations/contact-data.mjs";
 import { buildSpec } from "../scripts/build-openapi.mjs";
 import { outputMatchesSerialized } from "../scripts/build-openapi.mjs";
 import { existsSync, mkdtempSync, readFileSync, readdirSync, rmSync, writeFileSync } from "node:fs";
@@ -9,6 +11,14 @@ import { tmpdir } from "node:os";
 import { runCli, writeOpenApiAtomic } from "../scripts/build-openapi.mjs";
 
 const SOURCE_SHA = "8606866a5fb1f9405a94d49cfa9fbddaf4aaf431";
+const ACCOUNT_CONTACT_PATHS = new Set([
+  "/v1/credits",
+  "/v1/email",
+  "/v1/email-bulk",
+  "/v1/phone",
+  "/v1/personal-email",
+  "/v1/url-search-people"
+]);
 
 function operation(method, path, operationId) {
   return {
@@ -20,6 +30,42 @@ function operation(method, path, operationId) {
 
 function catalog(...operations) {
   return { operations };
+}
+
+function accountContactSpec() {
+  const approvedCatalog = JSON.parse(readFileSync("contracts/public-api-operations.json", "utf8"));
+  const partialCatalog = {
+    operations: approvedCatalog.operations.filter(({ path }) => ACCOUNT_CONTACT_PATHS.has(path))
+  };
+  assert.equal(partialCatalog.operations.length, 6);
+  return buildSpec({ catalog: partialCatalog, operationModules: [accountOperations, contactDataOperations] });
+}
+
+function requestSchema(operation) {
+  return operation.requestBody?.content?.["application/json"]?.schema;
+}
+
+function errorStatuses(operation) {
+  return Object.keys(operation.responses).filter((status) => !["200", "202"].includes(status));
+}
+
+function assertUnauthorizedReference(operation) {
+  assert.deepEqual(operation.responses["401"], { $ref: "#/components/responses/Unauthorized" });
+}
+
+function assertPublicOperationMetadata(operation) {
+  assert.ok(operation.summary.length > 0);
+  assert.ok(operation.description.length > 0);
+}
+
+function assertJsonErrors(operation, statuses) {
+  for (const status of statuses.filter((value) => value !== "401")) {
+    assert.equal(typeof operation.responses[status].description, "string");
+    assert.ok(operation.responses[status].description.length > 0);
+    assert.deepEqual(operation.responses[status].content["application/json"].schema, {
+      $ref: "#/components/schemas/Error"
+    });
+  }
 }
 
 function inTemporaryDirectory(run) {
@@ -95,6 +141,288 @@ test("base spec identifies the Airscale public API", () => {
     bearerFormat: "API key",
     description: "Use an Airscale workspace API key. Never expose the key in client-side code."
   });
+});
+
+test("account and contact operations share permissive public schemas", () => {
+  assert.deepEqual(baseSpec.components.schemas.Status, {
+    type: "string",
+    enum: ["success", "not_found", "timeout"]
+  });
+  assert.deepEqual(baseSpec.components.schemas.LinkedInPersonUrl, {
+    type: "string",
+    minLength: 1,
+    description: "A recognized LinkedIn person-profile URL or identifier. Airscale normalizes supported profile inputs.",
+    example: "https://www.linkedin.com/in/example-person-000000"
+  });
+  assert.deepEqual(baseSpec.components.schemas.SuccessEmail, {
+    type: "object",
+    required: ["status", "email"],
+    additionalProperties: true,
+    properties: {
+      status: { type: "string", const: "success" },
+      email: { type: "string", format: "email" }
+    }
+  });
+  assert.deepEqual(baseSpec.components.schemas.NotFoundEmail, {
+    type: "object",
+    required: ["status", "email"],
+    additionalProperties: true,
+    properties: {
+      status: { type: "string", const: "not_found" },
+      email: { type: "null" }
+    }
+  });
+});
+
+test("Account Credits operation models the stable balance contract", () => {
+  const operation = accountContactSpec().paths["/v1/credits"]?.post;
+
+  assert.ok(operation);
+  assert.equal(operation.operationId, "getCredits");
+  assert.deepEqual(operation.tags, ["Account"]);
+  assert.equal(operation["x-airscale-rate-limit"], "No endpoint-specific rate limit is documented.");
+  assert.equal(operation["x-airscale-credit-cost"], "No charge; checking the balance does not debit Airscale credits.");
+  assert.equal(operation.requestBody, undefined);
+  assertPublicOperationMetadata(operation);
+  assert.deepEqual(operation.responses["200"].content["application/json"].schema, {
+    type: "object",
+    required: ["status", "response"],
+    additionalProperties: false,
+    properties: {
+      status: { type: "string", const: "success" },
+      response: {
+        type: "object",
+        required: ["credits"],
+        additionalProperties: false,
+        properties: { credits: { type: "number" } }
+      }
+    }
+  });
+  assert.deepEqual(operation.responses["200"].content["application/json"].examples.success.value, {
+    status: "success",
+    response: { credits: 1200 }
+  });
+  assert.deepEqual(errorStatuses(operation), ["401", "500", "503"]);
+  assertUnauthorizedReference(operation);
+  assertJsonErrors(operation, errorStatuses(operation));
+});
+
+test("Contact Email operation accepts profile or complete name identification", () => {
+  const operation = accountContactSpec().paths["/v1/email"]?.post;
+  const schema = requestSchema(operation);
+
+  assert.ok(operation);
+  assert.equal(operation.operationId, "findProfessionalEmail");
+  assert.deepEqual(operation.tags, ["Contact data"]);
+  assert.equal(operation["x-airscale-rate-limit"], "3,000 requests per minute per workspace.");
+  assert.equal(operation["x-airscale-credit-cost"], "2 credits only when the response has status success; not_found is not charged.");
+  assertPublicOperationMetadata(operation);
+  assert.match(operation.description, /256 KiB/);
+  assert.equal(operation.requestBody.required, true);
+  assert.equal(schema.type, "object");
+  assert.equal(schema.additionalProperties, false);
+  assert.deepEqual(schema.anyOf, [
+    { required: ["linkedin_profile_url"] },
+    {
+      required: ["first_name", "last_name"],
+      anyOf: [{ required: ["domain"] }, { required: ["company_name"] }]
+    }
+  ]);
+  assert.deepEqual(schema.properties.linkedin_profile_url, { $ref: "#/components/schemas/LinkedInPersonUrl" });
+  for (const property of ["first_name", "last_name", "domain", "company_name"]) {
+    assert.deepEqual(schema.properties[property], { type: "string", minLength: 1 });
+  }
+  assert.deepEqual(operation.requestBody.content["application/json"].examples.byProfile.value, {
+    linkedin_profile_url: "https://www.linkedin.com/in/example-person-000000"
+  });
+  assert.deepEqual(operation.requestBody.content["application/json"].examples.byName.value, {
+    first_name: "Example",
+    last_name: "Person",
+    domain: "example.test"
+  });
+  assert.deepEqual(operation.responses["200"].content["application/json"].schema.oneOf, [
+    { $ref: "#/components/schemas/SuccessEmail" },
+    { $ref: "#/components/schemas/NotFoundEmail" }
+  ]);
+  assert.deepEqual(operation.responses["200"].content["application/json"].examples.success.value, {
+    status: "success",
+    email: "example.person@example.test"
+  });
+  assert.deepEqual(operation.responses["200"].content["application/json"].examples.notFound.value, {
+    status: "not_found",
+    email: null
+  });
+  assert.deepEqual(errorStatuses(operation), ["400", "401", "403", "413", "429", "500", "502", "503"]);
+  assertUnauthorizedReference(operation);
+  assertJsonErrors(operation, errorStatuses(operation));
+});
+
+test("Contact Email Bulk operation accepts bounded batches and returns only 202", () => {
+  const operation = accountContactSpec().paths["/v1/email-bulk"]?.post;
+  const schema = requestSchema(operation);
+  const itemSchema = schema.properties.inputs.items;
+
+  assert.ok(operation);
+  assert.equal(operation.operationId, "findProfessionalEmailsBulk");
+  assert.deepEqual(operation.tags, ["Contact data"]);
+  assert.equal(operation["x-airscale-rate-limit"], "3,000 input items per minute per workspace.");
+  assert.equal(operation["x-airscale-credit-cost"], "2 credits per item with status success; misses and timeouts are not charged.");
+  assertPublicOperationMetadata(operation);
+  assert.equal(operation.requestBody.required, true);
+  assert.deepEqual(schema.required, ["webhook_url", "inputs"]);
+  assert.equal(schema.additionalProperties, false);
+  assert.deepEqual(schema.properties.webhook_url, { type: "string", minLength: 1, pattern: "^http" });
+  assert.equal(schema.properties.inputs.minItems, 1);
+  assert.equal(schema.properties.inputs.maxItems, 100);
+  assert.equal(itemSchema.additionalProperties, false);
+  assert.equal(itemSchema.properties.custom_id.type, "string");
+  assert.equal(itemSchema.required, undefined);
+  assert.deepEqual(itemSchema.anyOf, [
+    { required: ["linkedin_profile_url"] },
+    {
+      required: ["first_name", "last_name"],
+      anyOf: [{ required: ["domain"] }, { required: ["company_name"] }]
+    }
+  ]);
+  for (const property of ["custom_id", "first_name", "last_name", "domain", "company_name"]) {
+    assert.equal(itemSchema.properties[property].minLength, 1);
+  }
+  assert.deepEqual(operation.requestBody.content["application/json"].examples.batch.value, {
+    webhook_url: "https://webhook.example.test/email-results",
+    inputs: [
+      { custom_id: "contact-001", linkedin_profile_url: "https://www.linkedin.com/in/example-person-000000" },
+      { custom_id: "contact-002", first_name: "Sample", last_name: "Contact", company_name: "Example Company" }
+    ]
+  });
+  assert.equal(operation.responses["200"], undefined);
+  assert.deepEqual(operation.responses["202"].content["application/json"].schema, {
+    type: "object",
+    required: ["status", "count"],
+    additionalProperties: false,
+    properties: {
+      status: { type: "string", const: "accepted" },
+      count: { type: "integer", minimum: 1, maximum: 100 }
+    }
+  });
+  assert.deepEqual(operation.responses["202"].content["application/json"].examples.accepted.value, {
+    status: "accepted",
+    count: 2
+  });
+  assert.deepEqual(errorStatuses(operation), ["400", "401", "403", "413", "429", "500", "502"]);
+  assertUnauthorizedReference(operation);
+  assertJsonErrors(operation, errorStatuses(operation));
+});
+
+test("Contact Mobile operation requires a profile and models success and miss envelopes", () => {
+  const operation = accountContactSpec().paths["/v1/phone"]?.post;
+  const schema = requestSchema(operation);
+  const successContent = operation.responses["200"].content["application/json"];
+
+  assert.ok(operation);
+  assert.equal(operation.operationId, "findMobilePhone");
+  assert.deepEqual(operation.tags, ["Contact data"]);
+  assert.equal(operation["x-airscale-rate-limit"], "3,000 requests per minute per workspace.");
+  assert.equal(operation["x-airscale-credit-cost"], "40 credits only when the response has status success; not_found is not charged.");
+  assertPublicOperationMetadata(operation);
+  assert.equal(operation.requestBody.required, true);
+  assert.deepEqual(schema.required, ["linkedin_profile_url"]);
+  assert.equal(schema.additionalProperties, false);
+  assert.deepEqual(schema.properties.linkedin_profile_url, { $ref: "#/components/schemas/LinkedInPersonUrl" });
+  assert.deepEqual(operation.requestBody.content["application/json"].examples.profile.value, {
+    linkedin_profile_url: "https://www.linkedin.com/in/example-person-000000"
+  });
+  assert.equal(successContent.schema.oneOf.length, 2);
+  assert.deepEqual(successContent.schema.oneOf.map(({ required }) => required), [
+    ["status", "linkedin_profile_url", "phone_numbers", "provider"],
+    ["status", "linkedin_profile_url", "phone_numbers", "provider"]
+  ]);
+  assert.deepEqual(successContent.examples.success.value, {
+    status: "success",
+    linkedin_profile_url: "https://www.linkedin.com/in/example-person-000000",
+    phone_numbers: "+12025550123",
+    provider: "provider-example"
+  });
+  assert.deepEqual(successContent.examples.notFound.value, {
+    status: "not_found",
+    linkedin_profile_url: "https://www.linkedin.com/in/example-person-000000",
+    phone_numbers: null,
+    provider: null
+  });
+  assert.deepEqual(errorStatuses(operation), ["400", "401", "403", "413", "429", "500", "502", "503"]);
+  assertUnauthorizedReference(operation);
+  assertJsonErrors(operation, errorStatuses(operation));
+});
+
+test("Contact Personal Email operation accepts boolean or string verification", () => {
+  const operation = accountContactSpec().paths["/v1/personal-email"]?.post;
+  const schema = requestSchema(operation);
+  const successContent = operation.responses["200"].content["application/json"];
+
+  assert.ok(operation);
+  assert.equal(operation.operationId, "findPersonalEmail");
+  assert.deepEqual(operation.tags, ["Contact data"]);
+  assert.equal(operation["x-airscale-rate-limit"], "2,000 requests per minute per workspace.");
+  assert.equal(operation["x-airscale-credit-cost"], "3–12 credits for a successful result; not_found is not charged.");
+  assertPublicOperationMetadata(operation);
+  assert.equal(operation.requestBody.required, true);
+  assert.deepEqual(schema.required, ["linkedin_profile_url"]);
+  assert.equal(schema.additionalProperties, false);
+  assert.deepEqual(schema.properties.linkedin_profile_url, { $ref: "#/components/schemas/LinkedInPersonUrl" });
+  assert.deepEqual(schema.properties.verification, {
+    oneOf: [{ type: "boolean" }, { type: "string" }]
+  });
+  assert.deepEqual(operation.requestBody.content["application/json"].examples.profile.value, {
+    linkedin_profile_url: "https://www.linkedin.com/in/example-person-000000",
+    verification: true
+  });
+  assert.deepEqual(successContent.schema.oneOf, [
+    { $ref: "#/components/schemas/SuccessEmail" },
+    { $ref: "#/components/schemas/NotFoundEmail" }
+  ]);
+  assert.deepEqual(successContent.examples.success.value, {
+    status: "success",
+    email: "personal.example@example.test"
+  });
+  assert.deepEqual(successContent.examples.notFound.value, { status: "not_found", email: null });
+  assert.deepEqual(errorStatuses(operation), ["400", "401", "403", "413", "429", "500", "502", "503"]);
+  assertUnauthorizedReference(operation);
+  assertJsonErrors(operation, errorStatuses(operation));
+});
+
+test("Contact Profile URL operation requires complete person and company names", () => {
+  const operation = accountContactSpec().paths["/v1/url-search-people"]?.post;
+  const schema = requestSchema(operation);
+  const successContent = operation.responses["200"].content["application/json"];
+
+  assert.ok(operation);
+  assert.equal(operation.operationId, "findPeopleProfileUrl");
+  assert.deepEqual(operation.tags, ["Contact data"]);
+  assert.equal(operation["x-airscale-rate-limit"], "6 requests per second per workspace.");
+  assert.equal(operation["x-airscale-credit-cost"], "0.5 credits only when the response has status success; not_found is not charged.");
+  assertPublicOperationMetadata(operation);
+  assert.equal(operation.requestBody.required, true);
+  assert.deepEqual(schema.required, ["first_name", "last_name", "company_name"]);
+  assert.equal(schema.additionalProperties, false);
+  for (const property of schema.required) {
+    assert.deepEqual(schema.properties[property], { type: "string", minLength: 1 });
+  }
+  assert.deepEqual(operation.requestBody.content["application/json"].examples.person.value, {
+    first_name: "Example",
+    last_name: "Person",
+    company_name: "Example Company"
+  });
+  assert.deepEqual(successContent.schema.oneOf.map(({ required }) => required), [
+    ["status", "url"],
+    ["status"]
+  ]);
+  assert.deepEqual(successContent.examples.success.value, {
+    status: "success",
+    url: "https://www.linkedin.com/in/example-person-000000"
+  });
+  assert.deepEqual(successContent.examples.notFound.value, { status: "not_found" });
+  assert.deepEqual(errorStatuses(operation), ["400", "401", "403", "413", "429", "500", "502", "503"]);
+  assertUnauthorizedReference(operation);
+  assertJsonErrors(operation, errorStatuses(operation));
 });
 
 test("buildSpec inserts fixture operations in catalog order", () => {

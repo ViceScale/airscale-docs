@@ -26,6 +26,34 @@ export const baseSpec = {
       }
     },
     schemas: {
+      Status: {
+        type: "string",
+        enum: ["success", "not_found", "timeout"]
+      },
+      LinkedInPersonUrl: {
+        type: "string",
+        minLength: 1,
+        description: "A recognized LinkedIn person-profile URL or identifier. Airscale normalizes supported profile inputs.",
+        example: "https://www.linkedin.com/in/example-person-000000"
+      },
+      SuccessEmail: {
+        type: "object",
+        required: ["status", "email"],
+        additionalProperties: true,
+        properties: {
+          status: { type: "string", const: "success" },
+          email: { type: "string", format: "email" }
+        }
+      },
+      NotFoundEmail: {
+        type: "object",
+        required: ["status", "email"],
+        additionalProperties: true,
+        properties: {
+          status: { type: "string", const: "not_found" },
+          email: { type: "null" }
+        }
+      },
       Error: {
         type: "object",
         additionalProperties: true,
