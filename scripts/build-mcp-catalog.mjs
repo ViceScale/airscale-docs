@@ -58,11 +58,11 @@ const RESULT_BEHAVIOR = {
   airscale_extract_company_profile: "Returns the extracted company or school profile for the supplied LinkedIn URL.",
   airscale_reverse_email: "Returns the enriched person profile resolved from the email address, not only a profile URL.",
   airscale_reverse_phone: "Returns the enriched person profile resolved from the phone number, not only a profile URL.",
-  airscale_start_companies_export: "Returns an `export_id`; poll `airscale_get_export_status` before requesting the file.",
-  airscale_start_people_export: "Returns an `export_id`; poll `airscale_get_export_status` before requesting the file.",
+  airscale_start_companies_export: "Returns `credit_confirmation_required` without creating an export. After explicit approval, rerun the same request with `confirm_credit_spend: true`.",
+  airscale_start_people_export: "Returns `credit_confirmation_required` without creating an export. After explicit approval, rerun the same request with `confirm_credit_spend: true`.",
   airscale_create_contact_enrichment_batch: "Returns a managed `batch_id` that can receive contact chunks before enrichment starts.",
   airscale_add_contacts_to_enrichment_batch: "Returns the updated managed-batch state after accepting the contact chunk.",
-  airscale_start_contact_enrichment_export: "Returns an `export_id`; poll status, then request the completed export file.",
+  airscale_start_contact_enrichment_export: "Returns `credit_confirmation_required` without creating an export. After explicit approval, rerun the same request with `confirm_credit_spend: true`.",
   airscale_get_export_status: "Returns the export state and progress metadata, including the server-provided polling interval when present.",
   airscale_get_export_file: "Returns a download URL and MCP resource link after the export has completed."
 };
@@ -97,14 +97,12 @@ const SAFE_EXAMPLE_ARGUMENTS = Object.freeze({
   airscale_start_companies_export: {
     filters: { companyName: "Example Company" },
     max_rows: 1,
-    format: "csv",
-    confirm_credit_spend: true
+    format: "csv"
   },
   airscale_start_people_export: {
     query: { companyDomain: { include: ["example.com"] } },
     max_rows: 1,
-    format: "csv",
-    confirm_credit_spend: true
+    format: "csv"
   },
   airscale_create_contact_enrichment_batch: {
     name: "Example contact enrichment batch"
@@ -121,8 +119,7 @@ const SAFE_EXAMPLE_ARGUMENTS = Object.freeze({
   airscale_start_contact_enrichment_export: {
     batch_id: "example-batch-id",
     enrichments: ["work_email"],
-    format: "csv",
-    confirm_credit_spend: true
+    format: "csv"
   }
 });
 const defaultFileIO = {
@@ -988,9 +985,6 @@ function synthesizeArguments(tool) {
     if (!argumentsValue || typeof argumentsValue !== "object" || Array.isArray(argumentsValue)) {
       throw new ExampleSynthesisError(tool.name, "arguments", "the top-level tool input must synthesize to an object");
     }
-    if (tool.spend.kind === "paid_export") {
-      argumentsValue = { ...argumentsValue, [tool.spend.confirmationField]: true };
-    }
     assertSerializedExampleWithinBudget(argumentsValue, tool.name);
     const validate = schemaValidator(tool.inputSchema);
     if (!validate(argumentsValue)) {
@@ -1437,7 +1431,7 @@ function renderToolBlock(tool) {
 
   if (tool.spend.kind === "paid_export") {
     parts.push(
-      `<Warning>\nThis starts paid export work. Review the maximum possible credit spend, then set \`${tool.spend.confirmationField}: true\` only after approval.\n</Warning>`
+      `<Warning>\nThis starts paid export work only after confirmation. The example deliberately omits \`${tool.spend.confirmationField}\` so it fails closed at the approval boundary. Review the maximum possible credit spend, then set \`${tool.spend.confirmationField}: true\` only after approval.\n</Warning>`
     );
   }
 

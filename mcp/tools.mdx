@@ -875,7 +875,7 @@ Credit behavior: Up to 0.1 credits per exported company.
 </Note>
 
 <Warning>
-This starts paid export work. Review the maximum possible credit spend, then set `confirm_credit_spend: true` only after approval.
+This starts paid export work only after confirmation. The example deliberately omits `confirm_credit_spend` so it fails closed at the approval boundary. Review the maximum possible credit spend, then set `confirm_credit_spend: true` only after approval.
 </Warning>
 
 #### Inputs
@@ -902,8 +902,7 @@ This starts paid export work. Review the maximum possible credit spend, then set
         "companyName": "Example Company"
       },
       "max_rows": 1,
-      "format": "csv",
-      "confirm_credit_spend": true
+      "format": "csv"
     }
   }
 }
@@ -911,7 +910,7 @@ This starts paid export work. Review the maximum possible credit spend, then set
 
 #### Expected result
 
-Returns an `export_id`; poll `airscale_get_export_status` before requesting the file.
+Returns `credit_confirmation_required` without creating an export. After explicit approval, rerun the same request with `confirm_credit_spend: true`.
 
 <a id="airscale-start-people-export"></a>
 
@@ -936,7 +935,7 @@ Credit behavior: Up to 0.1 credits per exported lead.
 </Note>
 
 <Warning>
-This starts paid export work. Review the maximum possible credit spend, then set `confirm_credit_spend: true` only after approval.
+This starts paid export work only after confirmation. The example deliberately omits `confirm_credit_spend` so it fails closed at the approval boundary. Review the maximum possible credit spend, then set `confirm_credit_spend: true` only after approval.
 </Warning>
 
 #### Inputs
@@ -967,8 +966,7 @@ This starts paid export work. Review the maximum possible credit spend, then set
         }
       },
       "max_rows": 1,
-      "format": "csv",
-      "confirm_credit_spend": true
+      "format": "csv"
     }
   }
 }
@@ -976,7 +974,7 @@ This starts paid export work. Review the maximum possible credit spend, then set
 
 #### Expected result
 
-Returns an `export_id`; poll `airscale_get_export_status` before requesting the file.
+Returns `credit_confirmation_required` without creating an export. After explicit approval, rerun the same request with `confirm_credit_spend: true`.
 
 <a id="airscale-create-contact-enrichment-batch"></a>
 
@@ -1106,7 +1104,7 @@ Credit behavior: Up to 2 credits per contact.
 </Note>
 
 <Warning>
-This starts paid export work. Review the maximum possible credit spend, then set `confirm_credit_spend: true` only after approval.
+This starts paid export work only after confirmation. The example deliberately omits `confirm_credit_spend` so it fails closed at the approval boundary. Review the maximum possible credit spend, then set `confirm_credit_spend: true` only after approval.
 </Warning>
 
 #### Inputs
@@ -1133,8 +1131,7 @@ This starts paid export work. Review the maximum possible credit spend, then set
       "enrichments": [
         "work_email"
       ],
-      "format": "csv",
-      "confirm_credit_spend": true
+      "format": "csv"
     }
   }
 }
@@ -1142,7 +1139,7 @@ This starts paid export work. Review the maximum possible credit spend, then set
 
 #### Expected result
 
-Returns an `export_id`; poll status, then request the completed export file.
+Returns `credit_confirmation_required` without creating an export. After explicit approval, rerun the same request with `confirm_credit_spend: true`.
 
 <a id="airscale-get-export-status"></a>
 

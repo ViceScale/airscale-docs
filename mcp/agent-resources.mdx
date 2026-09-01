@@ -16,11 +16,11 @@ canonical: "https://airscale.mintlify.app/mcp/agent-resources"
 </Column>
 <Column>
 <Card title="Airscale documentation MCP" icon="book-open">
-  **Read-only documentation surface**
+  **Documentation-scoped MCP surface**
 
   `https://airscale.mintlify.app/mcp`
 
-  Searches and retrieves the public preview documentation. It does not execute Airscale product tools or consume Airscale credits.
+  Its search and filesystem tools are read-only. `submit_feedback` can send documentation feedback, but the server does not execute Airscale product tools or consume Airscale credits.
 </Card>
 </Column>
 </Columns>
@@ -40,7 +40,6 @@ Use the authenticated product server only when an agent should perform Airscale 
 | Markdown negotiation | `Accept: text/markdown` | Request Markdown from a documentation page without changing its path. |
 | Agent skill | `https://airscale.mintlify.app/skill.md` | Curated capability, authentication, credit, and approval guidance. |
 | Skill discovery | `https://airscale.mintlify.app/.well-known/agent-skills/index.json` | Mintlify's generated agent-skills 0.2.0 discovery index with integrity metadata. |
-| Documentation MCP server card | `https://airscale.mintlify.app/.well-known/mcp/server-card.json` | Mintlify automatically serves the documentation MCP's advertised tools and read-only annotations. |
 | Agent discovery | `https://airscale.mintlify.app/.well-known/agent-card.json` | Mintlify automatically generates documentation discovery from the published skill. It is not an Airscale product-agent endpoint or an interactive API. |
 
 <Note>
@@ -49,7 +48,7 @@ The preview remains intentionally `noindex, follow`. These resources make the do
 
 ## Connect the documentation MCP
 
-These examples connect only the read-only documentation MCP. They do not configure the authenticated Airscale product server and cannot run Airscale tools or spend Airscale credits.
+These examples connect only the documentation-scoped MCP. Its search and filesystem tools are read-only; `submit_feedback` can submit documentation feedback. It does not configure the authenticated Airscale product server and cannot run Airscale tools or spend Airscale credits.
 
 <CodeGroup>
 ```bash Claude Code
@@ -62,7 +61,9 @@ url = "https://airscale.mintlify.app/mcp"
 ```
 </CodeGroup>
 
-After connecting, ask the client to search the Airscale documentation for the relevant workflow, then retrieve the cited page as Markdown. For operational tool calls, follow the authentication and credit controls in [Airscale MCP Server](/mcp/airscale-mcp-server).
+After connecting, start with `tree / -L 2` to discover the published filesystem. Generic example paths shown by an MCP client may not exist in this documentation set. Actual paths include `/api-reference/api-overview.mdx` and `/mcp/airscale-mcp-server.mdx`. Ask the client to search for the relevant workflow, then retrieve the cited page as Markdown.
+
+If an MCP-rendered API page shows repeated or conflicting request fields, use the endpoint prose or `openapi.json` as the authoritative contract. For operational tool calls, follow the authentication and credit controls in [Airscale MCP Server](/mcp/airscale-mcp-server).
 
 ## Choose the smallest useful resource
 

@@ -575,7 +575,7 @@ Before starting, require the assistant to repeat the exact filters, fields, form
 
 Exports are asynchronous: start one export, check its status, then retrieve the file after completion. Save the returned `export_id` and reuse the same `export_id` for status and file requests.
 
-Follow the `poll_after_seconds` interval returned by each status response. Do not start a duplicate export while the existing job is queued or running.
+Do not start a duplicate export while the existing job is `queued` or `running`; follow the returned `poll_after_seconds` interval instead. When status is `completed` or `failed`, stop polling; retrieve the file only after completion.
 
 ## Get started
 
@@ -934,8 +934,8 @@ If the batch may have changed, rerun `airscale_start_contact_enrichment_export` 
 Both branches use one asynchronous lifecycle:
 
 1. Run the **confirmed start** once. An unconfirmed managed-contact maximum check does not create a job. Keep the returned `export_id`, and do not start a duplicate export while the job is queued or running.
-2. Check **status** with the same `export_id` and respect `poll_after_seconds`.
-3. Retrieve the **file** with the same `export_id` only after completion.
+2. While status is `queued` or `running`, check **status** with the same `export_id` and respect the returned `poll_after_seconds`.
+3. When status is `completed` or `failed`, stop polling. Retrieve the **file** with the same `export_id` only after completion.
 
 ## How credits work
 
@@ -963,16 +963,17 @@ For exact per-tool behavior, use the [MCP tool catalog](/mcp/tools).
 
 ### Managed contact enrichment/export
 
-1. Use `airscale_add_contacts_to_enrichment_batch` while the batch is appendable before the confirmed start.
-2. Review the approved contact count, `work_email`, fields and format.
-3. Calculate the maximum from the approved contact count multiplied by up to 2 credits per contact, then review the additional maximum and cumulative workflow maximum.
-4. After reviewing the contact count and maximum, do not add more contacts.
-5. If the batch may have changed, rerun `airscale_start_contact_enrichment_export` with `confirm_credit_spend` set to false or omitted to obtain the current maximum, then review again.
-6. Only after approval should you set `confirm_credit_spend` to true. That confirmed start creates the export job and freezes the batch.
+1. Create a batch with `airscale_create_contact_enrichment_batch`.
+2. Use `airscale_add_contacts_to_enrichment_batch` while the batch is appendable before the confirmed start.
+3. Review the approved contact count, `work_email`, fields and format.
+4. Calculate the maximum from the approved contact count multiplied by up to 2 credits per contact, then review the additional maximum and cumulative workflow maximum.
+5. After reviewing the contact count and maximum, do not add more contacts.
+6. If the batch may have changed, rerun `airscale_start_contact_enrichment_export` with `confirm_credit_spend` set to false or omitted to obtain the current maximum, then review again.
+7. Only after approval should you set `confirm_credit_spend` to true. That confirmed start creates the export job and freezes the batch.
 
 ### Finish either export
 
-Start once, then poll the same export job through status and file retrieval using the same `export_id` and `poll_after_seconds`. Do not start it again.
+Start once. While status is `queued` or `running`, poll status for the same export job using the same `export_id` and returned `poll_after_seconds`. When status is `completed` or `failed`, stop polling; retrieve the file only after completion. Do not start the export again.
 
 ## Security notes
 

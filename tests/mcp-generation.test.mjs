@@ -216,6 +216,13 @@ function fixtureInputRows(inputSchema) {
 }
 
 function assertDocumentationSafeArguments(toolName, argumentsValue) {
+  if (PAID_EXPORT_STARTS.includes(toolName)) {
+    assert.equal(
+      argumentsValue.confirm_credit_spend,
+      undefined,
+      `${toolName} documentation examples must stop at the approval boundary`
+    );
+  }
   if (toolName === "airscale_find_companies") {
     assert.ok(Object.keys(argumentsValue.filters ?? {}).length > 0, "find companies needs a real filter");
     assert.equal(argumentsValue.size, 1, "find companies must minimize returned paid rows");
@@ -236,7 +243,6 @@ function assertDocumentationSafeArguments(toolName, argumentsValue) {
   if (["airscale_start_companies_export", "airscale_start_people_export"].includes(toolName)) {
     assert.equal(argumentsValue.max_rows, 1, `${toolName} must cap the paid example at one row`);
     assert.equal(argumentsValue.format, "csv");
-    assert.equal(argumentsValue.confirm_credit_spend, true);
     const narrowInput = argumentsValue.filters ?? argumentsValue.query;
     assert.ok(narrowInput && Object.keys(narrowInput).length > 0, `${toolName} needs one narrow query or filter`);
   }
@@ -477,7 +483,8 @@ test("catalog documents Airsearch cost, paid confirmations, core API links, and 
     const index = contract.tools.findIndex((tool) => tool.name === name);
     const block = toolBlock(source, contract.tools[index], contract.tools[index + 1]);
     assert.match(block, /confirm_credit_spend: true/);
-    assert.match(block, /"confirm_credit_spend": true/);
+    assert.doesNotMatch(block, /"confirm_credit_spend": true/);
+    assert.match(block, /credit_confirmation_required[\s\S]{0,180}(?:approval|approved)[\s\S]{0,180}(?:rerun|run the same request again)/i);
   }
 
   assert.equal(occurrences(source, "**Related API reference:**"), 15);
@@ -555,14 +562,12 @@ test("every generated tools/call example parses, stays synthetic, and validates 
   assert.deepEqual(examplesByTool.get("airscale_start_companies_export"), {
     filters: { companyName: "Example Company" },
     max_rows: 1,
-    format: "csv",
-    confirm_credit_spend: true
+    format: "csv"
   });
   assert.deepEqual(examplesByTool.get("airscale_start_people_export"), {
     query: { companyDomain: { include: ["example.com"] } },
     max_rows: 1,
-    format: "csv",
-    confirm_credit_spend: true
+    format: "csv"
   });
   assert.deepEqual(examplesByTool.get("airscale_create_contact_enrichment_batch"), {
     name: "Example contact enrichment batch"
@@ -579,8 +584,7 @@ test("every generated tools/call example parses, stays synthetic, and validates 
   assert.deepEqual(examplesByTool.get("airscale_start_contact_enrichment_export"), {
     batch_id: "example-batch-id",
     enrichments: ["work_email"],
-    format: "csv",
-    confirm_credit_spend: true
+    format: "csv"
   });
 });
 
@@ -596,14 +600,14 @@ test("documentation safety invariant rejects prior empty and default-spend examp
   );
   assert.throws(
     () => assertDocumentationSafeArguments("airscale_start_companies_export", { confirm_credit_spend: true }),
-    /cap the paid example/
+    /approval boundary/
   );
   assert.throws(
     () => assertDocumentationSafeArguments("airscale_start_people_export", {
       query: { firstname: { include: ["example"] } },
       confirm_credit_spend: true
     }),
-    /cap the paid example/
+    /approval boundary/
   );
 });
 
@@ -3003,6 +3007,13 @@ test("agent renderers publish only the platform-supported custom agent files", (
   assert.match(outputs["skill.md"], /API authentication[\s\S]*MCP authentication/i);
   assert.match(outputs["skill.md"], /Airsearch costs 2 credits per call/);
   assert.match(outputs["skill.md"], /confirm_credit_spend[\s\S]*explicit/i);
+  assert.match(outputs["skill.md"], /documentation-scoped MCP/i);
+  assert.match(outputs["skill.md"], /search and filesystem tools are read-only/i);
+  assert.match(outputs["skill.md"], /submit_feedback[\s\S]{0,120}documentation feedback/i);
+  assert.match(outputs["skill.md"], /tree \/ -L 2/);
+  assert.match(outputs["skill.md"], /\/api-reference\/api-overview\.mdx/);
+  assert.match(outputs["skill.md"], /repeated or conflicting request fields[\s\S]{0,180}openapi\.json/i);
+  assert.doesNotMatch(outputs["skill.md"], /read-only documentation MCP/i);
   assert.match(outputs["skill.md"], /https:\/\/airscale\.mintlify\.app\/mcp\/tools/);
   assert.match(outputs["llms.txt"], /https:\/\/airscale\.mintlify\.app\/mcp\/tools\.md/);
   assert.match(outputs["llms.txt"], /https:\/\/airscale\.mintlify\.app\/mcp\/agent-resources\.md/);

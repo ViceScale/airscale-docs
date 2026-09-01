@@ -71,7 +71,7 @@ Before starting, require the assistant to repeat the exact filters, fields, form
 
 Exports are asynchronous: start one export, check its status, then retrieve the file after completion. Save the returned `export_id` and reuse the same `export_id` for status and file requests.
 
-Follow the `poll_after_seconds` interval returned by each status response. Do not start a duplicate export while the existing job is queued or running.
+Do not start a duplicate export while the existing job is `queued` or `running`; follow the returned `poll_after_seconds` interval instead. When status is `completed` or `failed`, stop polling; retrieve the file only after completion.
 
 ## Get started
 
