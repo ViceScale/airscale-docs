@@ -295,75 +295,148 @@ test("credential checks reject static secrets while allowing only the documented
   }
 });
 
-test("MCP landing page is developer-first, complete, and non-executing", () => {
-  const source = readFileSync("mcp/airscale-mcp-server.mdx", "utf8");
+test("server page is the final concise AirSchool reference", () => {
   const { body, frontmatter } = readPage("mcp/airscale-mcp-server");
   assert.deepEqual(frontmatter, {
-    title: "Build with Airscale MCP",
-    sidebarTitle: "Airscale MCP server",
-    description: "Connect AI clients and agents to Airscale search, enrichment, research, and export tools.",
+    title: "Airscale MCP Server",
+    description: "Connect Airscale to your AI assistant and prospect without leaving the chat.",
     canonical: "https://airscale.mintlify.app/mcp/airscale-mcp-server"
   });
-  assertOrdered(body, [
-    "<Columns cols={2}>",
-    "search, enrichment, research, and exports",
-    "https://mcp.airscale.io/mcp",
-    "### Configure your client",
-    "</Columns>",
-    "<CardGroup cols={2}>",
-    '<Card title="Tool catalog"',
-    '<Card title="Authentication"',
-    '<Card title="Credit safety"',
-    '<Card title="Agent resources"',
-    "## Supported clients",
-    "## Choose OAuth or header authentication",
-    "## Verify the connection for free",
-    "## Capability overview",
-    "## Run asynchronous exports safely",
-    "## Understand credits and approval",
-    "## Recommended workflow",
-    "## Security",
-    "## Troubleshooting"
-  ], "mcp/airscale-mcp-server");
+  assert.deepEqual(
+    Array.from(body.matchAll(/^##\s+(.+)$/gm), ([, heading]) => `## ${heading}`),
+    [
+      "## MCP server URL",
+      "## Getting started",
+      "## Setup walkthroughs",
+      "## What you can do",
+      "## Export lifecycle",
+      "## How credits work",
+      "## Recommended workflow",
+      "## Security notes",
+      "## Troubleshooting"
+    ]
+  );
 
-  const [overviewColumn, configurationColumn] = directColumnBodies(body, "mcp/airscale-mcp-server");
-  assert.equal((overviewColumn.match(/<Card\b/g) ?? []).length, 0);
-  assert.match(overviewColumn, /```text\nhttps:\/\/mcp\.airscale\.io\/mcp\n```/);
-  assert.match(overviewColumn, /22 typed tools/);
-  assert.doesNotMatch(overviewColumn, /<CodeGroup>/);
-  assert.match(configurationColumn, /### Configure your client[\s\S]*<CodeGroup>[\s\S]*Claude Code[\s\S]*Field mapping[\s\S]*OAuth[\s\S]*<\/CodeGroup>/);
-  assert.match(configurationColumn, /not a copy-paste configuration/i);
-  assert.doesNotMatch(configurationColumn, /Generic JSON client|"transport": "streamable-http"/);
-  assert.match(configurationColumn, /export AIRSCALE_API_KEY=YOUR_API_KEY/);
-  assert.match(configurationColumn, /"Authorization": "Bearer \$\{AIRSCALE_API_KEY\}"/);
-  assert.doesNotMatch(configurationColumn, /"Authorization": "Bearer \$AIRSCALE_API_KEY"/);
-  assert.match(source, /Authorization: Bearer \$AIRSCALE_API_KEY/);
-  assert.match(source, /airscale_check_credits/);
-  assert.match(source, /confirm_credit_spend/);
-  assert.match(source, /poll|status/i);
-  assert.match(source, /\[MCP tool catalog\]\(\/mcp\/tools\)/);
-  assert.match(source, /\/api-reference\/(?:credit-count|authentication)/);
-  assert.doesNotMatch(source, /<ApiPlayground\b|<TryIt\b|https:\/\/api\.airscale\.io\/v1\b/i);
-});
+  const firstHeading = body.indexOf("## MCP server URL");
+  const intro = body.slice(0, firstHeading).trim();
+  assert.ok(intro);
+  assert.equal(intro.split(/\n\s*\n/).length, 1, "server page must open with one concise paragraph");
+  assert.doesNotMatch(intro, /<Card(?:Group|\b)/);
+  assert.doesNotMatch(body, /<Columns\b|### Configure your client|^#\s+/m);
+  assert.doesNotMatch(body, /<ApiPlayground\b|<TryIt\b|https:\/\/api\.airscale\.io\/v1\b/i);
+  assert.doesNotMatch(body, /^\s*(?:curl|wget|httpie?)\b|\bfetch\s*\(|\brequests\.(?:get|post|request)\s*\(/gim);
+  assert.doesNotMatch(body, /export\s+AIRSCALE_API_KEY\s*=|YOUR_API_KEY|Authorization\s*:\s*Bearer/i);
 
-test("MCP landing hero uses two direct responsive columns without cramped nested cards", () => {
-  const { body } = readPage("mcp/airscale-mcp-server");
-  const [overviewColumn, configurationColumn] = directColumnBodies(body, "mcp/airscale-mcp-server");
-  assert.match(overviewColumn, /22 typed tools[\s\S]*https:\/\/mcp\.airscale\.io\/mcp/);
-  assert.doesNotMatch(overviewColumn, /<CardGroup|<Card\b/);
-  assert.match(configurationColumn, /### Configure your client[\s\S]*<CodeGroup>/);
-  const columnsEnd = body.indexOf("</Columns>");
-  const resourceCards = body.indexOf("<CardGroup cols={2}>", columnsEnd);
-  assert.ok(columnsEnd < resourceCards);
-  assert.ok(resourceCards < body.indexOf("## Supported clients"));
-});
+  const serverSection = body.slice(
+    body.indexOf("## MCP server URL"),
+    body.indexOf("## Getting started")
+  );
+  assert.match(serverSection, /```text\nhttps:\/\/mcp\.airscale\.io\/mcp\n```/);
+  assert.match(serverSection, /remote Streamable HTTP/i);
+  assert.match(serverSection, /OAuth[\s\S]{0,100}browser sign-in|browser sign-in[\s\S]{0,100}OAuth/i);
+  assert.match(
+    serverSection,
+    /Airscale MCP server resolves the authorized workspace credential server-side[\s\S]{0,120}client neither receives nor stores[\s\S]{0,80}API key/i
+  );
+  assert.match(
+    serverSection,
+    /header-capable[\s\S]{0,100}(?:protected runtime environment|secret manager)[\s\S]{0,160}never[\s\S]{0,80}(?:literal )?(?:API )?key[\s\S]{0,120}(?:prompt|tool argument)[\s\S]{0,160}(?:shell command|shell history)/i
+  );
 
-test("landing configuration uses Claude's exact environment syntax and labels conceptual mappings", () => {
-  const source = readFileSync("mcp/airscale-mcp-server.mdx", "utf8");
-  assert.match(source, /export AIRSCALE_API_KEY=YOUR_API_KEY/);
-  assert.match(source, /"Authorization": "Bearer \$\{AIRSCALE_API_KEY\}"/);
-  assert.doesNotMatch(source, /```json Generic JSON client|"transport": "streamable-http"/);
-  assert.match(source, /```text Field mapping[\s\S]*conceptual field mapping[\s\S]*not a copy-paste configuration/i);
+  const gettingStartedSection = body.slice(
+    body.indexOf("## Getting started"),
+    body.indexOf("## Setup walkthroughs")
+  );
+  assertOrdered(gettingStartedSection, [
+    "choose the setup guide",
+    "connect",
+    "authenticate",
+    "verify the intended workspace",
+    "airscale_check_credits"
+  ], "mcp/airscale-mcp-server getting started");
+  assert.match(
+    gettingStartedSection,
+    /credit (?:check|balance)[\s\S]{0,120}(?:proves|confirms) authentication to an Airscale workspace[\s\S]{0,120}does not identify (?:which|the) workspace[\s\S]{0,160}verify[\s\S]{0,80}workspace[\s\S]{0,80}before paid actions/i
+  );
+
+  const setupSection = body.slice(
+    body.indexOf("## Setup walkthroughs"),
+    body.indexOf("## What you can do")
+  );
+  assert.match(setupSection, /\[ChatGPT setup guide\]\(\/mcp\/connect-airscale-mcp-to-chatgpt\)/);
+  assert.match(setupSection, /\[Claude setup guide\]\(\/mcp\/connect-airscale-mcp-to-claude\)/);
+  assert.match(setupSection, /\[Airscale MCP workflow\]\(\/mcp\/how-to-use-the-airscale-mcp\)/);
+  assert.doesNotMatch(setupSection, /```|<CodeGroup|mcpServers|Authorization\b/i);
+
+  const capabilitySection = body.slice(
+    body.indexOf("## What you can do"),
+    body.indexOf("## Export lifecycle")
+  );
+  assert.match(capabilitySection, /people and compan(?:y|ies) search/i);
+  assert.match(capabilitySection, /filter discovery/i);
+  assert.match(capabilitySection, /contact and profile enrichment/i);
+  assert.match(capabilitySection, /Airsearch/i);
+  assert.match(capabilitySection, /downloadable exports/i);
+  assert.match(capabilitySection, /22 typed tools/);
+  assert.match(capabilitySection, /\[MCP tool catalog\]\(\/mcp\/tools\)/);
+  assert.match(capabilitySection, /work-email-only/i);
+  assert.doesNotMatch(capabilitySection, /```json|"inputSchema"|"properties"/i);
+
+  const exportSection = body.slice(
+    body.indexOf("## Export lifecycle"),
+    body.indexOf("## How credits work")
+  );
+  assert.match(exportSection, /fresh paid search/i);
+  assert.match(exportSection, /not[\s\S]{0,80}selected[\s\S]{0,60}(?:chat )?rows/i);
+  assert.match(exportSection, /results may differ/i);
+  assert.match(exportSection, /additional (?:charge|spend)/i);
+  assert.match(exportSection, /filters[\s\S]{0,120}fields[\s\S]{0,120}format[\s\S]{0,120}`max_rows`[\s\S]{0,180}additional[\s\S]{0,140}cumulative/i);
+  assert.match(exportSection, /confirm_credit_spend/);
+  assertOrdered(exportSection, ["start", "status", "file"], "mcp/airscale-mcp-server export lifecycle");
+  assert.match(exportSection, /same `export_id`/);
+  assert.match(exportSection, /poll_after_seconds/);
+  assert.match(exportSection, /do not (?:start|create)[^\n.]*duplicate[^\n.]*(?:queued|running|export)/i);
+
+  const creditsSection = body.slice(
+    body.indexOf("## How credits work"),
+    body.indexOf("## Recommended workflow")
+  );
+  assert.match(creditsSection, /free[\s\S]{0,140}(?:credit check|planning)[\s\S]{0,140}(?:count|filter discovery)[\s\S]{0,140}status[\s\S]{0,100}file/i);
+  assert.match(creditsSection, /Find People and Find Companies each cost 0\.1 credit per returned row/);
+  assert.match(creditsSection, /Airsearch costs 2 credits per call/);
+  assert.match(creditsSection, /work-email-only/i);
+  assert.match(creditsSection, /confirm_credit_spend/);
+
+  const workflowSection = body.slice(
+    body.indexOf("## Recommended workflow"),
+    body.indexOf("## Security notes")
+  );
+  assertOrdered(workflowSection, [
+    "airscale_check_credits",
+    "free count or filter discovery",
+    "bounded sample",
+    "workspace, results, and credit",
+    "separate approval",
+    "renewed export review",
+    "same export job"
+  ], "mcp/airscale-mcp-server recommended workflow");
+  assert.match(workflowSection, /poll[\s\S]{0,100}(?:status|file)[\s\S]{0,100}(?:same `export_id`|same export job)/i);
+
+  const securitySection = body.slice(
+    body.indexOf("## Security notes"),
+    body.indexOf("## Troubleshooting")
+  );
+  assert.match(securitySection, /OAuth[\s\S]{0,140}server-side/i);
+  assert.match(securitySection, /secret manager|protected runtime environment/i);
+  assert.match(securitySection, /workspace[\s\S]{0,120}before paid actions/i);
+  assert.doesNotMatch(securitySection, /API key field|copy-paste|export\s+AIRSCALE_API_KEY/i);
+
+  const troubleshootingSection = body.slice(body.indexOf("## Troubleshooting"));
+  assert.match(troubleshootingSection, /<AccordionGroup>[\s\S]*<Accordion[\s\S]*<\/AccordionGroup>/);
+  assert.match(troubleshootingSection, /OAuth[\s\S]{0,200}workspace/i);
+  assert.match(troubleshootingSection, /https:\/\/mcp\.airscale\.io\/mcp/);
+  assert.match(troubleshootingSection, /insufficient credits/i);
+  assert.match(troubleshootingSection, /same `export_id`/);
 });
 
 test("documentation links validate missing fragments, explicit anchors, and heading slugs", () => {
