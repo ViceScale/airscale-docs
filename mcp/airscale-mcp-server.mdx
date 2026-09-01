@@ -1,186 +1,131 @@
 ---
-title: "Build with Airscale MCP"
-sidebarTitle: "Airscale MCP server"
-description: "Connect AI clients and agents to Airscale search, enrichment, research, and export tools."
+title: "Airscale MCP Server"
+description: "Connect Airscale to your AI assistant and prospect without leaving the chat."
 canonical: "https://airscale.mintlify.app/mcp/airscale-mcp-server"
 ---
 
-<Columns cols={2}>
-<Column>
-Connect an AI client or agent to Airscale search, enrichment, research, and exports through 22 typed tools. Authenticate with OAuth in supported clients or configure a server-side authorization header.
+Airscale MCP gives compatible AI assistants a concise, typed interface for prospecting through conversation while keeping authentication and paid actions explicit.
+
+## MCP server URL
 
 ```text
 https://mcp.airscale.io/mcp
 ```
-</Column>
-<Column>
-### Configure your client
 
-For a header-based client, store the key outside its configuration file. The placeholder below represents a value supplied through your local environment or secret manager; do not paste a real key into this documentation site.
+This remote Streamable HTTP server works with hosted assistants and trusted developer clients. For hosted clients, OAuth is preferred and uses browser sign-in. The Airscale MCP server resolves the authorized workspace credential server-side; the client neither receives nor stores the API key.
 
-```bash
-export AIRSCALE_API_KEY=YOUR_API_KEY
-```
+Trusted header-capable developer clients must load `AIRSCALE_API_KEY` from a protected runtime environment or secret manager. Never place a literal API key in a prompt or tool argument, source or browser code, or a shell command or shell history.
 
-<CodeGroup>
-```json Claude Code
-{
-  "mcpServers": {
-    "airscale": {
-      "type": "http",
-      "url": "https://mcp.airscale.io/mcp",
-      "headers": {
-        "Authorization": "Bearer ${AIRSCALE_API_KEY}"
-      }
-    }
-  }
-}
-```
+## Getting started
 
-```text Field mapping
-Server URL: https://mcp.airscale.io/mcp
-Transport: Streamable HTTP
-Authorization header: map from the AIRSCALE_API_KEY environment variable
-```
+1. First, choose the setup guide for your assistant.
+2. Then connect it to the MCP server URL above.
+3. Complete browser OAuth or authenticate from a protected developer runtime.
+4. Select and verify the intended workspace.
+5. Run `airscale_check_credits` as the free connection check before any paid tool.
 
-```text OAuth
-Server URL: https://mcp.airscale.io/mcp
-Authentication: OAuth
-API key field: leave empty
-```
-</CodeGroup>
+The credit check confirms authentication to an Airscale workspace without debiting credits, but it does not identify which workspace. Verify the workspace selected during OAuth—or the workspace that owns a developer credential—before paid actions.
 
-The conceptual field mapping names the required values only. Client configuration syntax varies, so it is not a copy-paste configuration.
+## Setup walkthroughs
 
-OAuth-capable clients open Airscale sign-in and authorization in the browser. They do not need an API key pasted into the connection form.
-</Column>
-</Columns>
+- [ChatGPT setup guide](/mcp/connect-airscale-mcp-to-chatgpt)
+- [Claude setup guide](/mcp/connect-airscale-mcp-to-claude)
+- [Airscale MCP workflow](/mcp/how-to-use-the-airscale-mcp)
 
-<CardGroup cols={2}>
-  <Card title="Tool catalog" icon="list-tree" href="/mcp/tools">
-    Browse every typed tool, input field, credit rule, and result behavior.
-  </Card>
-  <Card title="Authentication" icon="key-round" href="/api-reference/authentication">
-    Choose browser OAuth or a server-side authorization header for your client.
-  </Card>
-  <Card title="Credit safety" icon="shield-check" href="/api-reference/credit-count">
-    Check the balance for free and approve paid exports explicitly.
-  </Card>
-  <Card title="Agent resources" icon="bot" href="/mcp/agent-resources">
-    Find the human-readable and machine-readable entry points for agents.
-  </Card>
-</CardGroup>
+These guides contain the client-specific connection steps; this page keeps the shared server contract in one place.
 
-## Supported clients
+## What you can do
 
-Airscale MCP uses remote Streamable HTTP. Connect it from ChatGPT and Claude clients that support remote MCP servers, or from a developer client that can send a static authorization header.
+- **People and companies search:** discover prospects with bounded, structured searches.
+- **Filter discovery:** inspect available filters and counts before requesting rows.
+- **Contact and profile enrichment:** add professional contact details or public person and company profiles.
+- **Airsearch:** answer natural-language research questions with structured results.
+- **Downloadable exports:** create bounded people, company, or managed contact files and retrieve them when complete.
 
-<CardGroup cols={2}>
-  <Card title="Connect ChatGPT" icon="message-square" href="/mcp/connect-airscale-mcp-to-chatgpt">
-    Authorize the remote server through the browser OAuth flow.
-  </Card>
-  <Card title="Connect Claude" icon="sparkles" href="/mcp/connect-airscale-mcp-to-claude">
-    Use browser OAuth where supported or a protected header in Claude Code.
-  </Card>
-</CardGroup>
+The [MCP tool catalog](/mcp/tools) is the schema reference for all 22 typed tools. Managed contact enrichment is a work-email-only flow; it does not add mobile numbers, personal emails, or profile enrichment.
 
-## Choose OAuth or header authentication
+## Export lifecycle
 
-Use **OAuth** when the client supports browser authorization. The client opens Airscale, asks you to approve workspace access, and stores its own connection credentials.
+### People and company exports
 
-Use an **authorization header** only for a trusted developer client that reads its key from a local environment or secret manager. Send `Authorization: Bearer $AIRSCALE_API_KEY`; never place an API key in MCP tool arguments, prompts, source control, or browser-side code.
+People and company exports are fresh paid searches, not packages of selected chat rows. A people export uses the final `query`; a company export uses the final `filters`. Results may differ from the sample, and each export creates an additional charge.
 
-For the underlying API-key policy, see [Authentication](/api-reference/authentication).
+Before confirming, review the final scope, fields, format, `max_rows`, additional maximum credits, and cumulative workflow maximum. At up to 0.1 credits per exported row, the requested limit defines the maximum for this fresh search. Set `confirm_credit_spend` only after that review.
 
-## Verify the connection for free
+### Managed contact enrichment export
 
-After the client lists Airscale tools, make the first test non-billable. Ask:
+A managed contact enrichment export uses a `batch_id`. The batch remains appendable through `airscale_add_contacts_to_enrichment_batch` until the confirmed start. Review the approved contact count, `work_email` as the only enrichment, fields and format, and the maximum calculated as the approved contact count multiplied by up to 2 credits per contact. Review that additional maximum together with the cumulative workflow maximum. After reviewing the contact count and maximum, do not add more contacts.
 
-> Use `airscale_check_credits` to show my current Airscale credit balance. Do not call another tool.
+If the batch may have changed, rerun `airscale_start_contact_enrichment_export` with `confirm_credit_spend` set to false or omitted to obtain the current maximum, then review again. Only after approval should you set it to true. That confirmed start creates the export job and freezes the batch.
 
-The credit check has no input fields and does not debit credits. If the client cannot find the tool, refresh the MCP connection before testing a paid capability.
+### One export lifecycle
 
-## Capability overview
+Both branches use one asynchronous lifecycle:
 
-<CardGroup cols={2}>
-  <Card title="Search people and companies" icon="search" href="/api-reference/find-people">
-    Count, discover filters, search narrow pages, and continue with returned cursors.
-  </Card>
-  <Card title="Enrich contacts and profiles" icon="contact" href="/api-reference/email-finder">
-    Find work or personal contact details and extract public person or company profiles.
-  </Card>
-  <Card title="Research with Airsearch" icon="scan-search" href="/api-reference/airsearch">
-    Ask a natural-language research question and request structured fields.
-  </Card>
-  <Card title="Create managed exports" icon="file-down" href="/mcp/tools#async-exports-and-managed-batches">
-    Start bounded jobs, monitor their status, and retrieve completed files.
-  </Card>
-</CardGroup>
+1. Run the **confirmed start** once. An unconfirmed managed-contact maximum check does not create a job. Keep the returned `export_id`, and do not start a duplicate export while the job is queued or running.
+2. Check **status** with the same `export_id` and respect `poll_after_seconds`.
+3. Retrieve the **file** with the same `export_id` only after completion.
 
-The [MCP tool catalog](/mcp/tools) is the contract reference for exact inputs, result behavior, and credit treatment.
+## How credits work
 
-## Run asynchronous exports safely
+- Free operations include the credit check, planning, people count or company filter discovery, export status polling, and completed file retrieval.
+- Find People and Find Companies each cost 0.1 credit per returned row.
+- Airsearch costs 2 credits per call.
+- The managed work-email-only contact enrichment phase costs up to 2 credits per contact.
+- Paid export starts fail closed until `confirm_credit_spend` is explicitly set after review.
 
-Large people, company, and managed contact-enrichment jobs use an asynchronous lifecycle:
-
-<Steps>
-  <Step title="Define a narrow job">
-    Validate filters and keep the requested maximum row count as small as the use case allows.
-  </Step>
-  <Step title="Review and approve spend">
-    Read the maximum possible credit cost. Paid export starts require `confirm_credit_spend: true` only after approval.
-  </Step>
-  <Step title="Start once">
-    Keep the returned export identifier. Do not start a duplicate job while the first is still running.
-  </Step>
-  <Step title="Poll status">
-    Use the status tool and respect its suggested polling interval until the job reaches a terminal state.
-  </Step>
-  <Step title="Retrieve the file">
-    Request the file only after the status reports completion, then store it according to your data-handling policy.
-  </Step>
-</Steps>
-
-## Understand credits and approval
-
-Free tools include the workspace credit check, people count, and company filter-value discovery. Search and enrichment tools charge according to successful results or calls; Airsearch costs 2 credits per call. The catalog states the exact behavior for each tool.
-
-Export-start tools can create larger charges. They fail closed until `confirm_credit_spend` is set to `true`, but that flag is an approval signal—not a substitute for reviewing filters, row limits, and the maximum possible spend.
+For exact per-tool behavior, use the [MCP tool catalog](/mcp/tools).
 
 ## Recommended workflow
 
-1. Verify the connection with `airscale_check_credits`.
-2. Use a free count or filter-discovery tool when one applies.
-3. Run the smallest useful sample and inspect its shape.
-4. Refine filters before increasing the requested size.
-5. Review credit behavior in the [tool catalog](/mcp/tools).
-6. Approve and start paid export work only when the scope is correct.
-7. Poll the existing job rather than starting a duplicate.
+1. Run `airscale_check_credits` for a free connection check.
+2. Verify the intended workspace before choosing a paid path.
 
-For endpoint semantics behind core tools, use the [API reference](/api-reference/api-overview).
+### People and company search/export
 
-## Security
+1. Use a free count or filter discovery tool to plan the request.
+2. Run a bounded sample and inspect the returned shape.
+3. Review the workspace, results, and credit implications before continuing.
+4. For optional enrichment, request separate approval with its own maximum and updated cumulative spend.
+5. Before exporting, perform a renewed export review of the final `query` or `filters`, fields, format, `max_rows`, additional maximum credits, and cumulative workflow maximum.
+6. Set `confirm_credit_spend` only after approval, then start once.
 
-- Prefer browser OAuth when the client supports it.
-- Keep header credentials in a local environment or secret manager and out of configuration committed to source control.
-- Never send an API key as a tool argument or include one in a prompt.
-- Review the tool name and proposed arguments before approving a credit-spending action.
-- Rotate a key immediately if it is exposed, then update every trusted client that uses it.
-- Treat exported contact data according to your organization's access, retention, and deletion policies.
+### Managed contact enrichment/export
+
+1. Use `airscale_add_contacts_to_enrichment_batch` while the batch is appendable before the confirmed start.
+2. Review the approved contact count, `work_email`, fields and format.
+3. Calculate the maximum from the approved contact count multiplied by up to 2 credits per contact, then review the additional maximum and cumulative workflow maximum.
+4. After reviewing the contact count and maximum, do not add more contacts.
+5. If the batch may have changed, rerun `airscale_start_contact_enrichment_export` with `confirm_credit_spend` set to false or omitted to obtain the current maximum, then review again.
+6. Only after approval should you set `confirm_credit_spend` to true. That confirmed start creates the export job and freezes the batch.
+
+### Finish either export
+
+Start once, then poll the same export job through status and file retrieval using the same `export_id` and `poll_after_seconds`. Do not start it again.
+
+## Security notes
+
+- OAuth keeps workspace credential resolution server-side; the hosted client does not receive or store the Airscale API key.
+- Header-capable developer clients should read `AIRSCALE_API_KEY` only from a protected runtime environment or secret manager.
+- Never put a literal key in prompts, tool arguments, source control, browser code, shell commands, or shell history.
+- Verify the intended workspace before paid actions because a credit balance alone does not identify it.
+- Review every paid tool name, scope, and maximum cost before approval.
+- If a developer API key is exposed or suspected compromised, rotate it immediately, update the protected secret, and reconnect every trusted client that used it.
+- Treat tokenized export URLs and exported files as sensitive. Never place them in prompts or logs, and follow your organization's access, retention, and deletion rules.
 
 ## Troubleshooting
 
 <AccordionGroup>
   <Accordion title="The client cannot authenticate">
-    For OAuth, restart the browser authorization flow and confirm that the intended Airscale workspace is selected. For header clients, confirm that the environment value is available to the client process and that the header begins with `Bearer`.
+    For OAuth, restart browser sign-in and verify the intended workspace. For a header-capable developer client, confirm that its protected runtime can read the configured secret.
   </Accordion>
   <Accordion title="The Airscale tools do not appear">
-    Confirm that the server URL is exactly `https://mcp.airscale.io/mcp`, then disconnect and reconnect the MCP server so the client refreshes its tool list.
+    Confirm that the server URL is exactly `https://mcp.airscale.io/mcp`, then disconnect and reconnect so the client refreshes all 22 tools.
   </Accordion>
   <Accordion title="A request reports insufficient credits">
-    Run `airscale_check_credits` and reduce the scope before retrying. Do not repeatedly submit the same paid request.
+    Run `airscale_check_credits`, reduce the paid scope, and review the maximum again. Do not repeatedly submit the same paid request.
   </Accordion>
   <Accordion title="An export is still running">
-    Continue polling the existing export status at the suggested interval. Start a new job only after you know the first job's terminal outcome.
+    Continue polling the same `export_id` at `poll_after_seconds`. Do not create a duplicate while its outcome is unknown.
   </Accordion>
 </AccordionGroup>
