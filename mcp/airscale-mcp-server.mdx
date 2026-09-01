@@ -46,13 +46,23 @@ The [MCP tool catalog](/mcp/tools) is the schema reference for all 22 typed tool
 
 ## Export lifecycle
 
-An export is a fresh paid search from the final filters, not a package of selected chat rows. Results may differ from the sample, and the export creates an additional charge. Before confirming, review the exact filters, fields, format, `max_rows`, additional maximum credits, and cumulative workflow maximum. Set `confirm_credit_spend` only after that renewed review.
+### People and company exports
 
-Use one asynchronous lifecycle:
+People and company exports are fresh paid searches, not packages of selected chat rows. A people export uses the final `query`; a company export uses the final `filters`. Results may differ from the sample, and each export creates an additional charge.
 
-1. **Start once.** Keep the returned `export_id` and do not start a duplicate export while the job is queued or running.
-2. **Check status.** Poll the same `export_id` and respect `poll_after_seconds`.
-3. **Retrieve the file.** Request the completed file with the same `export_id` instead of creating another job.
+Before confirming, review the final scope, fields, format, `max_rows`, additional maximum credits, and cumulative workflow maximum. At up to 0.1 credits per exported row, the requested limit defines the maximum for this fresh search. Set `confirm_credit_spend` only after that review.
+
+### Managed contact enrichment export
+
+A managed contact enrichment export starts from a frozen `batch_id`. Review the approved contact count, `work_email` as the only enrichment, fields and format, and the maximum calculated as the approved contact count multiplied by up to 2 credits per contact. Review that additional maximum together with the cumulative workflow maximum, then set `confirm_credit_spend` only after approval.
+
+### One export lifecycle
+
+Both branches use one asynchronous lifecycle:
+
+1. Use the branch's **start** tool once. Keep the returned `export_id`, and do not start a duplicate export while the job is queued or running.
+2. Check **status** with the same `export_id` and respect `poll_after_seconds`.
+3. Retrieve the **file** with the same `export_id` only after completion.
 
 ## How credits work
 
@@ -67,12 +77,27 @@ For exact per-tool behavior, use the [MCP tool catalog](/mcp/tools).
 ## Recommended workflow
 
 1. Run `airscale_check_credits` for a free connection check.
-2. Use a free count or filter discovery tool to plan the request.
-3. Run a bounded sample and inspect the returned shape.
-4. Review the workspace, results, and credit implications before continuing.
-5. For optional enrichment, request separate approval with its own maximum and updated cumulative spend.
-6. Before exporting, perform a renewed export review of filters, fields, format, `max_rows`, additional maximum credits, and cumulative maximum, then set `confirm_credit_spend` only after approval.
-7. Poll the same export job through status and file retrieval using the same `export_id`; do not start it again.
+2. Verify the intended workspace before choosing a paid path.
+
+### People and company search/export
+
+1. Use a free count or filter discovery tool to plan the request.
+2. Run a bounded sample and inspect the returned shape.
+3. Review the workspace, results, and credit implications before continuing.
+4. For optional enrichment, request separate approval with its own maximum and updated cumulative spend.
+5. Before exporting, perform a renewed export review of the final `query` or `filters`, fields, format, `max_rows`, additional maximum credits, and cumulative workflow maximum.
+6. Set `confirm_credit_spend` only after approval, then start once.
+
+### Managed contact enrichment/export
+
+1. Finish the free batch-building steps, then keep the frozen `batch_id`.
+2. Review the approved contact count, `work_email`, fields and format.
+3. Calculate the maximum from the approved contact count multiplied by up to 2 credits per contact.
+4. Review the additional maximum and cumulative workflow maximum, then set `confirm_credit_spend` only after approval.
+
+### Finish either export
+
+Start once, then poll the same export job through status and file retrieval using the same `export_id` and `poll_after_seconds`. Do not start it again.
 
 ## Security notes
 
@@ -81,6 +106,8 @@ For exact per-tool behavior, use the [MCP tool catalog](/mcp/tools).
 - Never put a literal key in prompts, tool arguments, source control, browser code, shell commands, or shell history.
 - Verify the intended workspace before paid actions because a credit balance alone does not identify it.
 - Review every paid tool name, scope, and maximum cost before approval.
+- If a developer API key is exposed or suspected compromised, rotate it immediately, update the protected secret, and reconnect every trusted client that used it.
+- Treat tokenized export URLs and exported files as sensitive. Never place them in prompts or logs, and follow your organization's access, retention, and deletion rules.
 
 ## Troubleshooting
 

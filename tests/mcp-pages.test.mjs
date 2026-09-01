@@ -220,6 +220,22 @@ function assertOrdered(source, labels, path) {
   }
 }
 
+function requireMcpTool(name) {
+  const tool = MCP_TOOLS.get(name);
+  assert.ok(tool, `MCP contract must include ${name}`);
+  return tool;
+}
+
+function spendCreditAmount(tool) {
+  const match = tool.spend?.summary?.match(/(?:Up to )?(\d+(?:\.\d+)?) credits?\b/i);
+  assert.ok(match, `${tool.name} must have a numeric contract-backed credit summary`);
+  return match[1];
+}
+
+function escapeRegExp(value) {
+  return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}
+
 function directColumnBodies(body, path) {
   const columns = body.trimStart().match(/^<Columns cols=\{2\}>\n([\s\S]*?)\n<\/Columns>(?:\n|$)/);
   assert.ok(columns, `${path} must begin with a two-column Columns component`);
@@ -297,6 +313,45 @@ test("credential checks reject static secrets while allowing only the documented
 
 test("server page is the final concise AirSchool reference", () => {
   const { body, frontmatter } = readPage("mcp/airscale-mcp-server");
+  const findPeople = requireMcpTool("airscale_find_people");
+  const findCompanies = requireMcpTool("airscale_find_companies");
+  const airsearch = requireMcpTool("airscale_airsearch");
+  const peopleExport = requireMcpTool("airscale_start_people_export");
+  const companiesExport = requireMcpTool("airscale_start_companies_export");
+  const contactExport = requireMcpTool("airscale_start_contact_enrichment_export");
+  const exportStatus = requireMcpTool("airscale_get_export_status");
+  const exportFile = requireMcpTool("airscale_get_export_file");
+  const freshExports = [peopleExport, companiesExport];
+  const allExportStarts = [...freshExports, contactExport];
+  const peopleScopeField = Object.hasOwn(peopleExport.inputSchema.properties, "query") ? "query" : null;
+  const companiesScopeField = Object.hasOwn(companiesExport.inputSchema.properties, "filters") ? "filters" : null;
+  const batchIdField = contactExport.inputSchema.required?.[0];
+  const workEmailEnrichment = contactExport.inputSchema.properties.enrichments?.items?.const;
+  const confirmationFields = new Set(allExportStarts.map(({ spend }) => spend.confirmationField));
+  const [confirmationField] = confirmationFields;
+  const findPeopleRate = spendCreditAmount(findPeople);
+  const findCompaniesRate = spendCreditAmount(findCompanies);
+  const airsearchRate = spendCreditAmount(airsearch);
+  const peopleExportRate = spendCreditAmount(peopleExport);
+  const companiesExportRate = spendCreditAmount(companiesExport);
+  const contactExportRate = spendCreditAmount(contactExport);
+
+  assert.equal(peopleScopeField, "query");
+  assert.equal(companiesScopeField, "filters");
+  assert.equal(batchIdField, "batch_id");
+  assert.equal(workEmailEnrichment, "work_email");
+  assert.equal(confirmationFields.size, 1);
+  assert.ok(confirmationField);
+  assert.equal(findPeopleRate, findCompaniesRate);
+  assert.equal(findPeopleRate, peopleExportRate);
+  assert.equal(findCompaniesRate, companiesExportRate);
+  assert.equal(contactExport.inputSchema.properties.max_rows, undefined);
+  assert.equal(contactExport.inputSchema.properties.query, undefined);
+  assert.equal(contactExport.inputSchema.properties.filters, undefined);
+  assert.ok(freshExports.every(({ inputSchema }) => inputSchema.properties.max_rows));
+  assert.equal(exportStatus.spend.kind, "free");
+  assert.equal(exportFile.spend.kind, "free");
+
   assert.deepEqual(frontmatter, {
     title: "Airscale MCP Server",
     description: "Connect Airscale to your AI assistant and prospect without leaving the chat.",
@@ -377,7 +432,7 @@ test("server page is the final concise AirSchool reference", () => {
   assert.match(capabilitySection, /contact and profile enrichment/i);
   assert.match(capabilitySection, /Airsearch/i);
   assert.match(capabilitySection, /downloadable exports/i);
-  assert.match(capabilitySection, /22 typed tools/);
+  assert.match(capabilitySection, new RegExp(`${MCP_TOOLS.size} typed tools`));
   assert.match(capabilitySection, /\[MCP tool catalog\]\(\/mcp\/tools\)/);
   assert.match(capabilitySection, /work-email-only/i);
   assert.doesNotMatch(capabilitySection, /```json|"inputSchema"|"properties"/i);
@@ -386,26 +441,61 @@ test("server page is the final concise AirSchool reference", () => {
     body.indexOf("## Export lifecycle"),
     body.indexOf("## How credits work")
   );
-  assert.match(exportSection, /fresh paid search/i);
-  assert.match(exportSection, /not[\s\S]{0,80}selected[\s\S]{0,60}(?:chat )?rows/i);
-  assert.match(exportSection, /results may differ/i);
-  assert.match(exportSection, /additional (?:charge|spend)/i);
-  assert.match(exportSection, /filters[\s\S]{0,120}fields[\s\S]{0,120}format[\s\S]{0,120}`max_rows`[\s\S]{0,180}additional[\s\S]{0,140}cumulative/i);
-  assert.match(exportSection, /confirm_credit_spend/);
-  assertOrdered(exportSection, ["start", "status", "file"], "mcp/airscale-mcp-server export lifecycle");
-  assert.match(exportSection, /same `export_id`/);
-  assert.match(exportSection, /poll_after_seconds/);
-  assert.match(exportSection, /do not (?:start|create)[^\n.]*duplicate[^\n.]*(?:queued|running|export)/i);
+  assertOrdered(exportSection, [
+    "### People and company exports",
+    "### Managed contact enrichment export",
+    "### One export lifecycle"
+  ], "mcp/airscale-mcp-server export branches");
+  const peopleCompanyExportSection = exportSection.slice(
+    exportSection.indexOf("### People and company exports"),
+    exportSection.indexOf("### Managed contact enrichment export")
+  );
+  const contactExportSection = exportSection.slice(
+    exportSection.indexOf("### Managed contact enrichment export"),
+    exportSection.indexOf("### One export lifecycle")
+  );
+  const sharedExportLifecycle = exportSection.slice(exportSection.indexOf("### One export lifecycle"));
+
+  assert.match(peopleCompanyExportSection, /fresh paid search/i);
+  assert.match(peopleCompanyExportSection, /not[\s\S]{0,80}selected[\s\S]{0,60}(?:chat )?rows/i);
+  assert.match(peopleCompanyExportSection, /results may differ/i);
+  assert.match(peopleCompanyExportSection, /additional (?:charge|spend)/i);
+  assert.match(peopleCompanyExportSection, new RegExp(`\`${escapeRegExp(peopleScopeField)}\``));
+  assert.match(peopleCompanyExportSection, new RegExp(`\`${escapeRegExp(companiesScopeField)}\``));
+  assert.match(peopleCompanyExportSection, /fields[\s\S]{0,100}format[\s\S]{0,100}`max_rows`[\s\S]{0,180}additional[\s\S]{0,140}cumulative/i);
+  assert.match(peopleCompanyExportSection, new RegExp(`up to ${escapeRegExp(peopleExportRate)} credits? per exported row`, "i"));
+  assert.match(peopleCompanyExportSection, new RegExp(`\`${escapeRegExp(confirmationField)}\``));
+
+  assert.match(contactExportSection, new RegExp(`frozen \`${escapeRegExp(batchIdField)}\``, "i"));
+  assert.match(contactExportSection, /approved contact count/i);
+  assert.match(contactExportSection, new RegExp(`\`${escapeRegExp(workEmailEnrichment)}\`[\\s\\S]{0,80}(?:only|sole)`, "i"));
+  assert.match(contactExportSection, /fields[\s\S]{0,100}format/i);
+  assert.match(
+    contactExportSection,
+    new RegExp(`approved contact count[\\s\\S]{0,120}up to ${escapeRegExp(contactExportRate)} credits? per contact`, "i")
+  );
+  assert.match(contactExportSection, /additional[\s\S]{0,140}cumulative/i);
+  assert.match(contactExportSection, new RegExp(`\`${escapeRegExp(confirmationField)}\``));
+  assert.doesNotMatch(contactExportSection, /`(?:filters|query|max_rows)`|search filters|caller-supplied row limit/i);
+
+  assertOrdered(sharedExportLifecycle, ["start", "status", "file"], "mcp/airscale-mcp-server shared export lifecycle");
+  assert.match(sharedExportLifecycle, /same `export_id`/);
+  assert.match(sharedExportLifecycle, /poll_after_seconds/);
+  assert.match(sharedExportLifecycle, /do not (?:start|create)[^\n.]*duplicate[^\n.]*(?:queued|running|export)/i);
 
   const creditsSection = body.slice(
     body.indexOf("## How credits work"),
     body.indexOf("## Recommended workflow")
   );
   assert.match(creditsSection, /free[\s\S]{0,140}(?:credit check|planning)[\s\S]{0,140}(?:count|filter discovery)[\s\S]{0,140}status[\s\S]{0,100}file/i);
-  assert.match(creditsSection, /Find People and Find Companies each cost 0\.1 credit per returned row/);
-  assert.match(creditsSection, /Airsearch costs 2 credits per call/);
+  assert.match(
+    creditsSection,
+    new RegExp(`Find People and Find Companies each cost ${escapeRegExp(findPeopleRate)} credits? per returned row`)
+  );
+  assert.match(creditsSection, new RegExp(`Airsearch costs ${escapeRegExp(airsearchRate)} credits? per call`));
   assert.match(creditsSection, /work-email-only/i);
-  assert.match(creditsSection, /confirm_credit_spend/);
+  assert.match(creditsSection, new RegExp(`up to ${escapeRegExp(contactExportRate)} credits? per contact`, "i"));
+  assert.match(creditsSection, new RegExp(`\`${escapeRegExp(confirmationField)}\``));
 
   const workflowSection = body.slice(
     body.indexOf("## Recommended workflow"),
@@ -413,14 +503,41 @@ test("server page is the final concise AirSchool reference", () => {
   );
   assertOrdered(workflowSection, [
     "airscale_check_credits",
+    "### People and company search/export",
+    "### Managed contact enrichment/export",
+    "### Finish either export",
+    "same export job"
+  ], "mcp/airscale-mcp-server recommended workflow branches");
+  const peopleCompanyWorkflowSection = workflowSection.slice(
+    workflowSection.indexOf("### People and company search/export"),
+    workflowSection.indexOf("### Managed contact enrichment/export")
+  );
+  assertOrdered(peopleCompanyWorkflowSection, [
     "free count or filter discovery",
     "bounded sample",
     "workspace, results, and credit",
     "separate approval",
-    "renewed export review",
-    "same export job"
-  ], "mcp/airscale-mcp-server recommended workflow");
-  assert.match(workflowSection, /poll[\s\S]{0,100}(?:status|file)[\s\S]{0,100}(?:same `export_id`|same export job)/i);
+    "renewed export review"
+  ], "mcp/airscale-mcp-server people and company workflow");
+  const contactWorkflowSection = workflowSection.slice(
+    workflowSection.indexOf("### Managed contact enrichment/export"),
+    workflowSection.indexOf("### Finish either export")
+  );
+  assertOrdered(contactWorkflowSection, [
+    `frozen \`${batchIdField}\``,
+    "approved contact count",
+    `\`${workEmailEnrichment}\``,
+    "fields and format",
+    "additional maximum",
+    "cumulative workflow maximum"
+  ], "mcp/airscale-mcp-server managed contact workflow");
+  assert.match(
+    contactWorkflowSection,
+    new RegExp(`approved contact count[\\s\\S]{0,160}up to ${escapeRegExp(contactExportRate)} credits? per contact`, "i")
+  );
+  assert.match(contactWorkflowSection, new RegExp(`\`${escapeRegExp(confirmationField)}\``));
+  assert.doesNotMatch(contactWorkflowSection, /`(?:filters|query|max_rows)`|caller-supplied row limit/i);
+  assert.match(workflowSection, /poll[\s\S]{0,120}(?:status|file)[\s\S]{0,120}(?:same `export_id`|same export job)/i);
 
   const securitySection = body.slice(
     body.indexOf("## Security notes"),
@@ -429,6 +546,10 @@ test("server page is the final concise AirSchool reference", () => {
   assert.match(securitySection, /OAuth[\s\S]{0,140}server-side/i);
   assert.match(securitySection, /secret manager|protected runtime environment/i);
   assert.match(securitySection, /workspace[\s\S]{0,120}before paid actions/i);
+  assert.match(securitySection, /(?:exposed|compromised)[\s\S]{0,100}rotate[\s\S]{0,40}immediately[\s\S]{0,140}reconnect/i);
+  assert.match(securitySection, /tokenized export URLs[\s\S]{0,80}exported files[\s\S]{0,80}sensitive/i);
+  assert.match(securitySection, /never[\s\S]{0,80}(?:prompts[\s\S]{0,40}logs|logs[\s\S]{0,40}prompts)/i);
+  assert.match(securitySection, /access[\s\S]{0,80}retention[\s\S]{0,80}deletion/i);
   assert.doesNotMatch(securitySection, /API key field|copy-paste|export\s+AIRSCALE_API_KEY/i);
 
   const troubleshootingSection = body.slice(body.indexOf("## Troubleshooting"));
