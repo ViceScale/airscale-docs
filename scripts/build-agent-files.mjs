@@ -217,7 +217,7 @@ function renderLlmsIndexModel(model) {
     "## Machine-readable contracts",
     "",
     `- [OpenAPI specification](${PREVIEW_ORIGIN}/openapi.json): HTTP API operations, schemas, authentication, and responses.`,
-    `- [MCP tool manifest](${PREVIEW_ORIGIN}/mcp-tools.txt): JSON-formatted names and input schemas for all 22 operational MCP tools.`,
+    `- [MCP tool catalog](${PREVIEW_ORIGIN}/mcp/tools.md): Hosted Markdown with names, input schemas, credit behavior, examples, and API mappings for all 22 operational MCP tools.`,
     `- [Agent skill](${PREVIEW_ORIGIN}/skill.md): Capability, authentication, credit, and approval guidance for agents.`,
     ""
   );
@@ -297,8 +297,7 @@ Prefer browser OAuth in supported remote MCP clients. Header-capable local clien
 ## Authoritative resources
 
 - MCP workflow and safety: ${PREVIEW_ORIGIN}/mcp/how-to-use-the-airscale-mcp
-- MCP tool catalog: ${PREVIEW_ORIGIN}/mcp/tools
-- MCP structured manifest: ${PREVIEW_ORIGIN}/mcp-tools.txt
+- MCP tool catalog (Markdown): ${PREVIEW_ORIGIN}/mcp/tools.md
 - HTTP API reference: ${PREVIEW_ORIGIN}/api-reference/api-overview
 - OpenAPI specification: ${PREVIEW_ORIGIN}/openapi.json
 - Agent resource directory: ${PREVIEW_ORIGIN}/mcp/agent-resources

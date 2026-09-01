@@ -3001,14 +3001,14 @@ test("agent renderers publish only the platform-supported custom agent files", (
   assert.match(outputs["skill.md"], /Airsearch costs 2 credits per call/);
   assert.match(outputs["skill.md"], /confirm_credit_spend[\s\S]*explicit/i);
   assert.match(outputs["skill.md"], /https:\/\/airscale\.mintlify\.app\/mcp\/tools/);
-  assert.match(outputs["llms.txt"], /https:\/\/airscale\.mintlify\.app\/mcp-tools\.txt/);
-  assert.match(outputs["skill.md"], /https:\/\/airscale\.mintlify\.app\/mcp-tools\.txt/);
+  assert.match(outputs["llms.txt"], /https:\/\/airscale\.mintlify\.app\/mcp\/tools\.md/);
+  assert.match(outputs["skill.md"], /https:\/\/airscale\.mintlify\.app\/mcp\/tools\.md/);
   for (const contents of Object.values(outputs)) {
-    assert.doesNotMatch(contents, /mcp-tools\.json|\.well-known\/api-catalog/i);
+    assert.doesNotMatch(contents, /mcp-tools\.(?:json|txt)|\.well-known\/api-catalog/i);
   }
 });
 
-test("Mintlify cold and update prebuilds publish every advertised repository-owned machine file", () => {
+test("Mintlify prebuild classification is not treated as hosted publication proof", () => {
   const outputDirectory = mkdtempSync(join(tmpdir(), "airscale-mint-prebuild-"));
   try {
     runMintlifyPrebuild(process.cwd(), outputDirectory);
