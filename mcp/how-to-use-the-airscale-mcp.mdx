@@ -41,7 +41,7 @@ Before a paid export starts, review the final filters, row limit, and maximum sp
 
 ## Run a search in natural language
 
-Describe the cohort and keep the first result small:
+Describe the cohort and keep the first result small. The example prompts below are illustrative and non-executing; they instruct your assistant to pause before every paid action.
 
 > Find up to five cybersecurity companies in France with 51–200 employees. Before you run it, show me the proposed tool, filters, row limit, and maximum cost, then wait for my approval.
 
@@ -53,13 +53,21 @@ Review the company name, domain, website, country, and filter precision before e
 
 ### Enrich contacts through conversation
 
-Continue from only the companies you approved:
+Begin with a bounded role-discovery request for only the companies you approved:
 
-> For the approved companies, find and enrich at most one CEO, one CFO, and one Head of Growth per company. Show me the proposed paid action, row limit, and maximum cost, then wait for my approval.
+> Discovery step: For the approved companies, discover at most one CEO, one CFO, and one Head of Growth per approved company. Show me the proposed tool, per-step maximum cost, and cumulative workflow maximum, then wait for my approval.
 
-Review the requested fields and linked pricing before approving enrichment. Keep each follow-up bounded, and do not add unapproved companies to the request.
+Review the discovered people and approve the decision-makers you want to continue with. Then request only their professional work emails:
+
+> Professional work email enrichment step: For only the approved decision-makers, find professional work emails. Show me the proposed tool, contact count, per-step maximum cost, and new cumulative workflow maximum, then wait for my approval.
+
+Review the requested fields and linked pricing before approving each stage. Keep each follow-up bounded, and do not add unapproved companies or contacts to the request.
 
 ## Export your final list
+
+People and company exports perform a fresh paid search from the final filters. They do not export the selected chat rows, may return different rows, and add a new charge in addition to earlier paid steps in the workflow.
+
+Before starting, require the assistant to repeat the exact filters, fields, format, `max_rows`, additional maximum credits, and cumulative workflow maximum, then wait for your approval.
 
 Exports are asynchronous: start one export, check its status, then retrieve the file after completion. Save the returned `export_id` and reuse the same `export_id` for status and file requests.
 

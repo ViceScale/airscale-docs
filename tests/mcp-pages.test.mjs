@@ -468,7 +468,19 @@ test("MCP entry page mirrors the AirSchool Claude-demo narrative", () => {
     description: "Prospect through conversation with Airscale search, enrichment, and export tools.",
     canonical: "https://airscale.mintlify.app/mcp/how-to-use-the-airscale-mcp"
   });
-  assert.match(body, /<Frame>\s*<iframe\s+className="w-full aspect-video rounded-xl"\s+src="https:\/\/www\.youtube\.com\/embed\/t4coJ0P8YVM"\s+title="How to prospect with Airscale MCP in Claude"[\s\S]*?allowFullScreen\s*\/>\s*<\/Frame>/);
+  assert.match(body, /<Frame>/);
+  assert.match(body, /<iframe\b/);
+  const frameStart = body.indexOf("<Frame>");
+  const frameEnd = body.indexOf("</Frame>", frameStart);
+  const iframe = body.slice(frameStart, frameEnd).match(/<iframe\b[\s\S]*?\/>/)?.[0];
+  assert.ok(iframe, "Frame must contain a self-closing iframe");
+  assert.match(iframe, /(?:^|\s)className="w-full aspect-video rounded-xl"/);
+  assert.match(iframe, /(?:^|\s)src="https:\/\/www\.youtube\.com\/embed\/t4coJ0P8YVM"/);
+  assert.match(iframe, /(?:^|\s)title="How to prospect with Airscale MCP in Claude"/);
+  assert.match(iframe, /(?:^|\s)allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"/);
+  assert.match(iframe, /(?:^|\s)referrerPolicy="strict-origin-when-cross-origin"/);
+  assert.match(iframe, /(?:^|\s)allowFullScreen(?:\s|\/>)/);
+  assert.match(body, /<\/Frame>/);
   assert.deepEqual(
     Array.from(body.matchAll(/^(#{2,3})\s+(.+)$/gm), ([, level, heading]) => `${level} ${heading}`),
     [
@@ -496,7 +508,48 @@ test("MCP entry page mirrors the AirSchool Claude-demo narrative", () => {
   assert.match(body, /> Find up to five cybersecurity companies in France with 51–200 employees\.[^\n]*proposed tool[^\n]*maximum cost[^\n]*wait for my approval\./i);
   assert.match(body, /name[\s\S]{0,100}domain[\s\S]{0,100}website[\s\S]{0,100}country[\s\S]{0,140}filter precision/i);
   assert.match(body, /five-company sample[\s\S]{0,80}(?:at most|maximum)[\s\S]{0,40}0\.5 credits/i);
-  assert.match(body, /> For the approved companies,[^\n]*CEO[^\n]*CFO[^\n]*Head of Growth[^\n]*proposed paid action[^\n]*wait for my approval\./i);
+  const contactSection = body.slice(
+    body.indexOf("### Enrich contacts through conversation"),
+    body.indexOf("## Export your final list")
+  );
+  const contactPrompts = Array.from(contactSection.matchAll(/^>\s+(.+)$/gm), ([, prompt]) => prompt);
+  const [discoveryPrompt = "", workEmailPrompt = ""] = contactPrompts;
+  const exportSection = body.slice(
+    body.indexOf("## Export your final list"),
+    body.indexOf("## Get started")
+  );
+  const spendBoundaryContract = {
+    twoSeparateContactPrompts: contactPrompts.length === 2,
+    examplesAreNonExecuting: /example prompts[\s\S]{0,100}illustrative[\s\S]{0,80}non-executing/i.test(body),
+    discoveryIsExplicitlyLabeled: /\bdiscovery step\b/i.test(discoveryPrompt),
+    discoveryIsBoundedPerCompany: /at most one CEO[^\n]*one CFO[^\n]*one Head of Growth[^\n]*per approved company/i.test(discoveryPrompt),
+    discoveryHasSeparateApprovalMath: /proposed tool[^\n]*per-step maximum cost[^\n]*cumulative workflow maximum[^\n]*wait for my approval/i.test(discoveryPrompt),
+    workEmailUsesOnlyApprovedDecisionMakers: /only (?:the )?approved decision-makers[^\n]*professional work emails/i.test(workEmailPrompt),
+    workEmailHasSeparateApprovalMath: /proposed tool[^\n]*contact count[^\n]*per-step maximum cost[^\n]*new cumulative workflow maximum[^\n]*wait for my approval/i.test(workEmailPrompt),
+    exportIsFreshPaidSearch: /people and company exports perform a fresh paid search from the final filters/i.test(exportSection),
+    exportDoesNotPackageChatRows: /do not export the selected chat rows/i.test(exportSection),
+    exportMayReturnDifferentRows: /may return different rows/i.test(exportSection),
+    exportAddsNewCharge: /adds? a new charge[^.]*in addition to[^.]*earlier[^.]*workflow/i.test(exportSection),
+    exportRequiresRenewedApproval: /repeat the exact filters, fields, format, `max_rows`, additional maximum credits, and cumulative workflow maximum[^.]*wait for (?:my|your) approval/i.test(exportSection)
+  };
+  assert.deepEqual(
+    spendBoundaryContract,
+    {
+      twoSeparateContactPrompts: true,
+      examplesAreNonExecuting: true,
+      discoveryIsExplicitlyLabeled: true,
+      discoveryIsBoundedPerCompany: true,
+      discoveryHasSeparateApprovalMath: true,
+      workEmailUsesOnlyApprovedDecisionMakers: true,
+      workEmailHasSeparateApprovalMath: true,
+      exportIsFreshPaidSearch: true,
+      exportDoesNotPackageChatRows: true,
+      exportMayReturnDifferentRows: true,
+      exportAddsNewCharge: true,
+      exportRequiresRenewedApproval: true
+    }
+  );
+  assert.doesNotMatch(contactSection, /\b(?:mobile|personal email|profile enrichment)\b/i);
   assert.match(body, /asynchronous[\s\S]{0,160}start[\s\S]{0,120}status[\s\S]{0,120}(?:file|download)/i);
   assert.match(body, /same `export_id`/);
   assert.match(body, /poll_after_seconds/);
