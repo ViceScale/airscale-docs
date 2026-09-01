@@ -2976,6 +2976,9 @@ test("agent renderers publish only the platform-supported custom agent files", (
   assert.equal(outputs["llms.txt"], renderLlmsIndex(inputs));
   assert.equal(outputs["llms-full.txt"], renderLlmsFull(inputs));
   assert.equal(outputs["skill.md"], renderSkill(inputs));
+  assert.match(outputs["llms.txt"], /^## MCP & Agents — Getting started$/mu);
+  assert.match(outputs["llms.txt"], /\[Use the Airscale MCP\]\(https:\/\/airscale\.mintlify\.app\/mcp\/how-to-use-the-airscale-mcp\.md\)/);
+  assert.doesNotMatch(outputs["llms.txt"], /^## MCP & Agents — (?:Start|Connect|Use|For agents)$/mu);
 
   const navigationPaths = inputs.docsConfig.navigation.tabs.flatMap(({ groups }) => (
     groups.flatMap(({ pages }) => pages)
@@ -3002,8 +3005,18 @@ test("agent renderers publish only the platform-supported custom agent files", (
   assert.match(outputs["skill.md"], /confirm_credit_spend[\s\S]*explicit/i);
   assert.match(outputs["skill.md"], /https:\/\/airscale\.mintlify\.app\/mcp\/tools/);
   assert.match(outputs["llms.txt"], /https:\/\/airscale\.mintlify\.app\/mcp\/tools\.md/);
+  assert.match(outputs["llms.txt"], /https:\/\/airscale\.mintlify\.app\/mcp\/agent-resources\.md/);
+  assert.match(outputs["llms-full.txt"], /^## Machine-readable contracts$/mu);
+  assert.match(outputs["llms-full.txt"], /https:\/\/airscale\.mintlify\.app\/mcp\/tools\.md/);
+  assert.match(outputs["llms-full.txt"], /https:\/\/airscale\.mintlify\.app\/mcp\/agent-resources\.md/);
+  assert.doesNotMatch(
+    outputs["llms-full.txt"],
+    /^Source: https:\/\/airscale\.mintlify\.app\/mcp\/(?:tools|agent-resources)\.md$/mu
+  );
   assert.match(outputs["skill.md"], /https:\/\/airscale\.mintlify\.app\/mcp\/tools\.md/);
+  assert.match(outputs["skill.md"], /https:\/\/airscale\.mintlify\.app\/mcp\/agent-resources/);
   for (const contents of Object.values(outputs)) {
+    assert.doesNotMatch(contents, /\/mcp-tools\.txt\b/i);
     assert.doesNotMatch(contents, /mcp-tools\.(?:json|txt)|\.well-known\/api-catalog/i);
   }
 });
@@ -3055,24 +3068,24 @@ test("agent renderers escape compact-index metadata and reject unsafe or incompl
   assert.throws(() => renderAgentFiles(duplicate), /duplicate navigable page/i);
 
   const missing = agentFixtureInputs();
-  delete missing.pageSources["mcp/tools"];
-  assert.throws(() => renderAgentFiles(missing), /missing navigable page source.*mcp\/tools/i);
+  delete missing.pageSources["mcp/how-to-use-the-airscale-mcp"];
+  assert.throws(() => renderAgentFiles(missing), /missing navigable page source.*mcp\/how-to-use-the-airscale-mcp/i);
 
   const unexpected = agentFixtureInputs();
-  unexpected.pageSources["private/hidden"] = unexpected.pageSources["mcp/tools"];
+  unexpected.pageSources["private/hidden"] = unexpected.pageSources["mcp/how-to-use-the-airscale-mcp"];
   assert.throws(() => renderAgentFiles(unexpected), /unexpected page source.*private\/hidden/i);
 
   const malformed = agentFixtureInputs();
-  malformed.pageSources["mcp/tools"] = "No frontmatter\n";
+  malformed.pageSources["mcp/how-to-use-the-airscale-mcp"] = "No frontmatter\n";
   assert.throws(() => renderAgentFiles(malformed), /frontmatter/i);
 
   const wrongCanonical = agentFixtureInputs();
-  wrongCanonical.pageSources["mcp/tools"] = wrongCanonical.pageSources["mcp/tools"]
-    .replace("https://airscale.mintlify.app/mcp/tools", "https://docs.airscale.io/mcp/tools");
+  wrongCanonical.pageSources["mcp/how-to-use-the-airscale-mcp"] = wrongCanonical.pageSources["mcp/how-to-use-the-airscale-mcp"]
+    .replace("https://airscale.mintlify.app/mcp/how-to-use-the-airscale-mcp", "https://docs.airscale.io/mcp/how-to-use-the-airscale-mcp");
   assert.throws(() => renderAgentFiles(wrongCanonical), /canonical.*preview/i);
 
   const retainedDomain = agentFixtureInputs();
-  retainedDomain.pageSources["mcp/tools"] += "\nRead https://docs.airscale.io/mcp for more.\n";
+  retainedDomain.pageSources["mcp/how-to-use-the-airscale-mcp"] += "\nRead https://docs.airscale.io/mcp for more.\n";
   assert.throws(() => renderAgentFiles(retainedDomain), /retained Framer domain/i);
 });
 

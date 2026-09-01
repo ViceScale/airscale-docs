@@ -36,26 +36,16 @@
 
 - [Credit count](https://airscale.mintlify.app/api-reference/credit-count.md): Check the remaining credit balance for your Airscale workspace.
 
-## MCP & Agents — Start
-
-- [Build with Airscale MCP](https://airscale.mintlify.app/mcp/airscale-mcp-server.md): Connect AI clients and agents to Airscale search, enrichment, research, and export tools.
-- [MCP tool catalog](https://airscale.mintlify.app/mcp/tools.md): Browse all 22 typed tools exposed by the Airscale MCP server.
-
-## MCP & Agents — Connect
-
-- [Connect Airscale MCP to ChatGPT](https://airscale.mintlify.app/mcp/connect-airscale-mcp-to-chatgpt.md): Connect ChatGPT to Airscale through browser OAuth and validate the connection without spending credits.
-- [Connect Airscale MCP to Claude](https://airscale.mintlify.app/mcp/connect-airscale-mcp-to-claude.md): Connect Claude clients to Airscale with hosted OAuth or a protected Claude Code authorization header.
-
-## MCP & Agents — Use
+## MCP & Agents — Getting started
 
 - [Use the Airscale MCP](https://airscale.mintlify.app/mcp/how-to-use-the-airscale-mcp.md): Follow a free-first, bounded workflow for Airscale MCP searches, enrichment, and asynchronous exports.
-
-## MCP & Agents — For agents
-
-- [Agent resources](https://airscale.mintlify.app/mcp/agent-resources.md): Find the human-readable and machine-readable Airscale references intended for AI agents.
+- [Connect Airscale MCP to ChatGPT](https://airscale.mintlify.app/mcp/connect-airscale-mcp-to-chatgpt.md): Connect ChatGPT to Airscale through browser OAuth and validate the connection without spending credits.
+- [Connect Airscale MCP to Claude](https://airscale.mintlify.app/mcp/connect-airscale-mcp-to-claude.md): Connect Claude clients to Airscale with hosted OAuth or a protected Claude Code authorization header.
+- [Build with Airscale MCP](https://airscale.mintlify.app/mcp/airscale-mcp-server.md): Connect AI clients and agents to Airscale search, enrichment, research, and export tools.
 
 ## Machine-readable contracts
 
 - [OpenAPI specification](https://airscale.mintlify.app/openapi.json): HTTP API operations, schemas, authentication, and responses.
 - [MCP tool catalog](https://airscale.mintlify.app/mcp/tools.md): Hosted Markdown with names, input schemas, credit behavior, examples, and API mappings for all 22 operational MCP tools.
+- [Agent resource directory](https://airscale.mintlify.app/mcp/agent-resources.md): Human and machine entry points for Airscale agents and documentation consumers.
 - [Agent skill](https://airscale.mintlify.app/skill.md): Capability, authentication, credit, and approval guidance for agents.

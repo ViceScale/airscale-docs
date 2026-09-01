@@ -218,6 +218,7 @@ function renderLlmsIndexModel(model) {
     "",
     `- [OpenAPI specification](${PREVIEW_ORIGIN}/openapi.json): HTTP API operations, schemas, authentication, and responses.`,
     `- [MCP tool catalog](${PREVIEW_ORIGIN}/mcp/tools.md): Hosted Markdown with names, input schemas, credit behavior, examples, and API mappings for all 22 operational MCP tools.`,
+    `- [Agent resource directory](${PREVIEW_ORIGIN}/mcp/agent-resources.md): Human and machine entry points for Airscale agents and documentation consumers.`,
     `- [Agent skill](${PREVIEW_ORIGIN}/skill.md): Capability, authentication, credit, and approval guidance for agents.`,
     ""
   );
@@ -246,6 +247,13 @@ function renderLlmsFullModel(model) {
       ""
     );
   }
+  lines.push(
+    "## Machine-readable contracts",
+    "",
+    `- [MCP tool catalog](${PREVIEW_ORIGIN}/mcp/tools.md): Hosted Markdown for all 22 operational MCP tools.`,
+    `- [Agent resource directory](${PREVIEW_ORIGIN}/mcp/agent-resources.md): Human and machine entry points for Airscale agents and documentation consumers.`,
+    ""
+  );
   return lines.join("\n");
 }
 
