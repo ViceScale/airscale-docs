@@ -433,8 +433,32 @@ test("connection guides follow distinct ChatGPT and Claude setup narratives", ()
   const chatgpt = readPage("mcp/connect-airscale-mcp-to-chatgpt");
   const claude = readPage("mcp/connect-airscale-mcp-to-claude");
   assert.equal((chatgpt.body.match(/^## Step-by-step setup$/gm) ?? []).length, 1);
+  const chatgptSetupSection = chatgpt.body.slice(
+    chatgpt.body.indexOf("## Step-by-step setup"),
+    chatgpt.body.indexOf("## Recommended first prompts")
+  );
+  assert.equal((chatgptSetupSection.match(/<Steps>/g) ?? []).length, 1);
+  assert.equal((chatgptSetupSection.match(/<\/Steps>/g) ?? []).length, 1);
+  assert.equal((chatgptSetupSection.match(/<Step\b/g) ?? []).length, 6);
   assert.equal((claude.body.match(/^## Claude Code setup$/gm) ?? []).length, 1);
   assert.doesNotMatch(claude.body, /## ChatGPT setup/);
+});
+
+test("Claude presents the first credit prompt as a free connection proof", () => {
+  const { body } = readPage("mcp/connect-airscale-mcp-to-claude");
+  const recommendedSection = body.slice(
+    body.indexOf("## Recommended first prompts"),
+    body.indexOf("## Export behavior")
+  );
+  const promptMatches = Array.from(recommendedSection.matchAll(/^>\s+(.+)$/gm));
+  assert.ok(promptMatches.length >= 2);
+  assert.match(promptMatches[0][1], /airscale_check_credits/);
+  const firstPromptEnd = promptMatches[0].index + promptMatches[0][0].length;
+  const adjacentExplanation = recommendedSection.slice(firstPromptEnd, promptMatches[1].index);
+  assert.match(
+    adjacentExplanation,
+    /free connection test[\s\S]{0,140}returned balance confirms tool discovery and workspace authentication without debiting credits/i
+  );
 });
 
 test("connection guides explain bounded prompts and the asynchronous export boundary", () => {
