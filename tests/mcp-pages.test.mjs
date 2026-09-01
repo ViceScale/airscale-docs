@@ -444,21 +444,40 @@ test("connection guides follow distinct ChatGPT and Claude setup narratives", ()
   assert.doesNotMatch(claude.body, /## ChatGPT setup/);
 });
 
-test("Claude presents the first credit prompt as a free connection proof", () => {
-  const { body } = readPage("mcp/connect-airscale-mcp-to-claude");
-  const recommendedSection = body.slice(
-    body.indexOf("## Recommended first prompts"),
-    body.indexOf("## Export behavior")
-  );
-  const promptMatches = Array.from(recommendedSection.matchAll(/^>\s+(.+)$/gm));
-  assert.ok(promptMatches.length >= 2);
-  assert.match(promptMatches[0][1], /airscale_check_credits/);
-  const firstPromptEnd = promptMatches[0].index + promptMatches[0][0].length;
-  const adjacentExplanation = recommendedSection.slice(firstPromptEnd, promptMatches[1].index);
-  assert.match(
-    adjacentExplanation,
-    /free connection test[\s\S]{0,140}returned balance confirms tool discovery and workspace authentication without debiting credits/i
-  );
+test("connection guides scope free credit proof to an unidentified Airscale workspace", () => {
+  for (const path of CONNECT_PAGE_PATHS) {
+    const { body } = readPage(path);
+    const exportHeading = path.endsWith("chatgpt")
+      ? "## Export behavior in ChatGPT"
+      : "## Export behavior";
+    const recommendedSection = body.slice(
+      body.indexOf("## Recommended first prompts"),
+      body.indexOf(exportHeading)
+    );
+    const promptMatches = Array.from(recommendedSection.matchAll(/^>\s+(.+)$/gm));
+    assert.ok(promptMatches.length >= 2);
+    assert.match(promptMatches[0][1], /airscale_check_credits/);
+    const firstPromptEnd = promptMatches[0].index + promptMatches[0][0].length;
+    const adjacentExplanation = recommendedSection.slice(firstPromptEnd, promptMatches[1].index);
+    assert.match(adjacentExplanation, /free connection test/i);
+    assert.match(
+      adjacentExplanation,
+      /returned balance confirms tool discovery and authentication to an Airscale workspace without debiting credits/i
+    );
+    assert.match(adjacentExplanation, /does not identify which workspace/i);
+    if (path.endsWith("chatgpt")) {
+      assert.match(adjacentExplanation, /verify the workspace shown during OAuth before paid actions/i);
+      const freeStep = body.match(/<Step title="Verify the connection for free">([\s\S]*?)<\/Step>/)?.[1] ?? "";
+      assert.match(freeStep, /authentication to an Airscale workspace without debiting credits/i);
+      assert.match(freeStep, /does not identify which workspace/i);
+      assert.match(freeStep, /verify the workspace shown during OAuth before paid actions/i);
+    } else {
+      assert.match(
+        adjacentExplanation,
+        /hosted users[\s\S]{0,120}OAuth-selected workspace[\s\S]{0,160}Claude Code users[\s\S]{0,140}workspace owns the configured credential[\s\S]{0,100}before paid actions/i
+      );
+    }
+  }
 });
 
 test("connection guides explain bounded prompts and the asynchronous export boundary", () => {
@@ -491,6 +510,11 @@ test("ChatGPT setup is browser OAuth only and never configures an API key", () =
   const { body } = readPage("mcp/connect-airscale-mcp-to-chatgpt");
   assert.match(body, /browser OAuth/i);
   assert.match(body, /do not paste an Airscale API key/i);
+  assert.match(
+    body,
+    /After OAuth, Airscale's MCP server resolves the authorized workspace's current credential server-side on each tool call; ChatGPT neither receives nor stores that API key\./
+  );
+  assert.doesNotMatch(body, /ChatGPT resolves/i);
   assert.doesNotMatch(body, /AIRSCALE_API_KEY|YOUR_API_KEY|Authorization\s*:\s*Bearer|API key field|header-based/i);
   assert.doesNotMatch(body, /\.mcp\.json|mcpServers|```(?:bash|json)/i);
   assert.doesNotMatch(body, /tool arguments[\s\S]{0,80}(?:api[_ -]?key|credential)/i);
@@ -517,7 +541,12 @@ test("Claude setup distinguishes hosted OAuth from Claude Code header authentica
   assert.match(body, /Claude (?:web|desktop)[\s\S]*remote OAuth/i);
   assert.match(body, /where supported/i);
   assert.match(body, /Claude Code/);
-  assert.match(body, /export AIRSCALE_API_KEY=YOUR_API_KEY/);
+  assert.doesNotMatch(body, /export AIRSCALE_API_KEY=YOUR_API_KEY|YOUR_API_KEY/);
+  assert.match(
+    body,
+    /load `AIRSCALE_API_KEY` through an OS or team secret manager or a protected runtime environment before starting Claude Code/i
+  );
+  assert.match(body, /do not (?:type|enter) a literal (?:API )?key (?:into|in) a shell command or (?:shell )?history/i);
   assert.match(body, /"Authorization": "Bearer \$\{AIRSCALE_API_KEY\}"/);
   assert.doesNotMatch(body, /"Authorization": "Bearer \$AIRSCALE_API_KEY"/);
   assert.match(body, /never[\s\S]{0,100}(?:tool argument|prompt)/i);
@@ -539,7 +568,8 @@ test("Claude Code JSON is explicitly project-scoped and includes connection veri
   assert.match(body, /project-scoped[\s\S]{0,100}`\.mcp\.json`/i);
   assert.match(body, /project root/i);
   assert.match(body, /```json Project \.mcp\.json[\s\S]*"mcpServers"/);
-  assert.match(body, /claude mcp list|`\/mcp`/);
+  assert.match(body, /claude mcp list/);
+  assert.match(body, /`\/mcp`/);
   assert.doesNotMatch(body, /user or project MCP configuration/i);
   assert.match(body, /https:\/\/code\.claude\.com\/docs\/en\/mcp/);
 });

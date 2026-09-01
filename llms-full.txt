@@ -625,7 +625,7 @@ ChatGPT web supports the full MCP flow documented here for Business and Enterpri
 
 Pro accounts can use custom apps with read/fetch permissions, but this full MCP setup requires Business or Enterprise/Edu. Check OpenAI's current [developer mode and MCP apps guide](https://help.openai.com/en/articles/12584461) if availability or labels differ.
 
-ChatGPT resolves the selected workspace credential on the Airscale server after OAuth. Do not paste an Airscale API key into ChatGPT, prompts, or tool inputs.
+After OAuth, Airscale's MCP server resolves the authorized workspace's current credential server-side on each tool call; ChatGPT neither receives nor stores that API key. Do not paste an Airscale API key into ChatGPT, prompts, or tool inputs.
 
 ## Step-by-step setup
 
@@ -646,7 +646,7 @@ ChatGPT resolves the selected workspace credential on the Airscale server after 
     Open a new chat and select the draft app from the tools menu, or mention it in your prompt. The selection applies to that message, not the entire conversation, so select or mention Airscale again when a follow-up needs another tool call.
   </Step>
   <Step title="Verify the connection for free">
-    Ask ChatGPT to use `airscale_check_credits` and no other tool. A returned balance confirms tool discovery and workspace authentication without debiting credits.
+    Ask ChatGPT to use `airscale_check_credits` and no other tool. A returned balance confirms tool discovery and authentication to an Airscale workspace without debiting credits. It does not identify which workspace; verify the workspace shown during OAuth before paid actions.
   </Step>
 </Steps>
 
@@ -655,6 +655,8 @@ ChatGPT resolves the selected workspace credential on the Airscale server after 
 The identities and domains below are synthetic.
 
 > Use `airscale_check_credits` to show my current Airscale credit balance. Do not call another tool.
+
+This is the free connection test. A returned balance confirms tool discovery and authentication to an Airscale workspace without debiting credits. It does not identify which workspace; verify the workspace shown during OAuth before paid actions.
 
 > Count people named Jordan Example who work at `northstar.example`. Do not run a paid search.
 
@@ -785,11 +787,7 @@ For Claude Team or Enterprise, an Owner or Primary Owner must add Airscale throu
 
 ## Claude Code setup
 
-Keep the credential outside the repository and make it available to the Claude Code process:
-
-```bash
-export AIRSCALE_API_KEY=YOUR_API_KEY
-```
+Load `AIRSCALE_API_KEY` through an OS or team secret manager or a protected runtime environment before starting Claude Code. Do not type a literal API key into a shell command or shell history.
 
 Create a project-scoped `.mcp.json` at the project root:
 
@@ -823,7 +821,7 @@ The identities and domains below are synthetic.
 
 > Use `airscale_check_credits` to show my current Airscale credit balance. Do not call another tool.
 
-This is the free connection test. A returned balance confirms tool discovery and workspace authentication without debiting credits.
+This is the free connection test. A returned balance confirms tool discovery and authentication to an Airscale workspace without debiting credits, but it does not identify which workspace. Hosted users must verify the OAuth-selected workspace, and Claude Code users must verify which workspace owns the configured credential before paid actions.
 
 > Use Airscale MCP to count people named Taylor Example at `northstar.example`. Do not run a paid search.
 
