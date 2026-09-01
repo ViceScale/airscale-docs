@@ -2977,7 +2977,7 @@ test("agent renderers publish only the platform-supported custom agent files", (
   assert.equal(outputs["llms-full.txt"], renderLlmsFull(inputs));
   assert.equal(outputs["skill.md"], renderSkill(inputs));
   assert.match(outputs["llms.txt"], /^## MCP & Agents — Getting started$/mu);
-  assert.match(outputs["llms.txt"], /\[Use the Airscale MCP\]\(https:\/\/airscale\.mintlify\.app\/mcp\/how-to-use-the-airscale-mcp\.md\)/);
+  assert.match(outputs["llms.txt"], /\[How to use the Airscale MCP \(\+Claude demo\)\]\(https:\/\/airscale\.mintlify\.app\/mcp\/how-to-use-the-airscale-mcp\.md\)/);
   assert.doesNotMatch(outputs["llms.txt"], /^## MCP & Agents — (?:Start|Connect|Use|For agents)$/mu);
 
   const navigationPaths = inputs.docsConfig.navigation.tabs.flatMap(({ groups }) => (

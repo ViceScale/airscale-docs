@@ -1,7 +1,6 @@
 import assert from "node:assert/strict";
 import { existsSync, readFileSync, readdirSync } from "node:fs";
 import test from "node:test";
-import Ajv from "ajv";
 import { parseDocument } from "yaml";
 import {
   assertBalancedCodeFences,
@@ -91,16 +90,6 @@ const CONNECT_PAGE_HEADINGS = [
   "Troubleshooting",
   "Next steps"
 ];
-const WORKFLOW_HEADINGS = [
-  "Verify the connection for free",
-  "Count or discover filters",
-  "Run a narrow sample",
-  "Refine the request",
-  "Review the maximum spend",
-  "Start the export",
-  "Poll status",
-  "Retrieve the file"
-];
 const SYNTHETIC_FULL_NAMES = new Set(["Jordan Example", "Taylor Example"]);
 
 function readPage(path) {
@@ -122,11 +111,6 @@ function documentedExamples(source) {
     ([, content]) => ({ content, kind: "prompt" })
   );
   return [...fenced, ...prompts];
-}
-
-function documentedToolCalls(source) {
-  return Array.from(source.matchAll(/^```json\n([\s\S]*?)^```/gm), ([, content]) => JSON.parse(content))
-    .filter((value) => value && typeof value === "object" && "tool" in value);
 }
 
 function identityValues(value) {
@@ -390,7 +374,7 @@ test("route shells introduce their subject without claiming unfinished walkthrou
   const expectations = new Map([
     ["mcp/connect-airscale-mcp-to-chatgpt", /ChatGPT[\s\S]*OAuth/i],
     ["mcp/connect-airscale-mcp-to-claude", /Claude[\s\S]*(?:OAuth|header)/i],
-    ["mcp/how-to-use-the-airscale-mcp", /free[\s\S]*credit[\s\S]*(?:sample|workflow)/i],
+    ["mcp/how-to-use-the-airscale-mcp", /prospect[\s\S]*Claude[\s\S]*ChatGPT/i],
     ["mcp/agent-resources", /agent[\s\S]*(?:machine-readable|tool catalog)/i]
   ]);
 
@@ -475,56 +459,60 @@ test("Claude Code JSON is explicitly project-scoped and includes connection veri
   assert.match(body, /https:\/\/code\.claude\.com\/docs\/en\/mcp/);
 });
 
-test("workflow teaches the bounded asynchronous export lifecycle in order", () => {
+test("MCP entry page mirrors the AirSchool Claude-demo narrative", () => {
   const path = "mcp/how-to-use-the-airscale-mcp";
-  const { body } = readPage(path);
-  assertOrdered(body, WORKFLOW_HEADINGS.map((heading) => `## ${heading}`), path);
-  assert.match(body, /illustrative[\s\S]{0,80}(?:do not execute|non-executing)/i);
-  assert.match(body, /airscale_check_credits/);
-  assert.match(body, /airscale_count_find_people|airscale_find_companies_filter_values/);
-  assert.match(body, /"max_rows":\s*(?:[1-9]|1\d|20)\b/);
-  assert.match(body, /Airsearch costs 2 credits per call/);
-  assert.match(body, /managed contact enrichment[\s\S]{0,100}work-email-only/i);
-  assert.match(body, /"confirm_credit_spend":\s*true/);
-  assert.match(body, /airscale_start_(?:people|companies|contact_enrichment)_export/);
-  assert.match(body, /airscale_get_export_status/);
-  assert.match(body, /poll_after_seconds/);
-  assert.match(body, /returned[\s\S]{0,80}poll_after_seconds|poll_after_seconds[\s\S]{0,80}returned/i);
-  assert.match(body, /airscale_get_export_file/);
+  const { body, frontmatter } = readPage(path);
+  assert.deepEqual(frontmatter, {
+    title: "How to use the Airscale MCP (+Claude demo)",
+    sidebarTitle: "How to use the Airscale MCP (+Claude demo)",
+    description: "Prospect through conversation with Airscale search, enrichment, and export tools.",
+    canonical: "https://airscale.mintlify.app/mcp/how-to-use-the-airscale-mcp"
+  });
+  assert.match(body, /<Frame>\s*<iframe\s+className="w-full aspect-video rounded-xl"\s+src="https:\/\/www\.youtube\.com\/embed\/t4coJ0P8YVM"\s+title="How to prospect with Airscale MCP in Claude"[\s\S]*?allowFullScreen\s*\/>\s*<\/Frame>/);
+  assert.deepEqual(
+    Array.from(body.matchAll(/^(#{2,3})\s+(.+)$/gm), ([, level, heading]) => `${level} ${heading}`),
+    [
+      "## What is the Airscale MCP?",
+      "## How credits work",
+      "## Run a search in natural language",
+      "### Review your results",
+      "### Enrich contacts through conversation",
+      "## Export your final list",
+      "## Get started"
+    ]
+  );
+  const capabilitySection = body.slice(
+    body.indexOf("## What is the Airscale MCP?"),
+    body.indexOf("## How credits work")
+  );
+  assert.equal((capabilitySection.match(/^- /gm) ?? []).length, 6);
+  assert.match(body, /22 typed tools/);
   assert.match(body, /\[MCP tool catalog\]\(\/mcp\/tools\)/);
-});
-
-test("workflow does not claim credit balance identifies workspace and totals cumulative spend", () => {
-  const { body } = readPage("mcp/how-to-use-the-airscale-mcp");
-  assert.doesNotMatch(body, /returned workspace/i);
-  assert.match(body, /workspace[\s\S]{0,100}(?:selected|chosen)[\s\S]{0,100}(?:OAuth|configuration)/i);
-  assert.match(body, /balance[\s\S]{0,120}proves authentication[\s\S]{0,120}does not identify the workspace/i);
-  assert.match(body, /additional export[\s\S]{0,80}(?:at most|maximum|bound)[\s\S]{0,40}2 credits/i);
-  assert.match(body, /cumulative[\s\S]{0,80}(?:at most|maximum|bound)[\s\S]{0,40}2\.5 credits/i);
-});
-
-test("every illustrative workflow call uses a pinned tool and schema-valid arguments", () => {
-  const { body } = readPage("mcp/how-to-use-the-airscale-mcp");
-  const calls = documentedToolCalls(body);
-  assert.deepEqual(calls.map(({ tool }) => tool), [
-    "airscale_count_find_people",
-    "airscale_find_people",
-    "airscale_start_people_export",
-    "airscale_get_export_status",
-    "airscale_get_export_file"
-  ]);
-
-  const ajv = new Ajv({ allErrors: true, strict: false });
-  for (const { tool: name, arguments: argumentsValue } of calls) {
-    const tool = MCP_TOOLS.get(name);
-    assert.ok(tool, `${name} must exist in the pinned MCP contract`);
-    const validate = ajv.compile(tool.inputSchema);
-    assert.equal(
-      validate(argumentsValue),
-      true,
-      `${name} example arguments must match the pinned schema: ${ajv.errorsText(validate.errors)}`
-    );
+  assert.match(body, /Find People costs 0\.1 credit per returned person/);
+  assert.match(body, /Find Companies costs 0\.1 credit per returned company/);
+  assert.match(body, /Airsearch costs 2 credits per call/);
+  assert.match(body, /free planning tools/i);
+  assert.match(body, /paid export[\s\S]{0,180}filters[\s\S]{0,120}row limit[\s\S]{0,120}maximum spend[\s\S]{0,120}(?:explicitly confirm|confirmation)/i);
+  assert.match(body, /> Find up to five cybersecurity companies in France with 51–200 employees\.[^\n]*proposed tool[^\n]*maximum cost[^\n]*wait for my approval\./i);
+  assert.match(body, /name[\s\S]{0,100}domain[\s\S]{0,100}website[\s\S]{0,100}country[\s\S]{0,140}filter precision/i);
+  assert.match(body, /five-company sample[\s\S]{0,80}(?:at most|maximum)[\s\S]{0,40}0\.5 credits/i);
+  assert.match(body, /> For the approved companies,[^\n]*CEO[^\n]*CFO[^\n]*Head of Growth[^\n]*proposed paid action[^\n]*wait for my approval\./i);
+  assert.match(body, /asynchronous[\s\S]{0,160}start[\s\S]{0,120}status[\s\S]{0,120}(?:file|download)/i);
+  assert.match(body, /same `export_id`/);
+  assert.match(body, /poll_after_seconds/);
+  assert.match(body, /do not (?:start|create)[^\n.]*duplicate[^\n.]*(?:queued|running)/i);
+  for (const route of [
+    "/mcp/connect-airscale-mcp-to-chatgpt",
+    "/mcp/connect-airscale-mcp-to-claude",
+    "/mcp/airscale-mcp-server"
+  ]) {
+    assert.match(body, new RegExp(`\\(${route}\\)`));
   }
+  assert.match(MCP_TOOLS.get("airscale_find_people").description, /Costs 0\.1 credits per returned lead/);
+  assert.match(MCP_TOOLS.get("airscale_find_companies").description, /Costs 0\.1 credits per returned company/);
+  assert.match(MCP_TOOLS.get("airscale_airsearch").description, /Costs 2 credits per call/);
+  assert.doesNotMatch(body, /^## (?:Start the export|Poll status|Retrieve the file)$/m);
+  assert.doesNotMatch(body, /```json|"tool"\s*:/i);
   assert.doesNotMatch(body, /["']api_key["']/i);
 });
 

@@ -1,140 +1,72 @@
 ---
-title: "Use the Airscale MCP"
-description: "Follow a free-first, bounded workflow for Airscale MCP searches, enrichment, and asynchronous exports."
+title: "How to use the Airscale MCP (+Claude demo)"
+sidebarTitle: "How to use the Airscale MCP (+Claude demo)"
+description: "Prospect through conversation with Airscale search, enrichment, and export tools."
 canonical: "https://airscale.mintlify.app/mcp/how-to-use-the-airscale-mcp"
 ---
 
-Use this sequence when an AI client can call Airscale MCP on your behalf. It turns a broad request into a bounded sample, makes the maximum possible charge visible, and prevents duplicate asynchronous jobs.
+Prospect without leaving your AI chat. Airscale connects Claude, ChatGPT, and other compatible assistants to search, enrichment, research, and export tools, so you can build a list through natural-language conversation.
 
-<Warning>
-  Every prompt and tool payload below is illustrative and non-executing. Do not execute it against a live workspace without reviewing the current [MCP tool catalog](/mcp/tools), available credits, filters, and approval scope. All identities and domains are synthetic.
-</Warning>
+<Frame>
+  <iframe
+    className="w-full aspect-video rounded-xl"
+    src="https://www.youtube.com/embed/t4coJ0P8YVM"
+    title="How to prospect with Airscale MCP in Claude"
+    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+    referrerPolicy="strict-origin-when-cross-origin"
+    allowFullScreen
+  />
+</Frame>
 
-## Verify the connection for free
+## What is the Airscale MCP?
 
-Begin with the free workspace balance tool and prohibit fallback calls:
+The Airscale MCP gives your assistant 22 typed tools that can:
 
-> Use `airscale_check_credits` to show my current credit balance. Do not call another tool.
+- Check your workspace credit balance.
+- Search for people and companies.
+- Discover valid Find Companies filters before searching.
+- Enrich contact details and person or company profiles.
+- Run Airsearch for structured web research.
+- Create downloadable CSV or JSONL exports.
 
-The workspace is selected during browser OAuth or by the credential in a header-based client configuration. A returned balance proves authentication and shows available credits, but it does not identify the workspace. Verify the workspace selection in the client or Airscale before any paid operation.
+See the [MCP tool catalog](/mcp/tools) for every tool and its inputs.
 
-## Count or discover filters
+## How credits work
 
-Use a free planning tool before a paid search when one applies:
+Find People costs 0.1 credit per returned person. Find Companies costs 0.1 credit per returned company. Airsearch costs 2 credits per call.
 
-- `airscale_count_find_people` checks the size of a people cohort.
-- `airscale_find_companies_filter_values` discovers valid city, region, industry, topic, or technology values.
+Credit checks, people counts, and Find Companies filter discovery are free planning tools. Other enrichment follows linked API pricing in the related references for [contact data](/api-reference/email-finder), [people profiles](/api-reference/extract-people-profile), and [company profiles](/api-reference/extract-company-profile).
 
-An illustrative people count for synthetic data:
+Before a paid export starts, review the final filters, row limit, and maximum spend, then explicitly confirm that paid action. No paid search, enrichment, or export should run before your approval.
 
-```json
-{
-  "tool": "airscale_count_find_people",
-  "arguments": {
-    "query": {
-      "firstname": { "include": ["Jordan"] },
-      "lastname": { "include": ["Example"] },
-      "companyDomain": { "include": ["northstar.example"] }
-    }
-  }
-}
-```
+## Run a search in natural language
 
-Counting does not reserve results or guarantee that a later search returns the same total. It gives you a denominator for choosing the next scope.
+Describe the cohort and keep the first result small:
 
-## Run a narrow sample
+> Find up to five cybersecurity companies in France with 51–200 employees. Before you run it, show me the proposed tool, filters, row limit, and maximum cost, then wait for my approval.
 
-Request only enough rows to validate filter precision and result shape. This illustrative sample can return at most five people:
+Your assistant can use a free filter-discovery tool first when a value needs validation. Approve only the bounded search you reviewed.
 
-```json
-{
-  "tool": "airscale_find_people",
-  "arguments": {
-    "query": {
-      "companyDomain": { "include": ["northstar.example"] },
-      "JobTitle": { "include": ["Example Operations Director"] }
-    },
-    "size": 5
-  }
-}
-```
+### Review your results
 
-`airscale_find_people` charges 0.1 credits per returned lead. A five-row limit bounds this sample to at most 0.5 credits.
+Review the company name, domain, website, country, and filter precision before expanding the search. At 0.1 credit per returned company, a five-company sample costs at most 0.5 credits.
 
-## Refine the request
+### Enrich contacts through conversation
 
-Inspect the sample before increasing scope:
+Continue from only the companies you approved:
 
-- Are the titles, locations, and company filters represented as intended?
-- Are exclusions needed to remove obvious false positives?
-- Do you need every returned field, or can the export be narrower?
-- Is the requested output a chat-sized sample or a downloadable file?
+> For the approved companies, find and enrich at most one CEO, one CFO, and one Head of Growth per company. Show me the proposed paid action, row limit, and maximum cost, then wait for my approval.
 
-Change one condition at a time and repeat the smallest useful sample. For managed contact enrichment, the current phase is work-email-only; prepare a batch rather than repeatedly invoking single-contact lookup tools for more than 20 rows.
+Review the requested fields and linked pricing before approving enrichment. Keep each follow-up bounded, and do not add unapproved companies to the request.
 
-## Review the maximum spend
+## Export your final list
 
-Read the tool's credit summary and calculate the upper bound from the final row limit before approval. For this example, the 20-row people export has an additional export bound of at most 2 credits at 0.1 credits per exported lead. The actual export charge can be lower when fewer rows are returned.
+Exports are asynchronous: start one export, check its status, then retrieve the file after completion. Save the returned `export_id` and reuse the same `export_id` for status and file requests.
 
-The earlier five-person sample can cost up to 0.5 credits, so the illustrated workflow has a cumulative bound of at most 2.5 credits: 0.5 for the sample plus an additional 2 for the export. Repeating samples or starting another job would increase that bound.
+Follow the `poll_after_seconds` interval returned by each status response. Do not start a duplicate export while the existing job is queued or running.
 
-People and company exports support up to 10,000 rows, but that ceiling is not a recommended default. Airsearch costs 2 credits per call. Managed contact enrichment can cost up to 2 credits per contact and remains work-email-only in the current phase.
+## Get started
 
-<Note>
-  Ask the client to repeat the final filters, `max_rows`, format, requested fields, and maximum possible credits. Approval applies only to that reviewed payload.
-</Note>
-
-## Start the export
-
-Only after approval, start one asynchronous job with explicit confirmation. This illustrative payload keeps the same synthetic filter and caps the export at 20 rows:
-
-```json
-{
-  "tool": "airscale_start_people_export",
-  "arguments": {
-    "query": {
-      "companyDomain": { "include": ["northstar.example"] },
-      "JobTitle": { "include": ["Example Operations Director"] }
-    },
-    "max_rows": 20,
-    "format": "csv",
-    "confirm_credit_spend": true
-  }
-}
-```
-
-Save the returned `export_id`. A successful start means the job was accepted, not that the file is complete. Do not submit the start payload again while this job is queued or running.
-
-## Poll status
-
-Poll the existing job with the identifier returned by the start tool:
-
-```json
-{
-  "tool": "airscale_get_export_status",
-  "arguments": {
-    "export_id": "exp_example_01"
-  }
-}
-```
-
-Use the `poll_after_seconds` value returned by each status response before the next poll. Keep the same `export_id`; do not infer a fixed interval and do not start a replacement job because a large export remains queued briefly.
-
-Continue until the status is terminal. If it fails, report the status and message before deciding whether a new paid job is appropriate.
-
-## Retrieve the file
-
-After status reports completion, ask for the generated resource:
-
-```json
-{
-  "tool": "airscale_get_export_file",
-  "arguments": {
-    "export_id": "exp_example_01"
-  }
-}
-```
-
-The file tool returns a download URL or MCP resource link rather than placing thousands of rows into the conversation. Store the file according to your organization's access, retention, and deletion rules.
-
-For exact tool inputs, result behavior, and credit treatment, use the [MCP tool catalog](/mcp/tools). For client setup, see [Connect ChatGPT](/mcp/connect-airscale-mcp-to-chatgpt) or [Connect Claude](/mcp/connect-airscale-mcp-to-claude).
+- [Connect Airscale MCP to ChatGPT](/mcp/connect-airscale-mcp-to-chatgpt)
+- [Connect Airscale MCP to Claude](/mcp/connect-airscale-mcp-to-claude)
+- [Read the Airscale MCP server reference](/mcp/airscale-mcp-server)
