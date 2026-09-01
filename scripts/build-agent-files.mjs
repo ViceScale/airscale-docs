@@ -274,7 +274,7 @@ Use Airscale to search for people and companies, enrich professional contact dat
 
 - Use the HTTP API when application code needs direct request and response control. Start at ${PREVIEW_ORIGIN}/api-reference/api-overview.
 - Use the authenticated Airscale MCP product server at ${OPERATIONAL_MCP_URL} when an MCP client should call Airscale tools. Some tools spend workspace credits.
-- Use the read-only documentation MCP at ${PREVIEW_ORIGIN}/mcp only to search and retrieve documentation. It does not execute Airscale product tools or consume Airscale credits.
+- Use the documentation-scoped MCP at ${PREVIEW_ORIGIN}/mcp only for documentation. Its search and filesystem tools are read-only; submit_feedback can send documentation feedback. It does not execute Airscale product tools or consume Airscale credits.
 
 ## Authentication boundaries
 
@@ -293,7 +293,7 @@ Prefer browser OAuth in supported remote MCP clients. Header-capable local clien
 3. Run a narrow synthetic or user-approved sample and review the result shape.
 4. Refine filters and calculate the maximum additional spend.
 5. Ask for explicit user confirmation before starting a paid export.
-6. Poll an asynchronous export using the server-provided poll_after_seconds value, then retrieve the file only after completion.
+6. While an asynchronous export is queued or running, poll using the server-provided poll_after_seconds value. Stop polling when it completes or fails, and retrieve the file only after completion.
 
 ## Credit and approval rules
 
@@ -309,6 +309,8 @@ Prefer browser OAuth in supported remote MCP clients. Header-capable local clien
 - HTTP API reference: ${PREVIEW_ORIGIN}/api-reference/api-overview
 - OpenAPI specification: ${PREVIEW_ORIGIN}/openapi.json
 - Agent resource directory: ${PREVIEW_ORIGIN}/mcp/agent-resources
+
+For the documentation MCP filesystem, run tree / -L 2 before reading files. Actual paths include /api-reference/api-overview.mdx and /mcp/airscale-mcp-server.mdx; generic example paths shown by a client may not exist. If an MCP-rendered API page shows repeated or conflicting request fields, trust the endpoint prose or ${PREVIEW_ORIGIN}/openapi.json.
 `;
 }
 

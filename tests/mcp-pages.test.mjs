@@ -318,6 +318,7 @@ test("server page is the final concise AirSchool reference", () => {
   const airsearch = requireMcpTool("airscale_airsearch");
   const peopleExport = requireMcpTool("airscale_start_people_export");
   const companiesExport = requireMcpTool("airscale_start_companies_export");
+  const createContactBatch = requireMcpTool("airscale_create_contact_enrichment_batch");
   const addContactsToBatch = requireMcpTool("airscale_add_contacts_to_enrichment_batch");
   const contactExport = requireMcpTool("airscale_start_contact_enrichment_export");
   const exportStatus = requireMcpTool("airscale_get_export_status");
@@ -499,6 +500,8 @@ test("server page is the final concise AirSchool reference", () => {
   assertOrdered(sharedExportLifecycle, ["confirmed start", "status", "file"], "mcp/airscale-mcp-server shared export lifecycle");
   assert.match(sharedExportLifecycle, /same `export_id`/);
   assert.match(sharedExportLifecycle, /poll_after_seconds/);
+  assert.match(sharedExportLifecycle, /(?:queued|running)[\s\S]{0,160}poll_after_seconds/i);
+  assert.match(sharedExportLifecycle, /(?:completed|failed)[\s\S]{0,160}stop polling/i);
   assert.match(sharedExportLifecycle, /do not (?:start|create)[^\n.]*duplicate[^\n.]*(?:queued|running|export)/i);
 
   const creditsSection = body.slice(
@@ -542,6 +545,7 @@ test("server page is the final concise AirSchool reference", () => {
     workflowSection.indexOf("### Finish either export")
   );
   assertOrdered(contactWorkflowSection, [
+    `\`${createContactBatch.name}\``,
     `\`${addContactsToBatch.name}\``,
     "appendable",
     "approved contact count",
@@ -911,6 +915,9 @@ test("MCP entry page mirrors the AirSchool Claude-demo narrative", () => {
   assert.match(body, /asynchronous[\s\S]{0,160}start[\s\S]{0,120}status[\s\S]{0,120}(?:file|download)/i);
   assert.match(body, /same `export_id`/);
   assert.match(body, /poll_after_seconds/);
+  assert.match(body, /(?:queued|running)[\s\S]{0,160}poll_after_seconds/i);
+  assert.match(body, /(?:completed|failed)[\s\S]{0,160}stop polling/i);
+  assert.doesNotMatch(body, /poll_after_seconds interval returned by each status response/i);
   assert.match(body, /do not (?:start|create)[^\n.]*duplicate[^\n.]*(?:queued|running)/i);
   for (const route of [
     "/mcp/connect-airscale-mcp-to-chatgpt",
@@ -1005,9 +1012,12 @@ test("agent resources distinguish the operational product server from the docume
   assert.match(operationalCard, /authenticated product server/i);
   assert.match(operationalCard, /https:\/\/mcp\.airscale\.io\/mcp/);
   assert.match(operationalCard, /spend Airscale credits/i);
-  assert.match(documentationCard, /read-only documentation/i);
+  assert.match(documentationCard, /documentation-scoped/i);
   assert.match(documentationCard, /https:\/\/airscale\.mintlify\.app\/mcp/);
   assert.match(documentationCard, /does not execute Airscale product tools/i);
+  assert.match(documentationCard, /search and filesystem tools are read-only/i);
+  assert.match(documentationCard, /submit_feedback[\s\S]{0,120}(?:send|submit)[\s\S]{0,80}documentation feedback/i);
+  assert.doesNotMatch(documentationCard, /entire(?:ly)? read-only|read-only documentation (?:surface|server)/i);
   const serverTitle = readPage("mcp/airscale-mcp-server").frontmatter.title;
   assert.match(body, new RegExp(`\\[${escapeRegExp(serverTitle)}\\]\\(\\/mcp\\/airscale-mcp-server\\)`));
 
@@ -1019,12 +1029,11 @@ test("agent resources distinguish the operational product server from the docume
     "https://airscale.mintlify.app/mcp/agent-resources.md",
     "https://airscale.mintlify.app/skill.md",
     "https://airscale.mintlify.app/.well-known/agent-skills/index.json",
-    "https://airscale.mintlify.app/.well-known/mcp/server-card.json",
     "https://airscale.mintlify.app/.well-known/agent-card.json"
   ];
   assertOrdered(body, ["## Machine-readable resources", ...resourcePaths, "## Connect the documentation MCP"], path);
   assert.match(body, /Accept: text\/markdown/);
-  assert.match(body, /Documentation MCP server card[\s\S]{0,220}Mintlify automatically serves/i);
+  assert.doesNotMatch(body, /\.well-known\/mcp\/server-card\.json|Documentation MCP server card/i);
   assert.match(body, /Operational tool schemas[\s\S]{0,260}tools\/list/i);
   assert.match(body, /MCP tool catalog[\s\S]{0,260}text\/markdown/i);
   assert.match(body, /Agent discovery[\s\S]{0,280}Mintlify automatically generates/i);
@@ -1035,6 +1044,11 @@ test("agent resources distinguish the operational product server from the docume
   assert.match(connectionSection, /https:\/\/airscale\.mintlify\.app\/mcp/);
   assert.match(connectionSection, /Claude Code/);
   assert.match(connectionSection, /Codex/);
+  assert.match(connectionSection, /tree \/ -L 2/);
+  assert.match(connectionSection, /\/api-reference\/api-overview\.mdx/);
+  assert.match(connectionSection, /\/mcp\/airscale-mcp-server\.mdx/);
+  assert.match(connectionSection, /generic example paths[\s\S]{0,160}(?:may not exist|not exist)/i);
+  assert.match(connectionSection, /repeated or conflicting request fields[\s\S]{0,200}(?:endpoint prose|openapi\.json)/i);
   assert.doesNotMatch(connectionSection, /https:\/\/mcp\.airscale\.io\/mcp/);
   assert.doesNotMatch(connectionSection, /AIRSCALE_API_KEY|YOUR_API_KEY|Authorization\s*:\s*Bearer/i);
 });
