@@ -747,20 +747,36 @@ test("ChatGPT setup is browser OAuth only and never configures an API key", () =
   assert.doesNotMatch(body, /tool arguments[\s\S]{0,80}(?:api[_ -]?key|credential)/i);
 });
 
-test("ChatGPT setup follows current full-MCP plan, role, draft, and per-message rules", () => {
+test("ChatGPT setup follows the current official developer-mode connection flow", () => {
   const { body } = readPage("mcp/connect-airscale-mcp-to-chatgpt");
-  assert.match(body, /ChatGPT web[\s\S]*Business[\s\S]*Enterprise\/Edu[\s\S]*full MCP/i);
-  assert.match(body, /Business[\s\S]{0,160}(?:admin|owner)[\s\S]{0,120}(?:create|creation)/i);
-  assert.match(body, /Enterprise\/Edu[\s\S]{0,180}RBAC[\s\S]{0,180}authorized developer/i);
-  assertOrdered(body, [
-    "Select **OAuth**",
-    "**Scan Tools**",
-    "complete the Airscale OAuth flow",
-    "**Create**",
-    "draft app"
-  ], "mcp/connect-airscale-mcp-to-chatgpt");
-  assert.match(body, /selection applies[\s\S]{0,100}(?:message|one message)[\s\S]{0,100}not[\s\S]{0,60}(?:conversation|entire conversation)/i);
-  assert.match(body, /https:\/\/help\.openai\.com\/en\/articles\/12584461/);
+  const setupSection = body.slice(
+    body.indexOf("## Step-by-step setup"),
+    body.indexOf("## Recommended first prompts")
+  );
+  assertOrdered(setupSection, [
+    "**Settings → Security and login**",
+    "**Developer mode**",
+    "account and workspace policy",
+    "**ChatGPT Plugins**",
+    "plus button",
+    "user-facing name and description",
+    "**Connection**",
+    "public endpoint",
+    "`https://mcp.airscale.io/mcp`",
+    "including the `/mcp` path",
+    "Create the connection",
+    "browser OAuth",
+    "Review the tools and metadata",
+    "Start a new conversation",
+    "tools menu",
+    "`airscale_check_credits`",
+    "verify the workspace"
+  ], "mcp/connect-airscale-mcp-to-chatgpt current official flow");
+  assert.match(body, /https:\/\/developers\.openai\.com\/plugins\/deploy\/connect-chatgpt/);
+  assert.doesNotMatch(
+    body,
+    /Workspace settings|Apps → Create|Scan Tools|draft app|draft-app|selection applies[\s\S]{0,100}(?:message|one message)/i
+  );
 });
 
 test("Claude setup distinguishes hosted OAuth from Claude Code header authentication", () => {
@@ -992,6 +1008,8 @@ test("agent resources distinguish the operational product server from the docume
   assert.match(documentationCard, /read-only documentation/i);
   assert.match(documentationCard, /https:\/\/airscale\.mintlify\.app\/mcp/);
   assert.match(documentationCard, /does not execute Airscale product tools/i);
+  const serverTitle = readPage("mcp/airscale-mcp-server").frontmatter.title;
+  assert.match(body, new RegExp(`\\[${escapeRegExp(serverTitle)}\\]\\(\\/mcp\\/airscale-mcp-server\\)`));
 
   const resourcePaths = [
     "https://airscale.mintlify.app/openapi.json",
