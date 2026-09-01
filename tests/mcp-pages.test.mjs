@@ -318,6 +318,7 @@ test("server page is the final concise AirSchool reference", () => {
   const airsearch = requireMcpTool("airscale_airsearch");
   const peopleExport = requireMcpTool("airscale_start_people_export");
   const companiesExport = requireMcpTool("airscale_start_companies_export");
+  const addContactsToBatch = requireMcpTool("airscale_add_contacts_to_enrichment_batch");
   const contactExport = requireMcpTool("airscale_start_contact_enrichment_export");
   const exportStatus = requireMcpTool("airscale_get_export_status");
   const exportFile = requireMcpTool("airscale_get_export_file");
@@ -326,6 +327,8 @@ test("server page is the final concise AirSchool reference", () => {
   const peopleScopeField = Object.hasOwn(peopleExport.inputSchema.properties, "query") ? "query" : null;
   const companiesScopeField = Object.hasOwn(companiesExport.inputSchema.properties, "filters") ? "filters" : null;
   const batchIdField = contactExport.inputSchema.required?.[0];
+  const appendBatchIdField = addContactsToBatch.inputSchema.required?.[0];
+  const appendContactsField = addContactsToBatch.inputSchema.required?.[1];
   const workEmailEnrichment = contactExport.inputSchema.properties.enrichments?.items?.const;
   const confirmationFields = new Set(allExportStarts.map(({ spend }) => spend.confirmationField));
   const [confirmationField] = confirmationFields;
@@ -339,6 +342,8 @@ test("server page is the final concise AirSchool reference", () => {
   assert.equal(peopleScopeField, "query");
   assert.equal(companiesScopeField, "filters");
   assert.equal(batchIdField, "batch_id");
+  assert.equal(appendBatchIdField, batchIdField);
+  assert.equal(appendContactsField, "contacts");
   assert.equal(workEmailEnrichment, "work_email");
   assert.equal(confirmationFields.size, 1);
   assert.ok(confirmationField);
@@ -349,6 +354,9 @@ test("server page is the final concise AirSchool reference", () => {
   assert.equal(contactExport.inputSchema.properties.query, undefined);
   assert.equal(contactExport.inputSchema.properties.filters, undefined);
   assert.ok(freshExports.every(({ inputSchema }) => inputSchema.properties.max_rows));
+  assert.equal(addContactsToBatch.spend.kind, "free");
+  assert.equal(contactExport.inputSchema.properties[confirmationField].type, "boolean");
+  assert.equal(contactExport.inputSchema.required.includes(confirmationField), false);
   assert.equal(exportStatus.spend.kind, "free");
   assert.equal(exportFile.spend.kind, "free");
 
@@ -466,7 +474,9 @@ test("server page is the final concise AirSchool reference", () => {
   assert.match(peopleCompanyExportSection, new RegExp(`up to ${escapeRegExp(peopleExportRate)} credits? per exported row`, "i"));
   assert.match(peopleCompanyExportSection, new RegExp(`\`${escapeRegExp(confirmationField)}\``));
 
-  assert.match(contactExportSection, new RegExp(`frozen \`${escapeRegExp(batchIdField)}\``, "i"));
+  assert.match(contactExportSection, new RegExp(`\`${escapeRegExp(batchIdField)}\``));
+  assert.match(contactExportSection, new RegExp(`\`${escapeRegExp(addContactsToBatch.name)}\``));
+  assert.match(contactExportSection, /appendable[\s\S]{0,100}(?:before|until)[\s\S]{0,80}confirmed start/i);
   assert.match(contactExportSection, /approved contact count/i);
   assert.match(contactExportSection, new RegExp(`\`${escapeRegExp(workEmailEnrichment)}\`[\\s\\S]{0,80}(?:only|sole)`, "i"));
   assert.match(contactExportSection, /fields[\s\S]{0,100}format/i);
@@ -476,9 +486,17 @@ test("server page is the final concise AirSchool reference", () => {
   );
   assert.match(contactExportSection, /additional[\s\S]{0,140}cumulative/i);
   assert.match(contactExportSection, new RegExp(`\`${escapeRegExp(confirmationField)}\``));
+  assert.match(contactExportSection, /after[\s\S]{0,100}review[\s\S]{0,120}do not add (?:more )?contacts/i);
+  assert.match(contactExportSection, new RegExp(`\`${escapeRegExp(contactExport.name)}\``));
+  assert.match(
+    contactExportSection,
+    new RegExp(`\`${escapeRegExp(confirmationField)}\`[\\s\\S]{0,100}(?:false|omitted)[\\s\\S]{0,140}current maximum[\\s\\S]{0,120}review again`, "i")
+  );
+  assert.match(contactExportSection, /only[\s\S]{0,100}confirmed start[\s\S]{0,100}creates[\s\S]{0,80}(?:export )?job[\s\S]{0,100}freezes the batch/i);
+  assert.doesNotMatch(contactExportSection, /starts from a frozen|keep the frozen|frozen `batch_id`/i);
   assert.doesNotMatch(contactExportSection, /`(?:filters|query|max_rows)`|search filters|caller-supplied row limit/i);
 
-  assertOrdered(sharedExportLifecycle, ["start", "status", "file"], "mcp/airscale-mcp-server shared export lifecycle");
+  assertOrdered(sharedExportLifecycle, ["confirmed start", "status", "file"], "mcp/airscale-mcp-server shared export lifecycle");
   assert.match(sharedExportLifecycle, /same `export_id`/);
   assert.match(sharedExportLifecycle, /poll_after_seconds/);
   assert.match(sharedExportLifecycle, /do not (?:start|create)[^\n.]*duplicate[^\n.]*(?:queued|running|export)/i);
@@ -524,18 +542,33 @@ test("server page is the final concise AirSchool reference", () => {
     workflowSection.indexOf("### Finish either export")
   );
   assertOrdered(contactWorkflowSection, [
-    `frozen \`${batchIdField}\``,
+    `\`${addContactsToBatch.name}\``,
+    "appendable",
     "approved contact count",
     `\`${workEmailEnrichment}\``,
     "fields and format",
     "additional maximum",
-    "cumulative workflow maximum"
+    "cumulative workflow maximum",
+    "do not add more contacts",
+    `\`${contactExport.name}\``,
+    `\`${confirmationField}\``,
+    "current maximum",
+    "review again",
+    "creates the export job",
+    "freezes the batch"
   ], "mcp/airscale-mcp-server managed contact workflow");
   assert.match(
     contactWorkflowSection,
     new RegExp(`approved contact count[\\s\\S]{0,160}up to ${escapeRegExp(contactExportRate)} credits? per contact`, "i")
   );
   assert.match(contactWorkflowSection, new RegExp(`\`${escapeRegExp(confirmationField)}\``));
+  assert.match(contactWorkflowSection, /appendable[\s\S]{0,100}(?:before|until)[\s\S]{0,80}confirmed start/i);
+  assert.match(
+    contactWorkflowSection,
+    new RegExp(`\`${escapeRegExp(confirmationField)}\`[\\s\\S]{0,100}(?:false|omitted)[\\s\\S]{0,140}current maximum`, "i")
+  );
+  assert.match(contactWorkflowSection, /only[\s\S]{0,100}confirmed start[\s\S]{0,100}creates the export job[\s\S]{0,100}freezes the batch/i);
+  assert.doesNotMatch(contactWorkflowSection, /starts from a frozen|keep the frozen|frozen `batch_id`/i);
   assert.doesNotMatch(contactWorkflowSection, /`(?:filters|query|max_rows)`|caller-supplied row limit/i);
   assert.match(workflowSection, /poll[\s\S]{0,120}(?:status|file)[\s\S]{0,120}(?:same `export_id`|same export job)/i);
 
