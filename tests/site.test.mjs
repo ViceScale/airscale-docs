@@ -74,10 +74,12 @@ function assertSafeSvgSource(source, path) {
 }
 
 const DASHBOARD_SELECTOR = '#navbar a[href="https://app.airscale.io/dashboard"]';
+const DASHBOARD_OVERLAY_SELECTOR = `${DASHBOARD_SELECTOR} > span.absolute.inset-0`;
 const APPROVED_DASHBOARD_SELECTORS = [
   DASHBOARD_SELECTOR,
   `${DASHBOARD_SELECTOR}:hover`,
   `${DASHBOARD_SELECTOR} :is(span, svg)`,
+  DASHBOARD_OVERLAY_SELECTOR,
   `html.dark ${DASHBOARD_SELECTOR}`,
   `html.dark ${DASHBOARD_SELECTOR}:hover`
 ];
@@ -142,7 +144,7 @@ function assertDashboardCssContract(source) {
   for (const selector of APPROVED_DASHBOARD_SELECTORS) {
     assert.equal(rules.filter((rule) => rule.selector === selector).length, 1, `custom.css must contain exactly one rule for ${selector}`);
   }
-  assert.equal(rules.length, APPROVED_DASHBOARD_SELECTORS.length, "custom.css must contain exactly five dashboard CTA rules");
+  assert.equal(rules.length, APPROVED_DASHBOARD_SELECTORS.length, "custom.css must contain exactly six dashboard CTA rules");
 
   const ruleFor = (selector) => rules.find((rule) => rule.selector === selector);
   const background = (value) => ({ properties: ["background", "background-color"], value, label: "effective background" });
@@ -152,6 +154,7 @@ function assertDashboardCssContract(source) {
   assertRuleDeclarations(ruleFor(DASHBOARD_SELECTOR), [background("#111827"), border("#111827"), color("#FFFFFF")]);
   assertRuleDeclarations(ruleFor(`${DASHBOARD_SELECTOR}:hover`), [background("#000000"), border("#000000")]);
   assertRuleDeclarations(ruleFor(`${DASHBOARD_SELECTOR} :is(span, svg)`), [color("inherit")]);
+  assertRuleDeclarations(ruleFor(DASHBOARD_OVERLAY_SELECTOR), [background("inherit")]);
   assertRuleDeclarations(ruleFor(`html.dark ${DASHBOARD_SELECTOR}`), [background("#FFFFFF"), border("#FFFFFF"), color("#111827")]);
   assertRuleDeclarations(ruleFor(`html.dark ${DASHBOARD_SELECTOR}:hover`), [background("#E5E7EB"), border("#E5E7EB")]);
 }
@@ -169,6 +172,10 @@ ${DASHBOARD_SELECTOR}:hover {
 
 ${DASHBOARD_SELECTOR} :is(span, svg) {
   color: inherit !important;
+}
+
+${DASHBOARD_OVERLAY_SELECTOR} {
+  background-color: inherit !important;
 }
 
 html.dark ${DASHBOARD_SELECTOR} {
