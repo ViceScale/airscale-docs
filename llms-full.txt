@@ -591,11 +591,9 @@ Source: https://airscale.mintlify.app/mcp/connect-airscale-mcp-to-chatgpt.md
 
 Description: Connect ChatGPT to Airscale through browser OAuth and validate the connection without spending credits.
 
-## What this enables
+Connect ChatGPT to your Airscale workspace with browser OAuth, then verify the connection with a free tool call before you approve any paid work.
 
-Airscale MCP lets ChatGPT use 22 typed tools for people and company search, contact enrichment, profile extraction, web research, and asynchronous exports. The tools operate against the Airscale workspace you authorize.
-
-## Server URL
+## MCP server URL
 
 Use the official remote MCP endpoint exactly as shown:
 
@@ -603,108 +601,112 @@ Use the official remote MCP endpoint exactly as shown:
 https://mcp.airscale.io/mcp
 ```
 
-## Prerequisites
+## What ChatGPT can do with Airscale MCP
 
-- An Airscale account with access to the workspace you want to use.
-- API access enabled and an active workspace credential in Airscale.
-- A Business or Enterprise/Edu workspace on ChatGPT web for the full Airscale MCP tool set.
-- The workspace role or developer authorization required to create a custom app.
+Airscale MCP gives ChatGPT 22 typed tools that can:
 
-On ChatGPT web, Business and Enterprise/Edu workspaces can use the full MCP capability, including tools that can take actions. The creation path differs by plan:
+- Check the authorized workspace's credit balance.
+- Search for people and companies.
+- Count matches and discover accepted filter values before a paid search.
+- Enrich work contact details and extract people or company profiles.
+- Run Airsearch web research.
+- Create downloadable people or company exports.
+
+Managed large contact enrichment is work-email-only in its current phase. Review exact inputs and credit behavior in the [MCP tool catalog](/mcp/tools).
+
+## Before you start
+
+You need an Airscale account with access to the intended workspace, API access enabled, and an active workspace credential. ChatGPT uses browser OAuth for this connection: the browser asks you to sign in to Airscale, choose a workspace, and authorize ChatGPT.
+
+ChatGPT web supports the full MCP flow documented here for Business and Enterprise/Edu workspaces:
 
 - **Business:** An admin or owner must enable developer mode and create the custom app. Developer access cannot currently be delegated to an ordinary Business member.
 - **Enterprise/Edu:** Admins and owners can use RBAC to grant developer mode to an authorized developer. Admins or owners still control publication and workspace access.
 
-Pro accounts can use custom apps with read/fetch permissions, but the full MCP flow documented here requires Business or Enterprise/Edu. See OpenAI's current [developer mode and MCP apps guide](https://help.openai.com/en/articles/12584461) before setup.
+Pro accounts can use custom apps with read/fetch permissions, but this full MCP setup requires Business or Enterprise/Edu. Check OpenAI's current [developer mode and MCP apps guide](https://help.openai.com/en/articles/12584461) if availability or labels differ.
 
-ChatGPT product availability and UI labels can change. If a label below differs, use the official guide to locate the corresponding developer-mode or app-creation control.
+ChatGPT resolves the selected workspace credential on the Airscale server after OAuth. Do not paste an Airscale API key into ChatGPT, prompts, or tool inputs.
 
-## Authentication
-
-ChatGPT uses browser OAuth for this connection. The browser asks you to sign in to Airscale, select a workspace, and authorize ChatGPT. Do not paste an Airscale API key into ChatGPT. Credentials are never MCP tool arguments.
-
-<Note>
-  The selected Airscale workspace still needs API access. Airscale resolves the workspace credential on the server after OAuth; ChatGPT does not configure or store it as part of this setup.
-</Note>
-
-## Connect Airscale MCP
+## Step-by-step setup
 
 <Steps>
-  <Step title="Enable developer mode for your role">
-    In Business, sign in as an admin or owner and begin from **Workspace settings → Apps → Create**. In Enterprise/Edu, use an admin/owner account or an account that has received developer-mode access through RBAC, then open **Apps → Create** from the available workspace or user settings.
+  <Step title="Enable the app creation controls">
+    In Business, sign in as an admin or owner and open **Workspace settings → Apps → Create**. In Enterprise/Edu, use an admin/owner account or an account with developer-mode access through RBAC, then open the available **Apps → Create** control.
   </Step>
   <Step title="Enter the Airscale endpoint">
-    Name the app **Airscale MCP**, enter `https://mcp.airscale.io/mcp` as its MCP endpoint, and provide any other metadata the current form requires.
+    Name the app **Airscale MCP** and enter `https://mcp.airscale.io/mcp` as its MCP endpoint. Complete any other metadata required by the current form.
   </Step>
-  <Step title="Choose authentication">
-    Select **OAuth** as the authentication mechanism. Do not enter an API key or configure a static authorization header in ChatGPT.
+  <Step title="Choose browser authentication">
+    Select **OAuth**. The ChatGPT connection does not need a copied secret or static authorization value.
   </Step>
-  <Step title="Scan tools and authorize Airscale">
-    Click **Scan Tools**, complete the Airscale OAuth flow in the browser, select the intended workspace, and return to ChatGPT. Wait until the tool scan finishes before continuing.
+  <Step title="Scan and authorize the tools">
+    Click **Scan Tools**, complete the Airscale OAuth flow in the browser, sign in, select the intended workspace, and return to ChatGPT. Wait for the scan to finish before continuing.
   </Step>
   <Step title="Create the draft">
-    Click **Create** only after the scan succeeds. The draft app then appears in the workspace's draft-app list and as a development app in the creator's enabled apps.
+    Click **Create** only after the scan succeeds. The draft app appears in the workspace's draft-app list and in the creator's enabled apps.
   </Step>
-  <Step title="Use Airscale for a message">
-    Open a new chat and select the draft app from the tools menu, or mention it in the prompt. The selection applies to that message, not the entire conversation; select or mention Airscale again when a follow-up needs a new tool call.
+  <Step title="Select Airscale for a message">
+    Open a new chat and select the draft app from the tools menu, or mention it in your prompt. The selection applies to that message, not the entire conversation, so select or mention Airscale again when a follow-up needs another tool call.
+  </Step>
+  <Step title="Verify the connection for free">
+    Ask ChatGPT to use `airscale_check_credits` and no other tool. A returned balance confirms tool discovery and workspace authentication without debiting credits.
   </Step>
 </Steps>
 
-## Verify the connection for free
+## Recommended first prompts
 
-Make the first request read-only and non-billable:
+The identities and domains below are synthetic.
 
 > Use `airscale_check_credits` to show my current Airscale credit balance. Do not call another tool.
 
-If ChatGPT returns a balance, tool discovery and authentication succeeded. This check does not debit credits, but the balance response does not identify the workspace; the workspace choice occurred in the OAuth flow.
+> Count people named Jordan Example who work at `northstar.example`. Do not run a paid search.
 
-## Starter prompts
-
-These prompts keep the intended tool and scope explicit. The identities and domains are synthetic.
-
-> Use Airscale MCP to count people named Jordan Example who work at `northstar.example`. Do not run a paid search.
-
-> Use `airscale_find_companies_filter_values` to show accepted industry values related to software. Do not call another tool.
-
-> Plan a search for up to five companies matching `sample-company.test`. Show the proposed Airscale tool and arguments, but wait for my approval before running it.
+> Plan an Airscale search for up to five companies matching `sample-company.test`. Show the proposed Airscale tool, arguments, and maximum cost, then wait for my approval.
 
 For a complete staged sequence, follow the [safe MCP workflow](/mcp/how-to-use-the-airscale-mcp).
 
-## Credits and approval
+## Export behavior in ChatGPT
+
+A people or company export performs a fresh paid search from the final filters; it does not package the selected chat rows and may return different rows. Before approval, review the exact filters, fields, format, `max_rows`, additional maximum credits, and cumulative workflow maximum.
+
+An export has one asynchronous lifecycle: start the export once, check its status, then retrieve the file when it is ready. Reuse the same `export_id` and honor the returned `poll_after_seconds`. Do not start a duplicate export while the original job is queued or running.
+
+## Credits and confirmation
 
 The credit check, people count, company filter-value discovery, export status, and export-file retrieval are free. Search and enrichment tools can consume credits; Airsearch costs 2 credits per call. Managed contact enrichment is work-email-only in its current phase.
 
-Paid export starts fail closed until `confirm_credit_spend` is `true`. Before approving one, review the exact filters, `max_rows`, and maximum possible cost. An export can support up to 10,000 rows, but use the smallest limit that serves the task.
+Paid export starts fail closed until `confirm_credit_spend` is explicitly `true`. Review ChatGPT's proposed tool, arguments, row limit, and maximum cost before confirming. An export can support up to 10,000 rows, but use the smallest limit that serves the task.
 
-<Warning>
-  Review ChatGPT's proposed tool name and arguments before approving a paid action. Do not start a second export while the first is queued or running.
-</Warning>
+## Refreshing tools
+
+If Airscale tools are stale or missing, refresh or reconnect the app and start a new conversation so ChatGPT scans the current tool list. Re-select the draft app for the message that should use it.
 
 ## Troubleshooting
 
 <AccordionGroup>
   <Accordion title="Custom MCP controls are not visible">
-    Confirm that your ChatGPT account and workspace expose custom remote MCP apps. A workspace administrator may need to enable the feature. Because labels change, check the apps, connectors, or developer settings rather than relying on one menu name.
+    Confirm that the ChatGPT account and workspace expose custom remote MCP apps. A Business admin or owner may need to enable the feature; Enterprise/Edu access may depend on RBAC.
   </Accordion>
-  <Accordion title="The browser authorization does not finish">
-    Return to ChatGPT after Airscale displays its confirmation page. If the connection still appears pending, remove it and repeat the OAuth flow while signed in to the intended Airscale workspace.
-  </Accordion>
-  <Accordion title="Airscale tools do not appear">
-    Confirm the server URL, refresh or reconnect the app, and start a new conversation so ChatGPT reloads the MCP tool list.
+  <Accordion title="Scan Tools does not complete">
+    Confirm the exact server URL, finish the Airscale browser authorization, and return to ChatGPT. Remove and reconnect the draft while signed in to the intended Airscale workspace if the scan stays pending.
   </Accordion>
   <Accordion title="Authentication succeeds but a tool fails">
-    Confirm that the selected Airscale workspace has API access, an active workspace credential, and enough credits for the proposed paid tool. Re-run `airscale_check_credits` before retrying.
+    Confirm that the selected Airscale workspace has API access, an active workspace credential, and enough credits for the proposed paid tool. Run `airscale_check_credits` before retrying.
   </Accordion>
   <Accordion title="An export remains queued">
-    Keep the same export identifier and ask ChatGPT to poll `airscale_get_export_status` using the returned `poll_after_seconds`. Do not create a duplicate paid job.
+    Poll `airscale_get_export_status` with the same identifier and the returned `poll_after_seconds`. Do not create another paid job.
   </Accordion>
 </AccordionGroup>
 
-## Next steps
+## Security note
 
-- Review exact inputs and credit behavior in the [MCP tool catalog](/mcp/tools).
+Authorize only the Airscale workspace you intend to use. Keep secrets out of chats and tool inputs, review every proposed paid action, and remove the app's access when it is no longer needed.
+
+## Need help?
+
+- Review the [MCP tool catalog](/mcp/tools) for exact schemas and credit behavior.
 - Use the [safe MCP workflow](/mcp/how-to-use-the-airscale-mcp) before running a search or export.
-- Return to the [Airscale MCP server overview](/mcp/airscale-mcp-server) for security and authentication guidance.
+- Read the [Airscale MCP server overview](/mcp/airscale-mcp-server) for authentication and security guidance.
 
 ---
 
@@ -714,81 +716,85 @@ Source: https://airscale.mintlify.app/mcp/connect-airscale-mcp-to-claude.md
 
 Description: Connect Claude clients to Airscale with hosted OAuth or a protected Claude Code authorization header.
 
-## What this enables
+Connect Claude to your Airscale workspace through hosted remote OAuth where supported, or configure Claude Code with a protected environment-backed header.
 
-Airscale MCP gives Claude 22 typed tools for people and company search, enrichment, profile extraction, web research, and asynchronous exports. Claude can reason about a task conversationally while the Airscale tools keep inputs and result shapes explicit.
+## MCP server URL
 
-## Server URL
-
-Use the official remote MCP endpoint:
+Use the official remote MCP endpoint exactly as shown:
 
 ```text
 https://mcp.airscale.io/mcp
 ```
 
-## Prerequisites
+## What Claude can do with Airscale MCP
 
-- An Airscale account with access to the workspace you want to use.
-- API access enabled and an active workspace credential in Airscale.
-- An individual Free, Pro, or Max account, or membership in a Team or Enterprise organization, for the hosted connector flow described below.
-- An Owner or Primary Owner available to add the connector for Team or Enterprise.
+Airscale MCP gives Claude 22 typed tools that can:
 
-Claude product availability, account requirements, and UI labels can change. If the wording below differs, look for connectors, integrations, or remote MCP servers in the current client.
+- Check the authorized workspace's credit balance.
+- Search for people and companies.
+- Count matches and discover accepted filter values before a paid search.
+- Enrich work contact details and extract people or company profiles.
+- Run Airsearch web research.
+- Create downloadable people or company exports.
 
-## Authentication
+Managed large contact enrichment is work-email-only in its current phase. Review exact inputs and credit behavior in the [MCP tool catalog](/mcp/tools).
 
-Claude web and Claude desktop clients that expose remote OAuth can authorize Airscale in the browser where supported. Each user signs in to Airscale and authorizes a workspace; organization approval does not create one shared Airscale session.
+## Before you start
 
-Claude Code can instead authenticate a trusted developer environment with an authorization header sourced from a local environment variable or secret manager. Never put that credential in a prompt or MCP tool argument.
+You need an Airscale account with access to the intended workspace, API access enabled, and an active workspace credential.
 
-## Connect Airscale MCP
+Claude web and desktop clients can use remote OAuth in the browser where supported by the Claude account and client. Each hosted user signs in to Airscale and authorizes a workspace.
 
-### Individual Free, Pro, or Max
+Claude Code can instead use a protected authorization header sourced from an environment variable. Hosted OAuth and Claude Code header authentication are separate connection methods. Never put the credential in a prompt or MCP tool argument.
 
-On an individual Free, Pro, or Max plan, add the custom connector yourself. Free accounts are limited to one custom connector.
+## Claude web setup
+
+Use the hosted connector flow that matches your Claude account. If availability or labels differ, check Anthropic's current [remote custom connector guide](https://support.claude.com/en/articles/11175166-get-started-with-custom-connectors-using-remote-mcp).
+
+### Individual Claude accounts
+
+Individual Free, Pro, or Max accounts can add a custom connector directly. A Free account is limited to one custom connector.
 
 <Steps>
   <Step title="Open connector settings">
-    Sign in to Claude web or desktop and open **Customize → Connectors**. Labels can change; use the current connectors settings if this path differs.
+    Sign in to Claude web or desktop and open **Customize → Connectors**. Use the current connectors or integrations settings if the label differs.
   </Step>
-  <Step title="Add a custom remote connector">
+  <Step title="Add Airscale">
     Choose the control to add a custom connector, name it **Airscale MCP**, and enter `https://mcp.airscale.io/mcp` as the remote server URL.
   </Step>
-  <Step title="Authorize in the browser">
-    Continue to Airscale, sign in, select the intended workspace, and approve access. Then return to Claude.
+  <Step title="Authorize your Airscale workspace">
+    Continue to the browser sign-in, authenticate with Airscale, select the intended workspace, approve access, and return to Claude.
   </Step>
-  <Step title="Enable the connector">
+  <Step title="Enable the tools">
     Select Airscale MCP for a new conversation and confirm that Claude can see its tools.
   </Step>
 </Steps>
 
-### Team or Enterprise
+### Claude Team and Enterprise
 
-On Team or Enterprise, an Owner or Primary Owner must add Airscale through **Custom → Web** before members can connect:
+For Claude Team or Enterprise, an Owner or Primary Owner must add Airscale through **Custom → Web** before members can connect.
 
 <Steps>
   <Step title="Owner adds the organization connector">
-    Open **Organization settings → Connectors**, choose **Add**, hover over **Custom**, select **Web**, and enter `https://mcp.airscale.io/mcp`. Finish by adding the connector to the organization.
+    Open **Organization settings → Connectors**, choose **Add**, hover over **Custom**, select **Web**, and enter `https://mcp.airscale.io/mcp`. Add the connector to the organization.
   </Step>
-  <Step title="Member connects an individual session">
+  <Step title="Each member authorizes Airscale">
     Each member opens **Customize → Connectors**, finds Airscale MCP, clicks **Connect**, and authenticates with their own Airscale account in the browser.
   </Step>
-  <Step title="Member enables Airscale tools">
-    Select Airscale MCP and the tools needed for the conversation. Organization setup makes the connector available; it does not share an Owner's Airscale authorization with members.
+  <Step title="Each member enables the tools">
+    Select Airscale MCP and the tools needed for the conversation. Organization approval makes the connector available; it does not share an Owner's Airscale authorization with members.
   </Step>
 </Steps>
 
-Review Anthropic's current [remote custom connector guide](https://support.claude.com/en/articles/11175166-get-started-with-custom-connectors-using-remote-mcp) if account availability or labels differ.
+## Claude Code setup
 
-### Claude Code project configuration
-
-Store the key outside the project configuration and make it available to the Claude Code process:
+Keep the credential outside the repository and make it available to the Claude Code process:
 
 ```bash
 export AIRSCALE_API_KEY=YOUR_API_KEY
 ```
 
-The following `mcpServers` block is specifically a project-scoped `.mcp.json` file at the project root. Project configurations may be shared through version control, so every developer must supply the environment value independently.
+Create a project-scoped `.mcp.json` at the project root:
 
 ```json Project .mcp.json
 {
@@ -804,7 +810,7 @@ The following `mcpServers` block is specifically a project-scoped `.mcp.json` fi
 }
 ```
 
-The `${AIRSCALE_API_KEY}` syntax is resolved from the runtime environment. Never replace the expression with a literal credential in the project file.
+The `${AIRSCALE_API_KEY}` expression is resolved from the Claude Code process environment. Never replace it with a literal secret in `.mcp.json`; each developer supplies the environment value independently.
 
 From the project root, verify that Claude Code loaded the server:
 
@@ -812,63 +818,62 @@ From the project root, verify that Claude Code loaded the server:
 claude mcp list
 ```
 
-Inside Claude Code, run `/mcp` to inspect connection status and tool count. See the official [Claude Code MCP scope documentation](https://code.claude.com/docs/en/mcp) before choosing a different scope; local and user configurations are stored in `~/.claude.json`, not in a project `.mcp.json`.
+Inside Claude Code, run `/mcp` to inspect connection status and the available tools. See the official [Claude Code MCP scope documentation](https://code.claude.com/docs/en/mcp) before choosing a different scope; local and user configurations live in `~/.claude.json`, not in the project file.
 
-## Verify the connection for free
+## Recommended first prompts
 
-Use the same first test in every Claude client:
+The identities and domains below are synthetic.
 
 > Use `airscale_check_credits` to show my current Airscale credit balance. Do not call another tool.
 
-A returned balance confirms tool discovery and workspace authentication without debiting credits.
-
-## Starter prompts
-
-The identities and domains in these prompts are synthetic.
-
 > Use Airscale MCP to count people named Taylor Example at `northstar.example`. Do not run a paid search.
 
-> Use `airscale_find_companies_filter_values` to discover accepted technology values related to CRM. Do not call another tool.
+> Plan an Airscale search for up to five companies matching `sample-company.test`. Show the proposed Airscale tool, arguments, and maximum cost, then wait for my approval.
 
-> Prepare a five-result sample search for companies matching `sample-company.test`. Show the tool and arguments, then wait for my approval.
+For a complete staged sequence, follow the [safe MCP workflow](/mcp/how-to-use-the-airscale-mcp).
 
-See the [safe MCP workflow](/mcp/how-to-use-the-airscale-mcp) for the complete count, sample, review, export, and retrieval sequence.
+## Export behavior
 
-## Credits and approval
+A people or company export performs a fresh paid search from the final filters; it does not package the selected chat rows and may return different rows. Before approval, review the exact filters, fields, format, `max_rows`, additional maximum credits, and cumulative workflow maximum.
+
+An export has one asynchronous lifecycle: start the export once, check its status, then retrieve the file when it is ready. Reuse the same `export_id` and honor the returned `poll_after_seconds`. Do not start a duplicate export while the original job is queued or running.
+
+## Credits and confirmation
 
 The credit check, people count, company filter-value discovery, export status, and export-file retrieval are free. Search and enrichment tools can consume credits; Airsearch costs 2 credits per call. Managed contact enrichment is work-email-only in its current phase.
 
-Paid export starts require a reviewed maximum cost and `confirm_credit_spend: true`. People and company exports can request up to 10,000 rows, but a smaller `max_rows` reduces the possible charge and makes mistakes easier to catch.
+Paid export starts fail closed until `confirm_credit_spend` is explicitly `true`. Review Claude's proposed tool, arguments, row limit, and maximum cost before confirming. An export can support up to 10,000 rows, but use the smallest limit that serves the task.
 
-<Warning>
-  Review Claude's proposed tool and arguments before approving any paid action. If an export has started, poll that job instead of starting another one.
-</Warning>
+## Refreshing tools
+
+If Airscale tools are stale or missing, refresh or reconnect the hosted connector and start a new conversation. In Claude Code, verify the environment and server with `claude mcp list`, then use `/mcp` to inspect the refreshed connection.
 
 ## Troubleshooting
 
 <AccordionGroup>
-  <Accordion title="The connector controls are unavailable">
-    Confirm that the Claude client and account support remote MCP connectors. For an organization-managed workspace, ask an owner to make Airscale MCP available before each member connects their own Airscale account.
+  <Accordion title="Hosted connector controls are unavailable">
+    Confirm that the Claude client and account support remote MCP connectors. In Team or Enterprise, ask an Owner or Primary Owner to add Airscale before each member connects their own account.
   </Accordion>
   <Accordion title="OAuth opens but the connection stays pending">
     Complete the Airscale browser sign-in, wait for the authorization confirmation, and return to Claude. Reconnect while signed in to the intended workspace if the state does not update.
   </Accordion>
   <Accordion title="Claude Code reports an authentication error">
-    Confirm that the environment variable is available to the Claude Code process and that the configuration uses the `Bearer` scheme. Do not print the value while debugging.
-  </Accordion>
-  <Accordion title="The Airscale tools are stale or missing">
-    Verify the exact server URL, refresh or reconnect the server, and start a new conversation so the client reloads the tool list.
+    Confirm that the environment variable is available to the Claude Code process and that the project configuration uses the `Bearer` scheme. Do not print the value while debugging.
   </Accordion>
   <Accordion title="An export remains queued">
-    Continue polling `airscale_get_export_status` for the same identifier and honor the returned `poll_after_seconds`. Do not start a duplicate export.
+    Poll `airscale_get_export_status` with the same identifier and the returned `poll_after_seconds`. Do not create another paid job.
   </Accordion>
 </AccordionGroup>
 
-## Next steps
+## Security note
 
-- Review the exact schemas in the [MCP tool catalog](/mcp/tools).
-- Follow the [safe MCP workflow](/mcp/how-to-use-the-airscale-mcp) before spending credits.
-- Return to the [Airscale MCP server overview](/mcp/airscale-mcp-server) for authentication and security guidance.
+Hosted Claude users should authorize only the Airscale workspace they intend to use. Claude Code users should keep the environment value out of version control, prompts, and tool inputs. For either method, review every proposed paid action and remove access when it is no longer needed.
+
+## Need help?
+
+- Review the [MCP tool catalog](/mcp/tools) for exact schemas and credit behavior.
+- Use the [safe MCP workflow](/mcp/how-to-use-the-airscale-mcp) before running a search or export.
+- Read the [Airscale MCP server overview](/mcp/airscale-mcp-server) for authentication and security guidance.
 
 ---
 

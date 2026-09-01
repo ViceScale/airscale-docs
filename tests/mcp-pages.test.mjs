@@ -78,17 +78,34 @@ const CONNECT_PAGE_PATHS = [
   "mcp/connect-airscale-mcp-to-chatgpt",
   "mcp/connect-airscale-mcp-to-claude"
 ];
-const CONNECT_PAGE_HEADINGS = [
-  "What this enables",
-  "Server URL",
-  "Prerequisites",
-  "Authentication",
-  "Connect Airscale MCP",
-  "Verify the connection for free",
-  "Starter prompts",
-  "Credits and approval",
-  "Troubleshooting",
-  "Next steps"
+const CHATGPT_CONNECT_PAGE_HEADINGS = [
+  "## MCP server URL",
+  "## What ChatGPT can do with Airscale MCP",
+  "## Before you start",
+  "## Step-by-step setup",
+  "## Recommended first prompts",
+  "## Export behavior in ChatGPT",
+  "## Credits and confirmation",
+  "## Refreshing tools",
+  "## Troubleshooting",
+  "## Security note",
+  "## Need help?"
+];
+const CLAUDE_CONNECT_PAGE_HEADINGS = [
+  "## MCP server URL",
+  "## What Claude can do with Airscale MCP",
+  "## Before you start",
+  "## Claude web setup",
+  "### Individual Claude accounts",
+  "### Claude Team and Enterprise",
+  "## Claude Code setup",
+  "## Recommended first prompts",
+  "## Export behavior",
+  "## Credits and confirmation",
+  "## Refreshing tools",
+  "## Troubleshooting",
+  "## Security note",
+  "## Need help?"
 ];
 const SYNTHETIC_FULL_NAMES = new Set(["Jordan Example", "Taylor Example"]);
 
@@ -386,13 +403,23 @@ test("route shells introduce their subject without claiming unfinished walkthrou
   }
 });
 
-test("connection guides share a complete, ordered setup template", () => {
-  for (const path of CONNECT_PAGE_PATHS) {
+test("connection guides follow distinct ChatGPT and Claude setup narratives", () => {
+  const headingContracts = new Map([
+    ["mcp/connect-airscale-mcp-to-chatgpt", CHATGPT_CONNECT_PAGE_HEADINGS],
+    ["mcp/connect-airscale-mcp-to-claude", CLAUDE_CONNECT_PAGE_HEADINGS]
+  ]);
+
+  for (const [path, expectedHeadings] of headingContracts) {
     const { body } = readPage(path);
-    assertOrdered(body, CONNECT_PAGE_HEADINGS.map((heading) => `## ${heading}`), path);
+    assert.deepEqual(
+      Array.from(body.matchAll(/^(#{2,3})\s+(.+)$/gm), ([, level, heading]) => `${level} ${heading}`),
+      expectedHeadings,
+      `${path} must use its exact onboarding heading order`
+    );
     assert.match(body, /https:\/\/mcp\.airscale\.io\/mcp/);
     assert.match(body, /browser[\s\S]*sign[ -]?in|sign[ -]?in[\s\S]*browser/i);
     assert.match(body, /<Steps>[\s\S]*(?:<Step\b[\s\S]*){4,}<\/Steps>/);
+    assert.match(body, /22 typed tools/);
     assert.match(body, /airscale_check_credits/);
     assert.match(body, /free|does not debit credits/i);
     assert.match(body, /Airsearch costs 2 credits per call/);
@@ -402,6 +429,38 @@ test("connection guides share a complete, ordered setup template", () => {
     assert.match(body, /\[safe MCP workflow\]\(\/mcp\/how-to-use-the-airscale-mcp\)/);
     assert.doesNotMatch(body, /TODO|TBD|coming soon|placeholder|under construction/i);
   }
+
+  const chatgpt = readPage("mcp/connect-airscale-mcp-to-chatgpt");
+  const claude = readPage("mcp/connect-airscale-mcp-to-claude");
+  assert.equal((chatgpt.body.match(/^## Step-by-step setup$/gm) ?? []).length, 1);
+  assert.equal((claude.body.match(/^## Claude Code setup$/gm) ?? []).length, 1);
+  assert.doesNotMatch(claude.body, /## ChatGPT setup/);
+});
+
+test("connection guides explain bounded prompts and the asynchronous export boundary", () => {
+  for (const path of CONNECT_PAGE_PATHS) {
+    const { body } = readPage(path);
+    const promptsHeading = "## Recommended first prompts";
+    const exportHeading = path.endsWith("chatgpt")
+      ? "## Export behavior in ChatGPT"
+      : "## Export behavior";
+    const promptsSection = body.slice(body.indexOf(promptsHeading), body.indexOf(exportHeading));
+    const prompts = Array.from(promptsSection.matchAll(/^>\s+(.+)$/gm), ([, prompt]) => prompt);
+    assert.ok(prompts.length >= 3, `${path} must include at least three recommended prompts`);
+    assert.match(prompts[0], /airscale_check_credits/);
+    assert.match(prompts[1], /(?:count|filter)/i);
+    assert.match(prompts[2], /(?:up to|maximum|at most)[\s\S]*(?:proposed|show)[\s\S]*(?:maximum cost|max cost)[\s\S]*wait for my approval/i);
+
+    const creditsHeading = "## Credits and confirmation";
+    const exportSection = body.slice(body.indexOf(exportHeading), body.indexOf(creditsHeading));
+    assert.match(exportSection, /fresh paid search/i);
+    assert.match(exportSection, /not[\s\S]{0,80}selected[\s\S]{0,60}(?:chat )?rows/i);
+    assert.match(exportSection, /filters[\s\S]{0,120}fields[\s\S]{0,120}format[\s\S]{0,120}`max_rows`[\s\S]{0,180}additional[\s\S]{0,120}cumulative/i);
+    assert.match(exportSection, /start[\s\S]{0,120}status[\s\S]{0,120}(?:file|download)/i);
+    assert.match(exportSection, /same `export_id`|reuse the `export_id`/i);
+    assert.match(exportSection, /poll_after_seconds/);
+    assert.match(exportSection, /do not (?:start|create)[^\n.]*(?:duplicate|second)[^\n.]*(?:queued|running|export)/i);
+  }
 });
 
 test("ChatGPT setup is browser OAuth only and never configures an API key", () => {
@@ -409,6 +468,7 @@ test("ChatGPT setup is browser OAuth only and never configures an API key", () =
   assert.match(body, /browser OAuth/i);
   assert.match(body, /do not paste an Airscale API key/i);
   assert.doesNotMatch(body, /AIRSCALE_API_KEY|YOUR_API_KEY|Authorization\s*:\s*Bearer|API key field|header-based/i);
+  assert.doesNotMatch(body, /\.mcp\.json|mcpServers|```(?:bash|json)/i);
   assert.doesNotMatch(body, /tool arguments[\s\S]{0,80}(?:api[_ -]?key|credential)/i);
 });
 
@@ -446,6 +506,7 @@ test("Claude setup branches individual and organization-hosted connector flows",
   assert.match(body, /Free, Pro, or Max[\s\S]{0,240}(?:add|create)[\s\S]{0,100}custom connector/i);
   assert.match(body, /Team or Enterprise[\s\S]{0,240}(?:Owner|Primary Owner)[\s\S]{0,160}Custom[\s\S]{0,80}Web/i);
   assert.match(body, /member[\s\S]{0,180}Connect[\s\S]{0,120}authenticate/i);
+  assert.match(body, /organization (?:approval|setup)[\s\S]{0,140}does not share[\s\S]{0,100}(?:owner|Owner)[^.]*(?:Airscale authorization|Airscale auth|Airscale session)/i);
   assert.match(body, /https:\/\/support\.claude\.com\/en\/articles\/11175166/);
 });
 
