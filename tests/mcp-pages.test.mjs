@@ -58,16 +58,20 @@ const API_REFERENCE_TAB = {
 };
 
 const MCP_GROUPS = [
-  { group: "Start", pages: ["mcp/airscale-mcp-server", "mcp/tools"] },
   {
-    group: "Connect",
-    pages: ["mcp/connect-airscale-mcp-to-chatgpt", "mcp/connect-airscale-mcp-to-claude"]
-  },
-  { group: "Use", pages: ["mcp/how-to-use-the-airscale-mcp"] },
-  { group: "For agents", pages: ["mcp/agent-resources"] }
+    group: "Getting started",
+    pages: [
+      "mcp/how-to-use-the-airscale-mcp",
+      "mcp/connect-airscale-mcp-to-chatgpt",
+      "mcp/connect-airscale-mcp-to-claude",
+      "mcp/airscale-mcp-server"
+    ]
+  }
 ];
 
-const MCP_PAGE_PATHS = MCP_GROUPS.flatMap(({ pages }) => pages);
+const VISIBLE_MCP_PAGE_PATHS = MCP_GROUPS.flatMap(({ pages }) => pages);
+const DIRECT_ONLY_MCP_PAGE_PATHS = ["mcp/tools", "mcp/agent-resources"];
+const ALL_MCP_PAGE_PATHS = [...VISIBLE_MCP_PAGE_PATHS, ...DIRECT_ONLY_MCP_PAGE_PATHS];
 const MCP_TOOLS = new Map(
   JSON.parse(readFileSync("contracts/mcp-tools.json", "utf8")).tools.map((tool) => [tool.name, tool])
 );
@@ -224,22 +228,23 @@ function directColumnBodies(body, path) {
   return columnMatches.map((match) => match[1]);
 }
 
-test("MCP and Agents is a peer tab with exactly six pages while API Reference stays unchanged", () => {
+test("MCP and Agents mirrors the four-page AirSchool getting-started flow", () => {
   const config = JSON.parse(readFileSync("docs.json", "utf8"));
   assert.equal(config.navigation.tabs.length, 2);
   assert.deepEqual(config.navigation.tabs[0], API_REFERENCE_TAB);
   assert.deepEqual(config.navigation.tabs[1], { tab: "MCP & Agents", groups: MCP_GROUPS });
   assert.equal(config.styling.eyebrows, "breadcrumbs");
-  assert.equal(config.navigation.tabs[1].groups[0].group, "Start");
-  const landing = readPage(config.navigation.tabs[1].groups[0].pages[0]);
-  assert.equal(landing.frontmatter.title, "Build with Airscale MCP");
-  assert.equal(landing.frontmatter.sidebarTitle, "Airscale MCP server");
-  assert.doesNotMatch(landing.body, /<Badge\b[^>]*>MCP & Agents<\/Badge>|^## Build with Airscale MCP$/m);
-  assert.equal(MCP_PAGE_PATHS.length, 6);
-  assert.equal(new Set(MCP_PAGE_PATHS).size, 6);
+  const visiblePagePaths = config.navigation.tabs[1].groups.flatMap(({ pages }) => pages);
+  assert.deepEqual(visiblePagePaths, VISIBLE_MCP_PAGE_PATHS);
+  for (const path of DIRECT_ONLY_MCP_PAGE_PATHS) {
+    assert.ok(existsSync(`${path}.mdx`), `${path} must remain available as a direct route`);
+    assert.equal(visiblePagePaths.includes(path), false, `${path} must not appear in visible navigation`);
+  }
+  assert.equal(ALL_MCP_PAGE_PATHS.length, 6);
+  assert.equal(new Set(ALL_MCP_PAGE_PATHS).size, 6);
   assert.deepEqual(
     readdirSync("mcp").filter((name) => name.endsWith(".mdx")).map((name) => `mcp/${name.slice(0, -4)}`).sort(),
-    [...MCP_PAGE_PATHS].sort()
+    [...ALL_MCP_PAGE_PATHS].sort()
   );
 });
 
@@ -247,7 +252,7 @@ test("all six MCP pages have unique preview metadata, safe MDX, and resolving do
   const titles = new Set();
   const descriptions = new Set();
 
-  for (const path of MCP_PAGE_PATHS) {
+  for (const path of ALL_MCP_PAGE_PATHS) {
     assert.ok(existsSync(`${path}.mdx`), `${path} must exist`);
     const { source, body, frontmatter } = readPage(path);
     assert.equal(typeof frontmatter.title, "string", `${path} must have a title`);
@@ -281,7 +286,7 @@ test("credential checks reject static secrets while allowing only the documented
   }
   assert.equal(hasUnsafeBearerAuthorization("export AIRSCALE_API_KEY=YOUR_API_KEY\nAuthorization: Bearer ${AIRSCALE_API_KEY}"), false);
 
-  for (const path of MCP_PAGE_PATHS) {
+  for (const path of ALL_MCP_PAGE_PATHS) {
     const source = readFileSync(`${path}.mdx`, "utf8");
     for (const line of source.split("\n").filter((candidate) => candidate.includes("YOUR_API_KEY"))) {
       assert.equal(line.trim(), "export AIRSCALE_API_KEY=YOUR_API_KEY", `${path} must use YOUR_API_KEY only as the exact environment assignment`);
