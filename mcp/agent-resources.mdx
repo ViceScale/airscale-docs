@@ -32,7 +32,7 @@ Use the authenticated product server only when an agent should perform Airscale 
 | Resource | URL | Use |
 | --- | --- | --- |
 | OpenAPI specification | `https://airscale.mintlify.app/openapi.json` | HTTP operations, schemas, authentication, and responses. |
-| MCP tool manifest | `https://airscale.mintlify.app/mcp-tools.txt` | JSON-formatted, source-pinned contract for all 22 operational MCP tools, published as supported `text/plain`. |
+| MCP tool catalog | `https://airscale.mintlify.app/mcp/tools.md` | Hosted as `text/markdown` with source-pinned names, inputs, credit behavior, examples, and API mappings for all 22 operational MCP tools. |
 | Operational tool schemas | `tools/list` on `https://mcp.airscale.io/mcp` | Live authenticated MCP names and input schemas from the running product server. |
 | Compact LLM directory | `https://airscale.mintlify.app/llms.txt` | Navigable page directory with discriminating descriptions. |
 | Full LLM corpus | `https://airscale.mintlify.app/llms-full.txt` | Complete public content of every navigable preview page. |
@@ -70,5 +70,5 @@ After connecting, ask the client to search the Airscale documentation for the re
 - Use a page's `.md` export when only one topic is needed.
 - Use `llms-full.txt` only when the agent genuinely needs the entire public corpus.
 - Use `openapi.json` for HTTP request and response contracts.
-- Use `mcp-tools.txt` for the source-pinned operational MCP snapshot, spend metadata, and API mappings; use the authenticated server's `tools/list` response when runtime freshness matters.
+- Use the MCP tool catalog's `.md` export for the source-pinned operational snapshot, spend metadata, and API mappings; use the authenticated server's `tools/list` response when runtime freshness matters.
 - Use `skill.md` for workflow order, authentication boundaries, and approval rules.

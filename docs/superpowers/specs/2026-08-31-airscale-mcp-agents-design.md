@@ -267,7 +267,7 @@ Examples use synthetic companies, people, domains, and identifiers. No example p
 ### Published discovery resources
 
 - `/openapi.json`
-- `/mcp-tools.txt` containing the source-pinned JSON tool snapshot, served through Mintlify's supported text-asset path
+- `/mcp/tools.md` containing the hosted Markdown export of the source-pinned 22-tool catalog
 - `/llms.txt`
 - `/llms-full.txt`
 - page-level `.md` exports
@@ -277,13 +277,15 @@ Examples use synthetic companies, people, domains, and identifiers. No example p
 - the Mintlify-generated documentation MCP server card and connection instructions
 - Mintlify-generated agent discovery, described only as documentation metadata
 
-`llms.txt` is a compact directory with discriminating descriptions. `llms-full.txt` is the full public corpus. `skill.md` is a curated workflow and safety summary, not a duplicate catalog. `mcp-tools.txt` contains JSON-formatted exact names and input schemas from the same source-pinned contract used by the visible catalog; clients that require runtime freshness use authenticated MCP `tools/list` on `https://mcp.airscale.io/mcp`.
+`llms.txt` is a compact directory with discriminating descriptions. `llms-full.txt` is the full public corpus. `skill.md` is a curated workflow and safety summary, not a duplicate catalog. `/mcp/tools.md` exposes the visible source-pinned catalog as `text/markdown`; clients that require runtime freshness use authenticated MCP `tools/list` on `https://mcp.airscale.io/mcp`. The repository's `mcp-tools.txt` remains a deterministic generator artifact and validation input, but it is not advertised as a hosted resource.
 
 ### Publication constraint supersession
 
 Mintlify CLI 4.2.850 prebuild evidence supersedes the initially approved five-custom-file design. Authored non-OpenAPI JSON such as `/mcp-tools.json` and `/.well-known/agent-card.json` is dropped from public build output. Although an extensionless `/.well-known/api-catalog` is copied, this configuration cannot guarantee the RFC 9727 Linkset media type, so the standards claim and artifact are removed. A custom Agent Card is also removed because the documentation homepage is not an Airscale interactive agent endpoint.
 
-The custom agent generator therefore owns exactly three outputs: `llms.txt`, `llms-full.txt`, and lowercase-name `skill.md`. The catalog generator separately owns `mcp-tools.txt`, whose JSON bytes are intentionally delivered as supported `text/plain`. Mintlify owns skill discovery, documentation MCP discovery, and any generated agent-discovery metadata. Generated agent discovery must not be described as an Airscale product-agent endpoint or evidence that the homepage accepts interactive agent tasks.
+The custom agent generator therefore owns exactly three hosted outputs: `llms.txt`, `llms-full.txt`, and lowercase-name `skill.md`. The catalog generator separately owns `mcp-tools.txt` as a repository snapshot used to validate the rendered catalog. Mintlify owns page-level Markdown, skill discovery, documentation MCP discovery, and any generated agent-discovery metadata. Generated agent discovery must not be described as an Airscale product-agent endpoint or evidence that the homepage accepts interactive agent tasks.
+
+Hosted deployment `be64e818bff18d3efd133b76e495bc57479c3e72` established an additional platform boundary: Mintlify's local prebuild copied `mcp-tools.txt`, but the settled hosted deployment returned `404 Asset not found` for `/mcp-tools.txt`. The same deployment returned `200 text/markdown` for `/mcp/tools.md`. Hosted evidence therefore supersedes the local prebuild classification for public availability, and all generated agent links use `/mcp/tools.md`.
 
 All absolute links resolve on `https://airscale.mintlify.app`. Generated content must not point at `docs.airscale.io` while that domain serves Framer.
 
@@ -359,14 +361,14 @@ Hosted verification requires:
 - MCP navigation is present beside API Reference;
 - preview canonicals and `noindex` remain correct;
 - all discovery files resolve with expected content types;
-- after an authorized deployment, `/mcp-tools.txt` returns HTTP 200 with `text/plain` and exact bytes matching the committed artifact in two settled checks;
+- after an authorized deployment, `/mcp/tools.md` returns HTTP 200 with `text/markdown` and includes all twenty-two source-pinned tool names in two settled checks;
 - the documentation MCP is presented as read-only;
 - the safe live MCP health endpoint reports twenty-two tools;
 - OAuth protected-resource and authorization-server metadata return HTTP 200;
 - no DNS or Framer state changed; and
 - verification remains stable across repeated hosted rounds.
 
-Local generation, Mintlify validation, and prebuild classification do not prove current hosted publication. Until the post-deployment `/mcp-tools.txt` smoke passes, status must remain “locally build-verified, not confirmed hosted.”
+Local generation, Mintlify validation, and prebuild classification do not prove current hosted publication. Until the post-deployment `/mcp/tools.md` smoke passes, status must remain “locally build-verified, not confirmed hosted.”
 
 ## Acceptance criteria
 

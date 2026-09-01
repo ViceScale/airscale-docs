@@ -45,8 +45,7 @@ Prefer browser OAuth in supported remote MCP clients. Header-capable local clien
 ## Authoritative resources
 
 - MCP workflow and safety: https://airscale.mintlify.app/mcp/how-to-use-the-airscale-mcp
-- MCP tool catalog: https://airscale.mintlify.app/mcp/tools
-- MCP structured manifest: https://airscale.mintlify.app/mcp-tools.txt
+- MCP tool catalog (Markdown): https://airscale.mintlify.app/mcp/tools.md
 - HTTP API reference: https://airscale.mintlify.app/api-reference/api-overview
 - OpenAPI specification: https://airscale.mintlify.app/openapi.json
 - Agent resource directory: https://airscale.mintlify.app/mcp/agent-resources

@@ -21,7 +21,7 @@
 - `mcp/connect-airscale-mcp-to-claude.mdx`: migrated Claude OAuth and developer-client walkthrough.
 - `mcp/how-to-use-the-airscale-mcp.mdx`: practical count, sample, refine, export workflow.
 - `mcp/agent-resources.mdx`: visible product-MCP versus docs-MCP and agent-resource guide.
-- `mcp-tools.txt`: public, JSON-formatted twenty-two-tool catalog served through Mintlify's supported text-asset path.
+- `mcp-tools.txt`: repository-only JSON-formatted twenty-two-tool snapshot used by deterministic generators and validation.
 - `llms.txt`: custom preview-host page directory.
 - `llms-full.txt`: custom preview-host full corpus generated from navigable MDX.
 - `skill.md`: custom Airscale API and MCP skill that overrides stale generated content.
@@ -440,7 +440,9 @@ git commit -m "docs: migrate MCP connection workflows"
 
 ### Task 5: Add accurate agent resources on Mintlify-supported publication paths
 
-> **Review supersession:** Mintlify CLI 4.2.850 prebuild testing showed that authored non-OpenAPI JSON files are not copied to public build output. That makes the original five-output agent generator infeasible: `/mcp-tools.json` and `/.well-known/agent-card.json` would not publish, and the extensionless `/.well-known/api-catalog` cannot provide a standards-correct Linkset content type through this configuration. The accepted implementation therefore uses three custom agent outputs (`llms.txt`, `llms-full.txt`, and `skill.md`), publishes the JSON-formatted tool snapshot separately at the supported `/mcp-tools.txt` text path, and relies on Mintlify-generated discovery endpoints. No authored API catalog or Agent Card is shipped.
+> **Review supersession:** Mintlify CLI 4.2.850 prebuild testing showed that authored non-OpenAPI JSON files are not copied to public build output. That makes the original five-output agent generator infeasible: `/mcp-tools.json` and `/.well-known/agent-card.json` would not publish, and the extensionless `/.well-known/api-catalog` cannot provide a standards-correct Linkset content type through this configuration. The accepted implementation therefore uses three custom agent outputs (`llms.txt`, `llms-full.txt`, and `skill.md`) and relies on Mintlify-generated discovery endpoints. No authored API catalog or Agent Card is shipped.
+>
+> **Hosted supersession:** Exact-SHA deployment `be64e818bff18d3efd133b76e495bc57479c3e72` proved that local prebuild classification is not hosted publication proof: `/mcp-tools.txt` returned `404 Asset not found`, while Mintlify's page export `/mcp/tools.md` returned `200 text/markdown`. The repository snapshot remains a generator input, but generated agent resources advertise only the hosted Markdown catalog.
 
 **Files:**
 - Modify: `tests/mcp-pages.test.mjs`
@@ -467,7 +469,7 @@ assert.match(source, /authenticated product server/i);
 assert.match(source, /read-only documentation/i);
 ```
 
-Require every custom machine file to contain only preview-host documentation URLs, reject `https://docs.airscale.io`, require `skill.md` to state Airsearch's two-credit cost and MCP paid-export confirmation, and require links to `/openapi.json`, `/mcp-tools.txt`, `/mcp`, `/skill.md`, and `/.well-known/agent-skills/index.json` as appropriate. Add a real Mintlify cold-build and update-build publication test: `mcp-tools.txt`, `llms.txt`, and `llms-full.txt` must appear byte-for-byte in public prebuild output, while `skill.md` must retain Mintlify's supported `skillFile` classification. The test must reject authored `/mcp-tools.json`, `/.well-known/api-catalog`, and `/.well-known/agent-card.json` artifacts.
+Require every custom machine file to contain only preview-host documentation URLs, reject `https://docs.airscale.io`, require `skill.md` to state Airsearch's two-credit cost and MCP paid-export confirmation, and require links to `/openapi.json`, `/mcp/tools.md`, `/mcp`, `/skill.md`, and `/.well-known/agent-skills/index.json` as appropriate. Retain the Mintlify cold-build and update-build classification test, while explicitly preventing it from being treated as hosted proof. The test must reject authored `/mcp-tools.json`, `/.well-known/api-catalog`, and `/.well-known/agent-card.json` artifacts.
 
 Also test the shared multi-output transaction entry point before mutation. It must reject canonical aliases, existing hardlink aliases, ancestor/descendant targets, and bidirectional journal/lock/stage/candidate/stale/tmp/bak namespace collisions. Both `--check` and a fresh `--write` must reject a deterministic output-to-symlink swap after path validation.
 
@@ -499,7 +501,7 @@ It describes API and MCP authentication separately, starts with free checks, sta
 
 - [ ] **Step 4: Complete the visible agent-resources page**
 
-Use two adjacent cards for the operational and documentation MCP surfaces, followed by a resource table for OpenAPI, `/mcp-tools.txt`, live authenticated MCP `tools/list`, llms files, Markdown, skill discovery, the Mintlify-generated MCP server card, and Mintlify-generated agent discovery. State that generated agent discovery is documentation metadata, not an Airscale product-agent endpoint or interactive API. Include client connection examples for the documentation MCP only; do not configure the operational server in that subsection.
+Use two adjacent cards for the operational and documentation MCP surfaces, followed by a resource table for OpenAPI, `/mcp/tools.md`, live authenticated MCP `tools/list`, llms files, Markdown, skill discovery, the Mintlify-generated MCP server card, and Mintlify-generated agent discovery. State that generated agent discovery is documentation metadata, not an Airscale product-agent endpoint or interactive API. Include client connection examples for the documentation MCP only; do not configure the operational server in that subsection.
 
 - [ ] **Step 5: Add scripts, generate, test, and commit**
 
@@ -612,4 +614,4 @@ Confirm only the docs design, plan, contracts, generators, tests, MCP pages, age
 
 Report the branch name, commits, test counts, Mint validation result, and local browser matrix. Do not push, open a PR, merge, deploy, or change DNS until separately authorized.
 
-After a separately authorized preview deployment, the publication gate is a fresh `GET https://airscale.mintlify.app/mcp-tools.txt`: require HTTP 200, a `text/plain` content type, and exact response bytes matching the committed `mcp-tools.txt`. Repeat once after the deployment has settled. Until that hosted check passes, report the manifest as locally build-verified but not confirmed hosted.
+After a separately authorized preview deployment, the publication gate is a fresh `GET https://airscale.mintlify.app/mcp/tools.md`: require HTTP 200, a `text/markdown` content type, and all twenty-two source-pinned tool names. Repeat once after the deployment has settled. Until that hosted check passes, report the catalog as locally build-verified but not confirmed hosted.

@@ -607,7 +607,7 @@ test("agent resources distinguish the operational product server from the docume
 
   const resourcePaths = [
     "https://airscale.mintlify.app/openapi.json",
-    "https://airscale.mintlify.app/mcp-tools.txt",
+    "https://airscale.mintlify.app/mcp/tools.md",
     "https://airscale.mintlify.app/llms.txt",
     "https://airscale.mintlify.app/llms-full.txt",
     "https://airscale.mintlify.app/mcp/agent-resources.md",
@@ -620,6 +620,7 @@ test("agent resources distinguish the operational product server from the docume
   assert.match(body, /Accept: text\/markdown/);
   assert.match(body, /Documentation MCP server card[\s\S]{0,220}Mintlify automatically serves/i);
   assert.match(body, /Operational tool schemas[\s\S]{0,260}tools\/list/i);
+  assert.match(body, /MCP tool catalog[\s\S]{0,260}text\/markdown/i);
   assert.match(body, /Agent discovery[\s\S]{0,280}Mintlify automatically generates/i);
   assert.match(body, /not an Airscale product-agent endpoint/i);
   assert.doesNotMatch(body, /\.well-known\/api-catalog|A2A|HTTP\+JSON/i);
@@ -644,6 +645,11 @@ test("custom agent files preserve the preview and noindex trust boundary", () =>
     const source = readFileSync(path, "utf8");
     assert.doesNotMatch(source, /https:\/\/docs\.airscale\.io/i);
     assertNoStaticCredentials(source, path);
+  }
+  for (const path of ["llms.txt", "llms-full.txt", "skill.md", "mcp/agent-resources.mdx"]) {
+    const source = readFileSync(path, "utf8");
+    assert.doesNotMatch(source, /https:\/\/airscale\.mintlify\.app\/mcp-tools\.txt/i, `${path} must not advertise a root asset that hosted Mintlify drops`);
+    assert.match(source, /https:\/\/airscale\.mintlify\.app\/mcp\/tools\.md/i, `${path} must advertise Mintlify's hosted Markdown catalog`);
   }
   for (const unsupportedPath of ["mcp-tools.json", ".well-known/api-catalog", ".well-known/agent-card.json"]) {
     assert.equal(existsSync(unsupportedPath), false, `${unsupportedPath} must not be authored or advertised as a static artifact`);
