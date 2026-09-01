@@ -694,7 +694,7 @@ If Airscale tools or metadata are stale, open the connection in **ChatGPT Plugin
 
 ## Security note
 
-Authorize only the Airscale workspace you intend to use. Keep secrets out of chats and tool inputs, review every proposed paid action, and remove the app's access when it is no longer needed.
+Authorize only the Airscale workspace you intend to use. Keep secrets out of chats and tool inputs, review every proposed paid action, and remove the Airscale MCP connection when it is no longer needed.
 
 ## Need help?
 

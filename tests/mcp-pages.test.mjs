@@ -775,7 +775,7 @@ test("ChatGPT setup follows the current official developer-mode connection flow"
   assert.match(body, /https:\/\/developers\.openai\.com\/plugins\/deploy\/connect-chatgpt/);
   assert.doesNotMatch(
     body,
-    /Workspace settings|Apps → Create|Scan Tools|draft app|draft-app|selection applies[\s\S]{0,100}(?:message|one message)/i
+    /Workspace settings|Apps → Create|Scan Tools|draft app|draft-app|selection applies[\s\S]{0,100}(?:message|one message)|app['’]s access/i
   );
 });
 
