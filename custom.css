@@ -1,0 +1,25 @@
+#navbar a[href="https://app.airscale.io/dashboard"] {
+  background-color: #111827 !important;
+  border-color: #111827 !important;
+  color: #FFFFFF !important;
+}
+
+#navbar a[href="https://app.airscale.io/dashboard"]:hover {
+  background-color: #000000 !important;
+  border-color: #000000 !important;
+}
+
+#navbar a[href="https://app.airscale.io/dashboard"] :is(span, svg) {
+  color: inherit !important;
+}
+
+html.dark #navbar a[href="https://app.airscale.io/dashboard"] {
+  background-color: #FFFFFF !important;
+  border-color: #FFFFFF !important;
+  color: #111827 !important;
+}
+
+html.dark #navbar a[href="https://app.airscale.io/dashboard"]:hover {
+  background-color: #E5E7EB !important;
+  border-color: #E5E7EB !important;
+}
