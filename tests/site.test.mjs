@@ -73,6 +73,125 @@ function assertSafeSvgSource(source, path) {
   assert.doesNotMatch(withoutSvgNamespace, /(?:https?:)?\/\//i, `${path} must not contain remote URLs`);
 }
 
+const DASHBOARD_SELECTOR = '#navbar a[href="https://app.airscale.io/dashboard"]';
+const APPROVED_DASHBOARD_SELECTORS = [
+  DASHBOARD_SELECTOR,
+  `${DASHBOARD_SELECTOR}:hover`,
+  `${DASHBOARD_SELECTOR} :is(span, svg)`,
+  `html.dark ${DASHBOARD_SELECTOR}`,
+  `html.dark ${DASHBOARD_SELECTOR}:hover`
+];
+
+function parseFlatCssRules(source) {
+  const withoutComments = source.replace(/\/\*[\s\S]*?\*\//g, "");
+  const rules = [];
+  let cursor = 0;
+
+  while (cursor < withoutComments.length) {
+    while (/\s/.test(withoutComments[cursor] ?? "")) cursor += 1;
+    if (cursor === withoutComments.length) break;
+
+    const openingBrace = withoutComments.indexOf("{", cursor);
+    assert.notEqual(openingBrace, -1, "custom.css rule must have an opening brace");
+    const selector = withoutComments.slice(cursor, openingBrace).trim();
+    assert.ok(selector && !selector.includes("}"), "custom.css must contain only flat selector rules");
+
+    const closingBrace = withoutComments.indexOf("}", openingBrace + 1);
+    assert.notEqual(closingBrace, -1, `custom.css rule must close: ${selector}`);
+    const body = withoutComments.slice(openingBrace + 1, closingBrace);
+    assert.doesNotMatch(body, /[{}]/, "custom.css must contain only flat selector rules");
+
+    const declarations = body.split(";").map((declaration) => declaration.trim()).filter(Boolean).map((declaration) => {
+      const colon = declaration.indexOf(":");
+      assert.ok(colon > 0, `custom.css declaration must contain a property and value: ${declaration}`);
+      const property = declaration.slice(0, colon).trim();
+      const value = declaration.slice(colon + 1).trim();
+      assert.ok(property && value, `custom.css declaration must contain a property and value: ${declaration}`);
+      return { property, value };
+    });
+    rules.push({ selector, declarations });
+    cursor = closingBrace + 1;
+  }
+
+  assert.ok(rules.length > 0, "custom.css must contain dashboard CTA rules");
+  return rules;
+}
+
+function assertExactDeclarationValue(declaration, expectedValue, label) {
+  assert.match(declaration.value, new RegExp(`^${expectedValue}(?:\\s*!important)?$`), `${label} must be exactly ${expectedValue}`);
+}
+
+function assertRuleDeclarations(rule, expectedGroups) {
+  for (const { properties, value, label } of expectedGroups) {
+    const matches = rule.declarations.filter(({ property }) => properties.includes(property));
+    assert.equal(matches.length, 1, `${rule.selector} must contain exactly one ${label} declaration`);
+    assertExactDeclarationValue(matches[0], value, `${rule.selector} ${label}`);
+  }
+  assert.equal(
+    rule.declarations.length,
+    expectedGroups.length,
+    `${rule.selector} must contain only its planned declarations`
+  );
+}
+
+function assertDashboardCssContract(source) {
+  const rules = parseFlatCssRules(source);
+  for (const rule of rules) {
+    assert.ok(APPROVED_DASHBOARD_SELECTORS.includes(rule.selector), `custom.css selector is not approved: ${rule.selector}`);
+  }
+  for (const selector of APPROVED_DASHBOARD_SELECTORS) {
+    assert.equal(rules.filter((rule) => rule.selector === selector).length, 1, `custom.css must contain exactly one rule for ${selector}`);
+  }
+  assert.equal(rules.length, APPROVED_DASHBOARD_SELECTORS.length, "custom.css must contain exactly five dashboard CTA rules");
+
+  const ruleFor = (selector) => rules.find((rule) => rule.selector === selector);
+  const background = (value) => ({ properties: ["background", "background-color"], value, label: "effective background" });
+  const border = (value) => ({ properties: ["border-color"], value, label: "border-color" });
+  const color = (value) => ({ properties: ["color"], value, label: "color" });
+
+  assertRuleDeclarations(ruleFor(DASHBOARD_SELECTOR), [background("#111827"), border("#111827"), color("#FFFFFF")]);
+  assertRuleDeclarations(ruleFor(`${DASHBOARD_SELECTOR}:hover`), [background("#000000"), border("#000000")]);
+  assertRuleDeclarations(ruleFor(`${DASHBOARD_SELECTOR} :is(span, svg)`), [color("inherit")]);
+  assertRuleDeclarations(ruleFor(`html.dark ${DASHBOARD_SELECTOR}`), [background("#FFFFFF"), border("#FFFFFF"), color("#111827")]);
+  assertRuleDeclarations(ruleFor(`html.dark ${DASHBOARD_SELECTOR}:hover`), [background("#E5E7EB"), border("#E5E7EB")]);
+}
+
+const PLANNED_DASHBOARD_CSS = `${DASHBOARD_SELECTOR} {
+  background-color: #111827 !important;
+  border-color: #111827 !important;
+  color: #FFFFFF !important;
+}
+
+${DASHBOARD_SELECTOR}:hover {
+  background-color: #000000 !important;
+  border-color: #000000 !important;
+}
+
+${DASHBOARD_SELECTOR} :is(span, svg) {
+  color: inherit !important;
+}
+
+html.dark ${DASHBOARD_SELECTOR} {
+  background-color: #FFFFFF !important;
+  border-color: #FFFFFF !important;
+  color: #111827 !important;
+}
+
+html.dark ${DASHBOARD_SELECTOR}:hover {
+  background-color: #E5E7EB !important;
+  border-color: #E5E7EB !important;
+}`;
+
+function tagAttributes(tag) {
+  return Object.fromEntries(
+    [...tag.matchAll(/([:\w-]+)\s*=\s*(["'])(.*?)\2/gs)].map((match) => [match[1], match[3]])
+  );
+}
+
+function openingTags(source, name) {
+  return source.match(new RegExp(`<${name}\\b[^>]*>`, "g")) ?? [];
+}
+
 test("brand configuration and assets match Airscale", () => {
   const config = JSON.parse(readFileSync("docs.json", "utf8"));
   assert.equal(config.$schema, "https://mintlify.com/docs.json");
@@ -89,11 +208,59 @@ test("brand configuration and assets match Airscale", () => {
   assert.deepEqual(config.navbar.links, [{ label: "Back to website", href: "https://airscale.io/" }]);
   assert.deepEqual(config.navbar.primary, {
     type: "button",
-    label: "Open dashboard",
+    label: "Open Dashboard",
     href: "https://app.airscale.io/dashboard"
   });
-  assert.equal(existsSync("custom.css"), false);
+  assert.equal(existsSync("custom.css"), true);
   for (const asset of [config.logo.light, config.logo.dark, config.favicon]) assert.ok(existsSync(`.${asset}`));
+});
+
+test("navbar CTA selector guard rejects global or expanded CSS scope", () => {
+  assert.doesNotThrow(() => assertDashboardCssContract(PLANNED_DASHBOARD_CSS));
+
+  for (const forbiddenSelector of [
+    "html body",
+    "body.docs",
+    "#navbar *",
+    "#navbar a",
+    "button.primary",
+    "main a",
+    "html",
+    ":root",
+    "*"
+  ]) {
+    assert.throws(
+      () => assertDashboardCssContract(`${PLANNED_DASHBOARD_CSS}\n${forbiddenSelector} { color: red; }`),
+      /custom\.css selector is not approved/
+    );
+  }
+
+  const conflictingDeclarations = PLANNED_DASHBOARD_CSS.replace(
+    "  color: #FFFFFF !important;",
+    "  color: #FFFFFF !important;\n  background: red;\n  color: red;"
+  );
+  assert.throws(
+    () => assertDashboardCssContract(conflictingDeclarations),
+    /must contain exactly one effective background declaration/
+  );
+
+  const duplicateSelector = `${PLANNED_DASHBOARD_CSS}\n${DASHBOARD_SELECTOR} {
+    background-color: red;
+    border-color: red;
+    color: red;
+  }`;
+  assert.throws(
+    () => assertDashboardCssContract(duplicateSelector),
+    /custom\.css must contain exactly one rule/
+  );
+});
+
+test("navbar dashboard CTA is mode-aware without changing global brand colors", () => {
+  const config = JSON.parse(readFileSync("docs.json", "utf8"));
+  assert.ok(existsSync("custom.css"), "custom.css must exist for the navbar dashboard CTA override");
+  const customCss = readFileSync("custom.css", "utf8");
+  assertDashboardCssContract(customCss);
+  assert.deepEqual(config.colors, { primary: "#4079FF", light: "#4079FF", dark: "#6F9BFF" });
 });
 
 test("Mintlify uses the approved non-executing OpenAPI example configuration", () => {
@@ -108,15 +275,36 @@ test("Mintlify uses the approved non-executing OpenAPI example configuration", (
   assert.doesNotMatch(configSource, /hideApiMarker/);
 });
 
-test("brand SVGs preserve the Airscale symbol and reject unsafe source", () => {
-  for (const [path, fill] of [["logo/light.svg", "#111827"], ["logo/dark.svg", "#FFFFFF"]]) {
+for (const [mode, path, wordmarkFill] of [
+  ["light", "logo/light.svg", "#111827"],
+  ["dark", "logo/dark.svg", "#FFFFFF"]
+]) {
+  test(`${mode} header logo uses the approved tiled Airscale lockup`, () => {
     const source = readFileSync(path, "utf8");
-    assert.match(source, /viewBox="0 0 164 32"/);
-    assert.ok(source.includes(CANONICAL_SYMBOL_PATH), `${path} must include the canonical symbol`);
-    assert.match(source, new RegExp(`fill="${fill}"`));
-    assert.match(source, />Airscale<\/text>/);
+    const svg = tagAttributes(openingTags(source, "svg")[0] ?? "");
+    assert.equal(svg.viewBox, "0 0 164 32");
+    assert.equal(svg.role, "img");
+    assert.equal(svg["aria-label"], "Airscale");
+    const tile = openingTags(source, "rect").map(tagAttributes).find((attributes) => (
+      attributes.x === "0" && attributes.y === "2" && attributes.width === "28" &&
+      attributes.height === "28" && attributes.rx === "6" && attributes.fill === "#111827"
+    ));
+    assert.ok(tile, `${path} must contain the exact black rounded tile`);
+    const canonicalMark = openingTags(source, "path")
+      .map(tagAttributes)
+      .find((attributes) => attributes.d === CANONICAL_SYMBOL_PATH);
+    assert.ok(canonicalMark, `${path} must contain the canonical mark path`);
+    assert.equal(canonicalMark.transform, "translate(4.8 6.8) scale(.32)");
+    assert.equal(canonicalMark.fill, "#FFFFFF");
+    const wordmarkTag = source.match(/<text\b[^>]*>\s*Airscale\s*<\/text>/)?.[0];
+    assert.ok(wordmarkTag, `${path} must contain the Airscale wordmark`);
+    const wordmark = tagAttributes(wordmarkTag);
+    assert.equal(wordmark.fill, wordmarkFill);
     assertSafeSvgSource(source, path);
-  }
+  });
+}
+
+test("favicon preserves the Airscale symbol and brand SVG safety checks reject unsafe source", () => {
   const favicon = readFileSync("favicon.svg", "utf8");
   assert.ok(favicon.includes(CANONICAL_SYMBOL_PATH));
   assert.doesNotMatch(favicon, /<text\b/i);
