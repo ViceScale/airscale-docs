@@ -156,6 +156,10 @@ Create `custom.css`:
   color: inherit !important;
 }
 
+#navbar a[href="https://app.airscale.io/dashboard"] > span.absolute.inset-0 {
+  background-color: inherit !important;
+}
+
 html.dark #navbar a[href="https://app.airscale.io/dashboard"] {
   background-color: #FFFFFF !important;
   border-color: #FFFFFF !important;

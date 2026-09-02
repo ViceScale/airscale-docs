@@ -107,9 +107,11 @@ function parseFlatCssRules(source) {
       const colon = declaration.indexOf(":");
       assert.ok(colon > 0, `custom.css declaration must contain a property and value: ${declaration}`);
       const property = declaration.slice(0, colon).trim();
-      const value = declaration.slice(colon + 1).trim();
-      assert.ok(property && value, `custom.css declaration must contain a property and value: ${declaration}`);
-      return { property, value };
+      const rawValue = declaration.slice(colon + 1).trim();
+      assert.ok(property && rawValue, `custom.css declaration must contain a property and value: ${declaration}`);
+      const importantMatch = rawValue.match(/^(.*?)\s+!important$/);
+      const value = (importantMatch?.[1] ?? rawValue).trim();
+      return { property, value, important: Boolean(importantMatch) };
     });
     rules.push({ selector, declarations });
     cursor = closingBrace + 1;
@@ -119,19 +121,24 @@ function parseFlatCssRules(source) {
   return rules;
 }
 
-function assertExactDeclarationValue(declaration, expectedValue, label) {
-  assert.match(declaration.value, new RegExp(`^${expectedValue}(?:\\s*!important)?$`), `${label} must be exactly ${expectedValue}`);
-}
-
-function assertRuleDeclarations(rule, expectedGroups) {
-  for (const { properties, value, label } of expectedGroups) {
-    const matches = rule.declarations.filter(({ property }) => properties.includes(property));
-    assert.equal(matches.length, 1, `${rule.selector} must contain exactly one ${label} declaration`);
-    assertExactDeclarationValue(matches[0], value, `${rule.selector} ${label}`);
+function assertRuleDeclarations(rule, expectedDeclarations) {
+  for (const expected of expectedDeclarations) {
+    const matches = rule.declarations.filter(({ property }) => property === expected.property);
+    assert.equal(matches.length, 1, `${rule.selector} must contain exactly one ${expected.property} declaration`);
+    assert.equal(
+      matches[0].value,
+      expected.value,
+      `${rule.selector} ${expected.property} must be exactly ${expected.value} !important`
+    );
+    assert.equal(
+      matches[0].important,
+      expected.important,
+      `${rule.selector} ${expected.property} must be exactly ${expected.value} !important`
+    );
   }
   assert.equal(
     rule.declarations.length,
-    expectedGroups.length,
+    expectedDeclarations.length,
     `${rule.selector} must contain only its planned declarations`
   );
 }
@@ -147,9 +154,10 @@ function assertDashboardCssContract(source) {
   assert.equal(rules.length, APPROVED_DASHBOARD_SELECTORS.length, "custom.css must contain exactly six dashboard CTA rules");
 
   const ruleFor = (selector) => rules.find((rule) => rule.selector === selector);
-  const background = (value) => ({ properties: ["background", "background-color"], value, label: "effective background" });
-  const border = (value) => ({ properties: ["border-color"], value, label: "border-color" });
-  const color = (value) => ({ properties: ["color"], value, label: "color" });
+  const declaration = (property, value) => ({ property, value, important: true });
+  const background = (value) => declaration("background-color", value);
+  const border = (value) => declaration("border-color", value);
+  const color = (value) => declaration("color", value);
 
   assertRuleDeclarations(ruleFor(DASHBOARD_SELECTOR), [background("#111827"), border("#111827"), color("#FFFFFF")]);
   assertRuleDeclarations(ruleFor(`${DASHBOARD_SELECTOR}:hover`), [background("#000000"), border("#000000")]);
@@ -248,7 +256,7 @@ test("navbar CTA selector guard rejects global or expanded CSS scope", () => {
   );
   assert.throws(
     () => assertDashboardCssContract(conflictingDeclarations),
-    /must contain exactly one effective background declaration/
+    /must contain exactly one color declaration/
   );
 
   const duplicateSelector = `${PLANNED_DASHBOARD_CSS}\n${DASHBOARD_SELECTOR} {
@@ -259,6 +267,28 @@ test("navbar CTA selector guard rejects global or expanded CSS scope", () => {
   assert.throws(
     () => assertDashboardCssContract(duplicateSelector),
     /custom\.css must contain exactly one rule/
+  );
+});
+
+test("navbar CTA declaration guard requires explicit important priority", () => {
+  const withoutImportant = PLANNED_DASHBOARD_CSS.replace(
+    "background-color: #111827 !important;",
+    "background-color: #111827;"
+  );
+  assert.throws(
+    () => assertDashboardCssContract(withoutImportant),
+    /must be exactly #111827 !important/
+  );
+});
+
+test("navbar CTA declaration guard requires exact background-color property", () => {
+  const withBackgroundShorthand = PLANNED_DASHBOARD_CSS.replace(
+    "background-color: #111827 !important;",
+    "background: #111827 !important;"
+  );
+  assert.throws(
+    () => assertDashboardCssContract(withBackgroundShorthand),
+    /must contain exactly one background-color declaration/
   );
 });
 
