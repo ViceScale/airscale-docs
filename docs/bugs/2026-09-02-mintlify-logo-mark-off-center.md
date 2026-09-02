@@ -4,7 +4,7 @@ Date reported: 2026-09-02
 Status: fixed locally
 Area: UI
 Related issue:
-Related PR: N/A (not committed)
+Related PR: https://github.com/ViceScale/airscale-docs/pull/10
 Related tests: `tests/site.test.mjs` light/dark tiled Airscale lockup tests
 
 ## User Report
