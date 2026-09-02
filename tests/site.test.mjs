@@ -360,8 +360,8 @@ for (const [mode, path, wordmarkFill] of [
     assert.ok(canonicalMark, `${path} must contain the canonical mark path`);
     assert.equal(
       canonicalMark.transform,
-      "translate(11.2 11.5) scale(.28)",
-      `${path} must optically center the canonical mark inside the 38px tile`
+      "translate(10.3 10.6) scale(.31)",
+      `${path} must render the enlarged canonical mark optically centered inside the 38px tile`
     );
     assert.equal(canonicalMark.fill, "#FFFFFF");
     const wordmarkTag = source.match(/<text\b[^>]*>\s*Airscale\s*<\/text>/)?.[0];
