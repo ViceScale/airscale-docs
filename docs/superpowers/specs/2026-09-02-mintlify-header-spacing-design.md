@@ -8,7 +8,7 @@ Increase the colored padding around the Airscale mark without scaling the mark o
 
 - Enlarge the logo tile from 28x28px to 38x38px.
 - Keep the canonical Airscale mark at its current rendered dimensions and center it inside the larger tile.
-- Keep the `Airscale` wordmark at its current 20px size and preserve its light/dark fills.
+- Keep the `Airscale` wordmark at its current rendered size and preserve its light/dark fills.
 - Preserve a compact gap between the tile and wordmark.
 - Set the desktop `Open Dashboard` anchor and Mintlify overlay to a 10px corner radius.
 - Preserve the existing CTA colors, hover colors, link, label, focus treatment, and mobile More-menu behavior.
