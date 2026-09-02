@@ -1,6 +1,11 @@
+#navbar img.nav-logo:is([alt="light logo"], [alt="dark logo"]) {
+  height: 38px !important;
+}
+
 #navbar a[href="https://app.airscale.io/dashboard"] {
   background-color: #111827 !important;
   border-color: #111827 !important;
+  border-radius: 10px !important;
   color: #FFFFFF !important;
 }
 
@@ -15,6 +20,7 @@
 
 #navbar a[href="https://app.airscale.io/dashboard"] > span.absolute.inset-0 {
   background-color: inherit !important;
+  border-radius: 10px !important;
 }
 
 html.dark #navbar a[href="https://app.airscale.io/dashboard"] {

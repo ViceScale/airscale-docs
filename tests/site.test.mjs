@@ -75,7 +75,9 @@ function assertSafeSvgSource(source, path) {
 
 const DASHBOARD_SELECTOR = '#navbar a[href="https://app.airscale.io/dashboard"]';
 const DASHBOARD_OVERLAY_SELECTOR = `${DASHBOARD_SELECTOR} > span.absolute.inset-0`;
+const NAVBAR_LOGO_SELECTOR = '#navbar img.nav-logo:is([alt="light logo"], [alt="dark logo"])';
 const APPROVED_DASHBOARD_SELECTORS = [
+  NAVBAR_LOGO_SELECTOR,
   DASHBOARD_SELECTOR,
   `${DASHBOARD_SELECTOR}:hover`,
   `${DASHBOARD_SELECTOR} :is(span, svg)`,
@@ -151,25 +153,32 @@ function assertDashboardCssContract(source) {
   for (const selector of APPROVED_DASHBOARD_SELECTORS) {
     assert.equal(rules.filter((rule) => rule.selector === selector).length, 1, `custom.css must contain exactly one rule for ${selector}`);
   }
-  assert.equal(rules.length, APPROVED_DASHBOARD_SELECTORS.length, "custom.css must contain exactly six dashboard CTA rules");
+  assert.equal(rules.length, APPROVED_DASHBOARD_SELECTORS.length, "custom.css must contain exactly seven approved navbar rules");
 
   const ruleFor = (selector) => rules.find((rule) => rule.selector === selector);
   const declaration = (property, value) => ({ property, value, important: true });
   const background = (value) => declaration("background-color", value);
   const border = (value) => declaration("border-color", value);
+  const radius = (value) => declaration("border-radius", value);
   const color = (value) => declaration("color", value);
 
-  assertRuleDeclarations(ruleFor(DASHBOARD_SELECTOR), [background("#111827"), border("#111827"), color("#FFFFFF")]);
+  assertRuleDeclarations(ruleFor(NAVBAR_LOGO_SELECTOR), [declaration("height", "38px")]);
+  assertRuleDeclarations(ruleFor(DASHBOARD_SELECTOR), [background("#111827"), border("#111827"), radius("10px"), color("#FFFFFF")]);
   assertRuleDeclarations(ruleFor(`${DASHBOARD_SELECTOR}:hover`), [background("#000000"), border("#000000")]);
   assertRuleDeclarations(ruleFor(`${DASHBOARD_SELECTOR} :is(span, svg)`), [color("inherit")]);
-  assertRuleDeclarations(ruleFor(DASHBOARD_OVERLAY_SELECTOR), [background("inherit")]);
+  assertRuleDeclarations(ruleFor(DASHBOARD_OVERLAY_SELECTOR), [background("inherit"), radius("10px")]);
   assertRuleDeclarations(ruleFor(`html.dark ${DASHBOARD_SELECTOR}`), [background("#FFFFFF"), border("#FFFFFF"), color("#111827")]);
   assertRuleDeclarations(ruleFor(`html.dark ${DASHBOARD_SELECTOR}:hover`), [background("#E5E7EB"), border("#E5E7EB")]);
 }
 
-const PLANNED_DASHBOARD_CSS = `${DASHBOARD_SELECTOR} {
+const PLANNED_DASHBOARD_CSS = `${NAVBAR_LOGO_SELECTOR} {
+  height: 38px !important;
+}
+
+${DASHBOARD_SELECTOR} {
   background-color: #111827 !important;
   border-color: #111827 !important;
+  border-radius: 10px !important;
   color: #FFFFFF !important;
 }
 
@@ -184,6 +193,7 @@ ${DASHBOARD_SELECTOR} :is(span, svg) {
 
 ${DASHBOARD_OVERLAY_SELECTOR} {
   background-color: inherit !important;
+  border-radius: 10px !important;
 }
 
 html.dark ${DASHBOARD_SELECTOR} {
@@ -292,6 +302,23 @@ test("navbar CTA declaration guard requires exact background-color property", ()
   );
 });
 
+test("navbar spacing guard requires exact scoped logo height and CTA radius", () => {
+  const wrongRadius = PLANNED_DASHBOARD_CSS.replace(
+    "border-radius: 10px !important;",
+    "border-radius: 9px !important;"
+  );
+  assert.throws(() => assertDashboardCssContract(wrongRadius), /must be exactly 10px !important/);
+
+  const radiusWithoutPriority = PLANNED_DASHBOARD_CSS.replace(
+    "border-radius: 10px !important;",
+    "border-radius: 10px;"
+  );
+  assert.throws(() => assertDashboardCssContract(radiusWithoutPriority), /must be exactly 10px !important/);
+
+  const broadLogoSelector = PLANNED_DASHBOARD_CSS.replace(NAVBAR_LOGO_SELECTOR, ".nav-logo");
+  assert.throws(() => assertDashboardCssContract(broadLogoSelector), /custom\.css selector is not approved/);
+});
+
 test("navbar dashboard CTA is mode-aware without changing global brand colors", () => {
   const config = JSON.parse(readFileSync("docs.json", "utf8"));
   assert.ok(existsSync("custom.css"), "custom.css must exist for the navbar dashboard CTA override");
@@ -319,23 +346,26 @@ for (const [mode, path, wordmarkFill] of [
   test(`${mode} header logo uses the approved tiled Airscale lockup`, () => {
     const source = readFileSync(path, "utf8");
     const svg = tagAttributes(openingTags(source, "svg")[0] ?? "");
-    assert.equal(svg.viewBox, "0 0 164 32");
+    assert.equal(svg.viewBox, "0 0 157 38");
     assert.equal(svg.role, "img");
     assert.equal(svg["aria-label"], "Airscale");
     const tile = openingTags(source, "rect").map(tagAttributes).find((attributes) => (
-      attributes.x === "0" && attributes.y === "2" && attributes.width === "28" &&
-      attributes.height === "28" && attributes.rx === "6" && attributes.fill === "#111827"
+      attributes.x === "0" && attributes.y === "0" && attributes.width === "38" &&
+      attributes.height === "38" && attributes.rx === "8" && attributes.fill === "#111827"
     ));
     assert.ok(tile, `${path} must contain the exact black rounded tile`);
     const canonicalMark = openingTags(source, "path")
       .map(tagAttributes)
       .find((attributes) => attributes.d === CANONICAL_SYMBOL_PATH);
     assert.ok(canonicalMark, `${path} must contain the canonical mark path`);
-    assert.equal(canonicalMark.transform, "translate(4.8 6.8) scale(.32)");
+    assert.equal(canonicalMark.transform, "translate(9.2 12) scale(.28)");
     assert.equal(canonicalMark.fill, "#FFFFFF");
     const wordmarkTag = source.match(/<text\b[^>]*>\s*Airscale\s*<\/text>/)?.[0];
     assert.ok(wordmarkTag, `${path} must contain the Airscale wordmark`);
     const wordmark = tagAttributes(wordmarkTag);
+    assert.equal(wordmark.x, "48.5");
+    assert.equal(wordmark.y, "25.125");
+    assert.equal(wordmark["font-size"], "17.5");
     assert.equal(wordmark.fill, wordmarkFill);
     assertSafeSvgSource(source, path);
   });
