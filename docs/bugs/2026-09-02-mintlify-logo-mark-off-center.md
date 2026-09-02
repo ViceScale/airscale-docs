@@ -1,7 +1,7 @@
 # Bug: Mintlify logo mark was off-center inside its tile
 
 Date reported: 2026-09-02
-Status: fixed locally
+Status: fixed
 Area: UI
 Related issue:
 Related PR: https://github.com/ViceScale/airscale-docs/pull/10
@@ -33,7 +33,9 @@ Changed only the canonical mark transform in `logo/light.svg` and `logo/dark.svg
 - Sharp raster probe at 157x38: both marks have bounds `[12, 12, 26, 26]`, center `(19, 19)`, exactly matching the tile center `(19, 19)`.
 - `npm run validate`: 253/253 tests passed; OpenAPI valid; Mintlify build validation passed.
 - Local browser QA at 1440x900 and 390x844 in light and dark mode: logo remained 157x38, centered vertically at `y=12.5` in the 64px header, no horizontal overflow, and no console errors.
-- Hosted verification is pending deployment.
+- PR #10 merged as production SHA `0a38233b78db1bcecfdb6fa10ff480c21b8ecb86`; its `Mintlify Deployment` check completed successfully.
+- Hosted light/dark SVG raster probe: both marks use `translate(11.2 11.5) scale(.28)`, render bounds `[12, 12, 26, 26]`, and center `(19, 19)` exactly on the tile center.
+- Hosted browser QA at 1440x900 and 390x844 in light and dark mode: logo remained 157x38 at `y=12.5`, no horizontal overflow, and no console errors.
 
 ## Watch Later
 
