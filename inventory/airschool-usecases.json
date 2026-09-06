@@ -1,0 +1,563 @@
+{
+  "sourceOrigin": "https://docs.airscale.io",
+  "capturedAt": "2026-09-06T18:13:26.821658+00:00",
+  "navigation": [
+    {
+      "group": "Getting started",
+      "pages": [
+        "usecases/quick-beginner-guide"
+      ]
+    },
+    {
+      "group": "Using AI",
+      "pages": [
+        "usecases/the-basics-of-ai",
+        "usecases/using-airsearch",
+        "usecases/templates"
+      ]
+    },
+    {
+      "group": "GTM use cases",
+      "pages": [
+        "usecases/turn-hiring-signals-into-high-quality-leads",
+        "usecases/scrape-a-linkedin-post",
+        "usecases/from-google-maps-to-local-business-decision-makers",
+        "usecases/from-intent-signals-to-personalized-outreach"
+      ]
+    }
+  ],
+  "pages": [
+    {
+      "path": "usecases/quick-beginner-guide",
+      "sourceUrl": "https://docs.airscale.io/usecases/quick-beginner-guide",
+      "sourceHtmlSha256": "d92ec15fae5d63801f9959e3b5de1213c91d4bf4d171f96a009b098156a32409",
+      "title": "Quick beginner guide",
+      "description": "This quick beginner tutorial shows you how to navigate the Airscale platform and start using its key features",
+      "textSha256": "f5fbf4b21b4665cdaf9b863b26429a349015c70e9ca0e04c58590ecadc4e261f",
+      "headings": [
+        {
+          "level": 2,
+          "text": "Core functionalities"
+        },
+        {
+          "level": 2,
+          "text": "Building lists"
+        },
+        {
+          "level": 2,
+          "text": "Data enrichment"
+        },
+        {
+          "level": 2,
+          "text": "Built-in AI feature"
+        },
+        {
+          "level": 2,
+          "text": "Export and integrations"
+        },
+        {
+          "level": 2,
+          "text": "Workspace & plans"
+        },
+        {
+          "level": 2,
+          "text": "API & automation"
+        }
+      ],
+      "tables": [],
+      "codeBlocks": [],
+      "images": [],
+      "videos": [
+        "https://www.youtube.com/embed/6EtRvjMBgfs?iv_load_policy=3&rel=0&modestbranding=1&playsinline=1&autoplay=0"
+      ],
+      "nativeVideos": [],
+      "links": []
+    },
+    {
+      "path": "usecases/the-basics-of-ai",
+      "sourceUrl": "https://docs.airscale.io/usecases/the-basics-of-ai",
+      "sourceHtmlSha256": "b52cadbda0fc5a0bc7feb18bc6a862f3bad2e516b305fb3b3a590ebc4b1e7e6b",
+      "title": "The basics of AI",
+      "description": "Run AI on Airscale with the best LLMs using custom prompts",
+      "textSha256": "d6daca0acafb6c18f64c3440ab07244ee1d86ddcc1ab1a29b0562d65f81fc7b4",
+      "headings": [
+        {
+          "level": 2,
+          "text": "1. Why use the AI enrichment with Airscale ?"
+        },
+        {
+          "level": 2,
+          "text": "2. Classic LLMs vs Airsearch"
+        },
+        {
+          "level": 2,
+          "text": "3. How to prompt"
+        },
+        {
+          "level": 3,
+          "text": "Good inputs"
+        },
+        {
+          "level": 3,
+          "text": "Context"
+        },
+        {
+          "level": 3,
+          "text": "Output indication"
+        },
+        {
+          "level": 2,
+          "text": "4. Save & import templates"
+        },
+        {
+          "level": 3,
+          "text": "How to save a new template:"
+        },
+        {
+          "level": 3,
+          "text": "How to import a template:"
+        },
+        {
+          "level": 2,
+          "text": "5. Connect your own LLM"
+        },
+        {
+          "level": 2,
+          "text": "6. Results"
+        },
+        {
+          "level": 3,
+          "text": "Classic LLM results"
+        },
+        {
+          "level": 3,
+          "text": "Airsearch results "
+        }
+      ],
+      "tables": [],
+      "codeBlocks": [],
+      "images": [
+        {
+          "path": "images/usecases/eU6f1aB32XWmlbwdY3Ifj8dzYI.gif",
+          "alt": "The basics of AI — Good inputs"
+        },
+        {
+          "path": "images/usecases/D05iTJ5SmQUfgNmwCCxvQP1B3ig.gif",
+          "alt": "The basics of AI — How to save a new template:"
+        },
+        {
+          "path": "images/usecases/mqr19fbeSJslAcNI1WEh8yipPI.gif",
+          "alt": "The basics of AI — How to import a template:"
+        },
+        {
+          "path": "images/usecases/zbxyF6OSaU3UiiAKDIScAPXgJM.gif",
+          "alt": "The basics of AI — Classic LLM results"
+        },
+        {
+          "path": "images/usecases/FK0txZGGr6VSF5ZnfJZ0ACwy5Uo.gif",
+          "alt": "The basics of AI — Airsearch results"
+        }
+      ],
+      "videos": [],
+      "nativeVideos": [
+        "videos/usecases/Rr8MizcUxj0UhJlhJQGtlXHits.mp4",
+        "videos/usecases/NDRZsyscdycMIRLpXvfc5JflFM.mp4",
+        "videos/usecases/Httm9dqhOsf4YCmpkFgrmtI5EdY.mp4",
+        "videos/usecases/Shf9tlX4URyeUPl7K0XHH72Xz0E.mp4",
+        "videos/usecases/NCvu1jSULLzmb0X8v8vbRB3er50.mp4"
+      ],
+      "links": [
+        "/usecases/using-airsearch",
+        "/usecases/using-airsearch"
+      ]
+    },
+    {
+      "path": "usecases/using-airsearch",
+      "sourceUrl": "https://docs.airscale.io/usecases/using-airsearch",
+      "sourceHtmlSha256": "fb5232553ae34f00235790008ce3de4c068829722246c53c8fa01091e788cd9c",
+      "title": "Using Airsearch",
+      "description": "Capture valuable data from any webpage instantly, making data collection effortless and efficient",
+      "textSha256": "404c006f94be6a9c364e878099c05d6f2d331e618bcd9ff2c5f2e926b0cfc781",
+      "headings": [
+        {
+          "level": 2,
+          "text": "0. Why use Airsearch?"
+        },
+        {
+          "level": 2,
+          "text": "1. Start from a company table"
+        },
+        {
+          "level": 2,
+          "text": "2. Launch Airsearch"
+        },
+        {
+          "level": 2,
+          "text": "3. Define structured outputs"
+        },
+        {
+          "level": 2,
+          "text": "4. Review and add results as columns"
+        },
+        {
+          "level": 3,
+          "text": "You can also connect your API key with Airsearch"
+        }
+      ],
+      "tables": [],
+      "codeBlocks": [],
+      "images": [],
+      "videos": [
+        "https://www.youtube.com/embed/HDCCkEifdGQ?si=oSB5IwAASwAbU4nf&iv_load_policy=3&rel=0&modestbranding=1&playsinline=1&autoplay=0"
+      ],
+      "nativeVideos": [],
+      "links": [
+        "/api-reference/airsearch"
+      ]
+    },
+    {
+      "path": "usecases/templates",
+      "sourceUrl": "https://docs.airscale.io/usecases/templates",
+      "sourceHtmlSha256": "30eb310e45c417f5ad670a9369e3a4e04909f7fb3a709640316c57ce9a36e38b",
+      "title": "Templates",
+      "description": "Find some ready-to-use templates for your AI prompts",
+      "textSha256": "da601919ab0dd4d865adf708fdc9fefbafc53b7b4e136d6ba677e566a4a3f38a",
+      "headings": [
+        {
+          "level": 2,
+          "text": "0. Prerequisites"
+        },
+        {
+          "level": 2,
+          "text": "1. Classify as B2B or B2C"
+        },
+        {
+          "level": 2,
+          "text": "2. Venture-backed?"
+        },
+        {
+          "level": 2,
+          "text": "3. Recent company news"
+        },
+        {
+          "level": 2,
+          "text": "4. List company’s products & services"
+        },
+        {
+          "level": 2,
+          "text": "5. Determine someone's likely manager"
+        },
+        {
+          "level": 2,
+          "text": "6. Find all major cities a business is located in"
+        },
+        {
+          "level": 2,
+          "text": "7. Summarize pricing plans"
+        },
+        {
+          "level": 2,
+          "text": "8. Check if a person has the experience needed for a job opening"
+        },
+        {
+          "level": 2,
+          "text": "9. Determine a company’s most frequent negative feedback"
+        },
+        {
+          "level": 2,
+          "text": "10. Write an email opener based on the LinkedIn profile"
+        },
+        {
+          "level": 2,
+          "text": "11. Find how much funding a company has raised in total"
+        },
+        {
+          "level": 2,
+          "text": "12. Find upcoming events for company"
+        },
+        {
+          "level": 2,
+          "text": "13. Determine a company’s target industries"
+        },
+        {
+          "level": 2,
+          "text": "14. Find company competitors"
+        },
+        {
+          "level": 2,
+          "text": "15. Find company blog"
+        },
+        {
+          "level": 2,
+          "text": "16. Scrape recent job openings in a company"
+        },
+        {
+          "level": 2,
+          "text": "17. Find child companies (subsidiaries)"
+        },
+        {
+          "level": 2,
+          "text": "18. See if a company has ever been sold"
+        },
+        {
+          "level": 2,
+          "text": "19. Classify the company growth stage"
+        },
+        {
+          "level": 2,
+          "text": "20. Detect if there's been a recent change in C-Level Executives"
+        },
+        {
+          "level": 2,
+          "text": "21. Extract customer testimonials"
+        }
+      ],
+      "tables": [],
+      "codeBlocks": [
+        "Inputs :\nCompany Name : /Company name\nCompany domain :  /Company domain\n\nYou are tasked with determining the business model of a company based on its online presence and domain.\nIdentify if the company associated with the domain operates as a B2B, B2C, or both.\n\n1. Begin by visiting the company's official website using the provided domain\n2. Review the content on their homepage, services, products, and any available \"About Us\" or \"Company Profile\" pages\n3. Look for key indicators such as language targeting businesses (B2B) or consumers (B2C). Use terms like \"business solutions,\" \"enterprise,\" \"clients,\" for B2B, and \"shop now,\" \"customer service,\" \"retail,\" for B2C\n4. Check any available online press releases, product listings, or service descriptions.\n5. Search for the target audience mentioned in their marketing materials. Terms like \"partners,\" \"resellers,\" signify B2B, while \"shoppers,\" \"individuals,\" signify B2C.\n6. Reference business directories or industry-specific sites if necessary to confirm business model.\n7. If conflicting information is found, cross-reference with reliable business news or reports.\n\nExamples:\n- For a page focused on enterprise clients and bulk ordering, categorize as \"B2B.\n- For a site featuring retail products with shopping cart options, categorize as \"B2C.\"\n- If both audience types are evident, categorize as \"B2B and B2C.\"\n- If the information is ambiguous or unclear, result as \"Cannot determine.\"\n\nOutput : Conclude with only \"B2B,\" or \"B2C,\" or \"B2B and B2C,\" or \"Cannot determine\" based on findings. ",
+        "Inputs :\nCompany Name : /Company name\nCompany domain :  /Company domain\n\nSearch the web to determine if this company has received venture capital or institutional funding.\n\nFollow these rules strictly:\n\nOnly confirm venture-backed status if you find a concrete source : a press release, Crunchbase page, TechCrunch article, or official announcement mentioning a funding round with an amount or an investor name.\n\nIf you find no concrete source, output \"Not confirmed\" and nothing else. Do not assume or infer venture-backed status from the company's size, language, or industry.If confirmed, list for each round : round name (Seed, Series A, etc.), amount raised, investors names, date, and source linkIf only partial information is found, list what is confirmed and explicitly flag what is missing with \"Unknown\".\n\nOutput format:Venture-backed : Yes / No / Not confirmed\n\nIf Yes : Round / Amount / Investors / Date / Source",
+        "Inputs :\nCompany name : /Company name\nCompany domain :  /Company domain\n\nScrape the web to find recent news articles for this company. Strictly discard any article or information dated before September 2025. If you cannot confirm the date of an article, discard it.\nSearch for news in the following categories, listed by priority order:\n\nFundraising and Investment Rounds (highest priority) : venture capital funding, Series A/B/C rounds, private equity investments, or any mention of securing new capital.\nLeadership Changes in Marketing : new CMO, marketing director, brand manager, or VP Marketing appointments.\nExpansion into New Markets : new geographical markets, international growth, new store openings, new customer segments.\nMarketing Campaigns and Rebranding : new advertising campaigns, rebranding initiatives, product launches, brand repositioning.\nIndustry Awards and Recognition : marketing awards, brand excellence awards, advertising accolades.\nPartnerships : new partnerships, acquisitions, or group ownership connections.\n\nSearch instructions: Keep searches simple and do not add quotes. Try multiple formats in this order:\n\n(company name recent news)\n(company name news 2025)\n(company name news 2026)\n(company name funding OR hiring OR expansion OR partnership OR rebrand OR campaign)\n\nIf you cannot find any news dated after September 2025, output \"Not found\" and nothing else.\nOutput format:\nProvide results structured as follows:\nHigh priority signals (Funding, Leadership)\n\n[bullet points]\n\nMedium priority signals (Expansion, Campaigns)\n\n[bullet points]\n\nLow priority signals (Awards, Partnerships)\n\n[bullet points]\n\nSources:\n\n[numbered links]\n\nEach bullet point must include the date of the article or event in parentheses at the end, formatted as (Month Year) e.g. (March 2026). If the date cannot be confirmed, discard the bullet point entirely.",
+        "Inputs :\nCompany name : /Company name\nCompany domain :  /Company domain\n\nGo to this company's website and identify the main products and services they offer.\nFollow these rules strictly:\n\nOnly list core offerings : what the company primarily sells or delivers to clients. Ignore internal departments, subsidiaries, buzzwords, or generic marketing language.\nMaximum 7 items in the output list\nIf the company has subsidiaries or business units, list the parent company's core activity, not the subsidiaries as separate services\nDeduplicate : if two items mean the same thing, keep only the most specific one\nIf a service has clear sub-services, group them under one parent label (ex: \"Digital Marketing\" instead of listing social media, content creation, SEO separately)\n\nOutput: a comma-separated list of core products and services, maximum 7 items, no descriptions, no buzzwords.\nCapitalize the first letter of each item.",
+        "Inputs:\nCompany name: /Company name\nCompany domain: /Company domain\nJob title: /Job title\nFirst name: /First name\nLast name: /Last name\n\nIdentify the most likely direct manager of the person above based on the role and company.\nInstructions:\nSearch for the individual's role and company to determine their department and where they fit in the company's hierarchy.\nFind others in the same company with similar or related titles to establish the department's reporting structure.\nIdentify the most likely boss, prioritizing:\n\nSomeone one level above in the same department (e.g., a Head of Growth for a Growth Manager).\nIf no direct manager is found, look for a department leader (e.g., VP of Growth or VP of Marketing for Growth Lead).\nIf neither is found, look for an executive overseeing the function (but avoid defaulting to the CEO unless they directly oversee the role).\n\nVerify the person works at the company by checking their listed employer against the company domain. Ignore results where the company does not match.\nEnsure the LinkedIn profile URL is correctly formatted in the structure \"linkedin.com/in/username\". Ignore results with different formats (e.g., company pages or incorrect URLs).\nVerify the manager exists : confirm the identified manager's name and title appear on their actual LinkedIn profile page before outputting. If you cannot confirm, output \"Not confirmed\" for that field.\nNever output placeholder or generic names : if no real manager is found, output \"Not found\" and nothing else. Do not invent or approximate a name.\nRetrieve their full name, job title, and LinkedIn profile URL.\nOutput Format:\nBoss's Name: [Full Name]\nTitle: [Job Title]\nLinkedIn URL: [linkedin.com/in/username]\nConfidence: [High - Medium - Low]\nHigh = LinkedIn profile verified directly, Medium = found via third-party source, Low = inferred without direct verification.\nExample Input:\n\nJob title: Growth Manager\nFirst name: Michel\nLast name: Bearh\nCompany name: Acme Inc.\nCompany domain: acme.com\n\nExample Output:\nBoss's Name: Jane Doe\nTitle: Head of Growth\nLinkedIn URL: https://www.linkedin.com/in/janedoe\nConfidence: High",
+        "Inputs :\nCompany name : /Company name\nCompany domain :  /Company domain\nCompany location : /Company location\n\nROLE\nYou are a B2B data enrichment assistant. Your task is to return the list of physical office cities for a given company, optimized for CRM or lead enrichment pipelines.\n\nINSTRUCTIONS\n\nIdentify the exact company. If the name has fewer than 5 characters, disambiguation is mandatory before proceeding. Use the domain or location to disambiguate. If still ambiguous, output: AMBIGUOUS.Find all cities where the company has a physical, currently active office (HQ + branches + subsidiaries under the same brand). Exclude: remote-only employees, customer locations, occasional co-working desks.Source priority (stop when you have a complete list):\na) Official website (\"Contact\", \"Locations\", \"Offices\" pages)\nb) Company LinkedIn page\nc) Crunchbase\nd) Wikipedia (HQ confirmation only)\n\nIf sources disagree, prefer the official website. Discard any source older than 2 years unless confirmed elsewhere. Never invent a city. If unsure, omit.\n\nOUTPUT FORMAT\n\nFormat: \"City, Country | City, Country | City, Country\"Example: \"Paris, France | London, United Kingdom | New York, United States\"HQ city first, others alphabeticalNo prefix, no suffix, no explanationMaximum 15 cities (keep the 15 largest by employee count if known, otherwise alphabetical after HQ)\nIf remote-only: REMOTE\nIf not found: NOT_FOUND\nIf ambiguous: AMBIGUOUS",
+        " Inputs :\nCompany name : /Company name\nCompany domain :  /Company domain\n\nROLE\nYou are a B2B competitive intelligence analyst. Your task is to extract and structure the complete public pricing information of a company, for use in CRM enrichment and competitive benchmarking.\nINSTRUCTIONS\n\nNavigate to the official company website and find the pricing page. If unavailable, try searching for plans or tarifs.\nIf the page is JavaScript-rendered and content is not immediately accessible, try navigating to a cached or simplified version. If still inaccessible, check G2, Capterra, then the company's \"Contact sales\" page. If no pricing found after all checks, output: NO_PUBLIC_PRICING\nFor each plan, extract:\n\nPlan name: exact wording from the source only. If a badge appears next to the plan name (e.g. \"Recommended\", \"Most popular\"), ignore it and extract the plan name only.\nPrice: amount + currency + billing period + unit (e.g. \"$49 per user per month\", \"€500 per month flat\", \"Custom\"). If both monthly and annual prices exist, report monthly with note: \"$49 per user per month (or $39 billed annually)\". If only annual is shown, mark as \"per year\".\nTop 3 features: verbatim from the source. Skip marketing fluff (\"Most popular\", \"Best value\"). If fewer than 3 features are listed, output what exists and fill remaining with Not Applicable.\nTarget: plan-specific audience only, if explicitly stated for that plan. If it applies generically to all plans or is not stated, output Not Applicable.\n\n\nNever invent prices or features. If a field is unavailable, write Not Applicable.\nAlways preserve original currency. Do not convert.\nOnly use a \"Usage-based\" entry if the entire pricing model of the company is usage-based. Do not use it for add-ons or secondary billing models.\n\nOUTPUT FORMAT\nOne block per plan, separated by a blank line:\nPlan: {Plan Name}\nPrice: {Price}\nFeatures: {Feature 1}, {Feature 2}, {Feature 3}\nTarget: {Target audience or Not Applicable}\nCONSTRAINTS\n\nMaximum 6 plans. If more exist, keep the 5 main public plans + 1 enterprise per custom line.\nDo not paraphrase plan names.\nDo not include marketing fluff in features.\nIf no public pricing exists after all checks: NO_PUBLIC_PRICING",
+        "Inputs:\nLinkedIn URL: /Linkedin Profile Url\nJob description : Paste here\n\nROLE\nYou are a recruiting screening assistant. Your task is to assess whether a candidate's LinkedIn profile matches a specific job opening, with auditable reasoning.\n\nINSTRUCTIONS\nRead the job description above and extract yourself:\n\nMust-have requirements (explicitly stated as required, or clearly non-negotiable given the role)\nNice-to-have requirements (stated as preferred, or secondary to the core requirements)\n\nNavigate directly to the LinkedIn URL provided and extract:\nCurrent role and company\nTotal years of relevant experience (count only roles directly related to the job function)\nHard skills explicitly listed in the Skills section or evidenced by job descriptions\nEducation (degree, field)\nLocation\n\nIf the profile is private, inaccessible, or returns an error, output: PROFILE_UNAVAILABLE\nIf the profile exists but contains no exploitable professional information, output: Score: 0 | Decision: Insufficient data\nCompare the profile against the must-haves and nice-to-haves you identified. For each requirement, cite the exact job title, company name, and approximate dates from the profile that support your assessment. Never reference sources by number.\nCompute a match score strictly following this rubric:\n\n5 = All must-haves matched + most nice-to-haves matched + experience in range\n4 = All must-haves matched + some nice-to-haves matched\n3 = All must-haves matched but missing nice-to-haves OR experience slightly below\n2 = Exactly 1 must-have missing but strong adjacent experience present\n1 = 2 or more must-haves missing\n0 = Not enough data to assess, or no must-haves matched\n\nCONSTRAINTS\n\nBase your assessment ONLY on what is explicitly visible on the LinkedIn profile. Do not infer or assume experience not shown.\nDo NOT consider or infer: age, gender, ethnicity, nationality, photo, personal information, or any protected characteristic.\nNever fabricate experience or skills. If a field is not visible, mark it as \"Unknown\".\nIf the profile shows only a current title with no work history detail, flag it in Red flags.\nThe match score must be strictly consistent with the rubric above. Do not award a score of 2 if more than 1 must-have is missing.\n\nOUTPUT FORMAT\nScore: {0-5} | Decision: {Strong match OR Match OR Borderline OR Weak match OR No match OR Insufficient data}\n\nMUST-HAVES: {Requirement 1}: {matched OR not matched} — {job title, company, dates} |  {Requirement 2}: {matched OR not matched} — {job title, company, dates}\n\nNICE-TO-HAVES: {Requirement 1}: {matched OR not matched} — {job title, company, dates} |  {Requirement 2}: {matched OR not matched} — {job title, company, dates}\n\nExperience: Candidate: {X} yrs | Required: {Y} yrs | Verdict: {above OR in_range OR below}\n\nLocation: {match OR mismatch OR remote_compatible}\n\nRed flags: {flag 1} OR {flag 2} or None\n\nSummary: {2-3 sentence rationale}",
+        " Inputs :\nCompany name : /Company name\nCompany domain :  /Company domain\n\nROLE\nYou are a competitive intelligence assistant. Your task is to identify recurring negative feedback patterns about a company's product, based on public reviews, with verifiable sources.\n\nINSTRUCTIONS\nSearch these sources in order, focusing exclusively on reviews from the last 18 months. Discard any review or quote dated outside this window, even if it seems relevant:\na) G2.com (1-3 star reviews only)\nb) Capterra, GetApp, Software Advice\nc) TrustRadius\nd) Reddit (subreddits like SaaS, sales, or product-specific communities) — flag as \"anecdotal\"\ne) Product Hunt comments\n\nExclude these sources entirely:\n- Glassdoor, Indeed, the company's own testimonials page\n- App Store, Play Store (unless mobile-first product)\n- Reddit signals about pay, working conditions, or freelance rates, even if they appear in product-related subreddits\n\nOnly include product reviews from paying customers or active users. Exclude employee reviews, contractor or freelancer reviews, and reviews that clearly refer to a different entity sharing the same name. If the company name is ambiguous (fewer than 5 characters, or shared by multiple entities), flag it explicitly and only use reviews where the entity is confirmed.\n\nGroup negative themes into categories: Pricing, UX or Usability, Performance, Customer support, Missing features, Onboarding, Integrations, Billing or Contracts.\n\nA complaint is \"frequent\" if it appears in at least 5 distinct reviews across sources, or represents at least 20% of negative reviews on any single source.\n\nNever invent or fabricate quotes. Quote verbatim when possible. If verbatim is unavailable, summarize and mark as \"paraphrased\". Frequency counts must be consistent with the total number of reviews analyzed: never report more mentions than total reviews analyzed.\n\nIf no recurring complaints meet the frequency threshold, you MUST still output: Reviews analyzed, Data quality with explicit reason, and a one-sentence explanation of why no complaints met the threshold.\n\nOUTPUT FORMAT\nEach section must be on a new line. Use the following structure exactly:\n\nCompany: {Company Name}\nReviews analyzed: {X reviews across Y sources}\nData quality: {high, medium, or low + reason if low}\n\nCOMPLAINT #1: {Category}\nFrequency: {frequency}\nSummary: {one sentence}\nExamples: \"{quote 1}\" — {Source}, {Date}\n\"{quote 2}\" — {Source}, {Date}\nSources: {sources}\n\nCOMPLAINT #2: {Category}\nFrequency: {frequency}\nSummary: {one sentence}\nExamples: \"{quote 1}\" — {Source}, {Date}\n\"{quote 2}\" — {Source}, {Date}\nSources: {sources}\n\nCOMPLAINT #3: {Category}\nFrequency: {frequency}\nSummary: {one sentence}\nExamples: \"{quote 1}\" — {Source}, {Date}\n\"{quote 2}\" — {Source}, {Date}\nSources: {sources}\n\nNotes: {caveats or NA}\n\nCONSTRAINTS\n- Return up to 3 complaints, ordered by frequency.\n- If fewer than 10 total reviews are accessible, flag explicitly: Data quality: low + reason.\n- If no complaints meet the frequency threshold, output: No recurring complaints found + Data quality explanation.\n- Never fabricate quotes.\n- Only product reviews count, not employee, contractor, or company reviews.",
+        "Input : \nLinkedin profile: /LinkedIn Profile URL\nCompany name: /Company Name\nCompany Linkedin profile: /Linkedin Company Url\n\nNavigate to the personal LinkedIn profile. Read their recent posts and activity. Also navigate to the company LinkedIn page and check recent posts and announcements. Then search for recent news about the company (last 6 months).\n\nYou are writing directly to this person. Write 2 to 3 sentences that could naturally open a cold email to them. Pick one interesting angle (a post they wrote, a career move, something happening at their company) and use it to start a genuine, human conversation. Write as if you are a real person who stumbled on something interesting about them or their company.\n\nNo bullet points, no news summaries, no \"I noticed\", no \"I came across\", no compliments, no questions, no exclamation marks. Just a natural, direct opening. Under 40 words total.\n\nIf nothing usable is found, output: NOT_ENOUGH_DATA",
+        " Inputs :\nCompany name : /Company name\nCompany domain :  /Company domain\n\nSearch the web to find the total amount of funding raised by this company across all rounds (pre-seed, seed, Series A, B, C, and beyond). Add up all rounds to return the total cumulative amount.\n\nSearch in order: Crunchbase, Dealroom, TechCrunch, then general web search.\n\nOutput only the total amount raised (e.g. \"$45M\" or \"$1.2B\"). No explanation, no breakdown by round. Always output amounts in the same format: $XM for millions (e.g. $27.2M), $XB for billions. Never write out 'million' or 'billion' in full.\n\nIf no funding data is found, output: Not found. Never output $0 unless a source explicitly confirms the company raised zero funding.",
+        "Inputs:\nCompany name: /Company name\nCompany domain: /Company domain\n\nToday's date is DD Month YYYY. Search the web, the website at and the social media accounts of this company for any upcoming event they are hosting or participating in as an organizer. An event is \"upcoming\" only if it takes place strictly after 15 June 2026. Discard any event dated before or on this date.\n\nOutput in this exact format:\nEvent name — DD Month YYYY\n\nIf the date is confirmed but the event is upcoming, use the format above. If the date is not confirmed but the event appears upcoming, output:\nEvent name — Date TBC\n\nIf no upcoming event is found after filtering, output: No events\n\nNo description, no explanation, nothing else.",
+        "Inputs:\nCompany name: /Company name\nCompany domain: /Company domain\n\nNavigate to the company website and analyze it to identify which industries this company targets as its ideal customers. Look at their homepage, use cases, case studies, and customer pages.\n\nOnly output industries that are explicitly mentioned or clearly evidenced on the website. Do not infer industries from the company name or general assumptions.\n\nOutput in this exact format:\nIndustry 1, Industry 2, Industry 3 (High confidence)\nor\nIndustry 1, Industry 2, Industry 3 (Low confidence — inferred from limited data)\n\nIf the target industries cannot be determined, output: Not found",
+        "Inputs:\nCompany name: /Company name\nCompany domain: /Company domain\n\nNavigate to the company website and analyze it thoroughly: homepage, product pages, use cases, customer stories, and any \"compare us to\" or \"alternatives\" pages. Understand exactly what the company does, their market segment, pricing model, and target customer.\nThen search the web for \"alternatives\", \"competitors\", and \"vs\" to find direct competitors to this company confirmed by third-party sources (G2, Capterra, industry blogs).\nA direct competitor must meet all three criteria:\n\n- Same core product category\n- Same target customer profile\n- Same market segment (do not mix SMB tools with enterprise tools, or B2C with B2B)\n\nOutput only the competitor names, comma-separated, in this exact format: Competitor 1, Competitor 2, Competitor 3.  If fewer than 3 confirmed direct competitors are found, output only those confirmed. No explanation, no URLs, no descriptions. If competitors cannot be determined, output: Not found",
+        "Inputs:\n\nCompany name: /Company name\nCompany domain: /Company domain\n\nNavigate to the company website and search for a blog page. Check common paths like \"blog\", \"news\", \"resources\", and \"insights\". Also check the main navigation and footer.\nOutput only the full URL of the blog page. If no blog is found, output: Not found",
+        "Inputs:\n\nCompany name: /Company name\nCompany domain: /Company domain\n\nNavigate to the careers page of this company and extract all current job openings. If the careers page redirects to an external ATS platform (Greenhouse, Lever, Workday, Welcome to the Jungle, or similar), navigate directly to that platform to find the openings.\nFor each position, extract the job title and location.\nOutput each position on a new line in this exact format:\n\nJob Title (Location) | Job Title (Location) | Job Title (Location)\nIf no job openings are found, output: No openings\n\nIf the careers page is inaccessible, output: Not found\nMaximum 10 positions. If more exist, keep the 10 most recently posted.",
+        "Inputs:\n\nCompany name: /Company name\nCompany domain: /Company domain\n\nSearch the web to find all subsidiaries or child companies owned by this company. Use the company domain to confirm the exact entity before searching for subsidiaries. Only include entities where this company is confirmed as the parent.\nOutput a comma-separated list of subsidiary names. If no subsidiaries exist, output: None. No additional sentence or explanation.",
+        "Inputs:\n\nCompany name: /Company name\nCompany domain: /Company domain\n\nSearch the web to determine if this company has ever been fully acquired by another company and lost its independence. Use the company domain to confirm the exact entity before searching. Minority investments, funding rounds, and partial stakes do not count.\nIf the company has been acquired, output in this exact format:\n\nTrue | Acquired by: {Acquirer name} | Date: {Month Year}\nIf the company has not been acquired, output:\n\nFalse\nIf the acquisition status cannot be confirmed with certainty, output: Unknown\nNo explanation, no additional text.",
+        "Inputs:\n\nCompany name: /Company name\nCompany domain: /Company domain\n\nSearch the web for funding information about this company. Check sources in this order: Crunchbase, Dealroom, TechCrunch, then general web search. Use the company domain to confirm the exact entity.\n\nClassify the company into one of these stages based on its most recent funding round or status:\n\nPre-seed: idea or MVP stage, little to no funding\nSeed: early funding, product in market\nSeries A-B: scaling product and team\nSeries C+: late-stage growth\nBootstrapped: no external funding confirmed\nPublic: listed on a stock exchange\nAcquired: fully acquired by another company\n\nNever output raw database labels like \"Acq - Fin\", \"Series Unknown\", or any abbreviated taxonomy from Crunchbase or other sources. Always translate these into one of the stages above.\n\nIf the company has been acquired, include the acquirer name if known.\n\nOutput only the stage name and most recent funding round if known, in this exact format:\nStage | Most recent round: {amount} ({date})\n\nIf acquired:\nAcquired by {Acquirer name} | Most recent round: {amount} ({date}) or Acquired by {Acquirer name} | No funding data found\n\nIf no funding data found:\nStage | No funding data found",
+        "Inputs:\n\nCompany name: /Company name\nCompany domain: /Company domain\n\nToday's date is DD Month YYYY. \n\nSearch the web for any changes in C-Level executives (CEO, CFO, COO, CTO, CMO, CPO) at this company in the last 12 months. Check sources like LinkedIn, Crunchbase, TechCrunch, and the company's own press releases. Use the company domain to confirm the exact entity.\n\nIf a change is found, output in this exact format:\nTrue | {Role}: {Previous name} replaced by {New name} | Date: {Month Year}\nIf multiple changes occurred, list each one separated by \" / \".\nIf no C-Level change is found in the last 12 months, output: False\nIf the information cannot be confirmed, output: Unknown",
+        "Inputs:\n\nCompany name: /Company name\nCompany domain: /Company domain\n\nNavigate to the company website and search for customer testimonials or case studies. Check the homepage, customers, testimonials, case-studies, and reviews pages. Also check G2 and Capterra for verified reviews.\n\nExtract up to 3 testimonials. For each, extract the quote, the customer name, and their company or role if available. Separate each testimonial with a blank line.\nOutput in this exact format:\n\"{Quote}\" — {Name}, {Role or Company}\n\n\"{Quote}\" — {Name}, {Role or Company}\n\n\"{Quote}\" — {Name}, {Role or Company}\n\nNever fabricate quotes. If fewer than 3 are found, output only those available. If no testimonials are found, output: Not found\n"
+      ],
+      "images": [],
+      "videos": [],
+      "nativeVideos": [],
+      "links": []
+    },
+    {
+      "path": "usecases/turn-hiring-signals-into-high-quality-leads",
+      "sourceUrl": "https://docs.airscale.io/usecases/turn-hiring-signals-into-high-quality-leads",
+      "sourceHtmlSha256": "9443d055b34824d8af9000a092407cb802a517494236b84dac2769420f7bc295",
+      "title": "Turn hiring signals into high-quality leads",
+      "description": "Find decision makers from hiring companies, qualify them with AI, and enrich their email data",
+      "textSha256": "19c99440c062a8e80f27483b8082ecdb25023521a6f973d6208eb508fc8b7929",
+      "headings": [
+        {
+          "level": 2,
+          "text": "Identify companies actively hiring"
+        },
+        {
+          "level": 2,
+          "text": "Find decision-makers in those companies"
+        },
+        {
+          "level": 2,
+          "text": "Enrich company data for better qualification"
+        },
+        {
+          "level": 2,
+          "text": "Use AI to qualify your ICP automatically"
+        },
+        {
+          "level": 2,
+          "text": "Enrich verified professional emails"
+        },
+        {
+          "level": 2,
+          "text": "Export the final prospect list"
+        }
+      ],
+      "tables": [],
+      "codeBlocks": [],
+      "images": [],
+      "videos": [
+        "https://www.youtube.com/embed/ktKLWWG8-W4?v=ktKLWWG8-W4&t=49s&start=49s&iv_load_policy=3&rel=0&modestbranding=1&playsinline=1&autoplay=0"
+      ],
+      "nativeVideos": [],
+      "links": []
+    },
+    {
+      "path": "usecases/scrape-a-linkedin-post",
+      "sourceUrl": "https://docs.airscale.io/usecases/scrape-a-linkedin-post",
+      "sourceHtmlSha256": "a1fec071121482e0d42fa57a6fbf17755f42d5fa088c9052cacb14fb8017f016",
+      "title": "Scrape a LinkedIn post to find qualified leads",
+      "description": "In just a few steps, Airscale transforms raw LinkedIn engagement into a qualified, enriched prospect list - ready to be exported to your CRM, cold email platform, or outbound tool of choice.",
+      "textSha256": "0ba8bc7b7e0b92a9b90b468e398933ded75168b7385ac381ec1a4193e5e70201",
+      "headings": [
+        {
+          "level": 2,
+          "text": "Why scrape LinkedIn posts?"
+        },
+        {
+          "level": 2,
+          "text": "Extract likers and/or commenters"
+        },
+        {
+          "level": 2,
+          "text": "Qualify your ICP with AI"
+        },
+        {
+          "level": 2,
+          "text": "Filter & enrich"
+        },
+        {
+          "level": 2,
+          "text": "Export the final prospect list"
+        }
+      ],
+      "tables": [],
+      "codeBlocks": [],
+      "images": [],
+      "videos": [
+        "https://www.youtube.com/embed/2cUzGAKeCzI?iv_load_policy=3&rel=0&modestbranding=1&playsinline=1&autoplay=0"
+      ],
+      "nativeVideos": [],
+      "links": []
+    },
+    {
+      "path": "usecases/from-google-maps-to-local-business-decision-makers",
+      "sourceUrl": "https://docs.airscale.io/usecases/from-google-maps-to-local-business-decision-makers",
+      "sourceHtmlSha256": "20be8a3782c0b43310669f062d5adf01d3ee4ed3cd34d76cbbe17e2bba1940bd",
+      "title": "From Google Maps to local business decision-makers",
+      "description": "Scrape local businesses, identify their owners, and find verified contact information in a few steps.",
+      "textSha256": "bd4e2b04b767934878d171c6d222f0f1b9729546acadba7e5b4399cd63a1cf83",
+      "headings": [
+        {
+          "level": 2,
+          "text": "Scrape local businesses with Google Maps"
+        },
+        {
+          "level": 2,
+          "text": "Find decision-makers in those companies"
+        },
+        {
+          "level": 2,
+          "text": "Enrich verified professional emails"
+        },
+        {
+          "level": 2,
+          "text": "Finding multiple job titles per company"
+        }
+      ],
+      "tables": [],
+      "codeBlocks": [],
+      "images": [],
+      "videos": [
+        "https://www.youtube.com/embed/ZNpG9gncwDk?iv_load_policy=3&rel=0&modestbranding=1&playsinline=1&autoplay=0"
+      ],
+      "nativeVideos": [],
+      "links": []
+    },
+    {
+      "path": "usecases/from-intent-signals-to-personalized-outreach",
+      "sourceUrl": "https://docs.airscale.io/usecases/from-intent-signals-to-personalized-outreach",
+      "sourceHtmlSha256": "820b090e1593603164a3e194f839a5c108d90af51e266d5b2011bec53d3e2df5",
+      "title": "From intent signals to personalized outreach",
+      "description": "Find decision-makers in hiring companies, qualify them with AI, and generate personalized cold outreach messages automatically",
+      "textSha256": "f901b57c8240406aebe7ef646f3cfab387972787a441b22ffa70d8eadbe9222f",
+      "headings": [
+        {
+          "level": 2,
+          "text": "Identify companies based on intent signals"
+        },
+        {
+          "level": 2,
+          "text": "Qualify companies with AI"
+        },
+        {
+          "level": 2,
+          "text": "Find decision-makers with Leads Finder"
+        },
+        {
+          "level": 2,
+          "text": "Enrich profiles for personalization"
+        },
+        {
+          "level": 2,
+          "text": "Generate personalized outreach with AI"
+        },
+        {
+          "level": 2,
+          "text": "Enrich contact data and export"
+        }
+      ],
+      "tables": [],
+      "codeBlocks": [],
+      "images": [],
+      "videos": [
+        "https://www.youtube.com/embed/QFXB6LUUZec?iv_load_policy=3&rel=0&modestbranding=1&playsinline=1&autoplay=0"
+      ],
+      "nativeVideos": [],
+      "links": []
+    }
+  ],
+  "assets": [
+    {
+      "sourceUrl": "https://framerusercontent.com/images/eU6f1aB32XWmlbwdY3Ifj8dzYI.gif",
+      "path": "images/usecases/eU6f1aB32XWmlbwdY3Ifj8dzYI.gif",
+      "sha256": "9c3e9683e7f1803309ac99903860eb0a9b8f634c5af230559445a84c50a4f8ee",
+      "bytes": 468768
+    },
+    {
+      "sourceUrl": "https://framerusercontent.com/images/D05iTJ5SmQUfgNmwCCxvQP1B3ig.gif",
+      "path": "images/usecases/D05iTJ5SmQUfgNmwCCxvQP1B3ig.gif",
+      "sha256": "48f3660ac3a2b2a42af5cd7318ff81201918bf409ab9d3a9aac8ecd6a5450d76",
+      "bytes": 563982
+    },
+    {
+      "sourceUrl": "https://framerusercontent.com/images/mqr19fbeSJslAcNI1WEh8yipPI.gif",
+      "path": "images/usecases/mqr19fbeSJslAcNI1WEh8yipPI.gif",
+      "sha256": "59f82c74288974147f22b62bbf399bf007abdf727db909f5861e756ae0479929",
+      "bytes": 455769
+    },
+    {
+      "sourceUrl": "https://framerusercontent.com/images/zbxyF6OSaU3UiiAKDIScAPXgJM.gif",
+      "path": "images/usecases/zbxyF6OSaU3UiiAKDIScAPXgJM.gif",
+      "sha256": "2fcca23c81633f90e5826fc00cec884d902caf2aa46dafb2d77398d33a7a6401",
+      "bytes": 525455
+    },
+    {
+      "sourceUrl": "https://framerusercontent.com/images/FK0txZGGr6VSF5ZnfJZ0ACwy5Uo.gif",
+      "path": "images/usecases/FK0txZGGr6VSF5ZnfJZ0ACwy5Uo.gif",
+      "sha256": "cc8736e0a8f232b4c56f6744274dc225b73e8f3970f7a44e0db4efd609605bb3",
+      "bytes": 446189
+    },
+    {
+      "sourceUrl": "https://framerusercontent.com/images/Rr8MizcUxj0UhJlhJQGtlXHits.mp4",
+      "path": "videos/usecases/Rr8MizcUxj0UhJlhJQGtlXHits.mp4",
+      "sha256": "35aa9fdbf772ae292039ddfd8db24734c66ef76fa2447d14eb80c9f6934626ec",
+      "bytes": 13279053
+    },
+    {
+      "sourceUrl": "https://framerusercontent.com/images/NDRZsyscdycMIRLpXvfc5JflFM.mp4",
+      "path": "videos/usecases/NDRZsyscdycMIRLpXvfc5JflFM.mp4",
+      "sha256": "57040a589f837d87f1b0070097c40a1c8e5f0a281e85913671dd2cd314b4e0b0",
+      "bytes": 5160799
+    },
+    {
+      "sourceUrl": "https://framerusercontent.com/images/Httm9dqhOsf4YCmpkFgrmtI5EdY.mp4",
+      "path": "videos/usecases/Httm9dqhOsf4YCmpkFgrmtI5EdY.mp4",
+      "sha256": "8f623fb3a004063605b8f848b92d44bf1b2c19916afb1c80ff5b10d1de777fd8",
+      "bytes": 5423476
+    },
+    {
+      "sourceUrl": "https://framerusercontent.com/images/Shf9tlX4URyeUPl7K0XHH72Xz0E.mp4",
+      "path": "videos/usecases/Shf9tlX4URyeUPl7K0XHH72Xz0E.mp4",
+      "sha256": "99e919fcb529fb3128cb31121ce1d34f597a7d149b3c378e22f153c816ec75ae",
+      "bytes": 7012946
+    },
+    {
+      "sourceUrl": "https://framerusercontent.com/images/NCvu1jSULLzmb0X8v8vbRB3er50.mp4",
+      "path": "videos/usecases/NCvu1jSULLzmb0X8v8vbRB3er50.mp4",
+      "sha256": "dfecc097edfacd7336c8bcfa5323ceb4c1278839d0ab8515a5954056fe44c29b",
+      "bytes": 9792815
+    }
+  ]
+}

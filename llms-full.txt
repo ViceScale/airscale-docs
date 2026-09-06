@@ -3516,6 +3516,1206 @@ Start once. While status is `queued` or `running`, poll status for the same expo
 
 ---
 
+## Quick beginner guide
+
+Source: https://airscale.mintlify.app/usecases/quick-beginner-guide.md
+
+Description: This quick beginner tutorial shows you how to navigate the Airscale platform and start using its key features
+
+<iframe
+  className="w-full aspect-video rounded-xl"
+  src="https://www.youtube.com/embed/6EtRvjMBgfs?iv_load_policy=3&amp;rel=0&amp;modestbranding=1&amp;playsinline=1&amp;autoplay=0"
+  title="Quick beginner guide video walkthrough"
+  allow="accelerometer; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+  allowFullScreen
+></iframe>
+
+In this video, we walk through the fundamentals of Airscale, from building targeted lead lists to enriching them with high-quality data in real time.
+
+## Core functionalities
+
+Airscale is built around two main use cases:
+
+- Building lead lists
+- Enriching contacts
+
+Unlike traditional tools, it is not a database, instead, it pulls real-time data from multiple sources such as LinkedIn, Sales Navigator, Apollo, and Google Maps.
+
+## Building lists
+
+The process starts with the Leads Finder module. By applying filters on both people and companies, you can define your targeting and preview results in real time.
+
+Once you're satisfied, you can load up to 10,000 contacts into a table. This table already includes key information such as:
+
+- Names
+- Job titles
+- Location
+- Company details
+- Domain
+- LinkedIn profile
+
+## Data enrichment
+
+From there, you can enrich your data directly within the platform. You simply select the rows and choose what type of enrichment you want to run:
+
+- Emails
+- Phone numbers
+- People data
+- Company data
+- etc.
+
+Airscale uses a waterfall enrichment logic for emails and phones, meaning multiple providers are tested automatically to maximize results. Importantly, no credits are used when no data is found.
+
+## Built-in AI feature
+
+Airscale also includes a built-in AI feature that allows you to go further with your data. You can write prompts, select different LLMs, and optionally connect your own API key.
+
+Depending on your setup:
+
+- Without web access → analyze or summarize existing data
+- With web access → retrieve or scrape external information
+
+## Export and integrations
+
+Once your data is ready, you can easily export it as a CSV or send it directly to your existing tools, including CRMs (Hubspot, Salesforce) and outbound platforms (Lemlist, Instantly, SmartLead).
+
+## Workspace & plans
+
+Airscale provides a collaborative workspace where you can manage your profile, invite team members for free, and access billing.
+
+Several plans are available, all without commitment:
+
+- Starter (49$)
+- Pro (99$)
+- Growth (189$ to 1049$)
+- Scale (for higher volumes, custom plans can also be set up)
+
+## API & automation
+
+You can generate an API key and connect Airscale to tools like Clay. This allows you to automate enrichment workflows and significantly reduce costs.
+
+If you have any questions, feel free to reach out, the Airscale team is always happy to help.
+
+---
+
+## The basics of AI
+
+Source: https://airscale.mintlify.app/usecases/the-basics-of-ai.md
+
+Description: Run AI on Airscale with the best LLMs using custom prompts
+
+## 1. Why use the AI enrichment with Airscale ?
+
+Manual contact enrichment or cleaning is slow, and impossible to scale. Airscale's AI enrichment module automates the entire process, directly from your lead lists. For example:
+
+- Infer job seniority and ICP fit
+- Generate personalized icebreakers
+- Summarize company positioning
+- Detect buying intent signals
+
+All of it produced in seconds, turning raw contact data into actionable sales intelligence, without any manual work.
+
+To use AI, just click on the blue **"Use AI"** button in the top right corner of your table.
+
+<video className="w-full rounded-xl" src="/videos/usecases/Rr8MizcUxj0UhJlhJQGtlXHits.mp4" autoPlay muted loop playsInline controls aria-label="The basics of AI video walkthrough" />
+
+## 2. Classic LLMs vs Airsearch
+
+The second step of your enrichment panel (after selecting the rows to use AI on) is the "Web access?" mode.
+
+- **No web access:** Best to edit, format, or clean your data. Use this mode when your prompt only needs data already existing in your table and doesn’t need to browse the web to provide the expected output
+
+- **Web access:** Use this mode if you want to find data on the web and want AI to have web browsing capabilities. Useful to research data online about a company or a prospect by visiting the web / website pages (*this mode will select Airsearch 1.0 as the default LLM to use).* Check our [Using Airsearch](/usecases/using-airsearch) guide for more information
+
+Click on the toggle **"No web access / Web access"** to choose either mode.
+
+<video className="w-full rounded-xl" src="/videos/usecases/NDRZsyscdycMIRLpXvfc5JflFM.mp4" autoPlay muted loop playsInline controls aria-label="The basics of AI video walkthrough" />
+
+## 3. How to prompt
+
+A good AI enrichment prompt always includes three elements:
+
+### Good inputs
+
+Each input variable (e.g. First name, Job title …) must be manually linked to its corresponding column in your table. Click on the variable in your prompt and select the matching column: it turns blue once correctly connected.
+
+![The basics of AI — Good inputs](/images/usecases/eU6f1aB32XWmlbwdY3Ifj8dzYI.gif)
+
+### Context
+
+Start by telling the AI who it is and what it's doing. A prompt that opens with *"You are a B2B market research analyst. Your goal is to…"* will produce sharper, more relevant results than one that dives straight into the task. From there, break down the instructions into explicit steps: what data to look at first, what to infer from it, what to prioritize, and what to ignore. The more structured your instructions, the more consistent and reliable the output across your entire lead list.
+
+<video className="w-full rounded-xl" src="/videos/usecases/Httm9dqhOsf4YCmpkFgrmtI5EdY.mp4" autoPlay muted loop playsInline controls aria-label="The basics of AI video walkthrough" />
+
+### Output indication
+
+Specify the exact format expected. The AI will fill whatever shape you give it. If you need a one-liner for a CRM field, say so. If you need a three-bullet summary, define each bullet. Specifying the format, tone, length, and any constraints (no filler phrases, always use second person, flag if data is missing) ensures the output is immediately usable, with no manual cleanup required.
+
+*When using Airsearch, you can define your outputs with even more precision, check our* [*Using Airsearch*](/usecases/using-airsearch) *guide for more information*
+
+<video className="w-full rounded-xl" src="/videos/usecases/Shf9tlX4URyeUPl7K0XHH72Xz0E.mp4" autoPlay muted loop playsInline controls aria-label="The basics of AI video walkthrough" />
+
+## 4. Save & import templates
+
+Once you've built a prompt that works, you don't want to rewrite it from scratch every time. Airscale lets you save any AI enrichment prompt as a reusable template, so your best configurations are always one click away.
+
+Saved templates can then be imported directly into any workflow or enrichment column, whether you're setting up a new campaign, onboarding a new lead list, or simply duplicating a process that's already proven its value. No copy-pasting, no risk of losing a prompt that took time to calibrate.
+
+This is especially useful for teams: instead of each member building their own version of the same prompt, you define a shared standard once, save it, and everyone works from the same reliable baseline.
+
+### How to save a new template:
+
+![The basics of AI — How to save a new template:](/images/usecases/D05iTJ5SmQUfgNmwCCxvQP1B3ig.gif)
+
+### How to import a template:
+
+![The basics of AI — How to import a template:](/images/usecases/mqr19fbeSJslAcNI1WEh8yipPI.gif)
+
+**Note:** When importing a template, make sure to rewrite your inputs as they won't be automatically connected to the columns in your table.
+
+## 5. Connect your own LLM
+
+You can connect your own API key by going in the platform **Settings** and then, in the **Integrations** section.
+
+Paste your key. Once that's connected, the key next to the LLM turns green (when selecting your LLM in **"Use AI"**)
+
+<video className="w-full rounded-xl" src="/videos/usecases/NCvu1jSULLzmb0X8v8vbRB3er50.mp4" autoPlay muted loop playsInline controls aria-label="The basics of AI video walkthrough" />
+
+## 6. Results
+
+### Classic LLM results
+
+If you've chosen not to grant web access to your search, then only one column will appear at the end of your table: **"AI"**
+
+If you click on the expand icon, you will be able to see the full AI response.
+
+![The basics of AI — Classic LLM results](/images/usecases/zbxyF6OSaU3UiiAKDIScAPXgJM.gif)
+
+### Airsearch results
+
+Two columns usually appear at the end of your table when the workflow has run:
+
+- Left column - **"Search completed ✅"**, & **"Click to expand"** which reveals the AI reasoning and details of the search
+
+  Click on **"Click to expand"** to access information such as the details of the reasoning, the sources, the certainty of the search results etc.
+
+  **Note :** You can add any of these fields as new columns if you click on **"Add as a column +"**, including the one you might have created with the **"Define outputs"** section
+
+- Right column - the direct answer to your prompt
+
+![The basics of AI — Airsearch results](/images/usecases/FK0txZGGr6VSF5ZnfJZ0ACwy5Uo.gif)
+
+---
+
+## Using Airsearch
+
+Source: https://airscale.mintlify.app/usecases/using-airsearch.md
+
+Description: Capture valuable data from any webpage instantly, making data collection effortless and efficient
+
+<iframe
+  className="w-full aspect-video rounded-xl"
+  src="https://www.youtube.com/embed/HDCCkEifdGQ?si=oSB5IwAASwAbU4nf&amp;iv_load_policy=3&amp;rel=0&amp;modestbranding=1&amp;playsinline=1&amp;autoplay=0"
+  title="Using Airsearch video walkthrough"
+  allow="accelerometer; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+  allowFullScreen
+></iframe>
+
+In this video, we walk through how to use Airsearch, Airscale's built-in AI with real-time web access, to automatically extract specific information from company websites. In this example: identifying which companies have a partnership page and retrieving the URL.
+
+## 0. Why use Airsearch?
+
+Unlike other large language models available on the platform, AirSearch can scrape the internet in real time. This makes it especially powerful when you need to **retrieve any information that requires live web access.**
+
+In this use case, we imagine being a company looking to partner with others. The goal is to check, for each company in our list, whether they have a partnership page on their website, and if so, get the URL.
+
+## 1. Start from a company table
+
+The workflow begins with a table of companies, previously built using the Find Companies module in Airscale (tutorials available on the AirSchool page).
+
+Before launching the AI search, make sure your table already contains the columns that will be used as inputs in your prompt. In this example:
+
+- **Company name**
+- **Company domain**
+
+If an input is referenced in the prompt but does not exist as a column in the table, the workflow won't run.
+
+## 2. Launch Airsearch
+
+To start, click **"Use AI"**, then:
+
+- Select the rows you want to enrich
+- Grant web access (this automatically sets Airsearch as the default language model)
+- Write your prompt, or import a saved template
+
+A good Airsearch prompt always includes three elements:
+
+- **Connected inputs:** each input variable (e.g. company name) must be manually linked to its corresponding column. Click on the variable in your prompt and select the matching column: it turns blue once correctly connected.
+- **Context:** give the AI a clear role and step-by-step instructions. In this example, the prompt asks the AI to act as a B2B market research analyst and explains precisely how to determine whether a company has a partnership page.
+- **Output indication:** specify the exact format expected. Here, the AI is instructed to return Yes if the company has a partner page, or No if not, making it easy to filter results later.
+
+## 3. Define structured outputs
+
+The "Define outputs" section gives you control over what the AI returns and lets you extract multiple data points in a single run.
+
+By default, the AI returns the main response (Yes / No). To capture additional information:
+
+- Click "**Add a field"**
+- Name the field (e.g. Partner URL)
+- Briefly describe what to return (e.g. "Write down the partnership page URL if the company has one")
+
+This way, the AI returns both the qualification answer and the actual URL of the partner page in the same workflow.
+
+## 4. Review and add results as columns
+
+Once the workflow has run, two new AI columns appear at the end of the table:
+
+- One with "Search completed ✅", & "Click to expand" which reveals the AI reasoning and details of the search
+  **Note** : Any of these fields can be promoted to a permanent column by clicking Add as a column. This makes the data easy to copy into a CRM, share with the team, or use directly in your outreach workflow.
+- One with the defined output field, in this case: the Partner URL
+
+By combining real-time web scraping with structured outputs, AirSearch turns a simple list of companies into a fully qualified, enriched dataset, ready to power partnerships, sales, or research workflows.
+
+### You can also connect your API key with Airsearch
+
+**Prerequisite** : you will need to be on a paid plan in order to use Airscale's API
+
+Use the Airscale API endpoint to fetch anything about a company or a prospect from a prompt with some advanced web browsing capabilities.
+
+Find the full tutorial in: [Airsearch (AI research agent)](/api-reference/airsearch)
+
+---
+
+## Templates
+
+Source: https://airscale.mintlify.app/usecases/templates.md
+
+Description: Find some ready-to-use templates for your AI prompts
+
+## 0. Prerequisites
+
+Your table must contain the columns mentioned in the "Input" section of your prompt.
+
+**Note :** You can save these prompts by clicking on "Save as template" (to reuse it the next time, click on "Import a template").
+
+## 1. Classify as B2B or B2C
+
+```text wrap expandable
+Inputs :
+Company Name : /Company name
+Company domain :  /Company domain
+
+You are tasked with determining the business model of a company based on its online presence and domain.
+Identify if the company associated with the domain operates as a B2B, B2C, or both.
+
+1. Begin by visiting the company's official website using the provided domain
+2. Review the content on their homepage, services, products, and any available "About Us" or "Company Profile" pages
+3. Look for key indicators such as language targeting businesses (B2B) or consumers (B2C). Use terms like "business solutions," "enterprise," "clients," for B2B, and "shop now," "customer service," "retail," for B2C
+4. Check any available online press releases, product listings, or service descriptions.
+5. Search for the target audience mentioned in their marketing materials. Terms like "partners," "resellers," signify B2B, while "shoppers," "individuals," signify B2C.
+6. Reference business directories or industry-specific sites if necessary to confirm business model.
+7. If conflicting information is found, cross-reference with reliable business news or reports.
+
+Examples:
+- For a page focused on enterprise clients and bulk ordering, categorize as "B2B.
+- For a site featuring retail products with shopping cart options, categorize as "B2C."
+- If both audience types are evident, categorize as "B2B and B2C."
+- If the information is ambiguous or unclear, result as "Cannot determine."
+
+Output : Conclude with only "B2B," or "B2C," or "B2B and B2C," or "Cannot determine" based on findings.
+```
+
+## 2. Venture-backed?
+
+```text wrap expandable
+Inputs :
+Company Name : /Company name
+Company domain :  /Company domain
+
+Search the web to determine if this company has received venture capital or institutional funding.
+
+Follow these rules strictly:
+
+Only confirm venture-backed status if you find a concrete source : a press release, Crunchbase page, TechCrunch article, or official announcement mentioning a funding round with an amount or an investor name.
+
+If you find no concrete source, output "Not confirmed" and nothing else. Do not assume or infer venture-backed status from the company's size, language, or industry.If confirmed, list for each round : round name (Seed, Series A, etc.), amount raised, investors names, date, and source linkIf only partial information is found, list what is confirmed and explicitly flag what is missing with "Unknown".
+
+Output format:Venture-backed : Yes / No / Not confirmed
+
+If Yes : Round / Amount / Investors / Date / Source
+```
+
+## 3. Recent company news
+
+```text wrap expandable
+Inputs :
+Company name : /Company name
+Company domain :  /Company domain
+
+Scrape the web to find recent news articles for this company. Strictly discard any article or information dated before September 2025. If you cannot confirm the date of an article, discard it.
+Search for news in the following categories, listed by priority order:
+
+Fundraising and Investment Rounds (highest priority) : venture capital funding, Series A/B/C rounds, private equity investments, or any mention of securing new capital.
+Leadership Changes in Marketing : new CMO, marketing director, brand manager, or VP Marketing appointments.
+Expansion into New Markets : new geographical markets, international growth, new store openings, new customer segments.
+Marketing Campaigns and Rebranding : new advertising campaigns, rebranding initiatives, product launches, brand repositioning.
+Industry Awards and Recognition : marketing awards, brand excellence awards, advertising accolades.
+Partnerships : new partnerships, acquisitions, or group ownership connections.
+
+Search instructions: Keep searches simple and do not add quotes. Try multiple formats in this order:
+
+(company name recent news)
+(company name news 2025)
+(company name news 2026)
+(company name funding OR hiring OR expansion OR partnership OR rebrand OR campaign)
+
+If you cannot find any news dated after September 2025, output "Not found" and nothing else.
+Output format:
+Provide results structured as follows:
+High priority signals (Funding, Leadership)
+
+[bullet points]
+
+Medium priority signals (Expansion, Campaigns)
+
+[bullet points]
+
+Low priority signals (Awards, Partnerships)
+
+[bullet points]
+
+Sources:
+
+[numbered links]
+
+Each bullet point must include the date of the article or event in parentheses at the end, formatted as (Month Year) e.g. (March 2026). If the date cannot be confirmed, discard the bullet point entirely.
+```
+
+## 4. List company’s products & services
+
+```text wrap expandable
+Inputs :
+Company name : /Company name
+Company domain :  /Company domain
+
+Go to this company's website and identify the main products and services they offer.
+Follow these rules strictly:
+
+Only list core offerings : what the company primarily sells or delivers to clients. Ignore internal departments, subsidiaries, buzzwords, or generic marketing language.
+Maximum 7 items in the output list
+If the company has subsidiaries or business units, list the parent company's core activity, not the subsidiaries as separate services
+Deduplicate : if two items mean the same thing, keep only the most specific one
+If a service has clear sub-services, group them under one parent label (ex: "Digital Marketing" instead of listing social media, content creation, SEO separately)
+
+Output: a comma-separated list of core products and services, maximum 7 items, no descriptions, no buzzwords.
+Capitalize the first letter of each item.
+```
+
+## 5. Determine someone's likely manager
+
+```text wrap expandable
+Inputs:
+Company name: /Company name
+Company domain: /Company domain
+Job title: /Job title
+First name: /First name
+Last name: /Last name
+
+Identify the most likely direct manager of the person above based on the role and company.
+Instructions:
+Search for the individual's role and company to determine their department and where they fit in the company's hierarchy.
+Find others in the same company with similar or related titles to establish the department's reporting structure.
+Identify the most likely boss, prioritizing:
+
+Someone one level above in the same department (e.g., a Head of Growth for a Growth Manager).
+If no direct manager is found, look for a department leader (e.g., VP of Growth or VP of Marketing for Growth Lead).
+If neither is found, look for an executive overseeing the function (but avoid defaulting to the CEO unless they directly oversee the role).
+
+Verify the person works at the company by checking their listed employer against the company domain. Ignore results where the company does not match.
+Ensure the LinkedIn profile URL is correctly formatted in the structure "linkedin.com/in/username". Ignore results with different formats (e.g., company pages or incorrect URLs).
+Verify the manager exists : confirm the identified manager's name and title appear on their actual LinkedIn profile page before outputting. If you cannot confirm, output "Not confirmed" for that field.
+Never output placeholder or generic names : if no real manager is found, output "Not found" and nothing else. Do not invent or approximate a name.
+Retrieve their full name, job title, and LinkedIn profile URL.
+Output Format:
+Boss's Name: [Full Name]
+Title: [Job Title]
+LinkedIn URL: [linkedin.com/in/username]
+Confidence: [High - Medium - Low]
+High = LinkedIn profile verified directly, Medium = found via third-party source, Low = inferred without direct verification.
+Example Input:
+
+Job title: Growth Manager
+First name: Michel
+Last name: Bearh
+Company name: Acme Inc.
+Company domain: acme.com
+
+Example Output:
+Boss's Name: Jane Doe
+Title: Head of Growth
+LinkedIn URL: https://www.linkedin.com/in/janedoe
+Confidence: High
+```
+
+## 6. Find all major cities a business is located in
+
+```text wrap expandable
+Inputs :
+Company name : /Company name
+Company domain :  /Company domain
+Company location : /Company location
+
+ROLE
+You are a B2B data enrichment assistant. Your task is to return the list of physical office cities for a given company, optimized for CRM or lead enrichment pipelines.
+
+INSTRUCTIONS
+
+Identify the exact company. If the name has fewer than 5 characters, disambiguation is mandatory before proceeding. Use the domain or location to disambiguate. If still ambiguous, output: AMBIGUOUS.Find all cities where the company has a physical, currently active office (HQ + branches + subsidiaries under the same brand). Exclude: remote-only employees, customer locations, occasional co-working desks.Source priority (stop when you have a complete list):
+a) Official website ("Contact", "Locations", "Offices" pages)
+b) Company LinkedIn page
+c) Crunchbase
+d) Wikipedia (HQ confirmation only)
+
+If sources disagree, prefer the official website. Discard any source older than 2 years unless confirmed elsewhere. Never invent a city. If unsure, omit.
+
+OUTPUT FORMAT
+
+Format: "City, Country | City, Country | City, Country"Example: "Paris, France | London, United Kingdom | New York, United States"HQ city first, others alphabeticalNo prefix, no suffix, no explanationMaximum 15 cities (keep the 15 largest by employee count if known, otherwise alphabetical after HQ)
+If remote-only: REMOTE
+If not found: NOT_FOUND
+If ambiguous: AMBIGUOUS
+```
+
+## 7. Summarize pricing plans
+
+```text wrap expandable
+ Inputs :
+Company name : /Company name
+Company domain :  /Company domain
+
+ROLE
+You are a B2B competitive intelligence analyst. Your task is to extract and structure the complete public pricing information of a company, for use in CRM enrichment and competitive benchmarking.
+INSTRUCTIONS
+
+Navigate to the official company website and find the pricing page. If unavailable, try searching for plans or tarifs.
+If the page is JavaScript-rendered and content is not immediately accessible, try navigating to a cached or simplified version. If still inaccessible, check G2, Capterra, then the company's "Contact sales" page. If no pricing found after all checks, output: NO_PUBLIC_PRICING
+For each plan, extract:
+
+Plan name: exact wording from the source only. If a badge appears next to the plan name (e.g. "Recommended", "Most popular"), ignore it and extract the plan name only.
+Price: amount + currency + billing period + unit (e.g. "$49 per user per month", "€500 per month flat", "Custom"). If both monthly and annual prices exist, report monthly with note: "$49 per user per month (or $39 billed annually)". If only annual is shown, mark as "per year".
+Top 3 features: verbatim from the source. Skip marketing fluff ("Most popular", "Best value"). If fewer than 3 features are listed, output what exists and fill remaining with Not Applicable.
+Target: plan-specific audience only, if explicitly stated for that plan. If it applies generically to all plans or is not stated, output Not Applicable.
+
+
+Never invent prices or features. If a field is unavailable, write Not Applicable.
+Always preserve original currency. Do not convert.
+Only use a "Usage-based" entry if the entire pricing model of the company is usage-based. Do not use it for add-ons or secondary billing models.
+
+OUTPUT FORMAT
+One block per plan, separated by a blank line:
+Plan: {Plan Name}
+Price: {Price}
+Features: {Feature 1}, {Feature 2}, {Feature 3}
+Target: {Target audience or Not Applicable}
+CONSTRAINTS
+
+Maximum 6 plans. If more exist, keep the 5 main public plans + 1 enterprise per custom line.
+Do not paraphrase plan names.
+Do not include marketing fluff in features.
+If no public pricing exists after all checks: NO_PUBLIC_PRICING
+```
+
+## 8. Check if a person has the experience needed for a job opening
+
+```text wrap expandable
+Inputs:
+LinkedIn URL: /Linkedin Profile Url
+Job description : Paste here
+
+ROLE
+You are a recruiting screening assistant. Your task is to assess whether a candidate's LinkedIn profile matches a specific job opening, with auditable reasoning.
+
+INSTRUCTIONS
+Read the job description above and extract yourself:
+
+Must-have requirements (explicitly stated as required, or clearly non-negotiable given the role)
+Nice-to-have requirements (stated as preferred, or secondary to the core requirements)
+
+Navigate directly to the LinkedIn URL provided and extract:
+Current role and company
+Total years of relevant experience (count only roles directly related to the job function)
+Hard skills explicitly listed in the Skills section or evidenced by job descriptions
+Education (degree, field)
+Location
+
+If the profile is private, inaccessible, or returns an error, output: PROFILE_UNAVAILABLE
+If the profile exists but contains no exploitable professional information, output: Score: 0 | Decision: Insufficient data
+Compare the profile against the must-haves and nice-to-haves you identified. For each requirement, cite the exact job title, company name, and approximate dates from the profile that support your assessment. Never reference sources by number.
+Compute a match score strictly following this rubric:
+
+5 = All must-haves matched + most nice-to-haves matched + experience in range
+4 = All must-haves matched + some nice-to-haves matched
+3 = All must-haves matched but missing nice-to-haves OR experience slightly below
+2 = Exactly 1 must-have missing but strong adjacent experience present
+1 = 2 or more must-haves missing
+0 = Not enough data to assess, or no must-haves matched
+
+CONSTRAINTS
+
+Base your assessment ONLY on what is explicitly visible on the LinkedIn profile. Do not infer or assume experience not shown.
+Do NOT consider or infer: age, gender, ethnicity, nationality, photo, personal information, or any protected characteristic.
+Never fabricate experience or skills. If a field is not visible, mark it as "Unknown".
+If the profile shows only a current title with no work history detail, flag it in Red flags.
+The match score must be strictly consistent with the rubric above. Do not award a score of 2 if more than 1 must-have is missing.
+
+OUTPUT FORMAT
+Score: {0-5} | Decision: {Strong match OR Match OR Borderline OR Weak match OR No match OR Insufficient data}
+
+MUST-HAVES: {Requirement 1}: {matched OR not matched} — {job title, company, dates} |  {Requirement 2}: {matched OR not matched} — {job title, company, dates}
+
+NICE-TO-HAVES: {Requirement 1}: {matched OR not matched} — {job title, company, dates} |  {Requirement 2}: {matched OR not matched} — {job title, company, dates}
+
+Experience: Candidate: {X} yrs | Required: {Y} yrs | Verdict: {above OR in_range OR below}
+
+Location: {match OR mismatch OR remote_compatible}
+
+Red flags: {flag 1} OR {flag 2} or None
+
+Summary: {2-3 sentence rationale}
+```
+
+## 9. Determine a company’s most frequent negative feedback
+
+```text wrap expandable
+ Inputs :
+Company name : /Company name
+Company domain :  /Company domain
+
+ROLE
+You are a competitive intelligence assistant. Your task is to identify recurring negative feedback patterns about a company's product, based on public reviews, with verifiable sources.
+
+INSTRUCTIONS
+Search these sources in order, focusing exclusively on reviews from the last 18 months. Discard any review or quote dated outside this window, even if it seems relevant:
+a) G2.com (1-3 star reviews only)
+b) Capterra, GetApp, Software Advice
+c) TrustRadius
+d) Reddit (subreddits like SaaS, sales, or product-specific communities) — flag as "anecdotal"
+e) Product Hunt comments
+
+Exclude these sources entirely:
+- Glassdoor, Indeed, the company's own testimonials page
+- App Store, Play Store (unless mobile-first product)
+- Reddit signals about pay, working conditions, or freelance rates, even if they appear in product-related subreddits
+
+Only include product reviews from paying customers or active users. Exclude employee reviews, contractor or freelancer reviews, and reviews that clearly refer to a different entity sharing the same name. If the company name is ambiguous (fewer than 5 characters, or shared by multiple entities), flag it explicitly and only use reviews where the entity is confirmed.
+
+Group negative themes into categories: Pricing, UX or Usability, Performance, Customer support, Missing features, Onboarding, Integrations, Billing or Contracts.
+
+A complaint is "frequent" if it appears in at least 5 distinct reviews across sources, or represents at least 20% of negative reviews on any single source.
+
+Never invent or fabricate quotes. Quote verbatim when possible. If verbatim is unavailable, summarize and mark as "paraphrased". Frequency counts must be consistent with the total number of reviews analyzed: never report more mentions than total reviews analyzed.
+
+If no recurring complaints meet the frequency threshold, you MUST still output: Reviews analyzed, Data quality with explicit reason, and a one-sentence explanation of why no complaints met the threshold.
+
+OUTPUT FORMAT
+Each section must be on a new line. Use the following structure exactly:
+
+Company: {Company Name}
+Reviews analyzed: {X reviews across Y sources}
+Data quality: {high, medium, or low + reason if low}
+
+COMPLAINT #1: {Category}
+Frequency: {frequency}
+Summary: {one sentence}
+Examples: "{quote 1}" — {Source}, {Date}
+"{quote 2}" — {Source}, {Date}
+Sources: {sources}
+
+COMPLAINT #2: {Category}
+Frequency: {frequency}
+Summary: {one sentence}
+Examples: "{quote 1}" — {Source}, {Date}
+"{quote 2}" — {Source}, {Date}
+Sources: {sources}
+
+COMPLAINT #3: {Category}
+Frequency: {frequency}
+Summary: {one sentence}
+Examples: "{quote 1}" — {Source}, {Date}
+"{quote 2}" — {Source}, {Date}
+Sources: {sources}
+
+Notes: {caveats or NA}
+
+CONSTRAINTS
+- Return up to 3 complaints, ordered by frequency.
+- If fewer than 10 total reviews are accessible, flag explicitly: Data quality: low + reason.
+- If no complaints meet the frequency threshold, output: No recurring complaints found + Data quality explanation.
+- Never fabricate quotes.
+- Only product reviews count, not employee, contractor, or company reviews.
+```
+
+## 10. Write an email opener based on the LinkedIn profile
+
+```text wrap expandable
+Input :
+Linkedin profile: /LinkedIn Profile URL
+Company name: /Company Name
+Company Linkedin profile: /Linkedin Company Url
+
+Navigate to the personal LinkedIn profile. Read their recent posts and activity. Also navigate to the company LinkedIn page and check recent posts and announcements. Then search for recent news about the company (last 6 months).
+
+You are writing directly to this person. Write 2 to 3 sentences that could naturally open a cold email to them. Pick one interesting angle (a post they wrote, a career move, something happening at their company) and use it to start a genuine, human conversation. Write as if you are a real person who stumbled on something interesting about them or their company.
+
+No bullet points, no news summaries, no "I noticed", no "I came across", no compliments, no questions, no exclamation marks. Just a natural, direct opening. Under 40 words total.
+
+If nothing usable is found, output: NOT_ENOUGH_DATA
+```
+
+## 11. Find how much funding a company has raised in total
+
+```text wrap expandable
+ Inputs :
+Company name : /Company name
+Company domain :  /Company domain
+
+Search the web to find the total amount of funding raised by this company across all rounds (pre-seed, seed, Series A, B, C, and beyond). Add up all rounds to return the total cumulative amount.
+
+Search in order: Crunchbase, Dealroom, TechCrunch, then general web search.
+
+Output only the total amount raised (e.g. "$45M" or "$1.2B"). No explanation, no breakdown by round. Always output amounts in the same format: $XM for millions (e.g. $27.2M), $XB for billions. Never write out 'million' or 'billion' in full.
+
+If no funding data is found, output: Not found. Never output $0 unless a source explicitly confirms the company raised zero funding.
+```
+
+## 12. Find upcoming events for company
+
+```text wrap expandable
+Inputs:
+Company name: /Company name
+Company domain: /Company domain
+
+Today's date is DD Month YYYY. Search the web, the website at and the social media accounts of this company for any upcoming event they are hosting or participating in as an organizer. An event is "upcoming" only if it takes place strictly after 15 June 2026. Discard any event dated before or on this date.
+
+Output in this exact format:
+Event name — DD Month YYYY
+
+If the date is confirmed but the event is upcoming, use the format above. If the date is not confirmed but the event appears upcoming, output:
+Event name — Date TBC
+
+If no upcoming event is found after filtering, output: No events
+
+No description, no explanation, nothing else.
+```
+
+## 13. Determine a company’s target industries
+
+```text wrap expandable
+Inputs:
+Company name: /Company name
+Company domain: /Company domain
+
+Navigate to the company website and analyze it to identify which industries this company targets as its ideal customers. Look at their homepage, use cases, case studies, and customer pages.
+
+Only output industries that are explicitly mentioned or clearly evidenced on the website. Do not infer industries from the company name or general assumptions.
+
+Output in this exact format:
+Industry 1, Industry 2, Industry 3 (High confidence)
+or
+Industry 1, Industry 2, Industry 3 (Low confidence — inferred from limited data)
+
+If the target industries cannot be determined, output: Not found
+```
+
+## 14. Find company competitors
+
+```text wrap expandable
+Inputs:
+Company name: /Company name
+Company domain: /Company domain
+
+Navigate to the company website and analyze it thoroughly: homepage, product pages, use cases, customer stories, and any "compare us to" or "alternatives" pages. Understand exactly what the company does, their market segment, pricing model, and target customer.
+Then search the web for "alternatives", "competitors", and "vs" to find direct competitors to this company confirmed by third-party sources (G2, Capterra, industry blogs).
+A direct competitor must meet all three criteria:
+
+- Same core product category
+- Same target customer profile
+- Same market segment (do not mix SMB tools with enterprise tools, or B2C with B2B)
+
+Output only the competitor names, comma-separated, in this exact format: Competitor 1, Competitor 2, Competitor 3.  If fewer than 3 confirmed direct competitors are found, output only those confirmed. No explanation, no URLs, no descriptions. If competitors cannot be determined, output: Not found
+```
+
+## 15. Find company blog
+
+```text wrap expandable
+Inputs:
+
+Company name: /Company name
+Company domain: /Company domain
+
+Navigate to the company website and search for a blog page. Check common paths like "blog", "news", "resources", and "insights". Also check the main navigation and footer.
+Output only the full URL of the blog page. If no blog is found, output: Not found
+```
+
+## 16. Scrape recent job openings in a company
+
+```text wrap expandable
+Inputs:
+
+Company name: /Company name
+Company domain: /Company domain
+
+Navigate to the careers page of this company and extract all current job openings. If the careers page redirects to an external ATS platform (Greenhouse, Lever, Workday, Welcome to the Jungle, or similar), navigate directly to that platform to find the openings.
+For each position, extract the job title and location.
+Output each position on a new line in this exact format:
+
+Job Title (Location) | Job Title (Location) | Job Title (Location)
+If no job openings are found, output: No openings
+
+If the careers page is inaccessible, output: Not found
+Maximum 10 positions. If more exist, keep the 10 most recently posted.
+```
+
+## 17. Find child companies (subsidiaries)
+
+```text wrap expandable
+Inputs:
+
+Company name: /Company name
+Company domain: /Company domain
+
+Search the web to find all subsidiaries or child companies owned by this company. Use the company domain to confirm the exact entity before searching for subsidiaries. Only include entities where this company is confirmed as the parent.
+Output a comma-separated list of subsidiary names. If no subsidiaries exist, output: None. No additional sentence or explanation.
+```
+
+## 18. See if a company has ever been sold
+
+```text wrap expandable
+Inputs:
+
+Company name: /Company name
+Company domain: /Company domain
+
+Search the web to determine if this company has ever been fully acquired by another company and lost its independence. Use the company domain to confirm the exact entity before searching. Minority investments, funding rounds, and partial stakes do not count.
+If the company has been acquired, output in this exact format:
+
+True | Acquired by: {Acquirer name} | Date: {Month Year}
+If the company has not been acquired, output:
+
+False
+If the acquisition status cannot be confirmed with certainty, output: Unknown
+No explanation, no additional text.
+```
+
+## 19. Classify the company growth stage
+
+```text wrap expandable
+Inputs:
+
+Company name: /Company name
+Company domain: /Company domain
+
+Search the web for funding information about this company. Check sources in this order: Crunchbase, Dealroom, TechCrunch, then general web search. Use the company domain to confirm the exact entity.
+
+Classify the company into one of these stages based on its most recent funding round or status:
+
+Pre-seed: idea or MVP stage, little to no funding
+Seed: early funding, product in market
+Series A-B: scaling product and team
+Series C+: late-stage growth
+Bootstrapped: no external funding confirmed
+Public: listed on a stock exchange
+Acquired: fully acquired by another company
+
+Never output raw database labels like "Acq - Fin", "Series Unknown", or any abbreviated taxonomy from Crunchbase or other sources. Always translate these into one of the stages above.
+
+If the company has been acquired, include the acquirer name if known.
+
+Output only the stage name and most recent funding round if known, in this exact format:
+Stage | Most recent round: {amount} ({date})
+
+If acquired:
+Acquired by {Acquirer name} | Most recent round: {amount} ({date}) or Acquired by {Acquirer name} | No funding data found
+
+If no funding data found:
+Stage | No funding data found
+```
+
+## 20. Detect if there's been a recent change in C-Level Executives
+
+Best used on companies with 500+ employees and regular press coverage.
+
+```text wrap expandable
+Inputs:
+
+Company name: /Company name
+Company domain: /Company domain
+
+Today's date is DD Month YYYY.
+
+Search the web for any changes in C-Level executives (CEO, CFO, COO, CTO, CMO, CPO) at this company in the last 12 months. Check sources like LinkedIn, Crunchbase, TechCrunch, and the company's own press releases. Use the company domain to confirm the exact entity.
+
+If a change is found, output in this exact format:
+True | {Role}: {Previous name} replaced by {New name} | Date: {Month Year}
+If multiple changes occurred, list each one separated by " / ".
+If no C-Level change is found in the last 12 months, output: False
+If the information cannot be confirmed, output: Unknown
+```
+
+## 21. Extract customer testimonials
+
+```text wrap expandable
+Inputs:
+
+Company name: /Company name
+Company domain: /Company domain
+
+Navigate to the company website and search for customer testimonials or case studies. Check the homepage, customers, testimonials, case-studies, and reviews pages. Also check G2 and Capterra for verified reviews.
+
+Extract up to 3 testimonials. For each, extract the quote, the customer name, and their company or role if available. Separate each testimonial with a blank line.
+Output in this exact format:
+"{Quote}" — {Name}, {Role or Company}
+
+"{Quote}" — {Name}, {Role or Company}
+
+"{Quote}" — {Name}, {Role or Company}
+
+Never fabricate quotes. If fewer than 3 are found, output only those available. If no testimonials are found, output: Not found
+```
+
+---
+
+## Turn hiring signals into high-quality leads
+
+Source: https://airscale.mintlify.app/usecases/turn-hiring-signals-into-high-quality-leads.md
+
+Description: Find decision makers from hiring companies, qualify them with AI, and enrich their email data
+
+<iframe
+  className="w-full aspect-video rounded-xl"
+  src="https://www.youtube.com/embed/ktKLWWG8-W4?v=ktKLWWG8-W4&amp;t=49s&amp;start=49s&amp;iv_load_policy=3&amp;rel=0&amp;modestbranding=1&amp;playsinline=1&amp;autoplay=0"
+  title="Turn hiring signals into high-quality leads video walkthrough"
+  allow="accelerometer; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+  allowFullScreen
+></iframe>
+
+In this video, we walk through one of the most popular workflows in Airscale: going from hiring signals to a qualified list of decision-makers ready for outreach.
+
+## Identify companies actively hiring
+
+The process starts by using the "Find Companies Hiring for Specific Positions" module.
+
+In this example, we search for companies hiring a Head of Sales in London, which is a strong signal that the company may be investing in sales growth.
+
+Airscale automatically builds a table containing key information such as:
+
+- Company name
+- LinkedIn company URL
+- Location
+- Job description
+- Job posting URL
+
+The LinkedIn company URL is especially important because it becomes the unique identifier used to find decision-makers in the next step.
+
+## Find decision-makers in those companies
+
+Next, we use the Leads Finder module to identify the right contacts inside those companies.
+
+Using the previously created company table, Airscale searches for people with specific roles, such as:
+
+- CEO
+- Founder
+
+You can also apply filters like location (United Kingdom) to refine the results.
+
+Within seconds, Airscale transforms a list of companies into a targeted list of decision-makers working at those organizations.
+
+## Enrich company data for better qualification
+
+Before contacting those leads, it's important to ensure they match your Ideal Customer Profile (ICP).
+
+To do this, Airscale enriches the data with additional company insights:
+
+**LinkedIn company enrichment**
+
+- Retrieves detailed company information directly from LinkedIn.
+
+**Website scraping**
+
+- Extracts the text content of company websites, providing deeper context about what the company does.
+
+These enrichments provide the data needed to automatically qualify companies.
+
+## Use AI to qualify your ICP automatically
+
+Airscale integrates multiple LLMs (such as Gemini 2.5 Flash) to automate lead qualification.
+
+In this example, the AI evaluates companies based on two criteria:
+
+- The company sells to other businesses (B2B)
+- The company has between 10 and 500 employees
+
+The AI processes the enriched data and returns a simple Yes/No ICP Fit score.
+
+Companies that do not match the ICP are automatically filtered out, ensuring that only relevant prospects remain.
+
+## Enrich verified professional emails
+
+Once the list has been cleaned and qualified, Airscale can find and verify professional emails for each decision-maker.
+
+Emails are automatically verified, eliminating the need for additional verification tools and ensuring high deliverability for outreach campaigns.
+
+## Export the final prospect list
+
+Finally, the qualified and enriched list can be exported directly to your tools:
+
+- CRM systems
+- Cold email platforms
+- Webhooks for automation
+- CSV download
+
+This makes it easy to activate your leads immediately in your sales workflow.
+
+---
+
+## Scrape a LinkedIn post to find qualified leads
+
+Source: https://airscale.mintlify.app/usecases/scrape-a-linkedin-post.md
+
+Description: In just a few steps, Airscale transforms raw LinkedIn engagement into a qualified, enriched prospect list - ready to be exported to your CRM, cold email platform, or outbound tool of choice.
+
+<iframe
+  className="w-full aspect-video rounded-xl"
+  src="https://www.youtube.com/embed/2cUzGAKeCzI?iv_load_policy=3&amp;rel=0&amp;modestbranding=1&amp;playsinline=1&amp;autoplay=0"
+  title="Scrape a LinkedIn post to find qualified leads video walkthrough"
+  allow="accelerometer; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+  allowFullScreen
+></iframe>
+
+In this video, we walk through one of the most effective prospecting workflows in Airscale: scraping the likers and commenters of a LinkedIn post, qualifying them automatically with AI, and enriching only those who match your Ideal Customer Profile.
+
+## Why scrape LinkedIn posts?
+
+LinkedIn is one of the largest professional databases available. When someone likes or comments on a post, whether from a competitor, a client, or an industry thought leader, they are signaling interest in a specific topic.
+
+This engagement data can be turned into a targeted list of high-quality prospects, without wasting credits on unqualified contacts.
+
+## Extract likers and/or commenters
+
+Start by copying the URL of the LinkedIn post you want to scrape.
+
+Then, on the Airscale platform, open the **Extract LinkedIn post likers and commenters** module and:
+
+- Give your search a name
+- Paste the LinkedIn post URL
+- Select what you want to extract: likers, commenters, or both
+
+Once launched, Airscale builds a table containing key information for each profile, including:
+
+- First Name
+- Last Name
+- Job title
+- Company Name
+- Company Location
+- LinkedIn URLs
+- Reaction Type
+- **People Profile**: a rich summary pulled directly from LinkedIn, including headline, bio, all professional experiences, etc.
+
+This People Profile field is especially important as it is the data that will be used in the next step to qualify each contact with AI.
+
+## Qualify your ICP with AI
+
+Once the table is ready, use the **AI enrichment** feature to automatically score each profile against your ICP criteria.
+
+To do this:
+
+1. Click **Use AI** and select the rows to process
+2. Choose your language model (e.g. GPT-5 Mini for speed and cost efficiency)
+3. Write your qualification prompt or import a saved template
+
+In this example, the prompt evaluates whether the person matches Airscale's ICP based on their LinkedIn profile data.
+
+> **Important:** make sure the People Profile field is correctly set as the input before running the workflow.
+
+The AI returns a simple **Yes / No** ICP Fit score for each contact.
+
+## Filter & enrich
+
+Once the AI has processed all rows:
+
+1. **Filter** the table by ICP Fit = *Yes*
+2. **Enrich** only the qualified profiles with emails and phone numbers
+
+This approach ensures you only spend credits on contacts that are genuinely relevant, maximizing both data quality and cost efficiency.
+
+## Export the final prospect list
+
+Finally, the qualified and enriched list can be exported directly to your tools:
+
+- CRM systems
+- Cold email platforms
+- Webhooks for automation
+- CSV download
+
+---
+
+## From Google Maps to local business decision-makers
+
+Source: https://airscale.mintlify.app/usecases/from-google-maps-to-local-business-decision-makers.md
+
+Description: Scrape local businesses, identify their owners, and find verified contact information in a few steps.
+
+<iframe
+  className="w-full aspect-video rounded-xl"
+  src="https://www.youtube.com/embed/ZNpG9gncwDk?iv_load_policy=3&amp;rel=0&amp;modestbranding=1&amp;playsinline=1&amp;autoplay=0"
+  title="From Google Maps to local business decision-makers video walkthrough"
+  allow="accelerometer; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+  allowFullScreen
+></iframe>
+
+In this video, we walk through a practical Airscale workflow: scraping local businesses from Google Maps, identifying the right decision-makers inside those companies, and enriching their professional contact data.
+
+## Scrape local businesses with Google Maps
+
+The process starts with the **Find Local Businesses with Google Maps** module, accessible from the **Find Companies** section.
+
+Configure your search by entering:
+
+- A location (e.g. New York)
+- A query (e.g. real estate brokers)
+- An optional result limit (up to 500 companies per table)
+
+You can also choose to include contact information, which will trigger additional scraping from each company's website.
+
+Once launched, Airscale builds a table automatically populated with key fields, including:
+
+- Company name
+- **Company domain**
+- Company location
+- Phone number
+- Business type
+
+## Find decision-makers in those companies
+
+From the table, click **Enrich** and navigate to the **Find People** category, then select **Find People in Companies**.
+
+Configure the enrichment with:
+
+- The company domain as input
+- The job titles you want to find (e.g. Owner, CEO)
+- A people location filter
+
+> **Important:** this enrichment returns one contact per company, prioritizing the first job title listed. If you need multiple decision-makers per company, see the alternative method below.
+
+Once complete, Airscale automatically adds several new columns: first name, last name, job title, and LinkedIn URL.
+
+## Enrich verified professional emails
+
+With the LinkedIn URL or company domain available, you can run an email enrichment directly on the results.
+
+Emails found are automatically verified by Airscale: no additional verification tool needed, and no credits are spent when no data is found.
+
+## Finding multiple job titles per company
+
+If you need to find several roles within the same companies, use the **Leads Finder** module instead:
+
+1. Go to the home section and open Leads Finder
+2. Under People attributes → Current company, select **from an Airscale table** and choose your existing company table
+3. Use the company domain as the matching field
+4. Add as many job titles as needed
+5. Preview and load the results
+
+This approach allows you to retrieve multiple decision-makers per company in a single search.
+
+---
+
+## From intent signals to personalized outreach
+
+Source: https://airscale.mintlify.app/usecases/from-intent-signals-to-personalized-outreach.md
+
+Description: Find decision-makers in hiring companies, qualify them with AI, and generate personalized cold outreach messages automatically
+
+<iframe
+  className="w-full aspect-video rounded-xl"
+  src="https://www.youtube.com/embed/QFXB6LUUZec?iv_load_policy=3&amp;rel=0&amp;modestbranding=1&amp;playsinline=1&amp;autoplay=0"
+  title="From intent signals to personalized outreach video walkthrough"
+  allow="accelerometer; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+  allowFullScreen
+></iframe>
+
+In this video, we walk through a full prospecting workflow in Airscale: starting from a list of companies identified through intent signals, finding the right decision-makers inside them, and using AI to generate a personalized outreach message for each contact.
+
+## Identify companies based on intent signals
+
+The workflow starts with the **Find Companies** module. In this example, we search for SaaS companies in the United States actively hiring salespeople: a strong signal that the company is scaling and investing in growth.
+
+Filters applied:
+
+- Industry: Software development
+- Company size: 1 to 500 employees
+- Location: United States
+- Recent event: Hiring in sales department (last 60 days)
+
+Airscale instantly builds a table of matching companies with key information included by default.
+
+## Qualify companies with AI
+
+Before moving to the next step, use the **Use** **AI feature** to automatically check whether each company matches your Ideal Customer Profile.
+
+To do this:
+
+1. Click **Use AI** and select the rows to process
+2. Grant web access so Airscale can search for additional context
+3. Import or write your qualification prompt
+4. Connect the prompt inputs to the correct table columns (company domain, LinkedIn URL)
+5. Run the workflow
+
+The AI returns an **outreach eligible: Yes / No** output for each company. Once complete, filter out the "No" rows and delete or export them to a separate table.
+
+## Find decision-makers with Leads Finder
+
+With a clean list of qualified companies, use the **Leads Finder** module to identify the right people inside those organizations.
+
+1. Select the previously created company table
+2. Set the company identifier (company domain)
+3. Define the job titles you are targeting (e.g. CEO, CTO, VP Sales)
+4. Preview results and load contacts to a new table
+
+The table includes key fields by default: first name, last name, job title, company location, LinkedIn profile URL, headline, and company description.
+
+## Enrich profiles for personalization
+
+To generate relevant outreach messages, enrich each contact with two data sources:
+
+**Get Person Profile Data** Retrieves full LinkedIn profile information, including experiences, bio, and professional background.
+
+**People Post Scraper** Scrapes the contact's recent LinkedIn posts, enabling outreach that references their latest activity.
+
+Both enrichments run in parallel and populate directly into the table.
+
+## Generate personalized outreach with AI
+
+Once the enrichments are complete:
+
+1. Click **Use AI** and select the rows
+2. Choose your language model (e.g. GPT-5 Mini)
+3. Import your outreach prompt template
+4. Connect the inputs to the profile data and LinkedIn post columns
+5. Run the workflow
+
+Airscale generates a **personalized outreach message** for each decision-maker, added as a new column in your table. No web access is needed at this stage since all the relevant data has already been collected.
+
+## Enrich contact data and export
+
+To complete the workflow:
+
+- Enrich the list with **verified emails** and **phone numbers**
+- Export directly to your outreach tools
+
+When exporting to platforms like Lemlist, you can map Airscale columns to the corresponding fields: for example, setting the AI-generated message as the icebreaker in your email sequence.
+
+---
+
 ## Machine-readable contracts
 
 - [MCP tool catalog](https://airscale.mintlify.app/mcp/tools.md): Hosted Markdown for all 22 operational MCP tools.
