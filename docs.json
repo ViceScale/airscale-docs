@@ -73,6 +73,84 @@
   "navigation": {
     "tabs": [
       {
+        "tab": "Documentation",
+        "groups": [
+          {
+            "group": "Build lists",
+            "pages": [
+              "docs/sales-navigator",
+              "docs/likers-commenters",
+              "docs/single-search",
+              "docs/leads-finder",
+              "docs/find-people",
+              "docs/find-companies",
+              "docs/find-companies-linkedin",
+              "docs/google-maps",
+              "docs/companies-hiring",
+              "docs/import-csv"
+            ]
+          },
+          {
+            "group": "Enrichments",
+            "pages": [
+              "docs/phone-numbers",
+              "docs/professional-emails",
+              "docs/personal-emails",
+              "docs/verify-email",
+              "docs/enrich-people-linkedin",
+              "docs/enrich-company-linkedin",
+              "docs/fetch-company-insights",
+              "docs/job-openings-linkedin",
+              "docs/linkedin-posts-scraper",
+              "docs/reverse-phone",
+              "docs/reverse-email",
+              "docs/ai-custom-prompts",
+              "docs/ai-agent-airsearch",
+              "docs/google-searches",
+              "docs/linkedin-profile-url",
+              "docs/linkedin-company-url",
+              "docs/linkedin-company-url-from-a-domain",
+              "docs/meta-ads",
+              "docs/google-ads",
+              "docs/company-domain",
+              "docs/company-technologies",
+              "docs/funding-data",
+              "docs/website-content",
+              "docs/fetch-business-intent-topics",
+              "docs/website-traffic",
+              "docs/lookup-hubspot"
+            ]
+          },
+          {
+            "group": "Export",
+            "pages": [
+              "docs/export-csv",
+              "docs/transfer-another-table",
+              "docs/export-hubspot",
+              "docs/export-instantly",
+              "docs/export-smartlead",
+              "docs/export-lemlist"
+            ]
+          },
+          {
+            "group": "CRM integrations",
+            "pages": [
+              "docs/import-hubspot",
+              "docs/hubspot-app"
+            ]
+          },
+          {
+            "group": "Utilities",
+            "pages": [
+              "docs/users-workspaces",
+              "docs/deduplicate-leads-tables",
+              "docs/filer-tables",
+              "docs/transfer-content"
+            ]
+          }
+        ]
+      },
+      {
         "tab": "API Reference",
         "groups": [
           {

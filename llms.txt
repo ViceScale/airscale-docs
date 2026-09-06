@@ -3,6 +3,69 @@
 > Airscale product guides, integration workflows, MCP documentation, and public API reference.
 > Preview documentation is intentionally noindex. Use only the airscale.mintlify.app links in this file.
 
+## Documentation — Build lists
+
+- [Scrape a Sales Navigator search](https://airscale.mintlify.app/docs/sales-navigator.md): Turn your Sales Navigator searches (people only) into actionable prospect lists in Airscale. This feature extracts profiles directly from any Sales Navigator search results, eliminating manual copy-pasting and building targeted lists in minutes
+- [Extract post likers/commenters](https://airscale.mintlify.app/docs/likers-commenters.md): Find highly engaged prospects by extracting users who have liked or commented on specific LinkedIn posts. This powerful feature helps you identify people already interested in topics relevant to your business, making them warmer prospects for outreach
+- [Single Search](https://airscale.mintlify.app/docs/single-search.md): Extract people profile information from a LinkedIn URL and find emails and/or phone number
+- [Leads finder](https://airscale.mintlify.app/docs/leads-finder.md): Export up to 10,000 leads in one search from various filters
+- [Find People](https://airscale.mintlify.app/docs/find-people.md): Use Airscale's built-in people search to discover prospects based on company, job title, location, and other criteria. This powerful native feature helps you build targeted prospect lists without needing external tools or complex imports
+- [Find Companies](https://airscale.mintlify.app/docs/find-companies.md): Use Airscale's built-in company search to discover target businesses based on size, industry, location, and other firmographic criteria. This native feature helps you build comprehensive company lists for account-based prospecting and market research
+- [Find Companies (Linkedin)](https://airscale.mintlify.app/docs/find-companies-linkedin.md): Use Airscale’s real-time LinkedIn scraping module to discover target companies based on size, industry, location, and other firmographic criteria. This powerful add-on continuously extracts fresh company data from LinkedIn, helping you build accurate prospecting lists for account-based sales and market research.
+- [Find local businesses with Google Maps](https://airscale.mintlify.app/docs/google-maps.md): Find local businesses with Google Maps directly in Airscale. Extract names, addresses, phones and emails in one click to fuel your prospecting lists.
+- [Find companies hiring for specific positions](https://airscale.mintlify.app/docs/companies-hiring.md): Find companies hiring for specific positions using Airscale. Target the right accounts at the right time and reach out when hiring intent is highest.
+- [Import a file as a CSV](https://airscale.mintlify.app/docs/import-csv.md): Import a CSV file into Airscale in seconds. Enrich, clean and push your contact lists directly into your CRM or sales workflows - no manual work.
+
+## Documentation — Enrichments
+
+- [Find phone numbers](https://airscale.mintlify.app/docs/phone-numbers.md): Find verified phone numbers via Airscale's waterfall enrichment
+- [Find professional emails](https://airscale.mintlify.app/docs/professional-emails.md): Find verified emails via Airscale's waterfall enrichment
+- [Find personal emails](https://airscale.mintlify.app/docs/personal-emails.md): Find personal emails via Airscale's waterfall enrichment
+- [Verify if an email is deliverable](https://airscale.mintlify.app/docs/verify-email.md): Verify email deliverability in real time with Airscale. Reduce bounce rates, protect your sender score and reach more prospects in the inbox.
+- [Enrich people profile from LinkedIn](https://airscale.mintlify.app/docs/enrich-people-linkedin.md): Enrich people profiles from LinkedIn with Airscale. Get verified emails, phone numbers and job details from any LinkedIn profile - instantly.
+- [Enrich company profile from LinkedIn](https://airscale.mintlify.app/docs/enrich-company-linkedin.md): Enrich company profiles from LinkedIn with Airscale. Extract firmographics, headcount, industry and decision-makers data to power your outbound.
+- [Fetch company insights](https://airscale.mintlify.app/docs/fetch-company-insights.md): Find some company insights from Linkedin : description, headcount growth (overall and by function), hiring trends, job openings, etc.
+- [Find current job openings on LinkedIn](https://airscale.mintlify.app/docs/job-openings-linkedin.md): Find current job openings on LinkedIn with Airscale. Identify hiring companies, target the right contacts and time your outreach with buying intent.
+- [Find the latest posts of a company / person](https://airscale.mintlify.app/docs/linkedin-posts-scraper.md): Retrieve the latest posts published by a company or an individual on LinkedIn
+- [Find LinkedIn profile data from a phone number](https://airscale.mintlify.app/docs/reverse-phone.md): Retrieve a LinkedIn profile URL and data from any phone number using Airscale's Reverse Phone enrichment
+- [Find LinkedIn profile data from an email](https://airscale.mintlify.app/docs/reverse-email.md): Retrieve a LinkedIn profile URL and data from any email using Airscale's Reverse Email enrichment
+- [AI custom prompts](https://airscale.mintlify.app/docs/ai-custom-prompts.md): Run AI with the best LLMs using custom prompts
+- [AI agent (AirSearch)](https://airscale.mintlify.app/docs/ai-agent-airsearch.md): Use Airscale’s AI agent to browse the web and find any information about a company or a prospect
+- [Create custom Google searches](https://airscale.mintlify.app/docs/google-searches.md): Create custom Google searches in Airscale. Build targeted queries to find any prospect or company and extract results straight into your lists.
+- [Find a LinkedIn profile URL](https://airscale.mintlify.app/docs/linkedin-profile-url.md): Find any LinkedIn profile URL with Airscale. Locate prospects from their name and company to fuel your outreach and enrichment workflows.
+- [Find a LinkedIn company URL](https://airscale.mintlify.app/docs/linkedin-company-url.md): Find any LinkedIn company URL with Airscale. Identify company pages to enrich accounts and target decision-makers faster.
+- [Find a Linkedin company URL from a domain](https://airscale.mintlify.app/docs/linkedin-company-url-from-a-domain.md): Find a LinkedIn company URL from a domain with Airscale. Turn any website into a LinkedIn company page instantly - no manual search needed.
+- [Fetch a company's Meta ads](https://airscale.mintlify.app/docs/meta-ads.md): Retrieve all active Meta ads running for any company directly from Airscale's Meta Ads enrichment
+- [Fetch a company's Google ads](https://airscale.mintlify.app/docs/google-ads.md): Retrieve all active Google ads running for any company directly from Airscale's Google Ads enrichment
+- [Find a company domain](https://airscale.mintlify.app/docs/company-domain.md): Find any company domain with Airscale. Turn a company name into a verified website URL to enrich contacts and launch outbound campaigns faster.
+- [Find company technologies](https://airscale.mintlify.app/docs/company-technologies.md): Find company technologies used by any account with Airscale. Identify tech stacks to qualify prospects, personalize outreach and prioritize the right leads.
+- [Find company funding data](https://airscale.mintlify.app/docs/funding-data.md): Find company funding data with Airscale. Access funding rounds and investors to target high-growth accounts and time your outreach perfectly.
+- [Extract website content with Zenrows](https://airscale.mintlify.app/docs/website-content.md): Scrape and extract the text content from any website using Airscale's Zenrows integration. This powerful enrichment tool converts websites into LLM-ready markdown data, perfect for research, competitor analysis, and content gathering from your prospects' company websites
+- [Fetch business intent topics](https://airscale.mintlify.app/docs/fetch-business-intent-topics.md): Find what topics a company’s employees are researching from its LinkedIn URL
+- [Find company website traffic data](https://airscale.mintlify.app/docs/website-traffic.md): Retrieve the website traffic count, evolution, source using Similarweb. The required input is a company domain
+- [Lookup contacts in Hubspot](https://airscale.mintlify.app/docs/lookup-hubspot.md): Check if a contact already exists in your CRM
+
+## Documentation — Export
+
+- [Export your data as CSV](https://airscale.mintlify.app/docs/export-csv.md): Export your prospect lists from Airscale as CSV files for use in email marketing tools, CRMs, or further analysis. This feature lets you download all enriched data while giving you full control over which contacts and columns to include
+- [Transfer your data to another table](https://airscale.mintlify.app/docs/transfer-another-table.md): Move prospects between tables within Airscale to organize your data, create targeted segments, or consolidate lists from multiple sources. This feature helps you keep your prospect database clean and well-organized for different campaigns and initiatives
+- [Export your leads to HubSpot](https://airscale.mintlify.app/docs/export-hubspot.md): Export your prospects directly from Airscale to HubSpot CRM to streamline your sales pipeline. This integration pushes enriched prospect data directly into your HubSpot database, allowing you to manage leads, track interactions, and nurture prospects through your established sales processes
+- [Export your leads to Instantly](https://airscale.mintlify.app/docs/export-instantly.md): Export your prospects directly from Airscale to Instantly campaigns for automated email outreach. This integration streamlines your workflow by pushing enriched prospect data directly into your email sequences without manual uploads or CSV exports.
+- [Export your leads to Smartlead](https://airscale.mintlify.app/docs/export-smartlead.md): Export your prospects directly from Airscale to Smartlead campaigns for automated email outreach. This integration streamlines your workflow by pushing enriched prospect data directly into your email sequences without manual uploads or CSV exports.
+- [Export your leads to Lemlist](https://airscale.mintlify.app/docs/export-lemlist.md): Export your prospects directly from Airscale to Lemlist campaigns for automated email outreach. This integration streamlines your workflow by pushing enriched prospect data directly into your email sequences without manual uploads or CSV exports
+
+## Documentation — CRM integrations
+
+- [Import contacts from Hubspot](https://airscale.mintlify.app/docs/import-hubspot.md): Pull contacts from Hubspot lists
+- [Airscale for HubSpot app](https://airscale.mintlify.app/docs/hubspot-app.md): The complete step-by-step guide to install and use the Airscale enrichment app on your HubSpot account.
+
+## Documentation — Utilities
+
+- [Add users & switch workspaces](https://airscale.mintlify.app/docs/users-workspaces.md): Invite new users to your workspace and seamlessly switch between different workspaces based on your needs
+- [Deduplicate leads between tables](https://airscale.mintlify.app/docs/deduplicate-leads-tables.md): Identify and merge duplicate leads between your tables to keep your database clean and accurate
+- [Filter tables](https://airscale.mintlify.app/docs/filer-tables.md): Apply filters to your tables to quickly find and analyze the data that matters most
+- [Transfer column content](https://airscale.mintlify.app/docs/transfer-content.md): Move or copy data from one column to another to reorganize or update your records efficiently
+
 ## API Reference — Start here
 
 - [API Overview](https://airscale.mintlify.app/api-reference/api-overview.md): Authenticate with Airscale and make your first API request.
