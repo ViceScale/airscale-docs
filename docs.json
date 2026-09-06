@@ -211,6 +211,34 @@
             ]
           }
         ]
+      },
+      {
+        "tab": "Use cases",
+        "groups": [
+          {
+            "group": "Getting started",
+            "pages": [
+              "usecases/quick-beginner-guide"
+            ]
+          },
+          {
+            "group": "Using AI",
+            "pages": [
+              "usecases/the-basics-of-ai",
+              "usecases/using-airsearch",
+              "usecases/templates"
+            ]
+          },
+          {
+            "group": "GTM use cases",
+            "pages": [
+              "usecases/turn-hiring-signals-into-high-quality-leads",
+              "usecases/scrape-a-linkedin-post",
+              "usecases/from-google-maps-to-local-business-decision-makers",
+              "usecases/from-intent-signals-to-personalized-outreach"
+            ]
+          }
+        ]
       }
     ]
   }

@@ -106,6 +106,23 @@
 - [Connect Airscale MCP to Claude](https://airscale.mintlify.app/mcp/connect-airscale-mcp-to-claude.md): Connect Claude clients to Airscale with hosted OAuth or a protected Claude Code authorization header.
 - [Airscale MCP Server](https://airscale.mintlify.app/mcp/airscale-mcp-server.md): Connect Airscale to your AI assistant and prospect without leaving the chat.
 
+## Use cases — Getting started
+
+- [Quick beginner guide](https://airscale.mintlify.app/usecases/quick-beginner-guide.md): This quick beginner tutorial shows you how to navigate the Airscale platform and start using its key features
+
+## Use cases — Using AI
+
+- [The basics of AI](https://airscale.mintlify.app/usecases/the-basics-of-ai.md): Run AI on Airscale with the best LLMs using custom prompts
+- [Using Airsearch](https://airscale.mintlify.app/usecases/using-airsearch.md): Capture valuable data from any webpage instantly, making data collection effortless and efficient
+- [Templates](https://airscale.mintlify.app/usecases/templates.md): Find some ready-to-use templates for your AI prompts
+
+## Use cases — GTM use cases
+
+- [Turn hiring signals into high-quality leads](https://airscale.mintlify.app/usecases/turn-hiring-signals-into-high-quality-leads.md): Find decision makers from hiring companies, qualify them with AI, and enrich their email data
+- [Scrape a LinkedIn post to find qualified leads](https://airscale.mintlify.app/usecases/scrape-a-linkedin-post.md): In just a few steps, Airscale transforms raw LinkedIn engagement into a qualified, enriched prospect list - ready to be exported to your CRM, cold email platform, or outbound tool of choice.
+- [From Google Maps to local business decision-makers](https://airscale.mintlify.app/usecases/from-google-maps-to-local-business-decision-makers.md): Scrape local businesses, identify their owners, and find verified contact information in a few steps.
+- [From intent signals to personalized outreach](https://airscale.mintlify.app/usecases/from-intent-signals-to-personalized-outreach.md): Find decision-makers in hiring companies, qualify them with AI, and generate personalized cold outreach messages automatically
+
 ## Machine-readable contracts
 
 - [OpenAPI specification](https://airscale.mintlify.app/openapi.json): HTTP API operations, schemas, authentication, and responses.

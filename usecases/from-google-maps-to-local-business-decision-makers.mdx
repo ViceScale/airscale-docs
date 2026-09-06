@@ -1,0 +1,67 @@
+---
+title: "From Google Maps to local business decision-makers"
+description: "Scrape local businesses, identify their owners, and find verified contact information in a few steps."
+canonical: "https://airscale.mintlify.app/usecases/from-google-maps-to-local-business-decision-makers"
+---
+
+<iframe
+  className="w-full aspect-video rounded-xl"
+  src="https://www.youtube.com/embed/ZNpG9gncwDk?iv_load_policy=3&amp;rel=0&amp;modestbranding=1&amp;playsinline=1&amp;autoplay=0"
+  title="From Google Maps to local business decision-makers video walkthrough"
+  allow="accelerometer; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+  allowFullScreen
+></iframe>
+
+In this video, we walk through a practical Airscale workflow: scraping local businesses from Google Maps, identifying the right decision-makers inside those companies, and enriching their professional contact data.
+
+## Scrape local businesses with Google Maps
+
+The process starts with the **Find Local Businesses with Google Maps** module, accessible from the **Find Companies** section.
+
+Configure your search by entering:
+
+- A location (e.g. New York)
+- A query (e.g. real estate brokers)
+- An optional result limit (up to 500 companies per table)
+
+You can also choose to include contact information, which will trigger additional scraping from each company's website.
+
+Once launched, Airscale builds a table automatically populated with key fields, including:
+
+- Company name
+- **Company domain**
+- Company location
+- Phone number
+- Business type
+
+## Find decision-makers in those companies
+
+From the table, click **Enrich** and navigate to the **Find People** category, then select **Find People in Companies**.
+
+Configure the enrichment with:
+
+- The company domain as input
+- The job titles you want to find (e.g. Owner, CEO)
+- A people location filter
+
+> **Important:** this enrichment returns one contact per company, prioritizing the first job title listed. If you need multiple decision-makers per company, see the alternative method below.
+
+Once complete, Airscale automatically adds several new columns: first name, last name, job title, and LinkedIn URL.
+
+## Enrich verified professional emails
+
+With the LinkedIn URL or company domain available, you can run an email enrichment directly on the results.
+
+Emails found are automatically verified by Airscale: no additional verification tool needed, and no credits are spent when no data is found.
+
+## Finding multiple job titles per company
+
+If you need to find several roles within the same companies, use the **Leads Finder** module instead:
+
+1. Go to the home section and open Leads Finder
+2. Under People attributes → Current company, select **from an Airscale table** and choose your existing company table
+3. Use the company domain as the matching field
+4. Add as many job titles as needed
+5. Preview and load the results
+
+This approach allows you to retrieve multiple decision-makers per company in a single search.

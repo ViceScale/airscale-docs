@@ -1,0 +1,76 @@
+---
+title: "Using Airsearch"
+description: "Capture valuable data from any webpage instantly, making data collection effortless and efficient"
+canonical: "https://airscale.mintlify.app/usecases/using-airsearch"
+---
+
+<iframe
+  className="w-full aspect-video rounded-xl"
+  src="https://www.youtube.com/embed/HDCCkEifdGQ?si=oSB5IwAASwAbU4nf&amp;iv_load_policy=3&amp;rel=0&amp;modestbranding=1&amp;playsinline=1&amp;autoplay=0"
+  title="Using Airsearch video walkthrough"
+  allow="accelerometer; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+  allowFullScreen
+></iframe>
+
+In this video, we walk through how to use Airsearch, Airscale's built-in AI with real-time web access, to automatically extract specific information from company websites. In this example: identifying which companies have a partnership page and retrieving the URL.
+
+## 0. Why use Airsearch?
+
+Unlike other large language models available on the platform, AirSearch can scrape the internet in real time. This makes it especially powerful when you need to **retrieve any information that requires live web access.**
+
+In this use case, we imagine being a company looking to partner with others. The goal is to check, for each company in our list, whether they have a partnership page on their website, and if so, get the URL.
+
+## 1. Start from a company table
+
+The workflow begins with a table of companies, previously built using the Find Companies module in Airscale (tutorials available on the AirSchool page).
+
+Before launching the AI search, make sure your table already contains the columns that will be used as inputs in your prompt. In this example:
+
+- **Company name**
+- **Company domain**
+
+If an input is referenced in the prompt but does not exist as a column in the table, the workflow won't run.
+
+## 2. Launch Airsearch
+
+To start, click **"Use AI"**, then:
+
+- Select the rows you want to enrich
+- Grant web access (this automatically sets Airsearch as the default language model)
+- Write your prompt, or import a saved template
+
+A good Airsearch prompt always includes three elements:
+
+- **Connected inputs:** each input variable (e.g. company name) must be manually linked to its corresponding column. Click on the variable in your prompt and select the matching column: it turns blue once correctly connected.
+- **Context:** give the AI a clear role and step-by-step instructions. In this example, the prompt asks the AI to act as a B2B market research analyst and explains precisely how to determine whether a company has a partnership page.
+- **Output indication:** specify the exact format expected. Here, the AI is instructed to return Yes if the company has a partner page, or No if not, making it easy to filter results later.
+
+## 3. Define structured outputs
+
+The "Define outputs" section gives you control over what the AI returns and lets you extract multiple data points in a single run.
+
+By default, the AI returns the main response (Yes / No). To capture additional information:
+
+- Click "**Add a field"**
+- Name the field (e.g. Partner URL)
+- Briefly describe what to return (e.g. "Write down the partnership page URL if the company has one")
+
+This way, the AI returns both the qualification answer and the actual URL of the partner page in the same workflow.
+
+## 4. Review and add results as columns
+
+Once the workflow has run, two new AI columns appear at the end of the table:
+
+- One with "Search completed ✅", & "Click to expand" which reveals the AI reasoning and details of the search
+  **Note** : Any of these fields can be promoted to a permanent column by clicking Add as a column. This makes the data easy to copy into a CRM, share with the team, or use directly in your outreach workflow.
+- One with the defined output field, in this case: the Partner URL
+
+By combining real-time web scraping with structured outputs, AirSearch turns a simple list of companies into a fully qualified, enriched dataset, ready to power partnerships, sales, or research workflows.
+
+### You can also connect your API key with Airsearch
+
+**Prerequisite** : you will need to be on a paid plan in order to use Airscale's API
+
+Use the Airscale API endpoint to fetch anything about a company or a prospect from a prompt with some advanced web browsing capabilities.
+
+Find the full tutorial in: [Airsearch (AI research agent)](/api-reference/airsearch)

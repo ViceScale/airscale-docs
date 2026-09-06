@@ -8,7 +8,7 @@ import { gfm } from "micromark-extension-gfm";
 import { parseDocument } from "yaml";
 import { assertBalancedCodeFences, assertNoStaticCredentials } from "./helpers/content-safety.mjs";
 
-const manifest = JSON.parse(readFileSync("inventory/airschool-documentation.json", "utf8"));
+const manifest = JSON.parse(readFileSync("inventory/airschool-usecases.json", "utf8"));
 const config = JSON.parse(readFileSync("docs.json", "utf8"));
 const normalize = (value) => value.replace(/\s+/gu, "");
 const hash = (value) => createHash("sha256").update(value).digest("hex");
@@ -18,18 +18,17 @@ function collect(node, type) {
   return [...(node.type === type ? [node] : []), ...(node.children ?? []).flatMap((child) => collect(child, type))];
 }
 
-test("Documentation mirrors all 48 live sidebar routes in the five source groups", () => {
+test("Use cases mirrors all eight live sidebar routes in the three source groups", () => {
   assert.deepEqual(manifest.navigation.map(({ group, pages }) => [group, pages.length]), [
-    ["Build lists", 10], ["Enrichments", 26], ["Export", 6], ["CRM integrations", 2], ["Utilities", 4]
+    ["Getting started", 1], ["Using AI", 3], ["GTM use cases", 4]
   ]);
   const paths = manifest.navigation.flatMap(({ pages }) => pages);
-  assert.equal(paths.length, 48);
-  assert.equal(new Set(paths).size, 48);
+  assert.equal(paths.length, 8);
+  assert.equal(new Set(paths).size, 8);
   assert.deepEqual(config.navigation.tabs.map(({ tab }) => tab), ["Documentation", "API Reference", "MCP & Agents", "Use cases"]);
-  assert.deepEqual(config.navigation.tabs[0], { tab: "Documentation", groups: manifest.navigation });
+  assert.deepEqual(config.navigation.tabs[3], { tab: "Use cases", groups: manifest.navigation });
   assert.deepEqual(manifest.pages.map(({ path }) => path), paths);
-  assert.deepEqual(readdirSync("docs").filter((name) => name.endsWith(".mdx")).sort(), paths.map((path) => `${path.slice(5)}.mdx`).sort());
-  assert.ok(paths.includes("docs/filer-tables"), "preserve the source URL even though its slug has a typo");
+  assert.deepEqual(readdirSync("usecases").filter((name) => name.endsWith(".mdx")).sort(), paths.map((path) => `${path.slice(9)}.mdx`).sort());
 });
 
 for (const page of manifest.pages) {
@@ -48,7 +47,7 @@ for (const page of manifest.pages) {
     assert.equal(hash(normalize(plainText(tree))), page.textSha256, "all source text must survive in order without duplicated breakpoint variants");
     assert.deepEqual(collect(tree, "heading").map((heading) => ({ level: heading.depth, text: plainText(heading).trim() })), page.headings.map((heading) => ({ ...heading, text: heading.text.trim() })));
     assert.deepEqual(collect(tree, "table").map((table) => table.children.map((row) => row.children.map((cell) => normalize(plainText(cell))))), page.tables.map((table) => table.map((row) => row.map(normalize))));
-    assert.deepEqual(collect(tree, "code").map(({ value }) => value), page.codeBlocks.map((value) => value.replace(/^\n|\n$/g, "")));
+    assert.deepEqual(collect(tree, "code").map(({ value }) => value), page.codeBlocks.map((value) => value.replace(/^\n+|\n+$/g, "").split("\n").map((line) => line.trimEnd()).join("\n")));
     assert.deepEqual(collect(tree, "image").map(({ url, alt }) => ({ path: url.slice(1), alt })), page.images);
     for (const image of page.images) assert.ok(existsSync(image.path), `${image.path} is stored locally`);
     assert.equal((body.match(/<iframe\b/g) ?? []).length, page.videos.length);
@@ -76,4 +75,13 @@ test("every migrated image and video matches the downloaded source checksum", ()
     assert.equal(bytes.length, asset.bytes, asset.path);
     assert.equal(hash(bytes), asset.sha256, asset.path);
   }
+});
+
+test("all 21 prompt templates retain copy controls, wrapping, and expansion", () => {
+  const page = manifest.pages.find(({ path }) => path === "usecases/templates");
+  assert.equal(page.codeBlocks.length, 21);
+  const source = readFileSync("usecases/templates.mdx", "utf8");
+  assert.equal((source.match(/^```text wrap expandable$/gm) ?? []).length, 21);
+  assert.doesNotMatch(source, /nocopy/);
+  assert.equal(page.headings.length, 22);
 });

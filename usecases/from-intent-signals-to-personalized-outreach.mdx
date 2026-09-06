@@ -1,0 +1,84 @@
+---
+title: "From intent signals to personalized outreach"
+description: "Find decision-makers in hiring companies, qualify them with AI, and generate personalized cold outreach messages automatically"
+canonical: "https://airscale.mintlify.app/usecases/from-intent-signals-to-personalized-outreach"
+---
+
+<iframe
+  className="w-full aspect-video rounded-xl"
+  src="https://www.youtube.com/embed/QFXB6LUUZec?iv_load_policy=3&amp;rel=0&amp;modestbranding=1&amp;playsinline=1&amp;autoplay=0"
+  title="From intent signals to personalized outreach video walkthrough"
+  allow="accelerometer; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+  allowFullScreen
+></iframe>
+
+In this video, we walk through a full prospecting workflow in Airscale: starting from a list of companies identified through intent signals, finding the right decision-makers inside them, and using AI to generate a personalized outreach message for each contact.
+
+## Identify companies based on intent signals
+
+The workflow starts with the **Find Companies** module. In this example, we search for SaaS companies in the United States actively hiring salespeople: a strong signal that the company is scaling and investing in growth.
+
+Filters applied:
+
+- Industry: Software development
+- Company size: 1 to 500 employees
+- Location: United States
+- Recent event: Hiring in sales department (last 60 days)
+
+Airscale instantly builds a table of matching companies with key information included by default.
+
+## Qualify companies with AI
+
+Before moving to the next step, use the **Use** **AI feature** to automatically check whether each company matches your Ideal Customer Profile.
+
+To do this:
+
+1. Click **Use AI** and select the rows to process
+2. Grant web access so Airscale can search for additional context
+3. Import or write your qualification prompt
+4. Connect the prompt inputs to the correct table columns (company domain, LinkedIn URL)
+5. Run the workflow
+
+The AI returns an **outreach eligible: Yes / No** output for each company. Once complete, filter out the "No" rows and delete or export them to a separate table.
+
+## Find decision-makers with Leads Finder
+
+With a clean list of qualified companies, use the **Leads Finder** module to identify the right people inside those organizations.
+
+1. Select the previously created company table
+2. Set the company identifier (company domain)
+3. Define the job titles you are targeting (e.g. CEO, CTO, VP Sales)
+4. Preview results and load contacts to a new table
+
+The table includes key fields by default: first name, last name, job title, company location, LinkedIn profile URL, headline, and company description.
+
+## Enrich profiles for personalization
+
+To generate relevant outreach messages, enrich each contact with two data sources:
+
+**Get Person Profile Data** Retrieves full LinkedIn profile information, including experiences, bio, and professional background.
+
+**People Post Scraper** Scrapes the contact's recent LinkedIn posts, enabling outreach that references their latest activity.
+
+Both enrichments run in parallel and populate directly into the table.
+
+## Generate personalized outreach with AI
+
+Once the enrichments are complete:
+
+1. Click **Use AI** and select the rows
+2. Choose your language model (e.g. GPT-5 Mini)
+3. Import your outreach prompt template
+4. Connect the inputs to the profile data and LinkedIn post columns
+5. Run the workflow
+
+Airscale generates a **personalized outreach message** for each decision-maker, added as a new column in your table. No web access is needed at this stage since all the relevant data has already been collected.
+
+## Enrich contact data and export
+
+To complete the workflow:
+
+- Enrich the list with **verified emails** and **phone numbers**
+- Export directly to your outreach tools
+
+When exporting to platforms like Lemlist, you can map Airscale columns to the corresponding fields: for example, setting the AI-generated message as the icebreaker in your email sequence.
