@@ -3060,7 +3060,7 @@ test("Mintlify prebuild classification is not treated as hosted publication proo
 
 test("agent renderers escape compact-index metadata and reject unsafe or incomplete navigation input", () => {
   const inputs = agentFixtureInputs();
-  const firstPath = inputs.docsConfig.navigation.tabs[0].groups[0].pages[0];
+  const firstPath = inputs.docsConfig.navigation.tabs.find(({ tab }) => tab === "API Reference").groups[0].pages[0];
   inputs.pageSources[firstPath] = inputs.pageSources[firstPath]
     .replace('title: "API Overview"', 'title: "API [Overview]"')
     .replace(

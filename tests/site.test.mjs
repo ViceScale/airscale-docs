@@ -457,7 +457,7 @@ test("authorization bearer checks reject unsafe token formats", () => {
 
 test("navigation contains exactly the approved 18 pages in five groups", () => {
   const config = JSON.parse(readFileSync("docs.json", "utf8"));
-  assert.deepEqual(config.navigation.tabs[0], EXPECTED_API_TAB);
+  assert.deepEqual(config.navigation.tabs.find(({ tab }) => tab === "API Reference"), EXPECTED_API_TAB);
   assert.deepEqual(mdxPagePaths(), [...PAGE_PATHS].sort());
 });
 

@@ -3,6 +3,2518 @@
 > Airscale product guides, integration workflows, MCP documentation, and public API reference.
 > This is the full public, navigable preview corpus. It remains intentionally noindex for traditional search engines.
 
+## Scrape a Sales Navigator search
+
+Source: https://airscale.mintlify.app/docs/sales-navigator.md
+
+Description: Turn your Sales Navigator searches (people only) into actionable prospect lists in Airscale. This feature extracts profiles directly from any Sales Navigator search results, eliminating manual copy-pasting and building targeted lists in minutes
+
+**Note:**
+
+- You can only export **2,500 leads** per search
+- We recommend not scraping more than **2,500 leads every 12 hours**
+
+## 0. Prerequisites
+
+- An active LinkedIn Sales Navigator subscription
+- A completed search in Sales Navigator with your target prospects
+- Airscale Chrome [extension](https://chromewebstore.google.com/detail/airscale-cookie-importer/hklojeelolieobofdgnboacmigmnkbop) installed (for LinkedIn authentication)
+
+## 1. Click on "Scrape Sales Navigator search results"
+
+![Scrape a Sales Navigator search — 1. Click on "Scrape Sales Navigator search results"](/images/docs/QOaeXVyISyw1AyU6ldpBtDjvzB4.png)
+
+## 2. Copy the search URL from Sales Navigator
+
+Before scraping, ensure your search is properly configured:
+
+1. Go to Sales Navigator and perform your lead search
+2. Apply your target filters (job titles, company size, industry, location, etc.)
+3. Review your search results to ensure they match your ideal prospects
+4. Copy the search URL from your browser's address bar
+
+![Scrape a Sales Navigator search — 2. Copy the search URL from Sales Navigator](/images/docs/dMBQCqCanAHC0lKoycTMqCD4.png)
+
+## 3. Connect your LinkedIn account
+
+Download the Airscale Chrome extension if you haven't already [here](https://chromewebstore.google.com/detail/airscale-cookie-importer/hklojeelolieobofdgnboacmigmnkbop) or directly with the link on the extraction page
+
+- The extension will automatically extract your LinkedIn session cookie
+- Paste your `li_at` cookie into the provided field
+- This authenticates your LinkedIn session securely. 2FA adds an extra security layer and is required for Admin roles
+
+![Scrape a Sales Navigator search — 3. Connect your LinkedIn account](/images/docs/S5lbwdKwJwMx7duJbf6TwyeDaE.png)
+
+```text
+# Example cookie value:
+AQEFARABAAAAABh3zC8AAAGax5RR6wAAAZsS5x4vTgAAs3wcms4QjA4ZWtWSUZxNDRZQVVJNGdSZHk1bE41a[..]
+```
+
+## 4. Launch the extraction
+
+Click **"LAUNCH EXTRACTION"** to begin the scraping process
+
+1. Monitor the progress in real-time on the right panel:
+
+   - Validating your LinkedIn session cookie
+   - Extracting (progress will show here)
+   - Importing results to a table
+2. Wait for completion — most extractions complete within 1–10 minutes
+
+![Scrape a Sales Navigator search — 4. Launch the extraction](/images/docs/aw6ZDObeaXmjx1HYCcY47fVoZ8.png)
+
+## 5. Access your results
+
+Click **"See your results"** to view your new prospect table:
+
+![Scrape a Sales Navigator search — 5. Access your results](/images/docs/14R4NiRR8nITFmts0EKUSJ5y4.png)
+
+**Output format:**
+
+| **Field** | **Data level** | Description |
+| --- | --- | --- |
+| First Name | People | / |
+| Last Name | People | / |
+| Company Name | Company | / |
+| Job title | People | / |
+| Location | People | / |
+| Linkedin Profile URL | People | / |
+| Linkedin Company URL | Company | / |
+| Open? | People | / |
+| Premium? | People | / |
+
+---
+
+## Extract post likers/commenters
+
+Source: https://airscale.mintlify.app/docs/likers-commenters.md
+
+Description: Find highly engaged prospects by extracting users who have liked or commented on specific LinkedIn posts. This powerful feature helps you identify people already interested in topics relevant to your business, making them warmer prospects for outreach
+
+**Note:** you can extract up to **3000 post likers/commenters** at once
+
+## 0. Prerequisites
+
+- Access to LinkedIn (personal or Sales Navigator account)
+- Specific LinkedIn posts with engagement (likes/comments) to target
+
+## 1. Click on "Extract LinkedIn post likers and commenters"
+
+1. Log into your **Airscale account**
+2. Select **"Extract LinkedIn post likers and commenters"** from the available options in the **"Find People"** tab
+
+![Extract post likers/commenters — 1. Click on "Extract LinkedIn post likers and commenters"](/images/docs/mTeyja6PKB6NJK40FPIlseAoGsE.png)
+
+## 2. Copy the URL of the post
+
+Identify and prepare your target LinkedIn post:
+
+1. **Find a relevant LinkedIn post** with good engagement:
+
+   - Industry thought leadership content
+   - Company announcements from competitors
+   - Product launches or feature updates
+   - Industry news or trend discussions
+2. **Copy the post URL:**
+
+   - Navigate to the specific LinkedIn post
+   - Click on the post timestamp to open the individual post view
+   - Copy the full URL from your browser's address bar
+   - URL should look like: `https://www.linkedin.com/posts/[username]_[post-id]`
+3. **Give your extraction a descriptive name:**
+
+   - Example: "SaaS CEO Post Engagement | Q1 2024 | Marketing Automation"
+   - Include the post topic and date for easy reference
+4. **Paste the post URL** into the designated field in Airscale
+
+**Pro tip:** choose posts with **50+ engagements** for a meaningful prospect list, but avoid **super viral posts** (3000+ engagements) that may contain less targeted audiences
+
+![Extract post likers/commenters — 2. Copy the URL of the post](/images/docs/4PVO3KHqPr9ebCdzQMohTCvUQ.png)
+
+![Extract post likers/commenters — 2. Copy the URL of the post](/images/docs/ka9IHgnXGXmlJZYm33USvTWtAg.png)
+
+## 3. Launch the extraction
+
+**Click "LAUNCH EXTRACTION"** to begin the scraping process
+
+1. **Monitor progress in real-time:**
+
+   - Validating post access and engagement data
+   - Extracting user profiles from engagement
+   - Processing and importing results
+2. **Wait for completion** — most extractions complete within 1–5 minutes
+
+**Pro tip:** you can navigate away from this page during extraction
+
+![Extract post likers/commenters — 3. Launch the extraction](/images/docs/66wC8gsh7AEcMAoLPDzP21Yfc.png)
+
+## 4. Access your results
+
+**Click "See your results"** to view your engagement-based prospect table:
+
+![Extract post likers/commenters — 4. Access your results](/images/docs/6oSpKvBKPVim0F3DZY0SGr3fU.png)
+
+---
+
+## Single Search
+
+Source: https://airscale.mintlify.app/docs/single-search.md
+
+Description: Extract people profile information from a LinkedIn URL and find emails and/or phone number
+
+## 1. Click on "Single Search"
+
+![Single Search — 1. Click on "Single Search"](/images/docs/t4wm0y2IGeG2OxYVw1J3zWWxAlE.png)
+
+## 2. Copy the profile URL of a profile and paste it below
+
+![Single Search — 2. Copy the profile URL of a profile and paste it below](/images/docs/03S62s6Q6XiRIbWcWuauIcUEg8U.png)
+
+## 3. Specify whether you want to find their professional email and phone numbers
+
+**Note:** you can toggle ON/OFF options to find emails and phone numbers
+
+![Single Search — 3. Specify whether you want to find their professional email and phone numbers](/images/docs/wzJsa14q3rdIXjP9TkXGAXTh5sE.png)
+
+## 4. Launch the extraction and export the profile to a table
+
+- **Click "EXTRACT PROFILE"** to begin the scraping process
+- After a few seconds, we will retrieve the data about the profile, and the results will appear on the right side of the screen
+
+![Single Search — 4. Launch the extraction and export the profile to a table](/images/docs/w88qp3aqGy6JaQSzGyUr8dzniSY.png)
+
+---
+
+## Leads finder
+
+Source: https://airscale.mintlify.app/docs/leads-finder.md
+
+Description: Export up to 10,000 leads in one search from various filters
+
+<iframe
+  className="w-full aspect-video rounded-xl"
+  src="https://www.youtube.com/embed/Uq8zO5r8qjQ?iv_load_policy=3&amp;rel=0&amp;modestbranding=1&amp;playsinline=1&amp;autoplay=0&amp;mute=1"
+  title="Leads finder video walkthrough"
+  allow="accelerometer; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+  allowFullScreen
+></iframe>
+
+**Note**
+
+- You can import up to **10,000 people** per search
+- Large searches may take several minutes to complete
+- Use specific filters to get the most relevant results within the limit
+
+## 0. Prerequisites
+
+- An active Airscale account with remaining credits
+- Clear understanding of your ideal customer profile (ICP)
+- Specific criteria for your target prospects (people and company attributes)
+
+## 1. Click on "Leads finder"
+
+1. Log into your **Airscale** dashboard
+2. Select **"Leads finder"** from the available modules (look for the Airscale logo icon)
+
+**Note:** the "Leads finder" module is Airscale's native search engine, so you don't need any **external URLs or account connections**
+
+![Leads finder — 1. Click on "Leads finder"](/images/docs/cqquFwDcJVTxgRdn407eEVXmiM.png)
+
+## 2. Apply your search filters
+
+Configure your search criteria using the available filters:
+
+### People Filters
+
+- Current company (you can select an Airscale table containing a list of companies, or use the manual input to enter them manually)
+- Job titles
+- Seniority level & Experience
+- People Location
+- Skills
+- Language
+- Certification
+- Keywords in profile
+- Profile Badge
+
+### Company Filters
+
+- Company industry
+- Company size
+- Company headquarter location
+- Company type
+- Annual revenue
+- Keywords in profile
+- Founded year range
+- Funding
+- Employee by department
+- Headcount Growth
+
+![Leads finder — Company Filters](/images/docs/6BLagRkGcqX8ioUrfO624P3K1w.png)
+
+## 3. Visualize your results
+
+**Click on "Preview search results"** to see a sample of your search results
+
+1. **Review the preview data:**
+
+   - Names and current job titles
+   - Company names
+   - Geographic locations
+   - Linkedin URLs
+2. **Check the results summary:**
+
+   - Total number of matches (e.g., "25 of 558,008 total")
+   - Quality of matches against your criteria
+3. **Refine filters if needed:**
+
+   - Add or remove people or company attributes based on preview results
+   - Modify or refine location targeting for better coverage
+
+**Note:** ensure the preview shows **relevant prospects before importing**. Poor preview results indicate filters need adjustment
+
+![Leads finder — 3. Visualize your results](/images/docs/5EQyGnGy2IvWWQcju2S8W9fM2nQ.png)
+
+## 4. Launch the search
+
+1. **Click "Load all people to a table"** to export the full search to a table
+2. **Monitor the import progress:**
+
+   - Progress indicator shows "Importing: X/10 000"
+   - Percentage completion display
+   - Real-time status updates
+3. **Wait for completion:**
+
+   - You can navigate away during processing
+
+**Note:** the system **automatically stops at 10,000 results** even if more matches exist. Use more specific filters if you hit this limit and want different prospects
+
+![Leads finder — 4. Launch the search](/images/docs/dvVGNpKtk9dnxFi924XUaSptL2Q.png)
+
+## 5. Access your results
+
+**Click on "Access results"** to view your new prospect table:
+
+![Leads finder — 5. Access your results](/images/docs/B5CPv1EowcyT3yGiNOpxFA9HuVA.png)
+
+---
+
+## Find People
+
+Source: https://airscale.mintlify.app/docs/find-people.md
+
+Description: Use Airscale's built-in people search to discover prospects based on company, job title, location, and other criteria. This powerful native feature helps you build targeted prospect lists without needing external tools or complex imports
+
+**Note**
+
+- You can import up to **2,500 people** per search
+- Large searches may take several minutes to complete
+- Use specific filters to get the most relevant results within the limit
+
+## 0. Prerequisites
+
+- An active Airscale account with remaining credits
+- Clear understanding of your ideal customer profile (ICP)
+- Specific criteria for your target prospects (job titles, company names, locations)
+
+## 1. Click on "Find People"
+
+1. Log into your **Airscale** dashboard
+2. **Select "Find people"** from the available modules (look for the Airscale logo icon)
+
+**Note:** the Find People module is Airscale's native search engine, so you don't need any **external URLs or account connections**
+
+![Find People — 1. Click on "Find People"](/images/docs/mle4EpGmEFDRl9D3kRSsD8ZBCIY.png)
+
+## 2. Apply your search filters
+
+Configure your search criteria using the available filters:
+
+### Company Filters
+
+1. **Choose your query method:**
+
+   - **Manual input:** type company domains (e.g., `hubspot.com` or `facebook.com`)
+   - **Airscale table:** select from an existing companies list in your tables, then select the column to use to identify the companies (it’s always best to choose the LinkedIn URL to get more accurate results)
+
+### People Filters
+
+1. **Job titles (required):**
+
+   - **Job titles to include:** add specific titles like "Founder," "CEO," "Marketing Director"
+   - **Job titles to exclude:** remove irrelevant titles to improve targeting
+   - Use the **"Remove all jobs"** option to reset selections
+2. **Location targeting:**
+
+   - **Country, city or state to include:** enter geographic filters
+   - Type locations like "United States," "San Francisco," or "California"
+   - Multiple locations can be added
+
+![Find People — People Filters](/images/docs/O0hXTEvD132vqvZsssKTQFpgQcU.png)
+
+## 3. Visualize your results
+
+**Click on "PREVIEW PEOPLE"** to see a sample of your search results.
+
+1. **Review the preview data:**
+
+   - Names and current job titles
+   - Company names and details
+   - Geographic locations
+   - Profile completeness
+2. **Check the results summary:**
+
+   - Total number of matches (e.g., "25 of 558,008 total")
+   - Quality of matches against your criteria
+   - Geographic and title distribution
+3. **Refine filters if needed:**
+
+   - Add or remove job titles based on preview results
+   - Adjust company size or industry filters
+   - Modify location targeting for better coverage
+
+**Note:** ensure the preview shows **relevant prospects before importing**. Poor preview results indicate filters need adjustment
+
+![Find People — 3. Visualize your results](/images/docs/UBtdKbKF9lQwePorSv3AIk0Omzw.png)
+
+## 4. Launch the search
+
+1. **Click "Load all people to a table"** to export the full search
+2. **Monitor the import progress:**
+
+   - Progress indicator shows "Importing: X/2500"
+   - Percentage completion display
+   - Real-time status updates
+3. **Wait for completion:**
+
+   - You can navigate away during processing
+
+**Note:** the system **automatically stops at 2,500 results** even if more matches exist. Use more specific filters if you hit this limit and want different prospects
+
+![Find People — 4. Launch the search](/images/docs/bJTNAQ2ZU9ssoGFvVVRmxEg9s.png)
+
+## 5. Access your results
+
+**Click on "See your results"** to view your new prospect table:
+
+![Find People — 5. Access your results](/images/docs/9KdqHeA1H3o7WWpAED7xm8rCy4.png)
+
+---
+
+## Find Companies
+
+Source: https://airscale.mintlify.app/docs/find-companies.md
+
+Description: Use Airscale's built-in company search to discover target businesses based on size, industry, location, and other firmographic criteria. This native feature helps you build comprehensive company lists for account-based prospecting and market research
+
+<iframe
+  className="w-full aspect-video rounded-xl"
+  src="https://www.youtube.com/embed/CJCFoMy_1sU?iv_load_policy=3&amp;rel=0&amp;modestbranding=1&amp;playsinline=1&amp;autoplay=0&amp;mute=1"
+  title="Find Companies video walkthrough"
+  allow="accelerometer; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+  allowFullScreen
+></iframe>
+
+**Note:**
+
+- You can import up to **10,000 companies** per search
+- Large searches may take several minutes to complete
+- Use specific filters to get the most relevant companies within the limit
+
+## 0. Prerequisites
+
+- An active Airscale account with remaining credits
+- Clear understanding of your ideal customer profile (ICP)
+- Specific criteria for your target companies (industry, size, location, etc.)
+
+## 1. Click on "Find Companies"
+
+- Log into your **Airscale** dashboard
+- **Select "Find companies"** from the available modules (look for the Airscale icon)
+
+**Note:** the Find Companies module is Airscale's native search engine, so you don't need any external URLs or account connections
+
+![Find Companies — 1. Click on "Find Companies"](/images/docs/JPMGGavgTaLa4qXjv6IQT7RTIg.png)
+
+## 2. Apply your search filters
+
+Configure your search criteria using the comprehensive filter system:
+
+### Basic company filters
+
+**Company industry:**
+
+- Select from dropdown of industry categories
+- Multiple industries can be selected
+- Focus on industries where your solution has proven success
+
+**Company size:**
+
+- Choose from predefined ranges: 1-10, 11-50, 51-200, 201-500, 501-1000, 1001-5000, 5001-10000
+- Select multiple ranges for broader targeting
+- Consider your product's sweet spot for company size
+
+**Headquarter location targeting:**
+
+- Include country, state, or city: Enter geographic filters like "United States," "California," or "San Francisco"
+- Multiple locations can be added for broader coverage
+- Use specific cities for territory-based targeting
+
+**Company number of locations & company age:**
+
+- Set minimum and maximum number of office locations as well as company age in years
+- Target single-site startups or multi-location enterprises depending on your ideal customer profile
+- Align outreach with companies at the right maturity and operational complexity for your solution
+
+![Find Companies — Basic company filters](/images/docs/GNzzXexOisk69kbX1VHyoNN3M.png)
+
+### Advanced growth filters & signals
+
+**Company recent events:**
+
+- Select multiple recent events simultaneously:
+
+  - *Hiring in a specific department*
+  - *Increase in a specific department*
+  - *Decrease in a specific department*
+  - *Company award*
+  - *New product*
+  - *Employee joined company*
+  - *Merger and acquisitions*
+  - *Lawsuit and legal issues*
+  - *Outages and security breaches*
+  - *Closing office*
+  - *New investment*
+  - *New office*
+  - *New partnership*
+  - *Cost cutting*
+  - *New funding round*
+  - *Award*
+  - *IPO announcement*
+- Identify companies going through strategic shifts or growth phases
+- Prioritize outreach based on timely, contextual triggers
+- Filter by last occurrence : 30, 60, or 90 days
+
+**Company revenue:**
+
+- Set minimum and maximum revenue in millions
+- Target companies within specific revenue ranges
+- Align with your solution's typical customer spend capacity
+
+**Topics recently searched:**
+
+- Select specific topics or keywords recently searched by target companies
+- Identify businesses actively researching solutions in your space
+- Prioritize outreach based on real-time intent signals to reach prospects at the right moment in their buying journey
+
+**Company tech stack:**
+
+- Select specific technologies used by target companies (CRM, marketing tools, sales tools, infrastructure, etc.)
+- Filter companies based on their current tech stack to identify integration opportunities or competitive displacement
+- Target businesses already familiar with similar solutions to reduce onboarding friction
+
+![Find Companies — Advanced growth filters & signals](/images/docs/3CF93jgX4Q9NQkYoPc3XqnIFck.png)
+
+### Advanced keyword targeting
+
+**Keywords in website:**
+
+- Enter specific keywords to target companies whose website content matches your criteria
+- Identify businesses operating in niche industries or verticals based on their own messaging
+- Reach companies that explicitly address topics relevant to your solution on their public pages
+
+## 3. Visualize your results
+
+**Click "PREVIEW COMPANIES"** to see a sample of your search results.
+
+1. **Review the preview data:**
+
+   - Company names
+   - Company website
+   - Company location
+2. **Check the results summary:**
+
+   - Total number of matches
+   - Quality of matches against your ICP
+   - Distribution across industries and business models
+3. **Refine filters if needed:**
+
+   - Adjust keyword combinations based on company descriptions
+   - Modify industry selections for better targeting
+   - Update size or revenue ranges based on company profiles
+   - Fine-tune company events for ideal timing
+
+**Note:** ensure the preview shows **relevant companies before importing**. Poor preview results indicate filters need adjustment
+
+![Find Companies — 3. Visualize your results](/images/docs/EfJJiiHwZKdE9Zqxstah0yrjJg.png)
+
+## 4. Click on "Load all companies to a table" to create a new table
+
+**Review your final filter settings** one more time
+
+1. **Click "Load all companies to a table"** to export the full search
+2. **Monitor the import progress:**
+
+   - Progress indicator shows "Importing: X/10,000"
+   - Percentage completion display
+   - Real-time status updates
+3. **Wait for completion:**
+
+   - You can navigate away during processing
+
+**Note:** the system automatically stops at **10,000 results** even if more matches exist. Use more specific filters if you hit this limit and want different prospects
+
+![Find Companies — 4. Click on "Load all companies to a table" to create a new table](/images/docs/JXEnxUGXAX2po1p59KVF32c.png)
+
+## 5. See your results
+
+**Click on "Access results"** to view your new company table:
+
+![Find Companies — 5. See your results](/images/docs/tNlmlneySCEqUJ8k9GDqtSoq7Yg.png)
+
+You can now start enriching!
+
+---
+
+## Find Companies (Linkedin)
+
+Source: https://airscale.mintlify.app/docs/find-companies-linkedin.md
+
+Description: Use Airscale’s real-time LinkedIn scraping module to discover target companies based on size, industry, location, and other firmographic criteria. This powerful add-on continuously extracts fresh company data from LinkedIn, helping you build accurate prospecting lists for account-based sales and market research.
+
+**Note:**
+
+- You can import up to **1,000 companies** per search
+- Large searches may take several minutes to complete
+- Use specific filters to get the most relevant companies within the limit
+
+## 0. Prerequisites
+
+- An active Airscale account with remaining credits
+- Clear understanding of your ideal customer profile (ICP)
+- Specific criteria for your target companies (industry, size, location, etc.)
+
+## 1. Click on "Find Companies (LinkedIn)"
+
+- Log into your **Airscale** dashboard
+- **Select "Find companies (LinkedIn)"** from the available modules (look for the LinkedIn logo)
+
+![Find Companies (Linkedin) — 1. Click on "Find Companies (LinkedIn)"](/images/docs/jTFkcwzh6MLCjE5uHeLPcxgXz0.png)
+
+## 2. Apply your search filters
+
+Configure your search criteria using the comprehensive filter system:
+
+### Basic company filters
+
+**Location targeting:**
+
+- **Include country, state, or city:** Enter geographic filters like "United States," "California," or "San Francisco"
+- Multiple locations can be added for broader coverage
+- Use specific cities for territory-based targeting
+
+**Company industries:**
+
+- Select from dropdown of industry categories
+- Multiple industries can be selected
+- Focus on industries where your solution has proven success
+
+**Company size:**
+
+- Choose from predefined ranges: 1-10, 11-50, 51-200, 201-500, 501-1000, 1001-5000, 5001-10000
+- Select multiple ranges for broader targeting
+- Consider your product's sweet spot for company size
+
+### Advanced growth and financial filters
+
+**Company size growth:**
+
+- Set minimum and maximum growth percentages
+- Target companies experiencing specific growth rates
+- Filter for rapidly expanding businesses or stable enterprises
+
+**Company signals:**
+
+- Select from dropdown of buying intent and behavioral signals
+- Target companies showing signs of growth, hiring, or technology adoption
+- Focus on businesses likely to be in market for your solution
+
+**Company revenue:**
+
+- Set minimum and maximum revenue in millions
+- Target companies within specific revenue ranges
+- Align with your solution's typical customer spend capacity
+
+### Department-specific filters
+
+**Company department count:**
+
+- Select specific departments (Sales, Marketing, Engineering, etc.)
+- Set minimum and maximum employee counts within those departments
+- Target companies with mature departments in your focus area
+
+**Company department growth:**
+
+- Choose specific departments experiencing growth
+- Set minimum and maximum growth percentages for those departments
+- Identify companies actively hiring in relevant areas
+
+**Company followers count:**
+
+- Select a specific range of follower count on LinkedIn
+- Target companies with strong brand presence or niche audiences
+- Filter by growth stage based on community size
+
+### Advanced keyword targeting
+
+**Keywords filter:** Use sophisticated keyword combinations to find companies with specific business models or strategies.
+
+**Business model examples:**
+
+- `freemium AND self-serve AND PLG` (Product-Led Growth companies)
+- `subscription AND SaaS AND upselling` (SaaS businesses)
+- `shopify AND DTC AND ecommerce` (Direct-to-consumer brands)
+
+**Go-to-Market strategy examples:**
+
+- `(cold email OR cold call) AND B2B AND outbound` (Outbound sales focus)
+- `(ABM OR demand gen) AND enterprise` (Account-based marketing)
+
+**Technology focus examples:**
+
+- `AI AND chatbot AND customer support` (AI customer service)
+- `fintech AND KYC AND compliance` (Financial technology)
+- `logistics AND warehouse AND last mile` (Supply chain/logistics)
+
+**Sustainability examples:**
+
+- `sustainability AND green energy AND carbon` (Green technology)
+
+**Pro Tip:** you don't need to press enter when typing keyword combinations. Just type the keywords and Boolean operators directly (AND/OR)
+
+![Find Companies (Linkedin) — Advanced keyword targeting](/images/docs/swMcOSNiTQ298IsdKSrWcDnKRE.png)
+
+## 3. Visualize your results
+
+**Click "PREVIEW COMPANIES"** to see a sample of your search results.
+
+1. **Review the preview data:**
+
+   - Company names: check if businesses match your target market
+   - Industry classifications: verify industry relevance to your solution
+   - Company descriptions: review business models and focus areas
+   - LinkedIn profile URLs: validate company authenticity and presence
+2. **Check the results summary:**
+
+   - Total number of matches
+   - Quality of matches against your ICP
+   - Distribution across industries and business models
+3. **Refine filters if needed:**
+
+   - Adjust keyword combinations based on company descriptions
+   - Modify industry selections for better targeting
+   - Update size or revenue ranges based on company profiles
+   - Fine-tune growth criteria for ideal timing
+
+**Note:** ensure the preview shows **relevant companies before importing**. Poor preview results indicate filters need adjustment
+
+![Find Companies (Linkedin) — 3. Visualize your results](/images/docs/qVDao0MlaUzH9rCFNt0AcJ5Tg.png)
+
+## 4. Click on "Load all companies to a table" to create a new table
+
+**Review your final filter settings** one more time
+
+1. **Click "Load all companies to a table"** to export the full search
+2. **Monitor the import progress:**
+
+   - Progress indicator shows "Importing: X/1000"
+   - Percentage completion display
+   - Real-time status updates
+3. **Wait for completion:**
+
+   - You can navigate away during processing
+
+**Note:** the system automatically stops at **1,000 results** even if more matches exist. Use more specific filters if you hit this limit and want different prospects
+
+![Find Companies (Linkedin) — 4. Click on "Load all companies to a table" to create a new table](/images/docs/MCxC1XuMQudqQnZBsC4ugBzefZM.png)
+
+## 5. See your results
+
+**Click on "Access results"** to view your new company table:
+
+![Find Companies (Linkedin) — 5. See your results](/images/docs/XJaPhrGOzUMTRGQd4JsW87CynI.png)
+
+You can now start enriching!
+
+---
+
+## Find local businesses with Google Maps
+
+Source: https://airscale.mintlify.app/docs/google-maps.md
+
+Description: Find local businesses with Google Maps directly in Airscale. Extract names, addresses, phones and emails in one click to fuel your prospecting lists.
+
+**Note:** you can only import **500 local businesses** per search
+
+## 1. Click on "Find local businesses with Google Maps"
+
+![Find local businesses with Google Maps — 1. Click on "Find local businesses with Google Maps"](/images/docs/Fakc8ikpOHeLY1R724FGrnYtK8.png)
+
+## 2. Add the search filters
+
+- **Apply your target filters:** location and business type
+- **Optionally**, you can also ask to find the contact information of the businesses. When toggled ON, we will scrape each company’s website and return any available contact details (emails, phone numbers)
+
+![Find local businesses with Google Maps — 2. Add the search filters](/images/docs/BdejNnRNyfZCbadXFKpvkgnGNfw.png)
+
+## 3. Launch the extraction and access your results
+
+![Find local businesses with Google Maps — 3. Launch the extraction and access your results](/images/docs/CSjVDw0cSBbrY4mtbGfi8iuABA.png)
+
+---
+
+## Find companies hiring for specific positions
+
+Source: https://airscale.mintlify.app/docs/companies-hiring.md
+
+Description: Find companies hiring for specific positions using Airscale. Target the right accounts at the right time and reach out when hiring intent is highest.
+
+**Note:** you can only import up to **1,000 companies** per search
+
+## 1. Click on "Find companies hiring for a specific position"
+
+![Find companies hiring for specific positions — 1. Click on "Find companies hiring for a specific position"](/images/docs/eIc2Yoaw65kiCyN9tGRLZtKQ1B8.png)
+
+## 2. Add your search filters
+
+Use the following filters to refine your search:
+
+- **Query:** "Head of Growth", "Data Analyst", etc.
+- **Company Headcount:** filter by size to match your ICP (e.g., 11–50, 51–200)
+- **Industry:** target relevant industries (e.g., Health, Consumer Services, etc.)
+- **Location:** focus on specific countries, regions, or cities
+- etc.
+
+![Find companies hiring for specific positions — 2. Add your search filters](/images/docs/ETPjevwkEdqLCKjLxexTkECaY.png)
+
+## 3. Preview your search results
+
+![Find companies hiring for specific positions — 3. Preview your search results](/images/docs/QTeHpVYsA9ZQBYuFasgdFX27cyE.png)
+
+## 4. Launch the extraction and access your results
+
+Click on **"Load companies to a table"** to begin the scraping process and load the companies to an Airscale table
+
+![Find companies hiring for specific positions — 4. Launch the extraction and access your results](/images/docs/RS1tl0ZjLBcysSlaNTBbqaSoU.png)
+
+---
+
+## Import a file as a CSV
+
+Source: https://airscale.mintlify.app/docs/import-csv.md
+
+Description: Import a CSV file into Airscale in seconds. Enrich, clean and push your contact lists directly into your CRM or sales workflows - no manual work.
+
+<iframe
+  className="w-full aspect-video rounded-xl"
+  src="https://www.youtube.com/embed/65EO3_QaFDk?v=65EO3_QaFDk&amp;iv_load_policy=3&amp;rel=0&amp;modestbranding=1&amp;playsinline=1&amp;autoplay=0&amp;mute=1"
+  title="Import a file as a CSV video walkthrough"
+  allow="accelerometer; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+  allowFullScreen
+></iframe>
+
+**Note:** you can only import a maximum of **10,000 rows**
+
+## 1. Click on "Import as a CSV"
+
+![Import a file as a CSV — 1. Click on "Import as a CSV"](/images/docs/Gq3Io7ZhkZS6PcfC2BSMUU7qssk.png)
+
+## 2. Select the file to import
+
+Before importing your file, ensure:
+
+1. **Your file is a CSV file**
+2. **Your file does not contain more than 10,000 rows**
+
+## 3. Map your columns to Airscale columns
+
+- Map the column names of your CSV file to Airscale's columns
+- Alternatively, you can use **custom fields** if Airscale does not have a pre-built column for your data
+
+![Import a file as a CSV — 3. Map your columns to Airscale columns](/images/docs/hoUGFYXdEDsZ8hJn2tFrMGWhQ.png)
+
+## 4. Click on "Upload Now" to create a table
+
+![Import a file as a CSV — 4. Click on "Upload Now" to create a table](/images/docs/x3sU5Uve6JB4ChXJEM8r1sOIc9M.png)
+
+---
+
+## Find phone numbers
+
+Source: https://airscale.mintlify.app/docs/phone-numbers.md
+
+Description: Find verified phone numbers via Airscale's waterfall enrichment
+
+**Note:**
+
+- The required input to find a phone number is a **LinkedIn profile URL**
+- If you don't have the LinkedIn profile URL but have a list with first name, last name, and company name, you can use Airscale’s **"Find a LinkedIn profile URL"** or **"Use AI"** enrichments first to retrieve the LinkedIn profile URL
+
+## 1. Select the enrichment
+
+![Find phone numbers — 1. Select the enrichment](/images/docs/Q25ZZBlHfYW4793dUCrmBwFBmaU.png)
+
+## 2. Select the rows to enrich
+
+![Find phone numbers — 2. Select the rows to enrich](/images/docs/oKJ8w4K1RGkZxTwXJ3JoZ47YSU.png)
+
+## 3. Run the workflow
+
+![Find phone numbers — 3. Run the workflow](/images/docs/HWgdfQ6cDXbEQGmeIMeJGeBOhI.png)
+
+## 4. Access the results
+
+Once the enrichment is complete, you can see which provider returned the phone number by clicking the icon on the right
+
+![Find phone numbers — 4. Access the results](/images/docs/RYtXg1ckqREpytqI5oWRSRhrC7w.png)
+
+If you notice that the phone number returned is invalid, you can click on **"Continue enrichment"**
+
+The workflow will restart from the provider that returned the first phone number to check whether another provider can find a different one. Any phone numbers found after the first one are **free of charge**
+
+<video className="w-full rounded-xl" src="/videos/docs/2LiGpdPl6ZdRf0NZWfpErOUP7kM.mp4" autoPlay muted loop playsInline controls aria-label="Phone enrichment walkthrough" />
+
+---
+
+## Find professional emails
+
+Source: https://airscale.mintlify.app/docs/professional-emails.md
+
+Description: Find verified emails via Airscale's waterfall enrichment
+
+**Note:** the required input to find an email is the combination of:
+
+- First name
+- Last name
+- Company name **or** company domain
+
+**OR**
+
+- People LinkedIn URL
+
+## 1. Select the enrichment
+
+![Find professional emails — 1. Select the enrichment](/images/docs/MKWxPcKTelmTyEN8thlYLfJK8w.png)
+
+## 2. Select the rows to enrich
+
+![Find professional emails — 2. Select the rows to enrich](/images/docs/mjAW0iR4zacTpKaZowgRvAI2yxY.png)
+
+## 3. Run the workflow
+
+![Find professional emails — 3. Run the workflow](/images/docs/KYliLhgWS3vzOmCJ7eUWjaLLRQ.png)
+
+## 4. Access the results
+
+Once the enrichment is complete, you can see which provider returned the verified email by clicking on **"Details"**
+
+**Note:**
+
+**Email status indicators:**
+
+- **Deliverable:** email exists and is safe to contact
+- **Not found:** no email address could be found
+- **Risky:** email found but deliverability uncertain (often catch-all domains)
+- **Found:** email address discovered and verified
+
+**Deliverability classifications:**
+
+- **Deliverable:** high confidence — safe for outreach campaigns
+- **Risky (Catch-All):** use with caution: this domain accepts all emails, but the specific address may be invalid
+- **Not Deliverable:** remove from campaigns to protect sender reputation
+
+![Find professional emails — 4. Access the results](/images/docs/Dn5CmCKdR5hQY7DnwQazqHD5wU.png)
+
+---
+
+## Find personal emails
+
+Source: https://airscale.mintlify.app/docs/personal-emails.md
+
+Description: Find personal emails via Airscale's waterfall enrichment
+
+**Note:**
+
+- The required input to find a personal email is a **LinkedIn profile URL**
+- If you don't have the LinkedIn profile URL but have a list with first name, last name, and company name, you can use Airscale’s **"Find a LinkedIn profile URL"** or **"Use AI"** enrichments first to retrieve the LinkedIn profile URL
+
+## 1. Select the enrichment
+
+![Find personal emails — 1. Select the enrichment](/images/docs/HKm3C63aTNQe1OnjW3PTqzrSPE.png)
+
+## 2. Select the rows to enrich
+
+![Find personal emails — 2. Select the rows to enrich](/images/docs/YnpoZuzdPQPgH7TWqtOTEJFFbc.png)
+
+## 3. Run the workflow
+
+![Find personal emails — 3. Run the workflow](/images/docs/SeAhTau3F6ihfWoGLNbJVU6DUEM.png)
+
+## 4. Access the results
+
+![Find personal emails — 4. Access the results](/images/docs/im6j6vGeoZu7V5B5DENS8XWbJsw.png)
+
+---
+
+## Verify if an email is deliverable
+
+Source: https://airscale.mintlify.app/docs/verify-email.md
+
+Description: Verify email deliverability in real time with Airscale. Reduce bounce rates, protect your sender score and reach more prospects in the inbox.
+
+## 1. Select the enrichment
+
+![Verify if an email is deliverable — 1. Select the enrichment](/images/docs/iXL626V37VNyRlpNVvxjOXoxv8M.png)
+
+## 2. Select the rows to enrich
+
+![Verify if an email is deliverable — 2. Select the rows to enrich](/images/docs/qUPy4F5W4cjQorQBZZliDuVcFw.png)
+
+## 3. Run the workflow
+
+![Verify if an email is deliverable — 3. Run the workflow](/images/docs/1bAkPjy0rByVfLmJ5nbxFCeCpc.png)
+
+## 4. Access the results
+
+**Deliverability classifications:**
+
+- **Deliverable:** high confidence — safe for outreach campaigns
+- **Risky (Catch-All):** use with caution — this domain accepts all emails, but the specific address may be invalid
+- **Not Deliverable:** remove from campaigns to protect sender reputation
+
+![Verify if an email is deliverable — 4. Access the results](/images/docs/MxIFCHn965e6Jaw40p0krhnsI00.png)
+
+---
+
+## Enrich people profile from LinkedIn
+
+Source: https://airscale.mintlify.app/docs/enrich-people-linkedin.md
+
+Description: Enrich people profiles from LinkedIn with Airscale. Get verified emails, phone numbers and job details from any LinkedIn profile - instantly.
+
+**Note**: the required input to enrich a profile is a **LinkedIn profile URL**
+
+## 1. Select the enrichment
+
+![Enrich people profile from LinkedIn — 1. Select the enrichment](/images/docs/eEbqsbp5J7okwJOb1KAuYpRouJ4.png)
+
+## 2. Select the rows to enrich
+
+![Enrich people profile from LinkedIn — 2. Select the rows to enrich](/images/docs/zEUMBXbjdG9QZCjHEv6gDKpKcJY.png)
+
+## 3. Run the workflow
+
+![Enrich people profile from LinkedIn — 3. Run the workflow](/images/docs/8BxvI3fxTpa4zy8t2Cj3gvIsNE.png)
+
+## 4. Access the results
+
+![Enrich people profile from LinkedIn — 4. Access the results](/images/docs/qSI6Zb6wPbUkcSFASrH9lEELI.png)
+
+## 5. Add columns for any data points you want about the profile
+
+![Enrich people profile from LinkedIn — 5. Add columns for any data points you want about the profile](/images/docs/1IE3AEJ4XjBuV4Nsz1w6WmlMxc.png)
+
+---
+
+## Enrich company profile from LinkedIn
+
+Source: https://airscale.mintlify.app/docs/enrich-company-linkedin.md
+
+Description: Enrich company profiles from LinkedIn with Airscale. Extract firmographics, headcount, industry and decision-makers data to power your outbound.
+
+**Note**: the required input to enrich a company is a **LinkedIn company URL**
+
+## 1. Select the enrichment
+
+![Enrich company profile from LinkedIn — 1. Select the enrichment](/images/docs/bluiCeaY6PYhiOmXLkRLrhn5CY.png)
+
+## 2. Select the rows to enrich
+
+![Enrich company profile from LinkedIn — 2. Select the rows to enrich](/images/docs/e9PphQ79AeUZOVtCrgAsVkdRc8.png)
+
+## 3. Run the workflow
+
+![Enrich company profile from LinkedIn — 3. Run the workflow](/images/docs/m2o4mSRbdoUxKUlmwHhAcUUsGPo.png)
+
+## 4. Access the results
+
+![Enrich company profile from LinkedIn — 4. Access the results](/images/docs/FnPcm6In1V9A7EnmRk0Lk9qxV30.png)
+
+## 5. Add columns for any data points you want about the company
+
+![Enrich company profile from LinkedIn — 5. Add columns for any data points you want about the company](/images/docs/Kq7FexrNDGK93pvtjLT5IpIZzg.png)
+
+---
+
+## Fetch company insights
+
+Source: https://airscale.mintlify.app/docs/fetch-company-insights.md
+
+Description: Find some company insights from Linkedin : description, headcount growth (overall and by function), hiring trends, job openings, etc.
+
+**Note**: the required input to fetch company insights is a **LinkedIn company URL**
+
+## 1. Select the enrichment
+
+![Fetch company insights — 1. Select the enrichment](/images/docs/3F22a0crRpW6GVJSj2L7wPxubNg.png)
+
+## 2. Select the rows to enrich
+
+![Fetch company insights — 2. Select the rows to enrich](/images/docs/UY0f5XK7BEiS5IeJRTYJ1abIEqw.png)
+
+## 3. Run the workflow
+
+![Fetch company insights — 3. Run the workflow](/images/docs/sS61AryinVTcdDp5Mlsefg9l0.png)
+
+## 4. Access the results
+
+![Fetch company insights — 4. Access the results](/images/docs/X9UwsGTtQpNHVW4w7l0jJ5o3Oew.png)
+
+## 5. Add columns for any data points you want about the company
+
+![Fetch company insights — 5. Add columns for any data points you want about the company](/images/docs/x6uU0SV154CVYPEbOauboZoGrs.png)
+
+---
+
+## Find current job openings on LinkedIn
+
+Source: https://airscale.mintlify.app/docs/job-openings-linkedin.md
+
+Description: Find current job openings on LinkedIn with Airscale. Identify hiring companies, target the right contacts and time your outreach with buying intent.
+
+**Note**: the required input to enrich a company with open roles is a **LinkedIn company URL**
+
+## 1. Select the enrichment
+
+![Find current job openings on LinkedIn — 1. Select the enrichment](/images/docs/ZbdaCPn8AVJm5i3F1HCKc7M7U.png)
+
+## 2. Select the rows to enrich
+
+![Find current job openings on LinkedIn — 2. Select the rows to enrich](/images/docs/nkh7EUiLoIrRu0F2HRO2vrNTb7g.png)
+
+## 3. Run the workflow
+
+![Find current job openings on LinkedIn — 3. Run the workflow](/images/docs/XYOfz15qsP1BXwjOxGF4Jwo.png)
+
+## 4. Access the results
+
+![Find current job openings on LinkedIn — 4. Access the results](/images/docs/6gRvRPlE60Cp2gx589GlKBDrH0.png)
+
+## 5. Add columns for any data points about the jobs retrieved
+
+![Find current job openings on LinkedIn — 5. Add columns for any data points about the jobs retrieved](/images/docs/Jj0V7s8LQ6GgTPdnP3XQ5YEO90o.png)
+
+---
+
+## Find the latest posts of a company / person
+
+Source: https://airscale.mintlify.app/docs/linkedin-posts-scraper.md
+
+Description: Retrieve the latest posts published by a company or an individual on LinkedIn
+
+**Note**: the required input to retrieve the latest posts written is a **LinkedIn URL (people or company)**
+
+## 1. Select the enrichment (People or company posts)
+
+![Find the latest posts of a company / person — 1. Select the enrichment (People or company posts)](/images/docs/6rj3lSvtpqIF1cMLZETtA1DPZQ.png)
+
+## 2. Select the rows to enrich
+
+![Find the latest posts of a company / person — 2. Select the rows to enrich](/images/docs/3nm0vw8ApyYKEi1u7GxcVj5LAgM.png)
+
+## 3. Run the workflow
+
+![Find the latest posts of a company / person — 3. Run the workflow](/images/docs/sXRDWs2xJLq6q41LVTqKvTmUc.png)
+
+## 4. Access the results
+
+![Find the latest posts of a company / person — 4. Access the results](/images/docs/Kf3Wi6dTTC1pOmIiRiq4LUA3jkA.png)
+
+## 5. Add columns for any data points about the posts retrieved
+
+![Find the latest posts of a company / person — 5. Add columns for any data points about the posts retrieved](/images/docs/ymuVv5FFZGSdFZeDurmxaXmsI.png)
+
+---
+
+## Find LinkedIn profile data from a phone number
+
+Source: https://airscale.mintlify.app/docs/reverse-phone.md
+
+Description: Retrieve a LinkedIn profile URL and data from any phone number using Airscale's Reverse Phone enrichment
+
+**Note**: the required input to leverage this enrichment is a **phone number**
+
+## 1. Select the enrichment
+
+![Find LinkedIn profile data from a phone number — 1. Select the enrichment](/images/docs/ChkR91QHL6NxKCuY4yLvuowMRY.png)
+
+## 2. Choose which rows to enrich
+
+![Find LinkedIn profile data from a phone number — 2. Choose which rows to enrich](/images/docs/rxPwdDiAGkz2fLAmOnIpHGDS49w.png)
+
+## 3. Select the right input
+
+![Find LinkedIn profile data from a phone number — 3. Select the right input](/images/docs/mMDBdnaKdfp8OFSqA9A3GoMKgA.png)
+
+## 4. Run the workflow
+
+![Find LinkedIn profile data from a phone number — 4. Run the workflow](/images/docs/aEh8AZaahiqwrRXr379LDZ4wPY.png)
+
+## 5. Access the results
+
+![Find LinkedIn profile data from a phone number — 5. Access the results](/images/docs/LKFYujbm6oPhfSrdvj4JCNp8YHA.png)
+
+## 6. Add columns for any data points you want about the profile
+
+![Find LinkedIn profile data from a phone number — 6. Add columns for any data points you want about the profile](/images/docs/gjQQfFctn9pynZbp8K6oxm7eHOE.png)
+
+---
+
+## Find LinkedIn profile data from an email
+
+Source: https://airscale.mintlify.app/docs/reverse-email.md
+
+Description: Retrieve a LinkedIn profile URL and data from any email using Airscale's Reverse Email enrichment
+
+**Note**: the required input to leverage this enrichment is an email
+
+## 1. Select the enrichment
+
+![Find LinkedIn profile data from an email — 1. Select the enrichment](/images/docs/gGyiflMoLYvo7awOfo4fBVyFvWo.png)
+
+## 2. Choose which rows to enrich
+
+![Find LinkedIn profile data from an email — 2. Choose which rows to enrich](/images/docs/yoYXpUM0QzAztoP3WhFCoQ0QHzI.png)
+
+## 3. Select the right input
+
+![Find LinkedIn profile data from an email — 3. Select the right input](/images/docs/fjT7WvKTI55o6z2TfRQfcTD6Q.png)
+
+## 4. Run the workflow
+
+![Find LinkedIn profile data from an email — 4. Run the workflow](/images/docs/2tk8oFd2rtvxlmheWtZmfRgv3Zk.png)
+
+## 5. Access the results
+
+![Find LinkedIn profile data from an email — 5. Access the results](/images/docs/EEsqf0vVJBO44ZPY4c6Jw3Fn70.png)
+
+## 6. Add columns for any data points you want about the profile
+
+![Find LinkedIn profile data from an email — 6. Add columns for any data points you want about the profile](/images/docs/EvpvnyewTKUTbzlhKaVBZp7w8.png)
+
+---
+
+## AI custom prompts
+
+Source: https://airscale.mintlify.app/docs/ai-custom-prompts.md
+
+Description: Run AI with the best LLMs using custom prompts
+
+## 1. Select the enrichment called "Use AI"
+
+![AI custom prompts — 1. Select the enrichment called "Use AI"](/images/docs/GAiQ1tczEoDfWACoE2AJETsfg3M.png)
+
+## 2. Select the rows to enrich
+
+![AI custom prompts — 2. Select the rows to enrich](/images/docs/WxlDcIeglXVAgqXaSrLz0EO0d0.png)
+
+## 3. Select the mode (web access vs non web access)
+
+![AI custom prompts — 3. Select the mode (web access vs non web access)](/images/docs/brxgtfaR86PzBI94iG9pOoLYxno.png)
+
+**Note**:
+
+- **No web access:** Best to edit, format, or clean your data. Use this mode when your prompt only needs data already existing in your table and doesn’t need to browse the web to provide the expected output
+- **Web access:** Use this mode if you want to find data on the web and want AI to have web browsing capabilities. Useful to research data online about a company or a prospect by visiting website pages (*this mode will select Airsearch 1.0 as the LLM to use)*
+
+## 4. Select an LLM
+
+![AI custom prompts — 4. Select an LLM](/images/docs/Uo3HdyDT13L2dqMmgeuNuB68LY.png)
+
+## 5. Write or import your prompt
+
+![AI custom prompts — 5. Write or import your prompt](/images/docs/CgC4NnkSPb9B6BnTib3HN72IM.png)
+
+**Note**: to use dynamically the content of a column existing in your table, **use the key "/" on your keyboard**
+
+## 6. Run the workflow
+
+When the workflow is launched, **a new column will be created with the output**
+
+![AI custom prompts — 6. Run the workflow](/images/docs/Tk0wwTnzqKNxjeRRqPCRorv7I.png)
+
+---
+
+## AI agent (AirSearch)
+
+Source: https://airscale.mintlify.app/docs/ai-agent-airsearch.md
+
+Description: Use Airscale’s AI agent to browse the web and find any information about a company or a prospect
+
+## 1. Select the enrichment called "Use AI"
+
+![AI agent (AirSearch) — 1. Select the enrichment called "Use AI"](/images/docs/GAiQ1tczEoDfWACoE2AJETsfg3M.png)
+
+## 2. Select the rows to enrich
+
+![AI agent (AirSearch) — 2. Select the rows to enrich](/images/docs/WxlDcIeglXVAgqXaSrLz0EO0d0.png)
+
+## 3. Select the mode "Web access"
+
+![AI agent (AirSearch) — 3. Select the mode "Web access"](/images/docs/z5fVsD7Ktro54HbAchh08EreJM.png)
+
+**Note**: selecting **“Web access”** mode will automatically choose **“Airsearch 1.0”**, the model required for web access, including browsing and scraping capabilities
+
+## 4. Write or import your prompt
+
+![AI agent (AirSearch) — 4. Write or import your prompt](/images/docs/mdIvWqzGETa0VijChFk2dKyYGqs.png)
+
+**Note**: to dynamically use the content of an existing column in your table, **press the “/” key on your keyboard**
+
+## 5. Run the workflow
+
+![AI agent (AirSearch) — 5. Run the workflow](/images/docs/w6WwJXyF506gUi8bQFysN9ErAI8.png)
+
+## 6. Access the results
+
+**Note**: after launching the enrichment, **two columns will be automatically created** on the right side of the spreadsheet
+
+**In the first column that is created,** you’ll find details about the AI’s reasoning behind the answer. If you click on **“Click to expand,”** you can view the full enrichment details
+
+The enrichment will return 4 keys:
+
+- **Response**: the output for your prompt
+- **Reasoning**: the steps taken by the agent to return the output
+- **Sources**: the web pages visited in order to gather the data to return the output
+- **Confidence score**: a score of confidence to understand how reliable and accurate the output is
+
+![AI agent (AirSearch) — 6. Access the results](/images/docs/olafLLXMfVktfKwcqFu0lDf7L8.png)
+
+![AI agent (AirSearch) — 6. Access the results](/images/docs/sJhZNo7y68WEivaCMH7XKpVGKhI.png)
+
+**In the second column**, you’ll see the result with the output requested in your promp :
+
+![AI agent (AirSearch) — 6. Access the results](/images/docs/KKeaJVoXJXaRlm5890fL9knmhYA.png)
+
+---
+
+## Create custom Google searches
+
+Source: https://airscale.mintlify.app/docs/google-searches.md
+
+Description: Create custom Google searches in Airscale. Build targeted queries to find any prospect or company and extract results straight into your lists.
+
+## 1. Select the enrichment
+
+![Create custom Google searches — 1. Select the enrichment](/images/docs/8Ptt0VOmSIqX2PSss9MR7AkoAg.png)
+
+## 2. Select the rows to enrich
+
+![Create custom Google searches — 2. Select the rows to enrich](/images/docs/JSylJL0Ro97sKaxsuKkS7aH60.png)
+
+## 3. Create your SERP query
+
+![Create custom Google searches — 3. Create your SERP query](/images/docs/DFhmLLJGxbk3c3La0rnHybVGOIQ.png)
+
+**Note**: to dynamically use the content of an existing column in your table, **press the “/” key on your keyboard**
+
+## 4. Run the workflow
+
+![Create custom Google searches — 4. Run the workflow](/images/docs/NbyFhyrC7SIV78HvkQ51wDig.png)
+
+## 5. Access the results
+
+**A new column is created automatically.** If you click on **“Click to expand”** you can access the detail of the enrichment
+
+![Create custom Google searches — 5. Access the results](/images/docs/njTLbr0Z46OAILAZ1UIEB86IcfU.png)
+
+## 6. Add columns for any data points retrieved
+
+![Create custom Google searches — 6. Add columns for any data points retrieved](/images/docs/4MekkMnDv1Gy6pFq3zb3uyOwSss.png)
+
+---
+
+## Find a LinkedIn profile URL
+
+Source: https://airscale.mintlify.app/docs/linkedin-profile-url.md
+
+Description: Find any LinkedIn profile URL with Airscale. Locate prospects from their name and company to fuel your outreach and enrichment workflows.
+
+## 1. Select the enrichment
+
+![Find a LinkedIn profile URL — 1. Select the enrichment](/images/docs/RU6wxggOxP9tQ5Qtlyw6C1l3I.png)
+
+## 2. Select the rows to enrich
+
+![Find a LinkedIn profile URL — 2. Select the rows to enrich](/images/docs/gUe7Hr5gd9uwcfhvdcURVxD1HBs.png)
+
+## 3. Run the workflow
+
+![Find a LinkedIn profile URL — 3. Run the workflow](/images/docs/5i98xWAZBSRMOOqNhV9cgLXsE8.png)
+
+## 4. Access the results
+
+![Find a LinkedIn profile URL — 4. Access the results](/images/docs/9rduF4zUA4TEiWotHYtDTUATciA.png)
+
+---
+
+## Find a LinkedIn company URL
+
+Source: https://airscale.mintlify.app/docs/linkedin-company-url.md
+
+Description: Find any LinkedIn company URL with Airscale. Identify company pages to enrich accounts and target decision-makers faster.
+
+## 1. Select the enrichment
+
+![Find a LinkedIn company URL — 1. Select the enrichment](/images/docs/KnFz8GJE6g1G4RKoHZPnU0PEJS8.png)
+
+## 2. Select the rows to enrich
+
+![Find a LinkedIn company URL — 2. Select the rows to enrich](/images/docs/MeRz6skHUDyNLBeQxxdp00C4djk.png)
+
+## 3. Run the workflow
+
+![Find a LinkedIn company URL — 3. Run the workflow](/images/docs/5i98xWAZBSRMOOqNhV9cgLXsE8.png)
+
+## 4. Access the results
+
+![Find a LinkedIn company URL — 4. Access the results](/images/docs/mGgqcRVtayzsWMX1mCSXy6rCIbo.png)
+
+---
+
+## Find a Linkedin company URL from a domain
+
+Source: https://airscale.mintlify.app/docs/linkedin-company-url-from-a-domain.md
+
+Description: Find a LinkedIn company URL from a domain with Airscale. Turn any website into a LinkedIn company page instantly - no manual search needed.
+
+**Note**: the required input to fetch company insights is a **company domain**
+
+## 1. Select the enrichment
+
+![Find a Linkedin company URL from a domain — 1. Select the enrichment](/images/docs/ZByDuQIEWuMfzpRFsH070hQ1Q.png)
+
+## 2. Select the rows to enrich
+
+![Find a Linkedin company URL from a domain — 2. Select the rows to enrich](/images/docs/Q54PGo1sakipnvcD22Zyps5Hw.png)
+
+## 3. Run the workflow
+
+![Find a Linkedin company URL from a domain — 3. Run the workflow](/images/docs/XW0Ra2V3Kb8ZJJq0zAmteB1eAQ.png)
+
+## 4. Access the results
+
+![Find a Linkedin company URL from a domain — 4. Access the results](/images/docs/S6Adsu4pXeqiJhj4Bb7zYD2deSY.png)
+
+---
+
+## Fetch a company's Meta ads
+
+Source: https://airscale.mintlify.app/docs/meta-ads.md
+
+Description: Retrieve all active Meta ads running for any company directly from Airscale's Meta Ads enrichment
+
+**Note**: the required input to leverage this enrichment is a **company domain**
+
+## 1. Select the enrichment
+
+![Fetch a company's Meta ads — 1. Select the enrichment](/images/docs/HV6WWRSkxAxcC1W6y6iDXA5Nxw.png)
+
+## 2. Select the rows to enrich
+
+![Fetch a company's Meta ads — 2. Select the rows to enrich](/images/docs/gKDvH5CVjbFOcxSn8NXzme14OF0.png)
+
+## 3. Select the correct input
+
+![Fetch a company's Meta ads — 3. Select the correct input](/images/docs/iMD8acpLvSdVGUDzdrnY4wvvZk.png)
+
+## 4. Run the workflow
+
+![Fetch a company's Meta ads — 4. Run the workflow](/images/docs/DVVgtOjDKSgm9jKXMmFk9EmiENM.png)
+
+## 5. Access the results
+
+**A new column is created automatically with the number of active ads.** If you click on **“Click to expand”** you can access the detail of the enrichment
+
+![Fetch a company's Meta ads — 5. Access the results](/images/docs/Evs767wgqPmJVUw2CzCIrglVj4.png)
+
+## 6. Add columns for any data points retrieved
+
+![Fetch a company's Meta ads — 6. Add columns for any data points retrieved](/images/docs/5hzXfaXamGCaFT54KX3WlmAnTQ.png)
+
+---
+
+## Fetch a company's Google ads
+
+Source: https://airscale.mintlify.app/docs/google-ads.md
+
+Description: Retrieve all active Google ads running for any company directly from Airscale's Google Ads enrichment
+
+**Note**: the required input to leverage this enrichment is a **company domain**
+
+## 1. Select the enrichment
+
+![Fetch a company's Google ads — 1. Select the enrichment](/images/docs/FBSM8t3NXt9gEDsEquSxbJ1z9k.png)
+
+## 2. Select the rows to enrich
+
+![Fetch a company's Google ads — 2. Select the rows to enrich](/images/docs/6MNMW5Q03rVNPpumbHIKioZPujs.png)
+
+## 3. Select the correct input
+
+![Fetch a company's Google ads — 3. Select the correct input](/images/docs/MDUZ4RPvi2IVe2d78iAHeE4YE.png)
+
+## 4. Run the workflow
+
+![Fetch a company's Google ads — 4. Run the workflow](/images/docs/Sg1VzaO9esTyNzjVzhaYhdyV4.png)
+
+## 5. Access the results
+
+**A new column is created automatically with the number of active ads.** If you click on **“Click to expand”** you can access the detail of the enrichment
+
+![Fetch a company's Google ads — 5. Access the results](/images/docs/ZfMRrEDdJpbm9Krkr6RyqpRNV7o.png)
+
+## 6. Add columns for any data points retrieved
+
+![Fetch a company's Google ads — 6. Add columns for any data points retrieved](/images/docs/hm5B2mHegNuUzOUlHxldswiyomw.png)
+
+---
+
+## Find a company domain
+
+Source: https://airscale.mintlify.app/docs/company-domain.md
+
+Description: Find any company domain with Airscale. Turn a company name into a verified website URL to enrich contacts and launch outbound campaigns faster.
+
+## 1. Select the enrichment
+
+![Find a company domain — 1. Select the enrichment](/images/docs/sZLoV1uYcEP6vxiPurX6kZ5Ap8.png)
+
+## 2. Select the rows to enrich
+
+![Find a company domain — 2. Select the rows to enrich](/images/docs/SPUEmwmC2d0BhqKq6CWEb8b00.png)
+
+## 3. Run the workflow
+
+![Find a company domain — 3. Run the workflow](/images/docs/GyeFOuvGQH591s7MSTcMRcwVBTA.png)
+
+## 4. Access the results
+
+![Find a company domain — 4. Access the results](/images/docs/HtKaRynQvDJUtk3DNGMHnQWwNg.png)
+
+---
+
+## Find company technologies
+
+Source: https://airscale.mintlify.app/docs/company-technologies.md
+
+Description: Find company technologies used by any account with Airscale. Identify tech stacks to qualify prospects, personalize outreach and prioritize the right leads.
+
+## 1. Select the enrichment
+
+![Find company technologies — 1. Select the enrichment](/images/docs/Jw9y48919xhCjPLpqzTDZvCYeVU.png)
+
+## 2. Select the rows to enrich
+
+![Find company technologies — 2. Select the rows to enrich](/images/docs/YDTuWDrf7YcwDJLWKh2vNMYgOVU.png)
+
+## 3. Run the workflow
+
+![Find company technologies — 3. Run the workflow](/images/docs/heuHKtESEhNzUj0jqpWp2dOJGho.png)
+
+## 4. Access the results
+
+![Find company technologies — 4. Access the results](/images/docs/3vx4SklgxlQKvKyucnSfRkZDhs.png)
+
+---
+
+## Find company funding data
+
+Source: https://airscale.mintlify.app/docs/funding-data.md
+
+Description: Find company funding data with Airscale. Access funding rounds and investors to target high-growth accounts and time your outreach perfectly.
+
+## 1. Select the enrichment
+
+![Find company funding data — 1. Select the enrichment](/images/docs/I4gurbfRO0DrCbV971Thi3AfAg.png)
+
+## 2. Select the rows to enrich
+
+![Find company funding data — 2. Select the rows to enrich](/images/docs/164W2hYbttTaMuVrDfUSG97NRYA.png)
+
+## 3. Run the workflow
+
+![Find company funding data — 3. Run the workflow](/images/docs/XeH4jCJSTEm1da4i1nd1cUzQ.png)
+
+## 4. Access the results
+
+**A new column is created automatically.** If you click on "**Click to expand"** you can access the detail of the enrichment
+
+![Find company funding data — 4. Access the results](/images/docs/Qr3bKWKnJOLAgEzSrQUhrrCXM.png)
+
+## 5. Add columns for any data points retrieved
+
+![Find company funding data — 5. Add columns for any data points retrieved](/images/docs/26WAzbzuJ5c63IUZhFy5fsOMiI.png)
+
+---
+
+## Extract website content with Zenrows
+
+Source: https://airscale.mintlify.app/docs/website-content.md
+
+Description: Scrape and extract the text content from any website using Airscale's Zenrows integration. This powerful enrichment tool converts websites into LLM-ready markdown data, perfect for research, competitor analysis, and content gathering from your prospects' company websites
+
+## 1. Select the enrichment
+
+![Extract website content with Zenrows — 1. Select the enrichment](/images/docs/KdkactgSTRZxdqxy7nqeiKDgss.png)
+
+![Extract website content with Zenrows — 1. Select the enrichment](/images/docs/id6uzwkJLd1z7KINANiRBbc7HkM.png)
+
+## 2. Select the rows to enrich
+
+![Extract website content with Zenrows — 2. Select the rows to enrich](/images/docs/7p3AnUumgwyPDFP6TlNvJnXTSc.png)
+
+## 3. Run the workflow
+
+![Extract website content with Zenrows — 3. Run the workflow](/images/docs/ffyRqv1lo71B6xCxWdRmIq9OY0E.png)
+
+## 4. Access the results
+
+Once the enrichment completes:
+
+1. **Review the new "Website text content" column** added to your table
+2. **Analyze the scraped data** for research and personalization opportunities
+
+![Extract website content with Zenrows — 4. Access the results](/images/docs/l8MLXVo4IW9xwqQcsXm9Gj8D4s.png)
+
+![Extract website content with Zenrows — 4. Access the results](/images/docs/RrioL21QYWqhnkTusuK8xW6I0Og.png)
+
+---
+
+## Fetch business intent topics
+
+Source: https://airscale.mintlify.app/docs/fetch-business-intent-topics.md
+
+Description: Find what topics a company’s employees are researching from its LinkedIn URL
+
+**Note**: the required input to fetch company insights is a **LinkedIn company URL**
+
+## 1. Select the enrichment
+
+![Fetch business intent topics — 1. Select the enrichment](/images/docs/C4pX9uFIuzrjGk4jQTLbkKYSv4.gif)
+
+## 2. Select rows & the correct input
+
+Select the rows you would like to include in the enrichment and select the **"Company Linkedin URL"** column as an input.
+
+![Fetch business intent topics — 2. Select rows & the correct input](/images/docs/JsvoeUQFkN55EMj7j948Oe8EmmQ.gif)
+
+## 3. Enter the business topics
+
+Type the business topics you would like to inquire and make sure to **press** **Enter** ↩︎ after typing so the suggestions appear.
+
+Click on **"Add +"** to select the topics.
+
+![Fetch business intent topics — 3. Enter the business topics](/images/docs/oQMFgLVzqsupUgw3oPjrnWNpqo.gif)
+
+## 4. Run the workflow
+
+As soon as you're done selecting the business topics, you can run the workflow.
+
+![Fetch business intent topics — 4. Run the workflow](/images/docs/FvrMieqjMm1jtkEmsamDrbtpbCc.gif)
+
+## 5. Access the results
+
+Acess you results once the enrichment has finished running. Click on **"Click to expand"** for more details about the search and add any field as a column by clicking on **"Add as a column".**
+
+![Fetch business intent topics — 5. Access the results](/images/docs/7n0LuvO1fa3cDouL07F7ouof9lU.gif)
+
+---
+
+## Find company website traffic data
+
+Source: https://airscale.mintlify.app/docs/website-traffic.md
+
+Description: Retrieve the website traffic count, evolution, source using Similarweb. The required input is a company domain
+
+## 1. Select the enrichment
+
+![Find company website traffic data — 1. Select the enrichment](/images/docs/jmcTc0e7fEbPIF1IK9TZ3ZsmJ2g.png)
+
+## 2. Select the rows to enrich
+
+![Find company website traffic data — 2. Select the rows to enrich](/images/docs/SM4mMvx9LccMvdO7S5NQ1NdYXs.png)
+
+## 3. Run the workflow
+
+![Find company website traffic data — 3. Run the workflow](/images/docs/oORO1sQ5W9TZmElBxR3K2T1axmM.png)
+
+## 4. Access the results
+
+**A new column is created automatically**. If you click on "**Click to expand**" you can access the detail of the enrichment
+
+![Find company website traffic data — 4. Access the results](/images/docs/JILKfgKvRYbmo5vNsTJokDP3G4.png)
+
+## 5. Add columns for any data points retrieved
+
+![Find company website traffic data — 5. Add columns for any data points retrieved](/images/docs/n45BYXnLBhaKJ0sNIUbpfTHIVpo.png)
+
+---
+
+## Lookup contacts in Hubspot
+
+Source: https://airscale.mintlify.app/docs/lookup-hubspot.md
+
+Description: Check if a contact already exists in your CRM
+
+## 1. Select the enrichment
+
+![Lookup contacts in Hubspot — 1. Select the enrichment](/images/docs/Eu0n1wFnfY0K8Zv6yLnBZpltU.png)
+
+## 2. Select the rows to enrich
+
+![Lookup contacts in Hubspot — 2. Select the rows to enrich](/images/docs/UgA62hBGi1esfqlbIMoWcilyBVs.png)
+
+## 3. Run the workflow
+
+![Lookup contacts in Hubspot — 3. Run the workflow](/images/docs/2R03K4IpqcSWLg72KsdpIPQ0gC0.png)
+
+## 4. Access the results
+
+![Lookup contacts in Hubspot — 4. Access the results](/images/docs/TVzPmuVDtSudRtTPCjY8AZdXIpw.png)
+
+---
+
+## Export your data as CSV
+
+Source: https://airscale.mintlify.app/docs/export-csv.md
+
+Description: Export your prospect lists from Airscale as CSV files for use in email marketing tools, CRMs, or further analysis. This feature lets you download all enriched data while giving you full control over which contacts and columns to include
+
+##### When to export as CSV
+
+- To launch **email campaigns** in external tools
+- To **import data into CRMs** not directly integrated with Airscale
+- To **analyze data** in Excel, Google Sheets, or analytics tools
+- To **keep local backups** of your prospect data
+- To **share prospect lists** across teams and departments
+
+## 1. Click on "Export"
+
+![Export your data as CSV — 1. Click on "Export"](/images/docs/Yvi22e57W5Yy2VlXHI1eglxz2I.png)
+
+## 2. Select "Download as csv"
+
+![Export your data as CSV — 2. Select "Download as csv"](/images/docs/jnxWjgx9VtvP6G46xpFifh8s.png)
+
+## 3. Select the rows to extract
+
+![Export your data as CSV — 3. Select the rows to extract](/images/docs/ubvyllZqZQ9WEerCs4qpaaCfPE.png)
+
+## 4. Select a file extension
+
+Note:
+
+**CSV (recommended):**
+
+- Universal compatibility with most email tools and CRMs
+- Smaller file size for large datasets
+- Easy to open in Excel, Google Sheets, or text editors
+- Best for automated imports and integrations
+
+**XLSX:**
+
+- Excel-native format with formatting preservation
+- Better for manual data manipulation
+- Supports advanced Excel features if needed
+- Slightly larger file size
+
+![Export your data as CSV — 4. Select a file extension](/images/docs/hJQkLQYaU0y5hwk3BE4C7x4sDTE.png)
+
+## 5. Download your export
+
+![Export your data as CSV — 5. Download your export](/images/docs/Wu5T45AcZxBQYRMGK61b36RpFI.png)
+
+---
+
+## Transfer your data to another table
+
+Source: https://airscale.mintlify.app/docs/transfer-another-table.md
+
+Description: Move prospects between tables within Airscale to organize your data, create targeted segments, or consolidate lists from multiple sources. This feature helps you keep your prospect database clean and well-organized for different campaigns and initiatives
+
+##### When to export to another table
+
+- Creating campaign segments from a master prospect list
+- Organizing prospects by persona (decision makers vs. influencers)
+- Separating by geography for territory-based sales teams
+- Consolidating data from multiple import sources
+- Creating backup tables before running bulk enrichments
+- Segmenting by deliverability status for different outreach strategies
+
+## 0. Prerequisites
+
+- A source table containing prospect data in Airscale
+- An existing destination table
+
+## 1. Click on "Export"
+
+![Transfer your data to another table — 1. Click on "Export"](/images/docs/HNgkasxN1JqwXFgjQoTRYW9vntY.png)
+
+## 2. Select "Export to another table"
+
+![Transfer your data to another table — 2. Select "Export to another table"](/images/docs/JlokdN7mFyQ8jwauBRYMwp4KZM.png)
+
+## 3. Select the rows to export
+
+![Transfer your data to another table — 3. Select the rows to export](/images/docs/Kl6wV1mCCS8KqM2ZhsguNQi0Yw.png)
+
+## 4. Select the table you want to export your data to
+
+![Transfer your data to another table — 4. Select the table you want to export your data to](/images/docs/rS2HhuhvT3CvxjlZXZvI1r9HoYE.png)
+
+## 5. Launch your export
+
+![Transfer your data to another table — 5. Launch your export](/images/docs/4aB5J1jKuv5kIqKr9K8Y1X7ubo.png)
+
+---
+
+## Export your leads to HubSpot
+
+Source: https://airscale.mintlify.app/docs/export-hubspot.md
+
+Description: Export your prospects directly from Airscale to HubSpot CRM to streamline your sales pipeline. This integration pushes enriched prospect data directly into your HubSpot database, allowing you to manage leads, track interactions, and nurture prospects through your established sales processes
+
+## 0. Prerequisites
+
+- An active HubSpot account with CRM access
+- A prospect table in Airscale with email addresses
+- HubSpot integration permissions (available on most HubSpot plans)
+- Understanding of your HubSpot lead lifecycle stages and contact ownership structure
+
+## 1. Click on "Export"
+
+![Export your leads to HubSpot — 1. Click on "Export"](/images/docs/JhGjlM4TkNoRsWNAASC2x8R53g.png)
+
+## 2. Select "Create or update a contact in HubSpot"
+
+![Export your leads to HubSpot — 2. Select "Create or update a contact in HubSpot"](/images/docs/Zyut9ic592NAu2m5c3gIsbqY.png)
+
+## 3. Select the rows to export
+
+![Export your leads to HubSpot — 3. Select the rows to export](/images/docs/D1fzsaX1h1AKzR51tIdq4fW4HSU.png)
+
+## 4. Connect your Hubspot account
+
+If this is your first time connecting to HubSpot:
+
+1. **Click "Connect your HubSpot account"** in the workflow panel
+2. **You'll be redirected to HubSpot's authorization page**
+3. **Log into your HubSpot account** if not already logged in
+4. **Grant permissions** for Airscale to access your HubSpot CRM
+5. **Return to Airscale** once authorization is complete
+
+**HubSpot integration permissions:**
+
+- **Contact creation and updates** for lead management
+- **Company association** for account-based tracking
+- **Property access** for data mapping and enrichment
+- **Pipeline visibility** for lifecycle stage management
+
+**Note** : HubSpot uses OAuth authentication, so you don't need to share passwords or API keys directly
+
+![Export your leads to HubSpot — 4. Connect your Hubspot account](/images/docs/nYMTtVQNYFTZdgRxNp4kPA3igQg.png)
+
+![Export your leads to HubSpot — 4. Connect your Hubspot account](/images/docs/G6dodSmDpA3I8TX0hiTQR7JJKrw.png)
+
+![Export your leads to HubSpot — 4. Connect your Hubspot account](/images/docs/NGLrahEcaEqKSH8qOhuUp0ozpKI.png)
+
+![Export your leads to HubSpot — 4. Connect your Hubspot account](/images/docs/QhLQTMyWoo9hjmR1C57bw0O0eg.png)
+
+## 5. Select a contact owner and lead lifecycle stage
+
+![Export your leads to HubSpot — 5. Select a contact owner and lead lifecycle stage](/images/docs/Bx6sxu4A5uEeSdXsOvAAueAIUk.png)
+
+## 6. Launch your export
+
+![Export your leads to HubSpot — 6. Launch your export](/images/docs/fb9Ev8bng8CS34L94ceODGpef6o.png)
+
+---
+
+## Export your leads to Instantly
+
+Source: https://airscale.mintlify.app/docs/export-instantly.md
+
+Description: Export your prospects directly from Airscale to Instantly campaigns for automated email outreach. This integration streamlines your workflow by pushing enriched prospect data directly into your email sequences without manual uploads or CSV exports.
+
+## 0. Prerequisites
+
+- An active Instantly account with email campaigns set up
+- A prospect table in Airscale with enriched email addresses
+- Instantly API access (available on most Instantly plans)
+
+## 1. Click on "Export"
+
+![Export your leads to Instantly — 1. Click on "Export"](/images/docs/LYD5VGZ6VGlzyFXpaOiBjzoY.png)
+
+## 2. Select "Add a contact to a campaign in Instantly"
+
+![Export your leads to Instantly — 2. Select "Add a contact to a campaign in Instantly"](/images/docs/IBoQ0zfJHEjaQGtuWU8MLCHFo.png)
+
+## 3. Select the rows to export
+
+![Export your leads to Instantly — 3. Select the rows to export](/images/docs/pSEFwHCK7m1mVv45PNXb3Z6AGsE.png)
+
+## 4. Connect Your Instantly Account
+
+If this is your first time connecting to Instantly:
+
+1. **Click "Connect your Instantly account"** in the workflow panel
+2. **Note that "No account connected"** appears initially
+3. **You'll need to create an API key** in your Instantly account first
+
+![Export your leads to Instantly — 4. Connect Your Instantly Account](/images/docs/BJPkLZHrV5BC8OR4Swf5F9srXY.png)
+
+## 5. Create API Key in Instantly Settings
+
+**Log into your Instantly account**
+
+1. **Click on "Settings"** (usually in the left sidebar or user menu)
+2. **Navigate to "Integrations"** tab
+3. **Select "API Keys"** from the available options
+
+![Export your leads to Instantly — 5. Create API Key in Instantly Settings](/images/docs/N1GreSqI72jIlc9dMpMN3QfrzPE.png)
+
+![Export your leads to Instantly — 5. Create API Key in Instantly Settings](/images/docs/aKE7m60wMfe3sd06KG46yD84.png)
+
+## 6. Create your API key
+
+**Click "Create API Key"** button
+
+1. **Name your API key:** Enter a descriptive name like "Export Airscale" or "Airscale Integration"
+2. **Select scopes:** Choose "all:all" for full access (required for campaign management)
+3. **Click "Create"** to generate your API key
+
+![Export your leads to Instantly — 6. Create your API key](/images/docs/N90KWeh7OLtG5LsoCRe69owG4.png)
+
+![Export your leads to Instantly — 6. Create your API key](/images/docs/QDje3IbObJw8CHvyTrXLuHVUSlU.png)
+
+## 7. Copy your API key
+
+**Copy the generated API key** from the success popup
+
+1. **Store it securely** - you won't be able to see it again after closing the popup
+2. **The API key will be a long string** of characters (similar to: "ZWZIYTA4MTktZmZmYy0DNjFmLTk5ZTEtMWJmOWEyNzY4NTFiOmpzWlJYmlb3p...")
+
+**Warning** : copy the API key **immediately** as Instantly won't show it again for security reasons
+
+![Export your leads to Instantly — 7. Copy your API key](/images/docs/YyvBKQgtrr4G7kAVhr6qzOlQ.png)
+
+## 8. Paste API key in Airscale and connect
+
+**Return to Airscale** and the export workflow
+
+1. **Paste your Instantly API key** in the provided field
+2. **Click "Connect"** to establish the integration
+3. **Wait for confirmation** that the connection was successful
+
+![Export your leads to Instantly — 8. Paste API key in Airscale and connect](/images/docs/2vr8nxATO35rIql8lwQBlEhg.png)
+
+## 9. Select a campaign
+
+![Export your leads to Instantly — 9. Select a campaign](/images/docs/xS9vdSDofJIrwlMIQ9N5qxH28I.png)
+
+## 10. Launch your export
+
+Configure how Airscale data maps to Instantly fields:
+
+- **Email address** ↔ Instantly email field
+- **First name** ↔ Instantly first name field
+- **Last name** ↔ Instantly last name field
+- **Phone** ↔ Instantly phone field
+- **Company Name** ↔ Instantly company name field
+- **Website** ↔ Instantly website field
+- **Additional custom fields** as needed
+
+![Export your leads to Instantly — 10. Launch your export](/images/docs/gnkKiYvdTb90iLqYJf2yJ8k2hk.png)
+
+---
+
+## Export your leads to Smartlead
+
+Source: https://airscale.mintlify.app/docs/export-smartlead.md
+
+Description: Export your prospects directly from Airscale to Smartlead campaigns for automated email outreach. This integration streamlines your workflow by pushing enriched prospect data directly into your email sequences without manual uploads or CSV exports.
+
+## 0. Prerequisites
+
+- An active Smartlead account with email campaigns set up
+- A prospect table in Airscale with enriched email addresses
+- Smartlead API access (available on most Smartlead plans)
+
+## 1. Click on "Export"
+
+![Export your leads to Smartlead — 1. Click on "Export"](/images/docs/JhGjlM4TkNoRsWNAASC2x8R53g.png)
+
+## 2. Select "Add a contact to a campaign in Smartlead"
+
+![Export your leads to Smartlead — 2. Select "Add a contact to a campaign in Smartlead"](/images/docs/QAKJYg2qo7Nngp19wWHhHa5HXo.png)
+
+## 3. Select the rows to export
+
+![Export your leads to Smartlead — 3. Select the rows to export](/images/docs/bfMmjQZIVApmD0MLfp5SKPTdyI.png)
+
+## 4. Connect your Smartlead account
+
+If this is your first time connecting to SmartLead:
+
+1. **Click "Connect your Smartlead account"** in the workflow panel
+2. **Note that "No account connected"** appears initially
+3. **You'll need to create an API key** in your Smartlead account first
+
+![Export your leads to Smartlead — 4. Connect your Smartlead account](/images/docs/sNL46NsbdYR1jrzLPtoUCju2M5E.png)
+
+## 5. Create API key in Smartlead settings
+
+**Log into your Smartlead account:**
+
+1. **Click on "Settings"** (usually in the top right corner)
+2. **Navigate to the "Smartlead API Key"** section
+3. **Copy the generated API key** from Smartlead
+
+![Export your leads to Smartlead — 5. Create API key in Smartlead settings](/images/docs/wuWRy51L1fwHPRETONCEaGigP0.png)
+
+![Export your leads to Smartlead — 5. Create API key in Smartlead settings](/images/docs/OxidZfNkf8receHQFIK656EsMsM.png)
+
+## 6. Paste API key in Airscale and connect
+
+**Return to Airscale** and the export workflow
+
+1. **Paste your Smartlead API key** in the provided field
+2. **Click "Connect"** to establish the integration
+3. **Wait for confirmation** that the connection was successful
+
+![Export your leads to Smartlead — 6. Paste API key in Airscale and connect](/images/docs/nTWvj01RnjDgpeRnPaeqElRed7k.png)
+
+## 7. Select a campaign
+
+![Export your leads to Smartlead — 7. Select a campaign](/images/docs/ZBLBsHAN3Z1fVIVGgeahgBfnu2s.png)
+
+## 8. Launch your export
+
+Configure how Airscale data maps to SmartLead fields:
+
+- **Email address** ↔ Smartlead email field
+- **First name** ↔ Smartlead first name field
+- **Last name** ↔ Smartlead last name field
+- **Phone** ↔ Smartlead phone field
+- **Company Name** ↔ Smartlead company name field
+- **Website** ↔ Smartlead website field
+- **Linkedin Profile URL** ↔ Smartlead linkedin profile field
+- **Additional custom fields** as needed
+
+![Export your leads to Smartlead — 8. Launch your export](/images/docs/kfsTmZZTUSzv1pUr5E7OWcl0HY.png)
+
+---
+
+## Export your leads to Lemlist
+
+Source: https://airscale.mintlify.app/docs/export-lemlist.md
+
+Description: Export your prospects directly from Airscale to Lemlist campaigns for automated email outreach. This integration streamlines your workflow by pushing enriched prospect data directly into your email sequences without manual uploads or CSV exports
+
+## 0. Prerequisites
+
+- An active Lemlist account with email campaigns set up
+- A prospect table in Airscale with enriched email addresses
+- Lemlist API access (available on most Lemlist plans)
+
+## 1. Click on "Export"
+
+![Export your leads to Lemlist — 1. Click on "Export"](/images/docs/JhGjlM4TkNoRsWNAASC2x8R53g.png)
+
+## 2. Select "Add a contact to a campaign in Lemlist"
+
+![Export your leads to Lemlist — 2. Select "Add a contact to a campaign in Lemlist"](/images/docs/uC3d83fBGj4GhoMmKgObwpAvWc.png)
+
+## 3. Select the rows to export
+
+![Export your leads to Lemlist — 3. Select the rows to export](/images/docs/UEonB9KWdz1yuakW2dJPf7Vdow.png)
+
+## 4. Connect your Lemlist account
+
+If this is your first time connecting to Lemlist:
+
+1. **Click "Connect your Lemlist account"** in the workflow panel
+2. **Note that "No account connected"** appears initially
+3. **You'll need to create an API key** in your Lemlist account first
+
+![Export your leads to Lemlist — 4. Connect your Lemlist account](/images/docs/YcPBdkQoQiHcopujVpCV5224AY.png)
+
+## 5. Create API Key in Lemlist settings
+
+**Log into your Lemlist account:**
+
+1. **Click on "Settings"**
+2. **Navigate to the "Lemlist API Key"** section
+3. **Copy the generated API key** from Lemlist
+
+![Export your leads to Lemlist — 5. Create API Key in Lemlist settings](/images/docs/WcXYGXuuhJkUuDt3NIMqMsZDkR4.png)
+
+![Export your leads to Lemlist — 5. Create API Key in Lemlist settings](/images/docs/e95yeHv43bOW7qxMfCkwhx3ItKI.png)
+
+![Export your leads to Lemlist — 5. Create API Key in Lemlist settings](/images/docs/SlgDQgc4zCCVQSZxAxtBwToXhM.png)
+
+![Export your leads to Lemlist — 5. Create API Key in Lemlist settings](/images/docs/MZpju2ocQJuvtrk1st1gi1l84.png)
+
+## 6. Paste API key in Lemlist and connect
+
+**Return to Airscale** and the export workflow
+
+1. **Paste your Lemlist API key** in the provided field
+2. **Click "Connect"** to establish the integration
+3. **Wait for confirmation** that the connection was successful
+
+![Export your leads to Lemlist — 6. Paste API key in Lemlist and connect](/images/docs/RPr2xhZm3dXeJFvDH2QifeXblYY.png)
+
+## 7. Select a campaign
+
+![Export your leads to Lemlist — 7. Select a campaign](/images/docs/ARz1NJCKOwu1JzFhYIKmzYeZpg8.png)
+
+## 8. Launch your export
+
+Configure how Airscale data maps to Lemlist fields:
+
+- **Email address** ↔ Lemlist email field
+- **First name** ↔ Lemlist first name field
+- **Last name** ↔ Lemlist last name field
+- **Phone** ↔ Lemlist phone field
+- **Company Name** ↔ Lemlist company name field
+- **Linkedin Profile URL** ↔ Lemlist linkedin profile field
+- **Additional custom fields** as needed
+
+![Export your leads to Lemlist — 8. Launch your export](/images/docs/zfCOKi8Rd2yjTE3FkvoQg6ldlh0.png)
+
+---
+
+## Import contacts from Hubspot
+
+Source: https://airscale.mintlify.app/docs/import-hubspot.md
+
+Description: Pull contacts from Hubspot lists
+
+**Note:**
+
+- You can only export **10,000 contacts** at once
+
+## 0. Prerequisites
+
+- An active HubSpot account with CRM access
+- HubSpot integration permissions (available on most HubSpot plans)
+
+## 1. Click on "Import contacts from Hubspot"
+
+![Import contacts from Hubspot — 1. Click on "Import contacts from Hubspot"](/images/docs/AX6Atx1aWKL2HYHEjhalSps8xQE.png)
+
+## 2. Connect your Hubspot account to Airscale
+
+If this is your first time connecting to HubSpot:
+
+1. **Click "Connect your HubSpot account"** in the workflow panel
+2. **You'll be redirected to HubSpot's authorization page**
+3. **Log into your HubSpot account** if not already logged in
+4. **Grant permissions** for Airscale to access your HubSpot CRM
+5. **Return to Airscale** once authorization is complete
+
+**HubSpot integration permissions:**
+
+- **Contact creation and updates** for lead management
+- **Company association** for account-based tracking
+- **Property access** for data mapping and enrichment
+- **Pipeline visibility** for lifecycle stage management
+
+**Note** : HubSpot uses OAuth authentication, so you don't need to share passwords or API keys directly
+
+![Import contacts from Hubspot — 2. Connect your Hubspot account to Airscale](/images/docs/BB0coUiw1T2K0qDrEOiR8DqZk.png)
+
+![Import contacts from Hubspot — 2. Connect your Hubspot account to Airscale](/images/docs/LYLQQzOqezUkEPyHFsokFCU1TmU.png)
+
+![Import contacts from Hubspot — 2. Connect your Hubspot account to Airscale](/images/docs/G6dodSmDpA3I8TX0hiTQR7JJKrw.png)
+
+![Import contacts from Hubspot — 2. Connect your Hubspot account to Airscale](/images/docs/NGLrahEcaEqKSH8qOhuUp0ozpKI.png)
+
+![Import contacts from Hubspot — 2. Connect your Hubspot account to Airscale](/images/docs/QhLQTMyWoo9hjmR1C57bw0O0eg.png)
+
+## 3. Select a list from your Hubspot account
+
+![Import contacts from Hubspot — 3. Select a list from your Hubspot account](/images/docs/3tfXaRl1sJBvo2Q79pZ74htky0.png)
+
+## 4. Click on "Import" to create a table
+
+![Import contacts from Hubspot — 4. Click on "Import" to create a table](/images/docs/Fktj7an5qSYZg07R1FvocRgZeg.png)
+
+## 5. You can now enrich your table
+
+![Import contacts from Hubspot — 5. You can now enrich your table](/images/docs/5JUE2YHNB1NODYgQVxxYFPJIEQ.png)
+
+---
+
+## Airscale for HubSpot app
+
+Source: https://airscale.mintlify.app/docs/hubspot-app.md
+
+Description: The complete step-by-step guide to install and use the Airscale enrichment app on your HubSpot account.
+
+**What you'll be able to do after the setup:**
+
+- Enrich any HubSpot contact with a verified email and phone number in one click
+- Access the enrichment directly from the contact card sidebar
+- Automatically update standard HubSpot properties (email, phone)
+- Keep a history of enrichment results on each contact
+
+## 0. Prerequisites
+
+- A HubSpot account (any paid plan - Sales Hub Starter or above)
+- HubSpot admin rights (to install the app)
+- An Airscale account with an active API key - [sign up here](https://app.airscale.io/) if you don't have one
+
+## 1. Install the Airscale app on your HubSpot account
+
+1. Click the button below to launch the secure OAuth installation flow.
+
+[Click here to install Airscale for Hubspot](https://airscale-hubspot.mathis-0d8.workers.dev/oauth/install)
+
+2. On the landing page, click **Connect HubSpot**. If your HubSpot account is hosted in the EU, click the EU link instead.
+
+![Airscale for HubSpot app — 1. Install the Airscale app on your HubSpot account](/images/docs/ecG0P8WSV7MZzzzXKvjSbZSMg.png)
+
+3. **Select your HubSpot account: y**ou'll be redirected to HubSpot. Select the HubSpot account where you want to install Airscale.
+
+![Airscale for HubSpot app — 1. Install the Airscale app on your HubSpot account](/images/docs/FmyGoKzWIlXoCJ4gOw0GshZ0Vek.png)
+
+4. Review and approve the permissions requested (read/write contacts and companies) and click **Connect app**.
+
+![Airscale for HubSpot app — 1. Install the Airscale app on your HubSpot account](/images/docs/SzUROKyfQJGjIZXbzmk0ByYZVQ.png)
+
+**✔️ Installation successful.** At this point, Airscale has automatically created a **Airscale Enrichment** property group on your contact records and added the custom properties needed (`airscale_found_email`, `airscale_found_phone`, `airscale_enrichment_date`, `airscale_email_status`).
+
+## 2. Add your Airscale API key
+
+1. Open any contact record in HubSpot : go to Contacts → select a contact.
+2. Locate the Airscale Enrichment card : in the right sidebar, scroll down until you see the **Airscale Enrichment** card. *If you don't see it, go to step 3 to pin it properly.*
+
+![Airscale for HubSpot app — 2. Add your Airscale API key](/images/docs/K7cqhqsrpvr0vHeqsN2FpFksO8c.png)
+
+3. Open the Settings modal : inside the Airscale card, click **Actions → Settings**.
+
+![Airscale for HubSpot app — 2. Add your Airscale API key](/images/docs/QgUv1EMsbFYirDK3s42cU3hrMc0.png)
+
+4. A modal opens : **paste your Airscale API key into the input field**. You can find your API key at [app.airscale.io/dashboard?page=settings&tab=key](https://app.airscale.io/dashboard?page=settings&tab=key).
+
+![Airscale for HubSpot app — 2. Add your Airscale API key](/images/docs/JiKVoexsAsqiyNq8PKT7b7224k.png)
+
+5. Click **Save API Key**. You'll see a green confirmation: *"API key saved successfully."* Close the modal. Setup is complete.
+
+*To remove or replace your API key later: open the Settings modal again, then click Remove API Key (you'll have to click twice within 5 seconds to confirm).*
+
+## 3. Pin the Airscale card to the top (recommended)
+
+By default, HubSpot may place the Airscale card at the bottom of the sidebar. For faster access, pin it to the top.
+
+1. Open any contact record : navigate to contacts and open any contact.
+2. At the top of the contact record, click **Customize** (or **Personnaliser** in French). No need to scroll, the button is in the top nav bar.
+
+![Airscale for HubSpot app — 3. Pin the Airscale card to the top (recommended)](/images/docs/3rVl7LL58YCUaxg9oSpRf2cISKY.png)
+
+3. You'll be redirected to a page listing the available views. Click on the **default view** (or the specific view you want to customize).
+
+4. In the sidebar customization panel, locate the **Airscale Enrichment** card and drag it to the top (or just below "About this contact").
+
+![Airscale for HubSpot app — 3. Pin the Airscale card to the top (recommended)](/images/docs/x26RzBgdjqSbPUzpZldYPfggkk.png)
+
+5. Click **Save** at the top right, then refresh the contact page. The Airscale card is now pinned at the top.
+
+***Tip:** This layout applies to all contacts for your user. If you want to apply it team-wide, ask your HubSpot admin to update the default contact record view.*
+
+## 4. Run your first enrichment
+
+1. Open a contact with sufficient data
+
+   Make sure the contact has at least one of the following:
+
+   - **First name + Last name + Company name** (or company domain), OR
+   - A **LinkedIn URL** in the field "URL LinkedIn"
+2. In the Airscale card, click **Actions**. You have four options:
+
+   | **Action** | **What it does** |
+   | --- | --- |
+   | **Enrich all** | Finds both email + phone (recommended default) |
+   | **Find Email** | Finds verified email only |
+   | **Find Phone** | Finds mobile phone only (requires LinkedIn URL) |
+   | **Settings** | Opens the API key configuration modal |
+
+![Airscale for HubSpot app — 4. Run your first enrichment](/images/docs/QgUv1EMsbFYirDK3s42cU3hrMc0.png)
+
+3. **Click Enrich All** (a modal opens with a spinner: *"Enriching contact..."*).
+
+![Airscale for HubSpot app — 4. Run your first enrichment](/images/docs/llylGwLFBnZA6qALQBejUF6LHc.png)
+
+4. After a few seconds, you'll see:
+
+   - ✅ **Enrichment complete!** meaning the enrichment request was successfully launched
+   - ❌ An error message if something went wrong (e.g. missing input, API key not configured)
+
+![Airscale for HubSpot app — 4. Run your first enrichment](/images/docs/hoxiUVDOAFLDFjANK2ZxosUVsw.png)
+
+5. Refresh to see the new data : close the modal and press **Cmd+R** (Mac) or **Ctrl+R** (Windows) to refresh the page. The new data appears:
+
+   - In the Airscale card: *Found email*, *Found phone*, *Status*, *Enrichment date*
+   - In the left sidebar: the standard HubSpot **Email** and **Phone** fields are automatically filled if they were empty
+
+![Airscale for HubSpot app — 4. Run your first enrichment](/images/docs/tL8Dgzb9SteKGRTe1fmR9PQtOyM.png)
+
+#### How the data is written in Hubspot
+
+When Airscale finds an email or phone, the app writes:
+
+**Always, to Airscale custom properties**
+
+- `airscale_found_email`
+- `airscale_found_phone`
+- `airscale_email_status` (Valid / Risky / Invalid)
+- `airscale_enrichment_date`
+
+**Only if empty, to standard HubSpot properties**
+
+- `email` (Email)
+- `phone` (Phone number — "Numéro de téléphone")
+
+This means your existing data is **never overwritten**. To force an update of the standard field, use **Actions → Override Email** or **Override Phone** once enrichment has run.
+
+## 5. Automate enrichment with Workflows
+
+Once the Airscale app is installed and your API key is configured, you can automate enrichment at scale using HubSpot Workflows. Instead of enriching contacts one by one, you can set up workflows that automatically enrich contacts based on triggers you define.
+
+**Requirement:** HubSpot Workflows with custom actions require **Sales Hub Pro/Enterprise**, **Marketing Hub Pro/Enterprise**, or **Operations Hub Pro/Enterprise**. This feature is not available on Starter plans.
+
+#### Available workflow actions
+
+Airscale adds three actions to the HubSpot workflow builder:
+
+| **Action** | **What it does** |
+| --- | --- |
+| **Airscale - Enrich All** | Finds both email + phone (recommended) |
+| **Airscale - Find Email** | Finds verified email only |
+| **Airscale - Find Phone** | Finds mobile phone only (requires LinkedIn URL on the contact) |
+
+#### How to create an enrichment workflow
+
+1. Create a new workflow: go to **Automation → Workflows → Create workflow**. Select **Contact-based** as the object type.
+2. Choose a trigger: select the condition that will start the enrichment. Common examples:
+
+   - **Contact is added to a list**: enrich a batch of imported contacts
+   - **Contact fills out a form**: enrich inbound leads automatically
+   - **Contact property changes**: e.g., when a LinkedIn URL is added
+   - **Manual trigger**: enrich contacts on demand by selecting them manually
+3. Add the Airscale action: click the **+** button to add an action. In the search bar, type **"Airscale"**. You'll see the three Airscale actions under **Integrated apps → Airscale Data Enrichment**. Select the one you want (we recommend **"Airscale - Enrich All"** for most use cases).
+4. Activate the workflow: click **Review and activate** in the top right corner. Review the settings and click **Activate**. Contacts matching your trigger will now be automatically enriched.
+
+#### Example use cases
+
+| **Use case** | **Trigger** | **Action** |
+| --- | --- | --- |
+| Enrich all new leads from a form | Contact fills out form "Contact Us" | Airscale - Enrich All |
+| Enrich imported contact lists | Contact is added to list "New Import" | Airscale - Enrich All |
+| Find phone when LinkedIn is added | LinkedIn URL becomes known | Airscale - Find Phone |
+| Enrich contacts entering a deal stage | Associated deal moves to "Discovery" | Airscale - Find Email |
+
+**Credit usage:** Each enrichment in a workflow uses credits from your Airscale account, just like manual enrichment. If your credits run out, the workflow action will return an error for remaining contacts but will not block the rest of the workflow. Monitor your balance at [app.airscale.io](https://app.airscale.io/).
+
+## Troubleshooting
+
+#### The Airscale card doesn't appear on the contact page
+
+- On the contact record, click **Customize** in the top nav → select your view → make sure "Airscale Enrichment" is enabled.
+- If it's not in the list, the install may have failed. Reinstall via the install link.
+
+#### "API key not configured" error when enriching
+
+- Open the Airscale card → **Actions → Settings** → paste a valid API key from [app.airscale.io/dashboard?page=settings&tab=key](https://app.airscale.io/dashboard?page=settings&tab=key).
+
+#### "Not enough data to find email" error
+
+- The contact is missing required input. Make sure one of the following is filled:
+
+  - **First name + Last name + (Company name OR company domain)**
+  - A **LinkedIn URL** in `hs_linkedin_url` or `linkedin_url`
+- Tip: associate a company to the contact in HubSpot. Airscale will use the associated company's domain automatically.
+
+#### "LinkedIn URL is required for phone enrichment"
+
+- Airscale's phone enrichment requires a LinkedIn profile URL to work. Add it to the contact in the **URL LinkedIn** field.
+
+#### The enriched data doesn't show up
+
+- Make sure you refreshed the page (**Cmd+R / Ctrl+R**) after closing the enrichment modal. HubSpot doesn't auto-refresh the sidebar.
+
+#### I don't have enough Airscale credits
+
+- Check your balance at [app.airscale.io](https://app.airscale.io/). Top up via your account settings or contact us.
+
+---
+
+## Add users & switch workspaces
+
+Source: https://airscale.mintlify.app/docs/users-workspaces.md
+
+Description: Invite new users to your workspace and seamlessly switch between different workspaces based on your needs
+
+## 1. Click on settings
+
+![Add users & switch workspaces — 1. Click on settings](/images/docs/ISz9IwzDdNhlweZgoXCYdpnERI.png)
+
+## 2. Click on Workspace & Team
+
+You also have the option to change the workspace name if you wish. By default, the name will be the username of the person who created the account
+
+![Add users & switch workspaces — 2. Click on Workspace & Team](/images/docs/25Pi8Z0nXb25C578ZhYGLUDrPCc.png)
+
+## 3. Click on "Invite" & "Send invitation"
+
+You can add as many users as you like, it won’t impact the license price, as we do not charge per user (credit-based pricing model)<br />
+
+Only the workspace admin can invite and remove users
+
+![Add users & switch workspaces — 3. Click on "Invite" & "Send invitation"](/images/docs/RMmL7NIHCQkWXBRbcLpqovOmjQ.png)
+
+![Add users & switch workspaces — 3. Click on "Invite" & "Send invitation"](/images/docs/BIs99TEvFAOcVdIiDan2sQtXHM.png)
+
+**Important**: each invited user will receive an email with a link to access the workspace, whether they already have an account or not
+
+## 4. Switch workspaces to access credits
+
+As soon as a user has been invited to a workspace and clicks the link received by email, they will have access to both their default workspace (created under their name) and the workspace they were invited to
+
+To access the tables and credits of the new workspace, click on the logo in the bottom-left corner of the platform, which displays the first initial of the user’s name:
+
+![Add users & switch workspaces — 4. Switch workspaces to access credits](/images/docs/D1UwkT4ins49Xor6OOFgOPmlWo.png)
+
+![Add users & switch workspaces — 4. Switch workspaces to access credits](/images/docs/8hrJ7Z8Q08sd3ifZWf5qZLZE4.png)
+
+Whenever you switch workspaces, the credit balance will update to reflect the new workspace. You will also gain access to the tables created in that workspace, and any enrichments launched there will be deducted from the credit balance of the currently active workspace
+
+---
+
+## Deduplicate leads between tables
+
+Source: https://airscale.mintlify.app/docs/deduplicate-leads-tables.md
+
+Description: Identify and merge duplicate leads between your tables to keep your database clean and accurate
+
+## 0. Prerequisites
+
+- You must have tables with contacts or companies
+- Each lead (contact or company) must have a LinkedIn profile URL to be identified, as this is the unique identifier that is used
+
+## 1. Click on "Dedupe" at the bottom left of your table
+
+Launch this workflow and all rows in the current table will be checked for potential duplicates across all your other existing tables. If duplicates are found, the corresponding row in the table will be deleted
+
+![Deduplicate leads between tables — 1. Click on "Dedupe" at the bottom left of your table](/images/docs/By5M1bxsBoCkqXwsRHIOsXHE.png)
+
+![Deduplicate leads between tables — 1. Click on "Dedupe" at the bottom left of your table](/images/docs/aAqwhxs8GBfExpkStDKoRJlG2yc.png)
+
+It may take a few minutes to run entirely if the current table is large. Once the workflow is launched, you can safely close the pop-up as the workflow will be running in the background
+
+**Note**: the dedupe workflow runs within the same object type, contacts with contacts, and companies with companies only
+
+---
+
+## Filter tables
+
+Source: https://airscale.mintlify.app/docs/filer-tables.md
+
+Description: Apply filters to your tables to quickly find and analyze the data that matters most
+
+## 1. Click on "Filter"
+
+![Filter tables — 1. Click on "Filter"](/images/docs/blJsmmgUvW11k4Fs6cLyHca9N8.png)
+
+You will then have the option to select one or several columns from your table:
+
+![Filter tables — 1. Click on "Filter"](/images/docs/jgITzqvLJ7GmV1ycXslEeF8Nc.png)
+
+Once a column is selected, you will have several filtering options available (depending on whether it’s a text field, a numeric field, or an email field):<br />
+
+***Example of filtering emails:***
+
+![Filter tables — 1. Click on "Filter"](/images/docs/qU01hb2GBvxtzGyvM9bYDVIKKdU.png)
+
+***Example of filtering text field :***
+
+![Filter tables — 1. Click on "Filter"](/images/docs/yJzejorzXa4cpvUdfRd8jhyVE.png)
+
+***Example of filtering a numeric field :***
+
+![Filter tables — 1. Click on "Filter"](/images/docs/uweckD9tRl88SZWrNHj5WFA2GXA.png)
+
+**Note:** the filters are case sensitive. A filter like "Job title" contains "Ceo" will not return the rows with "CEO" as a job title
+
+You also have the option to apply multiple filters at the same time:
+
+![Filter tables — 1. Click on "Filter"](/images/docs/OPxi1GUOOjmtCMk9I55jFSZHSM.png)
+
+And the option to replace the “AND” field with “OR” by clicking the small arrow on the right:
+
+![Filter tables — 1. Click on "Filter"](/images/docs/4kdoQ1SUTCReCBTKYhywYhib5To.png)
+
+Once you’ve applied your filters, all you need to do is click on “Apply filters” and the table will update
+
+**Note**: the more rows the table contains, the longer it will take to load and apply the filters
+
+## 2. Another option: use the search bar to filter
+
+You also have the option to use the search bar to look for a specific item within your table (this can be a first name, an email, a numeric field, or anything else):
+
+![Filter tables — 2. Another option: use the search bar to filter](/images/docs/i7APPi9NlgtHqK9TmsgxHLgchg.png)
+
+---
+
+## Transfer column content
+
+Source: https://airscale.mintlify.app/docs/transfer-content.md
+
+Description: Move or copy data from one column to another to reorganize or update your records efficiently
+
+## 1. Click on the settings of your column
+
+![Transfer column content — 1. Click on the settings of your column](/images/docs/OYPnHJsOjKzR6J5pTe2wLCtGOcY.png)
+
+## 2. Click on "Transfer data to another column"
+
+![Transfer column content — 2. Click on "Transfer data to another column"](/images/docs/IK5WDeFbLgqANMudAsuR6Doyj2E.png)
+
+## 3. Select the column to which you want to transfer the data
+
+![Transfer column content — 3. Select the column to which you want to transfer the data](/images/docs/4RIlmBDekFQL8eDywbIu58oCdE.png)
+
+## 4. Choose the number of rows you want to transfer
+
+![Transfer column content — 4. Choose the number of rows you want to transfer](/images/docs/4i5kLpAMYtvK4i5nCyuSAxZOFY.png)
+
+**Note:** clicking "Transfer Data" copies the data to the new column without removing it from the original one
+
+---
+
 ## API Overview
 
 Source: https://airscale.mintlify.app/api-reference/api-overview.md

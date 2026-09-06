@@ -1,0 +1,79 @@
+---
+title: "Scrape a Sales Navigator search"
+description: "Turn your Sales Navigator searches (people only) into actionable prospect lists in Airscale. This feature extracts profiles directly from any Sales Navigator search results, eliminating manual copy-pasting and building targeted lists in minutes"
+canonical: "https://airscale.mintlify.app/docs/sales-navigator"
+---
+
+**Note:**
+
+- You can only export **2,500 leads** per search
+- We recommend not scraping more than **2,500 leads every 12 hours**
+
+## 0. Prerequisites
+
+- An active LinkedIn Sales Navigator subscription
+- A completed search in Sales Navigator with your target prospects
+- Airscale Chrome [extension](https://chromewebstore.google.com/detail/airscale-cookie-importer/hklojeelolieobofdgnboacmigmnkbop) installed (for LinkedIn authentication)
+
+## 1. Click on "Scrape Sales Navigator search results"
+
+![Scrape a Sales Navigator search — 1. Click on "Scrape Sales Navigator search results"](/images/docs/QOaeXVyISyw1AyU6ldpBtDjvzB4.png)
+
+## 2. Copy the search URL from Sales Navigator
+
+Before scraping, ensure your search is properly configured:
+
+1. Go to Sales Navigator and perform your lead search
+2. Apply your target filters (job titles, company size, industry, location, etc.)
+3. Review your search results to ensure they match your ideal prospects
+4. Copy the search URL from your browser's address bar
+
+![Scrape a Sales Navigator search — 2. Copy the search URL from Sales Navigator](/images/docs/dMBQCqCanAHC0lKoycTMqCD4.png)
+
+## 3. Connect your LinkedIn account
+
+Download the Airscale Chrome extension if you haven't already [here](https://chromewebstore.google.com/detail/airscale-cookie-importer/hklojeelolieobofdgnboacmigmnkbop) or directly with the link on the extraction page
+
+- The extension will automatically extract your LinkedIn session cookie
+- Paste your `li_at` cookie into the provided field
+- This authenticates your LinkedIn session securely. 2FA adds an extra security layer and is required for Admin roles
+
+![Scrape a Sales Navigator search — 3. Connect your LinkedIn account](/images/docs/S5lbwdKwJwMx7duJbf6TwyeDaE.png)
+
+```text
+# Example cookie value:
+AQEFARABAAAAABh3zC8AAAGax5RR6wAAAZsS5x4vTgAAs3wcms4QjA4ZWtWSUZxNDRZQVVJNGdSZHk1bE41a[..]
+```
+
+## 4. Launch the extraction
+
+Click **"LAUNCH EXTRACTION"** to begin the scraping process
+
+1. Monitor the progress in real-time on the right panel:
+
+   - Validating your LinkedIn session cookie
+   - Extracting (progress will show here)
+   - Importing results to a table
+2. Wait for completion — most extractions complete within 1–10 minutes
+
+![Scrape a Sales Navigator search — 4. Launch the extraction](/images/docs/aw6ZDObeaXmjx1HYCcY47fVoZ8.png)
+
+## 5. Access your results
+
+Click **"See your results"** to view your new prospect table:
+
+![Scrape a Sales Navigator search — 5. Access your results](/images/docs/14R4NiRR8nITFmts0EKUSJ5y4.png)
+
+**Output format:**
+
+| **Field** | **Data level** | Description |
+| --- | --- | --- |
+| First Name | People | / |
+| Last Name | People | / |
+| Company Name | Company | / |
+| Job title | People | / |
+| Location | People | / |
+| Linkedin Profile URL | People | / |
+| Linkedin Company URL | Company | / |
+| Open? | People | / |
+| Premium? | People | / |
