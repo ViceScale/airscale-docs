@@ -1,7 +1,7 @@
 # AirSchool Documentation migration
 
-Source: <https://docs.airscale.io/docs/sales-navigator>, captured 2026-09-06.
-Destination: the existing Airscale Mintlify preview at <https://airscale.mintlify.app>.
+Source: [AirSchool Documentation](https://docs.airscale.io/docs/sales-navigator), captured 2026-09-06.
+Destination: the existing [Airscale Mintlify preview](https://airscale.mintlify.app).
 
 The Documentation tab contains all 48 pages from the live sidebar, retaining its
 five groups and route order: Build lists (10), Enrichments (26), Export (6), CRM
