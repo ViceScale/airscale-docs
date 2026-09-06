@@ -45,3 +45,9 @@ Full validation, independent review, and hosted deployment evidence are recorded
 in the associated pull request. Local search requires Mintlify CLI login; search
 is verified after publication. Preview canonical/robots policy is retained.
 No DNS records or source Framer content are changed by this migration.
+
+Hosted QA found that the paired dollar signs in the beginner guide price range
+were interpreted as inline LaTeX. Currency dollar signs are escaped in the MDX
+source so the original text remains literal. Manual regression: open the guide
+and verify all four plan list items, including `Growth (189$ to 1049$)`, with no
+math element. Fenced prompt examples retain their original dollar signs.
