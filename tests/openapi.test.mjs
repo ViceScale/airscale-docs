@@ -309,11 +309,11 @@ function assertAtomicFailure({ failure, initialContents }) {
   });
 }
 
-test("base spec identifies the Airscale public API", () => {
+test("base spec identifies the Airschool public API", () => {
   assert.equal(baseSpec.openapi, "3.1.0");
-  assert.equal(baseSpec.info.title, "Airscale Public API");
+  assert.equal(baseSpec.info.title, "Airschool Public API");
   assert.equal(baseSpec.info.version, "2026-08-30");
-  assert.equal(baseSpec.info.description, "Search, enrich, and resolve public business data with Airscale.");
+  assert.equal(baseSpec.info.description, "Search, enrich, and resolve public business data with Airschool.");
   assert.equal(baseSpec.info["x-airscale-source-repository"], "ViceScale/airscale-code");
   assert.equal(baseSpec.info["x-airscale-source-sha"], SOURCE_SHA);
   assert.deepEqual(baseSpec.servers, [
@@ -330,7 +330,7 @@ test("base spec identifies the Airscale public API", () => {
     type: "http",
     scheme: "bearer",
     bearerFormat: "API key",
-    description: "Use an Airscale workspace API key. Never expose the key in client-side code."
+    description: "Use an Airschool workspace API key. Never expose the key in client-side code."
   });
 });
 
@@ -342,7 +342,7 @@ test("account and contact operations share permissive public schemas", () => {
   assert.deepEqual(baseSpec.components.schemas.LinkedInPersonUrl, {
     type: "string",
     minLength: 1,
-    description: "A recognized LinkedIn person-profile URL or identifier. Airscale normalizes supported profile inputs.",
+    description: "A recognized LinkedIn person-profile URL or identifier. Airschool normalizes supported profile inputs.",
     example: "https://www.linkedin.com/in/example-person-000000"
   });
   assert.deepEqual(baseSpec.components.schemas.SuccessEmail, {
@@ -417,7 +417,7 @@ test("Account Credits operation models the stable balance contract", () => {
   assert.equal(operation.operationId, "getCredits");
   assert.deepEqual(operation.tags, ["Account"]);
   assert.equal(operation["x-airscale-rate-limit"], "No endpoint-specific rate limit is documented.");
-  assert.equal(operation["x-airscale-credit-cost"], "No charge; checking the balance does not debit Airscale credits.");
+  assert.equal(operation["x-airscale-credit-cost"], "No charge; checking the balance does not debit Airschool credits.");
   assert.equal(operation.requestBody, undefined);
   assertPublicOperationMetadata(operation);
   assert.deepEqual(operation.responses["200"].content["application/json"].schema, {
@@ -1248,7 +1248,7 @@ test("Count People reuses the exact query contract without Search pagination", (
   assert.equal(count.operationId, "countPeople");
   assert.deepEqual(count.tags, ["Search and discovery"]);
   assert.equal(count["x-airscale-rate-limit"], "6 requests per second per workspace.");
-  assert.equal(count["x-airscale-credit-cost"], "No charge; Count does not debit Airscale credits.");
+  assert.equal(count["x-airscale-credit-cost"], "No charge; Count does not debit Airschool credits.");
   assertPublicOperationMetadata(count);
   assert.equal(count.requestBody.required, true);
   assert.deepEqual(countSchema.required, ["query"]);
@@ -1416,7 +1416,7 @@ test("Company Filter-values models alias coercion and public option metadata", (
   assert.equal(operation.operationId, "listFindCompanyFilterValues");
   assert.deepEqual(operation.tags, ["Search and discovery"]);
   assert.equal(operation["x-airscale-rate-limit"], "6 requests per second per workspace.");
-  assert.equal(operation["x-airscale-credit-cost"], "No charge; Filter-values does not debit Airscale credits.");
+  assert.equal(operation["x-airscale-credit-cost"], "No charge; Filter-values does not debit Airschool credits.");
   assertPublicOperationMetadata(operation);
   assert.equal(operation.requestBody, undefined);
   assert.deepEqual(
@@ -1601,7 +1601,7 @@ test("Airsearch reserves envelope names and models all pinned string source valu
   assert.deepEqual(response.additionalProperties, { type: ["string", "null"] });
   const sourceBackedFixture = {
     status: "success",
-    response: "Airscale is a sales data enrichment platform.",
+    response: "Airschool is a sales data enrichment platform.",
     category: "sales data enrichment platform",
     reasoning: "The web page and public search snippets agree.",
     sources: ["https://airscale.io", "serp_snippets"],

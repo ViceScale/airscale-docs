@@ -80,7 +80,7 @@ const CONNECT_PAGE_PATHS = [
 ];
 const CHATGPT_CONNECT_PAGE_HEADINGS = [
   "## MCP server URL",
-  "## What ChatGPT can do with Airscale MCP",
+  "## What ChatGPT can do with Airschool MCP",
   "## Before you start",
   "## Step-by-step setup",
   "## Recommended first prompts",
@@ -93,7 +93,7 @@ const CHATGPT_CONNECT_PAGE_HEADINGS = [
 ];
 const CLAUDE_CONNECT_PAGE_HEADINGS = [
   "## MCP server URL",
-  "## What Claude can do with Airscale MCP",
+  "## What Claude can do with Airschool MCP",
   "## Before you start",
   "## Claude web setup",
   "### Individual Claude accounts",
@@ -195,7 +195,7 @@ function assertExamplesUseSyntheticData(source, path) {
     }
 
     if (kind === "prompt") {
-      const prose = example.replace(/`[^`]*`/g, " ").replace(/\bAirscale MCP\b/g, " ");
+      const prose = example.replace(/`[^`]*`/g, " ").replace(/\bAirschool MCP\b/g, " ");
       for (const match of prose.matchAll(/\b([A-Z][a-z]+(?:['-][A-Za-z]+)?)\s+([A-Z][a-z]+(?:['-][A-Za-z]+)?)\b/g)) {
         const fullName = `${match[1]} ${match[2]}`;
         assert.ok(
@@ -362,8 +362,8 @@ test("server page is the final concise AirSchool reference", () => {
   assert.equal(exportFile.spend.kind, "free");
 
   assert.deepEqual(frontmatter, {
-    title: "Airscale MCP Server",
-    description: "Connect Airscale to your AI assistant and prospect without leaving the chat.",
+    title: "Airschool MCP Server",
+    description: "Connect Airschool to your AI assistant and prospect without leaving the chat.",
     canonical: "https://airscale.mintlify.app/mcp/airscale-mcp-server"
   });
   assert.deepEqual(
@@ -400,7 +400,7 @@ test("server page is the final concise AirSchool reference", () => {
   assert.match(serverSection, /OAuth[\s\S]{0,100}browser sign-in|browser sign-in[\s\S]{0,100}OAuth/i);
   assert.match(
     serverSection,
-    /Airscale MCP server resolves the authorized workspace credential server-side[\s\S]{0,120}client neither receives nor stores[\s\S]{0,80}API key/i
+    /Airschool MCP server resolves the authorized workspace credential server-side[\s\S]{0,120}client neither receives nor stores[\s\S]{0,80}API key/i
   );
   assert.match(
     serverSection,
@@ -420,7 +420,7 @@ test("server page is the final concise AirSchool reference", () => {
   ], "mcp/airscale-mcp-server getting started");
   assert.match(
     gettingStartedSection,
-    /credit (?:check|balance)[\s\S]{0,120}(?:proves|confirms) authentication to an Airscale workspace[\s\S]{0,120}does not identify (?:which|the) workspace[\s\S]{0,160}verify[\s\S]{0,80}workspace[\s\S]{0,80}before paid actions/i
+    /credit (?:check|balance)[\s\S]{0,120}(?:proves|confirms) authentication to an Airschool workspace[\s\S]{0,120}does not identify (?:which|the) workspace[\s\S]{0,160}verify[\s\S]{0,80}workspace[\s\S]{0,80}before paid actions/i
   );
 
   const setupSection = body.slice(
@@ -429,7 +429,7 @@ test("server page is the final concise AirSchool reference", () => {
   );
   assert.match(setupSection, /\[ChatGPT setup guide\]\(\/mcp\/connect-airscale-mcp-to-chatgpt\)/);
   assert.match(setupSection, /\[Claude setup guide\]\(\/mcp\/connect-airscale-mcp-to-claude\)/);
-  assert.match(setupSection, /\[Airscale MCP workflow\]\(\/mcp\/how-to-use-the-airscale-mcp\)/);
+  assert.match(setupSection, /\[Airschool MCP workflow\]\(\/mcp\/how-to-use-the-airscale-mcp\)/);
   assert.doesNotMatch(setupSection, /```|<CodeGroup|mcpServers|Authorization\b/i);
 
   const capabilitySection = body.slice(
@@ -675,7 +675,7 @@ test("connection guides follow distinct ChatGPT and Claude setup narratives", ()
   assert.doesNotMatch(claude.body, /## ChatGPT setup/);
 });
 
-test("connection guides scope free credit proof to an unidentified Airscale workspace", () => {
+test("connection guides scope free credit proof to an unidentified Airschool workspace", () => {
   for (const path of CONNECT_PAGE_PATHS) {
     const { body } = readPage(path);
     const exportHeading = path.endsWith("chatgpt")
@@ -693,13 +693,13 @@ test("connection guides scope free credit proof to an unidentified Airscale work
     assert.match(adjacentExplanation, /free connection test/i);
     assert.match(
       adjacentExplanation,
-      /returned balance confirms tool discovery and authentication to an Airscale workspace without debiting credits/i
+      /returned balance confirms tool discovery and authentication to an Airschool workspace without debiting credits/i
     );
     assert.match(adjacentExplanation, /does not identify which workspace/i);
     if (path.endsWith("chatgpt")) {
       assert.match(adjacentExplanation, /verify the workspace shown during OAuth before paid actions/i);
       const freeStep = body.match(/<Step title="Verify the connection for free">([\s\S]*?)<\/Step>/)?.[1] ?? "";
-      assert.match(freeStep, /authentication to an Airscale workspace without debiting credits/i);
+      assert.match(freeStep, /authentication to an Airschool workspace without debiting credits/i);
       assert.match(freeStep, /does not identify which workspace/i);
       assert.match(freeStep, /verify the workspace shown during OAuth before paid actions/i);
     } else {
@@ -740,10 +740,10 @@ test("connection guides explain bounded prompts and the asynchronous export boun
 test("ChatGPT setup is browser OAuth only and never configures an API key", () => {
   const { body } = readPage("mcp/connect-airscale-mcp-to-chatgpt");
   assert.match(body, /browser OAuth/i);
-  assert.match(body, /do not paste an Airscale API key/i);
+  assert.match(body, /do not paste an Airschool API key/i);
   assert.match(
     body,
-    /After OAuth, Airscale's MCP server resolves the authorized workspace's current credential server-side on each tool call; ChatGPT neither receives nor stores that API key\./
+    /After OAuth, Airschool's MCP server resolves the authorized workspace's current credential server-side on each tool call; ChatGPT neither receives nor stores that API key\./
   );
   assert.doesNotMatch(body, /ChatGPT resolves/i);
   assert.doesNotMatch(body, /AIRSCALE_API_KEY|YOUR_API_KEY|Authorization\s*:\s*Bearer|API key field|header-based/i);
@@ -806,7 +806,7 @@ test("Claude setup branches individual and organization-hosted connector flows",
   assert.match(body, /Free, Pro, or Max[\s\S]{0,240}(?:add|create)[\s\S]{0,100}custom connector/i);
   assert.match(body, /Team or Enterprise[\s\S]{0,240}(?:Owner|Primary Owner)[\s\S]{0,160}Custom[\s\S]{0,80}Web/i);
   assert.match(body, /member[\s\S]{0,180}Connect[\s\S]{0,120}authenticate/i);
-  assert.match(body, /organization (?:approval|setup)[\s\S]{0,140}does not share[\s\S]{0,100}(?:owner|Owner)[^.]*(?:Airscale authorization|Airscale auth|Airscale session)/i);
+  assert.match(body, /organization (?:approval|setup)[\s\S]{0,140}does not share[\s\S]{0,100}(?:owner|Owner)[^.]*(?:Airschool authorization|Airschool auth|Airschool session)/i);
   assert.match(body, /https:\/\/support\.claude\.com\/en\/articles\/11175166/);
 });
 
@@ -825,9 +825,9 @@ test("MCP entry page mirrors the AirSchool Claude-demo narrative", () => {
   const path = "mcp/how-to-use-the-airscale-mcp";
   const { body, frontmatter } = readPage(path);
   assert.deepEqual(frontmatter, {
-    title: "How to use the Airscale MCP (+Claude demo)",
-    sidebarTitle: "How to use the Airscale MCP (+Claude demo)",
-    description: "Prospect through conversation with Airscale search, enrichment, and export tools.",
+    title: "How to use the Airschool MCP (+Claude demo)",
+    sidebarTitle: "How to use the Airschool MCP (+Claude demo)",
+    description: "Prospect through conversation with Airschool search, enrichment, and export tools.",
     canonical: "https://airscale.mintlify.app/mcp/how-to-use-the-airscale-mcp"
   });
   assert.match(body, /<Frame>/);
@@ -838,7 +838,7 @@ test("MCP entry page mirrors the AirSchool Claude-demo narrative", () => {
   assert.ok(iframe, "Frame must contain a self-closing iframe");
   assert.match(iframe, /(?:^|\s)className="w-full aspect-video rounded-xl"/);
   assert.match(iframe, /(?:^|\s)src="https:\/\/www\.youtube\.com\/embed\/t4coJ0P8YVM"/);
-  assert.match(iframe, /(?:^|\s)title="How to prospect with Airscale MCP in Claude"/);
+  assert.match(iframe, /(?:^|\s)title="How to prospect with Airschool MCP in Claude"/);
   assert.match(iframe, /(?:^|\s)allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"/);
   assert.match(iframe, /(?:^|\s)referrerPolicy="strict-origin-when-cross-origin"/);
   assert.match(iframe, /(?:^|\s)allowFullScreen(?:\s|\/>)/);
@@ -846,7 +846,7 @@ test("MCP entry page mirrors the AirSchool Claude-demo narrative", () => {
   assert.deepEqual(
     Array.from(body.matchAll(/^(#{2,3})\s+(.+)$/gm), ([, level, heading]) => `${level} ${heading}`),
     [
-      "## What is the Airscale MCP?",
+      "## What is the Airschool MCP?",
       "## How credits work",
       "## Run a search in natural language",
       "### Review your results",
@@ -856,7 +856,7 @@ test("MCP entry page mirrors the AirSchool Claude-demo narrative", () => {
     ]
   );
   const capabilitySection = body.slice(
-    body.indexOf("## What is the Airscale MCP?"),
+    body.indexOf("## What is the Airschool MCP?"),
     body.indexOf("## How credits work")
   );
   assert.equal((capabilitySection.match(/^- /gm) ?? []).length, 6);
@@ -944,7 +944,7 @@ test("synthetic-data policy rejects mixed pages with a real identity or phone nu
   const { body } = readPage("mcp/connect-airscale-mcp-to-chatgpt");
   assert.throws(
     () => assertExamplesUseSyntheticData(
-      `${body}\n> Use Airscale MCP to find Satya Nadella at \`northstar.example\`.`,
+      `${body}\n> Use Airschool MCP to find Satya Nadella at \`northstar.example\`.`,
       "mixed identity fixture"
     ),
     /Satya Nadella must be explicitly synthetic/
@@ -1004,17 +1004,17 @@ test("agent resources distinguish the operational product server from the docume
   const { body, frontmatter } = readPage(path);
   assert.deepEqual(frontmatter, {
     title: "Agent resources",
-    description: "Find the human-readable and machine-readable Airscale references intended for AI agents.",
+    description: "Find the human-readable and machine-readable Airschool references intended for AI agents.",
     canonical: "https://airscale.mintlify.app/mcp/agent-resources"
   });
   assert.match(body.trimStart(), /^<Columns cols=\{2\}>/);
   const [operationalCard, documentationCard] = directColumnBodies(body, path);
   assert.match(operationalCard, /authenticated product server/i);
   assert.match(operationalCard, /https:\/\/mcp\.airscale\.io\/mcp/);
-  assert.match(operationalCard, /spend Airscale credits/i);
+  assert.match(operationalCard, /spend Airschool credits/i);
   assert.match(documentationCard, /documentation-scoped/i);
   assert.match(documentationCard, /https:\/\/airscale\.mintlify\.app\/mcp/);
-  assert.match(documentationCard, /does not execute Airscale product tools/i);
+  assert.match(documentationCard, /does not execute Airschool product tools/i);
   assert.match(documentationCard, /search and filesystem tools are read-only/i);
   assert.match(documentationCard, /submit_feedback[\s\S]{0,120}(?:send|submit)[\s\S]{0,80}documentation feedback/i);
   assert.doesNotMatch(documentationCard, /entire(?:ly)? read-only|read-only documentation (?:surface|server)/i);
@@ -1037,7 +1037,7 @@ test("agent resources distinguish the operational product server from the docume
   assert.match(body, /Operational tool schemas[\s\S]{0,260}tools\/list/i);
   assert.match(body, /MCP tool catalog[\s\S]{0,260}text\/markdown/i);
   assert.match(body, /Agent discovery[\s\S]{0,280}Mintlify automatically generates/i);
-  assert.match(body, /not an Airscale product-agent endpoint/i);
+  assert.match(body, /not an Airschool product-agent endpoint/i);
   assert.doesNotMatch(body, /\.well-known\/api-catalog|A2A|HTTP\+JSON/i);
 
   const connectionSection = body.slice(body.indexOf("## Connect the documentation MCP"));

@@ -15,9 +15,9 @@ export const accountOperations = [
       operationId: "getCredits",
       tags: ["Account"],
       summary: "Get workspace credit balance",
-      description: "Returns the current Airscale credit balance for the authenticated workspace.",
+      description: "Returns the current Airschool credit balance for the authenticated workspace.",
       "x-airscale-rate-limit": "No endpoint-specific rate limit is documented.",
-      "x-airscale-credit-cost": "No charge; checking the balance does not debit Airscale credits.",
+      "x-airscale-credit-cost": "No charge; checking the balance does not debit Airschool credits.",
       responses: {
         200: {
           description: "The current workspace credit balance.",

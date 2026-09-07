@@ -1,20 +1,20 @@
 ---
 name: airscale
-description: Search for people and companies, enrich professional contact data, run web research, and create asynchronous exports through the Airscale API or MCP server.
+description: Search for people and companies, enrich professional contact data, run web research, and create asynchronous exports through the Airschool API or MCP server.
 metadata:
   version: "1.0"
   source_sha: "b06ea2c46276f8415a97721f6901437ce07f13fa"
 ---
 
-# Airscale
+# Airschool
 
-Use Airscale to search for people and companies, enrich professional contact data, research the web, and create asynchronous exports. Start with free checks, keep paid samples narrow, and never execute a paid export without the user's explicit approval.
+Use Airschool to search for people and companies, enrich professional contact data, research the web, and create asynchronous exports. Start with free checks, keep paid samples narrow, and never execute a paid export without the user's explicit approval.
 
 ## Choose the correct interface
 
 - Use the HTTP API when application code needs direct request and response control. Start at https://airscale.mintlify.app/api-reference/api-overview.
-- Use the authenticated Airscale MCP product server at https://mcp.airscale.io/mcp when an MCP client should call Airscale tools. Some tools spend workspace credits.
-- Use the documentation-scoped MCP at https://airscale.mintlify.app/mcp only for documentation. Its search and filesystem tools are read-only; submit_feedback can send documentation feedback. It does not execute Airscale product tools or consume Airscale credits.
+- Use the authenticated Airschool MCP product server at https://mcp.airscale.io/mcp when an MCP client should call Airschool tools. Some tools spend workspace credits.
+- Use the documentation-scoped MCP at https://airscale.mintlify.app/mcp only for documentation. Its search and filesystem tools are read-only; submit_feedback can send documentation feedback. It does not execute Airschool product tools or consume Airschool credits.
 
 ## Authentication boundaries
 
@@ -24,7 +24,7 @@ Send the workspace API key as a Bearer token in the HTTP Authorization header. K
 
 ### MCP authentication
 
-Prefer browser OAuth in supported remote MCP clients. Header-capable local clients may read the Airscale API key from an environment variable and send it as the Authorization header. Never include an API key in MCP tool arguments.
+Prefer browser OAuth in supported remote MCP clients. Header-capable local clients may read the Airschool API key from an environment variable and send it as the Authorization header. Never include an API key in MCP tool arguments.
 
 ## Free-first workflow
 

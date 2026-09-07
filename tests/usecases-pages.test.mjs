@@ -34,7 +34,9 @@ test("Use cases mirrors all eight live sidebar routes in the three source groups
 for (const page of manifest.pages) {
   test(`${page.path} retains source text, structure, media, links, and preview metadata`, () => {
     const source = readFileSync(`${page.path}.mdx`, "utf8");
-    const match = source.match(/^---\n([\s\S]*?)\n---\n([\s\S]*)$/);
+    assert.doesNotMatch(source, /Airscale/, "published copy uses Airschool");
+    // Keep the captured source checksums unchanged; only the approved display name differs.
+    const match = source.replaceAll("Airschool", "Airscale").match(/^---\n([\s\S]*?)\n---\n([\s\S]*)$/);
     assert.ok(match, "frontmatter exists");
     const document = parseDocument(match[1]);
     assert.equal(document.errors.length, 0);

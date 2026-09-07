@@ -1,9 +1,9 @@
 {
   "openapi": "3.1.0",
   "info": {
-    "title": "Airscale Public API",
+    "title": "Airschool Public API",
     "version": "2026-08-30",
-    "description": "Search, enrich, and resolve public business data with Airscale.",
+    "description": "Search, enrich, and resolve public business data with Airschool.",
     "x-airscale-source-repository": "ViceScale/airscale-code",
     "x-airscale-source-sha": "8606866a5fb1f9405a94d49cfa9fbddaf4aaf431"
   },
@@ -44,9 +44,9 @@
           "Account"
         ],
         "summary": "Get workspace credit balance",
-        "description": "Returns the current Airscale credit balance for the authenticated workspace.",
+        "description": "Returns the current Airschool credit balance for the authenticated workspace.",
         "x-airscale-rate-limit": "No endpoint-specific rate limit is documented.",
-        "x-airscale-credit-cost": "No charge; checking the balance does not debit Airscale credits.",
+        "x-airscale-credit-cost": "No charge; checking the balance does not debit Airschool credits.",
         "responses": {
           "200": {
             "description": "The current workspace credit balance.",
@@ -2253,7 +2253,7 @@
         "summary": "Count people",
         "description": "Counts people using the exact same structured query contract as Find People, without retrieving or paginating lead records.",
         "x-airscale-rate-limit": "6 requests per second per workspace.",
-        "x-airscale-credit-cost": "No charge; Count does not debit Airscale credits.",
+        "x-airscale-credit-cost": "No charge; Count does not debit Airschool credits.",
         "requestBody": {
           "required": true,
           "description": "Provide at least one supported query filter. Count has no size or cursor fields.",
@@ -3340,7 +3340,7 @@
         "summary": "List Find Companies filter values",
         "description": "Discovers normalized values accepted by location, industry, intent-topic, and technology filters.",
         "x-airscale-rate-limit": "6 requests per second per workspace.",
-        "x-airscale-credit-cost": "No charge; Filter-values does not debit Airscale credits.",
+        "x-airscale-credit-cost": "No charge; Filter-values does not debit Airschool credits.",
         "x-codeSamples": [
           {
             "label": "cURL",
@@ -3908,7 +3908,7 @@
         "type": "http",
         "scheme": "bearer",
         "bearerFormat": "API key",
-        "description": "Use an Airscale workspace API key. Never expose the key in client-side code."
+        "description": "Use an Airschool workspace API key. Never expose the key in client-side code."
       }
     },
     "schemas": {
@@ -4106,7 +4106,7 @@
       "LinkedInPersonUrl": {
         "type": "string",
         "minLength": 1,
-        "description": "A recognized LinkedIn person-profile URL or identifier. Airscale normalizes supported profile inputs.",
+        "description": "A recognized LinkedIn person-profile URL or identifier. Airschool normalizes supported profile inputs.",
         "example": "https://www.linkedin.com/in/example-person-000000"
       },
       "SuccessEmail": {

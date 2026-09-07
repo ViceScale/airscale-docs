@@ -217,11 +217,11 @@ function openingTags(source, name) {
   return source.match(new RegExp(`<${name}\\b[^>]*>`, "g")) ?? [];
 }
 
-test("brand configuration and assets match Airscale", () => {
+test("brand configuration and assets match Airschool", () => {
   const config = JSON.parse(readFileSync("docs.json", "utf8"));
   assert.equal(config.$schema, "https://mintlify.com/docs.json");
   assert.equal(config.theme, "mint");
-  assert.equal(config.name, "Airscale API");
+  assert.equal(config.name, "Airschool API");
   assert.deepEqual(config.colors, { primary: "#4079FF", light: "#4079FF", dark: "#6F9BFF" });
   assert.deepEqual(config.logo, { light: "/logo/light.svg", dark: "/logo/dark.svg", href: "https://airscale.io/" });
   assert.equal(config.favicon, "/favicon.svg");
@@ -343,12 +343,12 @@ for (const [mode, path, wordmarkFill] of [
   ["light", "logo/light.svg", "#111827"],
   ["dark", "logo/dark.svg", "#FFFFFF"]
 ]) {
-  test(`${mode} header logo uses the approved tiled Airscale lockup`, () => {
+  test(`${mode} header logo uses the approved tiled Airschool lockup`, () => {
     const source = readFileSync(path, "utf8");
     const svg = tagAttributes(openingTags(source, "svg")[0] ?? "");
     assert.equal(svg.viewBox, "0 0 157 38");
     assert.equal(svg.role, "img");
-    assert.equal(svg["aria-label"], "Airscale");
+    assert.equal(svg["aria-label"], "Airschool");
     const tile = openingTags(source, "rect").map(tagAttributes).find((attributes) => (
       attributes.x === "0" && attributes.y === "0" && attributes.width === "38" &&
       attributes.height === "38" && attributes.rx === "8" && attributes.fill === "#111827"
@@ -364,8 +364,8 @@ for (const [mode, path, wordmarkFill] of [
       `${path} must render the enlarged canonical mark optically centered inside the 38px tile`
     );
     assert.equal(canonicalMark.fill, "#FFFFFF");
-    const wordmarkTag = source.match(/<text\b[^>]*>\s*Airscale\s*<\/text>/)?.[0];
-    assert.ok(wordmarkTag, `${path} must contain the Airscale wordmark`);
+    const wordmarkTag = source.match(/<text\b[^>]*>\s*Airschool\s*<\/text>/)?.[0];
+    assert.ok(wordmarkTag, `${path} must contain the Airschool wordmark`);
     const wordmark = tagAttributes(wordmarkTag);
     assert.equal(wordmark.x, "48.5");
     assert.equal(wordmark.y, "25.125");
@@ -375,7 +375,7 @@ for (const [mode, path, wordmarkFill] of [
   });
 }
 
-test("favicon preserves the Airscale symbol and brand SVG safety checks reject unsafe source", () => {
+test("favicon preserves the Airschool symbol and brand SVG safety checks reject unsafe source", () => {
   const favicon = readFileSync("favicon.svg", "utf8");
   assert.ok(favicon.includes(CANONICAL_SYMBOL_PATH));
   assert.doesNotMatch(favicon, /<text\b/i);
@@ -540,7 +540,7 @@ test("guide pages teach authentication, safe retries, and a first request", () =
   }
 
   const authentication = readPage("api-reference/authentication").source;
-  assert.match(authentication, /Airscale Settings/);
+  assert.match(authentication, /Airschool Settings/);
   assert.match(authentication, /401 Unauthorized/);
   assert.match(authentication, /<Warning>/);
   assert.match(authentication, /rotate/i);
@@ -552,7 +552,7 @@ test("guide pages teach authentication, safe retries, and a first request", () =
 });
 
 const DURABLE_OPERATION_GUIDANCE = {
-  "api-reference/credit-count": [/no request body/i, /does not debit Airscale credits/i],
+  "api-reference/credit-count": [/no request body/i, /does not debit Airschool credits/i],
   "api-reference/email-finder": [/3,000 requests per minute/i, /2 credits/i, /`not_found` is not charged/i, /bounded backoff/i],
   "api-reference/email-finder-(bulk)": [
     /asynchronous/i,

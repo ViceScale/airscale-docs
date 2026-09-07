@@ -57,11 +57,11 @@ test("publication policy is preview-only and forbids live-domain mutations", () 
 test("docs configuration identifies the complete knowledge base and keeps the preview noindex", () => {
   assert.equal(
     config.description,
-    "Airscale product guides, integration workflows, MCP documentation, and public API reference."
+    "Airschool product guides, integration workflows, MCP documentation, and public API reference."
   );
   assert.equal(config.seo.indexing, "navigable");
   assert.equal(config.seo.metatags.robots, policy.previewRobots);
-  assert.equal(config.search.prompt, "Search Airscale documentation...");
+  assert.equal(config.search.prompt, "Search Airschool documentation...");
 });
 
 test("foundation config does not declare live-domain redirects", () => {
