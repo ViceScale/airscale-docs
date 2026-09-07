@@ -34,7 +34,7 @@ import {
 const DEFAULT_CONTRACT_PATH = fileURLToPath(new URL("../contracts/mcp-tools.json", import.meta.url));
 const DEFAULT_CATALOG_PATH = fileURLToPath(new URL("../mcp/tools.mdx", import.meta.url));
 const DEFAULT_PUBLIC_PATH = fileURLToPath(new URL("../mcp-tools.txt", import.meta.url));
-const PUBLIC_DESCRIPTION = "Browse all 22 typed tools exposed by the Airscale MCP server.";
+const PUBLIC_DESCRIPTION = "Browse all 22 typed tools exposed by the Airschool MCP server.";
 const CATEGORY_GROUPS = [
   { key: "workspace", title: "Workspace", count: 1 },
   { key: "search_and_research", title: "Search and research", count: 5 },
@@ -43,7 +43,7 @@ const CATEGORY_GROUPS = [
 ];
 const CATEGORY_TITLES = new Map(CATEGORY_GROUPS.map(({ key, title }) => [key, title]));
 const RESULT_BEHAVIOR = {
-  airscale_check_credits: "Returns the workspace's current Airscale credit balance without spending credits.",
+  airscale_check_credits: "Returns the workspace's current Airschool credit balance without spending credits.",
   airscale_find_people: "Returns one page of matching people and a cursor when another page is available.",
   airscale_count_find_people: "Returns the number of people matching the supplied query filters.",
   airscale_find_companies: "Returns one page of matching companies and pagination metadata for any remaining results.",
@@ -1466,8 +1466,8 @@ function renderCategorySummary(tools) {
 export function renderCatalog(contract) {
   validateContract(contract);
   const sections = [
-    "---\ntitle: \"MCP tool catalog\"\ndescription: \"Browse all 22 typed tools exposed by the Airscale MCP server.\"\ncanonical: \"https://airscale.mintlify.app/mcp/tools\"\n---",
-    "Airscale MCP exposes 22 typed tools for workspace checks, search, enrichment, research, managed batches, and asynchronous exports.",
+    "---\ntitle: \"MCP tool catalog\"\ndescription: \"Browse all 22 typed tools exposed by the Airschool MCP server.\"\ncanonical: \"https://airscale.mintlify.app/mcp/tools\"\n---",
+    "Airschool MCP exposes 22 typed tools for workspace checks, search, enrichment, research, managed batches, and asynchronous exports.",
     "<Warning>\nReview each tool's credit behavior before approval. Paid export starts require `confirm_credit_spend: true`.\n</Warning>",
     "<Note>\nAuthenticate through the MCP connection. OAuth clients complete authentication in the browser; API keys never belong in tool arguments.\n</Note>"
   ];
@@ -1484,7 +1484,7 @@ export function renderPublicManifest(contract) {
   validateContract(contract);
   const manifest = {
     schemaVersion: "1.0",
-    name: "Airscale MCP tools",
+    name: "Airschool MCP tools",
     description: PUBLIC_DESCRIPTION,
     serverUrl: "https://mcp.airscale.io/mcp",
     toolCount: contract.tools.length,

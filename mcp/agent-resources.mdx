@@ -1,31 +1,31 @@
 ---
 title: "Agent resources"
-description: "Find the human-readable and machine-readable Airscale references intended for AI agents."
+description: "Find the human-readable and machine-readable Airschool references intended for AI agents."
 canonical: "https://airscale.mintlify.app/mcp/agent-resources"
 ---
 
 <Columns cols={2}>
 <Column>
-<Card title="Airscale MCP server" icon="sparkles">
+<Card title="Airschool MCP server" icon="sparkles">
   **Authenticated product server**
 
   `https://mcp.airscale.io/mcp`
 
-  Calls Airscale's 22 search, enrichment, research, batch, and export tools. It requires Airscale authentication and some tools can spend Airscale credits.
+  Calls Airschool's 22 search, enrichment, research, batch, and export tools. It requires Airschool authentication and some tools can spend Airschool credits.
 </Card>
 </Column>
 <Column>
-<Card title="Airscale documentation MCP" icon="book-open">
+<Card title="Airschool documentation MCP" icon="book-open">
   **Documentation-scoped MCP surface**
 
   `https://airscale.mintlify.app/mcp`
 
-  Its search and filesystem tools are read-only. `submit_feedback` can send documentation feedback, but the server does not execute Airscale product tools or consume Airscale credits.
+  Its search and filesystem tools are read-only. `submit_feedback` can send documentation feedback, but the server does not execute Airschool product tools or consume Airschool credits.
 </Card>
 </Column>
 </Columns>
 
-Use the authenticated product server only when an agent should perform Airscale work. Use the documentation MCP, Markdown exports, and manifests when an agent needs grounded product context. The [MCP tool catalog](/mcp/tools) documents the operational server's exact tool names and input schemas.
+Use the authenticated product server only when an agent should perform Airschool work. Use the documentation MCP, Markdown exports, and manifests when an agent needs grounded product context. The [MCP tool catalog](/mcp/tools) documents the operational server's exact tool names and input schemas.
 
 ## Machine-readable resources
 
@@ -40,7 +40,7 @@ Use the authenticated product server only when an agent should perform Airscale 
 | Markdown negotiation | `Accept: text/markdown` | Request Markdown from a documentation page without changing its path. |
 | Agent skill | `https://airscale.mintlify.app/skill.md` | Curated capability, authentication, credit, and approval guidance. |
 | Skill discovery | `https://airscale.mintlify.app/.well-known/agent-skills/index.json` | Mintlify's generated agent-skills 0.2.0 discovery index with integrity metadata. |
-| Agent discovery | `https://airscale.mintlify.app/.well-known/agent-card.json` | Mintlify automatically generates documentation discovery from the published skill. It is not an Airscale product-agent endpoint or an interactive API. |
+| Agent discovery | `https://airscale.mintlify.app/.well-known/agent-card.json` | Mintlify automatically generates documentation discovery from the published skill. It is not an Airschool product-agent endpoint or an interactive API. |
 
 <Note>
 The preview remains intentionally `noindex, follow`. These resources make the documentation directly readable by agents without changing DNS or the search-indexing boundary.
@@ -48,7 +48,7 @@ The preview remains intentionally `noindex, follow`. These resources make the do
 
 ## Connect the documentation MCP
 
-These examples connect only the documentation-scoped MCP. Its search and filesystem tools are read-only; `submit_feedback` can submit documentation feedback. It does not configure the authenticated Airscale product server and cannot run Airscale tools or spend Airscale credits.
+These examples connect only the documentation-scoped MCP. Its search and filesystem tools are read-only; `submit_feedback` can submit documentation feedback. It does not configure the authenticated Airschool product server and cannot run Airschool tools or spend Airschool credits.
 
 <CodeGroup>
 ```bash Claude Code
@@ -63,7 +63,7 @@ url = "https://airscale.mintlify.app/mcp"
 
 After connecting, start with `tree / -L 2` to discover the published filesystem. Generic example paths shown by an MCP client may not exist in this documentation set. Actual paths include `/api-reference/api-overview.mdx` and `/mcp/airscale-mcp-server.mdx`. Ask the client to search for the relevant workflow, then retrieve the cited page as Markdown.
 
-If an MCP-rendered API page shows repeated or conflicting request fields, use the endpoint prose or `openapi.json` as the authoritative contract. For operational tool calls, follow the authentication and credit controls in [Airscale MCP Server](/mcp/airscale-mcp-server).
+If an MCP-rendered API page shows repeated or conflicting request fields, use the endpoint prose or `openapi.json` as the authoritative contract. For operational tool calls, follow the authentication and credit controls in [Airschool MCP Server](/mcp/airscale-mcp-server).
 
 ## Choose the smallest useful resource
 

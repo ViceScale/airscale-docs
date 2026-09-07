@@ -490,7 +490,7 @@ export const searchDiscoveryOperations = [
       summary: "Count people",
       description: "Counts people using the exact same structured query contract as Find People, without retrieving or paginating lead records.",
       "x-airscale-rate-limit": SEARCH_RATE_LIMIT,
-      "x-airscale-credit-cost": "No charge; Count does not debit Airscale credits.",
+      "x-airscale-credit-cost": "No charge; Count does not debit Airschool credits.",
       requestBody: requestBody(
         {
           type: "object",
@@ -638,7 +638,7 @@ export const searchDiscoveryOperations = [
       summary: "List Find Companies filter values",
       description: "Discovers normalized values accepted by location, industry, intent-topic, and technology filters.",
       "x-airscale-rate-limit": SEARCH_RATE_LIMIT,
-      "x-airscale-credit-cost": "No charge; Filter-values does not debit Airscale credits.",
+      "x-airscale-credit-cost": "No charge; Filter-values does not debit Airschool credits.",
       "x-codeSamples": [
         {
           label: "cURL",

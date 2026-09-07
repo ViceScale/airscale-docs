@@ -1,13 +1,13 @@
-# Airscale API full documentation
+# Airschool API full documentation
 
-> Airscale product guides, integration workflows, MCP documentation, and public API reference.
+> Airschool product guides, integration workflows, MCP documentation, and public API reference.
 > This is the full public, navigable preview corpus. It remains intentionally noindex for traditional search engines.
 
 ## Scrape a Sales Navigator search
 
 Source: https://airscale.mintlify.app/docs/sales-navigator.md
 
-Description: Turn your Sales Navigator searches (people only) into actionable prospect lists in Airscale. This feature extracts profiles directly from any Sales Navigator search results, eliminating manual copy-pasting and building targeted lists in minutes
+Description: Turn your Sales Navigator searches (people only) into actionable prospect lists in Airschool. This feature extracts profiles directly from any Sales Navigator search results, eliminating manual copy-pasting and building targeted lists in minutes
 
 **Note:**
 
@@ -18,7 +18,7 @@ Description: Turn your Sales Navigator searches (people only) into actionable pr
 
 - An active LinkedIn Sales Navigator subscription
 - A completed search in Sales Navigator with your target prospects
-- Airscale Chrome [extension](https://chromewebstore.google.com/detail/airscale-cookie-importer/hklojeelolieobofdgnboacmigmnkbop) installed (for LinkedIn authentication)
+- Airschool Chrome [extension](https://chromewebstore.google.com/detail/airscale-cookie-importer/hklojeelolieobofdgnboacmigmnkbop) installed (for LinkedIn authentication)
 
 ## 1. Click on "Scrape Sales Navigator search results"
 
@@ -37,7 +37,7 @@ Before scraping, ensure your search is properly configured:
 
 ## 3. Connect your LinkedIn account
 
-Download the Airscale Chrome extension if you haven't already [here](https://chromewebstore.google.com/detail/airscale-cookie-importer/hklojeelolieobofdgnboacmigmnkbop) or directly with the link on the extraction page
+Download the Airschool Chrome extension if you haven't already [here](https://chromewebstore.google.com/detail/airscale-cookie-importer/hklojeelolieobofdgnboacmigmnkbop) or directly with the link on the extraction page
 
 - The extension will automatically extract your LinkedIn session cookie
 - Paste your `li_at` cookie into the provided field
@@ -100,7 +100,7 @@ Description: Find highly engaged prospects by extracting users who have liked or
 
 ## 1. Click on "Extract LinkedIn post likers and commenters"
 
-1. Log into your **Airscale account**
+1. Log into your **Airschool account**
 2. Select **"Extract LinkedIn post likers and commenters"** from the available options in the **"Find People"** tab
 
 ![Extract post likers/commenters — 1. Click on "Extract LinkedIn post likers and commenters"](/images/docs/mTeyja6PKB6NJK40FPIlseAoGsE.png)
@@ -125,7 +125,7 @@ Identify and prepare your target LinkedIn post:
 
    - Example: "SaaS CEO Post Engagement | Q1 2024 | Marketing Automation"
    - Include the post topic and date for easy reference
-4. **Paste the post URL** into the designated field in Airscale
+4. **Paste the post URL** into the designated field in Airschool
 
 **Pro tip:** choose posts with **50+ engagements** for a meaningful prospect list, but avoid **super viral posts** (3000+ engagements) that may contain less targeted audiences
 
@@ -207,16 +207,16 @@ Description: Export up to 10,000 leads in one search from various filters
 
 ## 0. Prerequisites
 
-- An active Airscale account with remaining credits
+- An active Airschool account with remaining credits
 - Clear understanding of your ideal customer profile (ICP)
 - Specific criteria for your target prospects (people and company attributes)
 
 ## 1. Click on "Leads finder"
 
-1. Log into your **Airscale** dashboard
-2. Select **"Leads finder"** from the available modules (look for the Airscale logo icon)
+1. Log into your **Airschool** dashboard
+2. Select **"Leads finder"** from the available modules (look for the Airschool logo icon)
 
-**Note:** the "Leads finder" module is Airscale's native search engine, so you don't need any **external URLs or account connections**
+**Note:** the "Leads finder" module is Airschool's native search engine, so you don't need any **external URLs or account connections**
 
 ![Leads finder — 1. Click on "Leads finder"](/images/docs/cqquFwDcJVTxgRdn407eEVXmiM.png)
 
@@ -226,7 +226,7 @@ Configure your search criteria using the available filters:
 
 ### People Filters
 
-- Current company (you can select an Airscale table containing a list of companies, or use the manual input to enter them manually)
+- Current company (you can select an Airschool table containing a list of companies, or use the manual input to enter them manually)
 - Job titles
 - Seniority level & Experience
 - People Location
@@ -302,7 +302,7 @@ Configure your search criteria using the available filters:
 
 Source: https://airscale.mintlify.app/docs/find-people.md
 
-Description: Use Airscale's built-in people search to discover prospects based on company, job title, location, and other criteria. This powerful native feature helps you build targeted prospect lists without needing external tools or complex imports
+Description: Use Airschool's built-in people search to discover prospects based on company, job title, location, and other criteria. This powerful native feature helps you build targeted prospect lists without needing external tools or complex imports
 
 **Note**
 
@@ -312,16 +312,16 @@ Description: Use Airscale's built-in people search to discover prospects based o
 
 ## 0. Prerequisites
 
-- An active Airscale account with remaining credits
+- An active Airschool account with remaining credits
 - Clear understanding of your ideal customer profile (ICP)
 - Specific criteria for your target prospects (job titles, company names, locations)
 
 ## 1. Click on "Find People"
 
-1. Log into your **Airscale** dashboard
-2. **Select "Find people"** from the available modules (look for the Airscale logo icon)
+1. Log into your **Airschool** dashboard
+2. **Select "Find people"** from the available modules (look for the Airschool logo icon)
 
-**Note:** the Find People module is Airscale's native search engine, so you don't need any **external URLs or account connections**
+**Note:** the Find People module is Airschool's native search engine, so you don't need any **external URLs or account connections**
 
 ![Find People — 1. Click on "Find People"](/images/docs/mle4EpGmEFDRl9D3kRSsD8ZBCIY.png)
 
@@ -334,7 +334,7 @@ Configure your search criteria using the available filters:
 1. **Choose your query method:**
 
    - **Manual input:** type company domains (e.g., `hubspot.com` or `facebook.com`)
-   - **Airscale table:** select from an existing companies list in your tables, then select the column to use to identify the companies (it’s always best to choose the LinkedIn URL to get more accurate results)
+   - **Airschool table:** select from an existing companies list in your tables, then select the column to use to identify the companies (it’s always best to choose the LinkedIn URL to get more accurate results)
 
 ### People Filters
 
@@ -404,7 +404,7 @@ Configure your search criteria using the available filters:
 
 Source: https://airscale.mintlify.app/docs/find-companies.md
 
-Description: Use Airscale's built-in company search to discover target businesses based on size, industry, location, and other firmographic criteria. This native feature helps you build comprehensive company lists for account-based prospecting and market research
+Description: Use Airschool's built-in company search to discover target businesses based on size, industry, location, and other firmographic criteria. This native feature helps you build comprehensive company lists for account-based prospecting and market research
 
 <iframe
   className="w-full aspect-video rounded-xl"
@@ -422,16 +422,16 @@ Description: Use Airscale's built-in company search to discover target businesse
 
 ## 0. Prerequisites
 
-- An active Airscale account with remaining credits
+- An active Airschool account with remaining credits
 - Clear understanding of your ideal customer profile (ICP)
 - Specific criteria for your target companies (industry, size, location, etc.)
 
 ## 1. Click on "Find Companies"
 
-- Log into your **Airscale** dashboard
-- **Select "Find companies"** from the available modules (look for the Airscale icon)
+- Log into your **Airschool** dashboard
+- **Select "Find companies"** from the available modules (look for the Airschool icon)
 
-**Note:** the Find Companies module is Airscale's native search engine, so you don't need any external URLs or account connections
+**Note:** the Find Companies module is Airschool's native search engine, so you don't need any external URLs or account connections
 
 ![Find Companies — 1. Click on "Find Companies"](/images/docs/JPMGGavgTaLa4qXjv6IQT7RTIg.png)
 
@@ -579,7 +579,7 @@ You can now start enriching!
 
 Source: https://airscale.mintlify.app/docs/find-companies-linkedin.md
 
-Description: Use Airscale’s real-time LinkedIn scraping module to discover target companies based on size, industry, location, and other firmographic criteria. This powerful add-on continuously extracts fresh company data from LinkedIn, helping you build accurate prospecting lists for account-based sales and market research.
+Description: Use Airschool’s real-time LinkedIn scraping module to discover target companies based on size, industry, location, and other firmographic criteria. This powerful add-on continuously extracts fresh company data from LinkedIn, helping you build accurate prospecting lists for account-based sales and market research.
 
 **Note:**
 
@@ -589,13 +589,13 @@ Description: Use Airscale’s real-time LinkedIn scraping module to discover tar
 
 ## 0. Prerequisites
 
-- An active Airscale account with remaining credits
+- An active Airschool account with remaining credits
 - Clear understanding of your ideal customer profile (ICP)
 - Specific criteria for your target companies (industry, size, location, etc.)
 
 ## 1. Click on "Find Companies (LinkedIn)"
 
-- Log into your **Airscale** dashboard
+- Log into your **Airschool** dashboard
 - **Select "Find companies (LinkedIn)"** from the available modules (look for the LinkedIn logo)
 
 ![Find Companies (Linkedin) — 1. Click on "Find Companies (LinkedIn)"](/images/docs/jTFkcwzh6MLCjE5uHeLPcxgXz0.png)
@@ -751,7 +751,7 @@ You can now start enriching!
 
 Source: https://airscale.mintlify.app/docs/google-maps.md
 
-Description: Find local businesses with Google Maps directly in Airscale. Extract names, addresses, phones and emails in one click to fuel your prospecting lists.
+Description: Find local businesses with Google Maps directly in Airschool. Extract names, addresses, phones and emails in one click to fuel your prospecting lists.
 
 **Note:** you can only import **500 local businesses** per search
 
@@ -776,7 +776,7 @@ Description: Find local businesses with Google Maps directly in Airscale. Extrac
 
 Source: https://airscale.mintlify.app/docs/companies-hiring.md
 
-Description: Find companies hiring for specific positions using Airscale. Target the right accounts at the right time and reach out when hiring intent is highest.
+Description: Find companies hiring for specific positions using Airschool. Target the right accounts at the right time and reach out when hiring intent is highest.
 
 **Note:** you can only import up to **1,000 companies** per search
 
@@ -802,7 +802,7 @@ Use the following filters to refine your search:
 
 ## 4. Launch the extraction and access your results
 
-Click on **"Load companies to a table"** to begin the scraping process and load the companies to an Airscale table
+Click on **"Load companies to a table"** to begin the scraping process and load the companies to an Airschool table
 
 ![Find companies hiring for specific positions — 4. Launch the extraction and access your results](/images/docs/RS1tl0ZjLBcysSlaNTBbqaSoU.png)
 
@@ -812,7 +812,7 @@ Click on **"Load companies to a table"** to begin the scraping process and load 
 
 Source: https://airscale.mintlify.app/docs/import-csv.md
 
-Description: Import a CSV file into Airscale in seconds. Enrich, clean and push your contact lists directly into your CRM or sales workflows - no manual work.
+Description: Import a CSV file into Airschool in seconds. Enrich, clean and push your contact lists directly into your CRM or sales workflows - no manual work.
 
 <iframe
   className="w-full aspect-video rounded-xl"
@@ -835,12 +835,12 @@ Before importing your file, ensure:
 1. **Your file is a CSV file**
 2. **Your file does not contain more than 10,000 rows**
 
-## 3. Map your columns to Airscale columns
+## 3. Map your columns to Airschool columns
 
-- Map the column names of your CSV file to Airscale's columns
-- Alternatively, you can use **custom fields** if Airscale does not have a pre-built column for your data
+- Map the column names of your CSV file to Airschool's columns
+- Alternatively, you can use **custom fields** if Airschool does not have a pre-built column for your data
 
-![Import a file as a CSV — 3. Map your columns to Airscale columns](/images/docs/hoUGFYXdEDsZ8hJn2tFrMGWhQ.png)
+![Import a file as a CSV — 3. Map your columns to Airschool columns](/images/docs/hoUGFYXdEDsZ8hJn2tFrMGWhQ.png)
 
 ## 4. Click on "Upload Now" to create a table
 
@@ -852,12 +852,12 @@ Before importing your file, ensure:
 
 Source: https://airscale.mintlify.app/docs/phone-numbers.md
 
-Description: Find verified phone numbers via Airscale's waterfall enrichment
+Description: Find verified phone numbers via Airschool's waterfall enrichment
 
 **Note:**
 
 - The required input to find a phone number is a **LinkedIn profile URL**
-- If you don't have the LinkedIn profile URL but have a list with first name, last name, and company name, you can use Airscale’s **"Find a LinkedIn profile URL"** or **"Use AI"** enrichments first to retrieve the LinkedIn profile URL
+- If you don't have the LinkedIn profile URL but have a list with first name, last name, and company name, you can use Airschool’s **"Find a LinkedIn profile URL"** or **"Use AI"** enrichments first to retrieve the LinkedIn profile URL
 
 ## 1. Select the enrichment
 
@@ -889,7 +889,7 @@ The workflow will restart from the provider that returned the first phone number
 
 Source: https://airscale.mintlify.app/docs/professional-emails.md
 
-Description: Find verified emails via Airscale's waterfall enrichment
+Description: Find verified emails via Airschool's waterfall enrichment
 
 **Note:** the required input to find an email is the combination of:
 
@@ -940,12 +940,12 @@ Once the enrichment is complete, you can see which provider returned the verifie
 
 Source: https://airscale.mintlify.app/docs/personal-emails.md
 
-Description: Find personal emails via Airscale's waterfall enrichment
+Description: Find personal emails via Airschool's waterfall enrichment
 
 **Note:**
 
 - The required input to find a personal email is a **LinkedIn profile URL**
-- If you don't have the LinkedIn profile URL but have a list with first name, last name, and company name, you can use Airscale’s **"Find a LinkedIn profile URL"** or **"Use AI"** enrichments first to retrieve the LinkedIn profile URL
+- If you don't have the LinkedIn profile URL but have a list with first name, last name, and company name, you can use Airschool’s **"Find a LinkedIn profile URL"** or **"Use AI"** enrichments first to retrieve the LinkedIn profile URL
 
 ## 1. Select the enrichment
 
@@ -969,7 +969,7 @@ Description: Find personal emails via Airscale's waterfall enrichment
 
 Source: https://airscale.mintlify.app/docs/verify-email.md
 
-Description: Verify email deliverability in real time with Airscale. Reduce bounce rates, protect your sender score and reach more prospects in the inbox.
+Description: Verify email deliverability in real time with Airschool. Reduce bounce rates, protect your sender score and reach more prospects in the inbox.
 
 ## 1. Select the enrichment
 
@@ -999,7 +999,7 @@ Description: Verify email deliverability in real time with Airscale. Reduce boun
 
 Source: https://airscale.mintlify.app/docs/enrich-people-linkedin.md
 
-Description: Enrich people profiles from LinkedIn with Airscale. Get verified emails, phone numbers and job details from any LinkedIn profile - instantly.
+Description: Enrich people profiles from LinkedIn with Airschool. Get verified emails, phone numbers and job details from any LinkedIn profile - instantly.
 
 **Note**: the required input to enrich a profile is a **LinkedIn profile URL**
 
@@ -1029,7 +1029,7 @@ Description: Enrich people profiles from LinkedIn with Airscale. Get verified em
 
 Source: https://airscale.mintlify.app/docs/enrich-company-linkedin.md
 
-Description: Enrich company profiles from LinkedIn with Airscale. Extract firmographics, headcount, industry and decision-makers data to power your outbound.
+Description: Enrich company profiles from LinkedIn with Airschool. Extract firmographics, headcount, industry and decision-makers data to power your outbound.
 
 **Note**: the required input to enrich a company is a **LinkedIn company URL**
 
@@ -1089,7 +1089,7 @@ Description: Find some company insights from Linkedin : description, headcount g
 
 Source: https://airscale.mintlify.app/docs/job-openings-linkedin.md
 
-Description: Find current job openings on LinkedIn with Airscale. Identify hiring companies, target the right contacts and time your outreach with buying intent.
+Description: Find current job openings on LinkedIn with Airschool. Identify hiring companies, target the right contacts and time your outreach with buying intent.
 
 **Note**: the required input to enrich a company with open roles is a **LinkedIn company URL**
 
@@ -1149,7 +1149,7 @@ Description: Retrieve the latest posts published by a company or an individual o
 
 Source: https://airscale.mintlify.app/docs/reverse-phone.md
 
-Description: Retrieve a LinkedIn profile URL and data from any phone number using Airscale's Reverse Phone enrichment
+Description: Retrieve a LinkedIn profile URL and data from any phone number using Airschool's Reverse Phone enrichment
 
 **Note**: the required input to leverage this enrichment is a **phone number**
 
@@ -1183,7 +1183,7 @@ Description: Retrieve a LinkedIn profile URL and data from any phone number usin
 
 Source: https://airscale.mintlify.app/docs/reverse-email.md
 
-Description: Retrieve a LinkedIn profile URL and data from any email using Airscale's Reverse Email enrichment
+Description: Retrieve a LinkedIn profile URL and data from any email using Airschool's Reverse Email enrichment
 
 **Note**: the required input to leverage this enrichment is an email
 
@@ -1258,7 +1258,7 @@ When the workflow is launched, **a new column will be created with the output**
 
 Source: https://airscale.mintlify.app/docs/ai-agent-airsearch.md
 
-Description: Use Airscale’s AI agent to browse the web and find any information about a company or a prospect
+Description: Use Airschool’s AI agent to browse the web and find any information about a company or a prospect
 
 ## 1. Select the enrichment called "Use AI"
 
@@ -1311,7 +1311,7 @@ The enrichment will return 4 keys:
 
 Source: https://airscale.mintlify.app/docs/google-searches.md
 
-Description: Create custom Google searches in Airscale. Build targeted queries to find any prospect or company and extract results straight into your lists.
+Description: Create custom Google searches in Airschool. Build targeted queries to find any prospect or company and extract results straight into your lists.
 
 ## 1. Select the enrichment
 
@@ -1347,7 +1347,7 @@ Description: Create custom Google searches in Airscale. Build targeted queries t
 
 Source: https://airscale.mintlify.app/docs/linkedin-profile-url.md
 
-Description: Find any LinkedIn profile URL with Airscale. Locate prospects from their name and company to fuel your outreach and enrichment workflows.
+Description: Find any LinkedIn profile URL with Airschool. Locate prospects from their name and company to fuel your outreach and enrichment workflows.
 
 ## 1. Select the enrichment
 
@@ -1371,7 +1371,7 @@ Description: Find any LinkedIn profile URL with Airscale. Locate prospects from 
 
 Source: https://airscale.mintlify.app/docs/linkedin-company-url.md
 
-Description: Find any LinkedIn company URL with Airscale. Identify company pages to enrich accounts and target decision-makers faster.
+Description: Find any LinkedIn company URL with Airschool. Identify company pages to enrich accounts and target decision-makers faster.
 
 ## 1. Select the enrichment
 
@@ -1395,7 +1395,7 @@ Description: Find any LinkedIn company URL with Airscale. Identify company pages
 
 Source: https://airscale.mintlify.app/docs/linkedin-company-url-from-a-domain.md
 
-Description: Find a LinkedIn company URL from a domain with Airscale. Turn any website into a LinkedIn company page instantly - no manual search needed.
+Description: Find a LinkedIn company URL from a domain with Airschool. Turn any website into a LinkedIn company page instantly - no manual search needed.
 
 **Note**: the required input to fetch company insights is a **company domain**
 
@@ -1421,7 +1421,7 @@ Description: Find a LinkedIn company URL from a domain with Airscale. Turn any w
 
 Source: https://airscale.mintlify.app/docs/meta-ads.md
 
-Description: Retrieve all active Meta ads running for any company directly from Airscale's Meta Ads enrichment
+Description: Retrieve all active Meta ads running for any company directly from Airschool's Meta Ads enrichment
 
 **Note**: the required input to leverage this enrichment is a **company domain**
 
@@ -1457,7 +1457,7 @@ Description: Retrieve all active Meta ads running for any company directly from 
 
 Source: https://airscale.mintlify.app/docs/google-ads.md
 
-Description: Retrieve all active Google ads running for any company directly from Airscale's Google Ads enrichment
+Description: Retrieve all active Google ads running for any company directly from Airschool's Google Ads enrichment
 
 **Note**: the required input to leverage this enrichment is a **company domain**
 
@@ -1493,7 +1493,7 @@ Description: Retrieve all active Google ads running for any company directly fro
 
 Source: https://airscale.mintlify.app/docs/company-domain.md
 
-Description: Find any company domain with Airscale. Turn a company name into a verified website URL to enrich contacts and launch outbound campaigns faster.
+Description: Find any company domain with Airschool. Turn a company name into a verified website URL to enrich contacts and launch outbound campaigns faster.
 
 ## 1. Select the enrichment
 
@@ -1517,7 +1517,7 @@ Description: Find any company domain with Airscale. Turn a company name into a v
 
 Source: https://airscale.mintlify.app/docs/company-technologies.md
 
-Description: Find company technologies used by any account with Airscale. Identify tech stacks to qualify prospects, personalize outreach and prioritize the right leads.
+Description: Find company technologies used by any account with Airschool. Identify tech stacks to qualify prospects, personalize outreach and prioritize the right leads.
 
 ## 1. Select the enrichment
 
@@ -1541,7 +1541,7 @@ Description: Find company technologies used by any account with Airscale. Identi
 
 Source: https://airscale.mintlify.app/docs/funding-data.md
 
-Description: Find company funding data with Airscale. Access funding rounds and investors to target high-growth accounts and time your outreach perfectly.
+Description: Find company funding data with Airschool. Access funding rounds and investors to target high-growth accounts and time your outreach perfectly.
 
 ## 1. Select the enrichment
 
@@ -1571,7 +1571,7 @@ Description: Find company funding data with Airscale. Access funding rounds and 
 
 Source: https://airscale.mintlify.app/docs/website-content.md
 
-Description: Scrape and extract the text content from any website using Airscale's Zenrows integration. This powerful enrichment tool converts websites into LLM-ready markdown data, perfect for research, competitor analysis, and content gathering from your prospects' company websites
+Description: Scrape and extract the text content from any website using Airschool's Zenrows integration. This powerful enrichment tool converts websites into LLM-ready markdown data, perfect for research, competitor analysis, and content gathering from your prospects' company websites
 
 ## 1. Select the enrichment
 
@@ -1698,12 +1698,12 @@ Description: Check if a contact already exists in your CRM
 
 Source: https://airscale.mintlify.app/docs/export-csv.md
 
-Description: Export your prospect lists from Airscale as CSV files for use in email marketing tools, CRMs, or further analysis. This feature lets you download all enriched data while giving you full control over which contacts and columns to include
+Description: Export your prospect lists from Airschool as CSV files for use in email marketing tools, CRMs, or further analysis. This feature lets you download all enriched data while giving you full control over which contacts and columns to include
 
 ##### When to export as CSV
 
 - To launch **email campaigns** in external tools
-- To **import data into CRMs** not directly integrated with Airscale
+- To **import data into CRMs** not directly integrated with Airschool
 - To **analyze data** in Excel, Google Sheets, or analytics tools
 - To **keep local backups** of your prospect data
 - To **share prospect lists** across teams and departments
@@ -1750,7 +1750,7 @@ Note:
 
 Source: https://airscale.mintlify.app/docs/transfer-another-table.md
 
-Description: Move prospects between tables within Airscale to organize your data, create targeted segments, or consolidate lists from multiple sources. This feature helps you keep your prospect database clean and well-organized for different campaigns and initiatives
+Description: Move prospects between tables within Airschool to organize your data, create targeted segments, or consolidate lists from multiple sources. This feature helps you keep your prospect database clean and well-organized for different campaigns and initiatives
 
 ##### When to export to another table
 
@@ -1763,7 +1763,7 @@ Description: Move prospects between tables within Airscale to organize your data
 
 ## 0. Prerequisites
 
-- A source table containing prospect data in Airscale
+- A source table containing prospect data in Airschool
 - An existing destination table
 
 ## 1. Click on "Export"
@@ -1792,12 +1792,12 @@ Description: Move prospects between tables within Airscale to organize your data
 
 Source: https://airscale.mintlify.app/docs/export-hubspot.md
 
-Description: Export your prospects directly from Airscale to HubSpot CRM to streamline your sales pipeline. This integration pushes enriched prospect data directly into your HubSpot database, allowing you to manage leads, track interactions, and nurture prospects through your established sales processes
+Description: Export your prospects directly from Airschool to HubSpot CRM to streamline your sales pipeline. This integration pushes enriched prospect data directly into your HubSpot database, allowing you to manage leads, track interactions, and nurture prospects through your established sales processes
 
 ## 0. Prerequisites
 
 - An active HubSpot account with CRM access
-- A prospect table in Airscale with email addresses
+- A prospect table in Airschool with email addresses
 - HubSpot integration permissions (available on most HubSpot plans)
 - Understanding of your HubSpot lead lifecycle stages and contact ownership structure
 
@@ -1820,8 +1820,8 @@ If this is your first time connecting to HubSpot:
 1. **Click "Connect your HubSpot account"** in the workflow panel
 2. **You'll be redirected to HubSpot's authorization page**
 3. **Log into your HubSpot account** if not already logged in
-4. **Grant permissions** for Airscale to access your HubSpot CRM
-5. **Return to Airscale** once authorization is complete
+4. **Grant permissions** for Airschool to access your HubSpot CRM
+5. **Return to Airschool** once authorization is complete
 
 **HubSpot integration permissions:**
 
@@ -1854,12 +1854,12 @@ If this is your first time connecting to HubSpot:
 
 Source: https://airscale.mintlify.app/docs/export-instantly.md
 
-Description: Export your prospects directly from Airscale to Instantly campaigns for automated email outreach. This integration streamlines your workflow by pushing enriched prospect data directly into your email sequences without manual uploads or CSV exports.
+Description: Export your prospects directly from Airschool to Instantly campaigns for automated email outreach. This integration streamlines your workflow by pushing enriched prospect data directly into your email sequences without manual uploads or CSV exports.
 
 ## 0. Prerequisites
 
 - An active Instantly account with email campaigns set up
-- A prospect table in Airscale with enriched email addresses
+- A prospect table in Airschool with enriched email addresses
 - Instantly API access (available on most Instantly plans)
 
 ## 1. Click on "Export"
@@ -1900,7 +1900,7 @@ If this is your first time connecting to Instantly:
 
 **Click "Create API Key"** button
 
-1. **Name your API key:** Enter a descriptive name like "Export Airscale" or "Airscale Integration"
+1. **Name your API key:** Enter a descriptive name like "Export Airschool" or "Airschool Integration"
 2. **Select scopes:** Choose "all:all" for full access (required for campaign management)
 3. **Click "Create"** to generate your API key
 
@@ -1919,15 +1919,15 @@ If this is your first time connecting to Instantly:
 
 ![Export your leads to Instantly — 7. Copy your API key](/images/docs/YyvBKQgtrr4G7kAVhr6qzOlQ.png)
 
-## 8. Paste API key in Airscale and connect
+## 8. Paste API key in Airschool and connect
 
-**Return to Airscale** and the export workflow
+**Return to Airschool** and the export workflow
 
 1. **Paste your Instantly API key** in the provided field
 2. **Click "Connect"** to establish the integration
 3. **Wait for confirmation** that the connection was successful
 
-![Export your leads to Instantly — 8. Paste API key in Airscale and connect](/images/docs/2vr8nxATO35rIql8lwQBlEhg.png)
+![Export your leads to Instantly — 8. Paste API key in Airschool and connect](/images/docs/2vr8nxATO35rIql8lwQBlEhg.png)
 
 ## 9. Select a campaign
 
@@ -1935,7 +1935,7 @@ If this is your first time connecting to Instantly:
 
 ## 10. Launch your export
 
-Configure how Airscale data maps to Instantly fields:
+Configure how Airschool data maps to Instantly fields:
 
 - **Email address** ↔ Instantly email field
 - **First name** ↔ Instantly first name field
@@ -1953,12 +1953,12 @@ Configure how Airscale data maps to Instantly fields:
 
 Source: https://airscale.mintlify.app/docs/export-smartlead.md
 
-Description: Export your prospects directly from Airscale to Smartlead campaigns for automated email outreach. This integration streamlines your workflow by pushing enriched prospect data directly into your email sequences without manual uploads or CSV exports.
+Description: Export your prospects directly from Airschool to Smartlead campaigns for automated email outreach. This integration streamlines your workflow by pushing enriched prospect data directly into your email sequences without manual uploads or CSV exports.
 
 ## 0. Prerequisites
 
 - An active Smartlead account with email campaigns set up
-- A prospect table in Airscale with enriched email addresses
+- A prospect table in Airschool with enriched email addresses
 - Smartlead API access (available on most Smartlead plans)
 
 ## 1. Click on "Export"
@@ -1995,15 +1995,15 @@ If this is your first time connecting to SmartLead:
 
 ![Export your leads to Smartlead — 5. Create API key in Smartlead settings](/images/docs/OxidZfNkf8receHQFIK656EsMsM.png)
 
-## 6. Paste API key in Airscale and connect
+## 6. Paste API key in Airschool and connect
 
-**Return to Airscale** and the export workflow
+**Return to Airschool** and the export workflow
 
 1. **Paste your Smartlead API key** in the provided field
 2. **Click "Connect"** to establish the integration
 3. **Wait for confirmation** that the connection was successful
 
-![Export your leads to Smartlead — 6. Paste API key in Airscale and connect](/images/docs/nTWvj01RnjDgpeRnPaeqElRed7k.png)
+![Export your leads to Smartlead — 6. Paste API key in Airschool and connect](/images/docs/nTWvj01RnjDgpeRnPaeqElRed7k.png)
 
 ## 7. Select a campaign
 
@@ -2011,7 +2011,7 @@ If this is your first time connecting to SmartLead:
 
 ## 8. Launch your export
 
-Configure how Airscale data maps to SmartLead fields:
+Configure how Airschool data maps to SmartLead fields:
 
 - **Email address** ↔ Smartlead email field
 - **First name** ↔ Smartlead first name field
@@ -2030,12 +2030,12 @@ Configure how Airscale data maps to SmartLead fields:
 
 Source: https://airscale.mintlify.app/docs/export-lemlist.md
 
-Description: Export your prospects directly from Airscale to Lemlist campaigns for automated email outreach. This integration streamlines your workflow by pushing enriched prospect data directly into your email sequences without manual uploads or CSV exports
+Description: Export your prospects directly from Airschool to Lemlist campaigns for automated email outreach. This integration streamlines your workflow by pushing enriched prospect data directly into your email sequences without manual uploads or CSV exports
 
 ## 0. Prerequisites
 
 - An active Lemlist account with email campaigns set up
-- A prospect table in Airscale with enriched email addresses
+- A prospect table in Airschool with enriched email addresses
 - Lemlist API access (available on most Lemlist plans)
 
 ## 1. Click on "Export"
@@ -2078,7 +2078,7 @@ If this is your first time connecting to Lemlist:
 
 ## 6. Paste API key in Lemlist and connect
 
-**Return to Airscale** and the export workflow
+**Return to Airschool** and the export workflow
 
 1. **Paste your Lemlist API key** in the provided field
 2. **Click "Connect"** to establish the integration
@@ -2092,7 +2092,7 @@ If this is your first time connecting to Lemlist:
 
 ## 8. Launch your export
 
-Configure how Airscale data maps to Lemlist fields:
+Configure how Airschool data maps to Lemlist fields:
 
 - **Email address** ↔ Lemlist email field
 - **First name** ↔ Lemlist first name field
@@ -2125,15 +2125,15 @@ Description: Pull contacts from Hubspot lists
 
 ![Import contacts from Hubspot — 1. Click on "Import contacts from Hubspot"](/images/docs/AX6Atx1aWKL2HYHEjhalSps8xQE.png)
 
-## 2. Connect your Hubspot account to Airscale
+## 2. Connect your Hubspot account to Airschool
 
 If this is your first time connecting to HubSpot:
 
 1. **Click "Connect your HubSpot account"** in the workflow panel
 2. **You'll be redirected to HubSpot's authorization page**
 3. **Log into your HubSpot account** if not already logged in
-4. **Grant permissions** for Airscale to access your HubSpot CRM
-5. **Return to Airscale** once authorization is complete
+4. **Grant permissions** for Airschool to access your HubSpot CRM
+5. **Return to Airschool** once authorization is complete
 
 **HubSpot integration permissions:**
 
@@ -2144,15 +2144,15 @@ If this is your first time connecting to HubSpot:
 
 **Note** : HubSpot uses OAuth authentication, so you don't need to share passwords or API keys directly
 
-![Import contacts from Hubspot — 2. Connect your Hubspot account to Airscale](/images/docs/BB0coUiw1T2K0qDrEOiR8DqZk.png)
+![Import contacts from Hubspot — 2. Connect your Hubspot account to Airschool](/images/docs/BB0coUiw1T2K0qDrEOiR8DqZk.png)
 
-![Import contacts from Hubspot — 2. Connect your Hubspot account to Airscale](/images/docs/LYLQQzOqezUkEPyHFsokFCU1TmU.png)
+![Import contacts from Hubspot — 2. Connect your Hubspot account to Airschool](/images/docs/LYLQQzOqezUkEPyHFsokFCU1TmU.png)
 
-![Import contacts from Hubspot — 2. Connect your Hubspot account to Airscale](/images/docs/G6dodSmDpA3I8TX0hiTQR7JJKrw.png)
+![Import contacts from Hubspot — 2. Connect your Hubspot account to Airschool](/images/docs/G6dodSmDpA3I8TX0hiTQR7JJKrw.png)
 
-![Import contacts from Hubspot — 2. Connect your Hubspot account to Airscale](/images/docs/NGLrahEcaEqKSH8qOhuUp0ozpKI.png)
+![Import contacts from Hubspot — 2. Connect your Hubspot account to Airschool](/images/docs/NGLrahEcaEqKSH8qOhuUp0ozpKI.png)
 
-![Import contacts from Hubspot — 2. Connect your Hubspot account to Airscale](/images/docs/QhLQTMyWoo9hjmR1C57bw0O0eg.png)
+![Import contacts from Hubspot — 2. Connect your Hubspot account to Airschool](/images/docs/QhLQTMyWoo9hjmR1C57bw0O0eg.png)
 
 ## 3. Select a list from your Hubspot account
 
@@ -2168,11 +2168,11 @@ If this is your first time connecting to HubSpot:
 
 ---
 
-## Airscale for HubSpot app
+## Airschool for HubSpot app
 
 Source: https://airscale.mintlify.app/docs/hubspot-app.md
 
-Description: The complete step-by-step guide to install and use the Airscale enrichment app on your HubSpot account.
+Description: The complete step-by-step guide to install and use the Airschool enrichment app on your HubSpot account.
 
 **What you'll be able to do after the setup:**
 
@@ -2185,63 +2185,63 @@ Description: The complete step-by-step guide to install and use the Airscale enr
 
 - A HubSpot account (any paid plan - Sales Hub Starter or above)
 - HubSpot admin rights (to install the app)
-- An Airscale account with an active API key - [sign up here](https://app.airscale.io/) if you don't have one
+- An Airschool account with an active API key - [sign up here](https://app.airscale.io/) if you don't have one
 
-## 1. Install the Airscale app on your HubSpot account
+## 1. Install the Airschool app on your HubSpot account
 
 1. Click the button below to launch the secure OAuth installation flow.
 
-[Click here to install Airscale for Hubspot](https://airscale-hubspot.mathis-0d8.workers.dev/oauth/install)
+[Click here to install Airschool for Hubspot](https://airscale-hubspot.mathis-0d8.workers.dev/oauth/install)
 
 2. On the landing page, click **Connect HubSpot**. If your HubSpot account is hosted in the EU, click the EU link instead.
 
-![Airscale for HubSpot app — 1. Install the Airscale app on your HubSpot account](/images/docs/ecG0P8WSV7MZzzzXKvjSbZSMg.png)
+![Airschool for HubSpot app — 1. Install the Airschool app on your HubSpot account](/images/docs/ecG0P8WSV7MZzzzXKvjSbZSMg.png)
 
-3. **Select your HubSpot account: y**ou'll be redirected to HubSpot. Select the HubSpot account where you want to install Airscale.
+3. **Select your HubSpot account: y**ou'll be redirected to HubSpot. Select the HubSpot account where you want to install Airschool.
 
-![Airscale for HubSpot app — 1. Install the Airscale app on your HubSpot account](/images/docs/FmyGoKzWIlXoCJ4gOw0GshZ0Vek.png)
+![Airschool for HubSpot app — 1. Install the Airschool app on your HubSpot account](/images/docs/FmyGoKzWIlXoCJ4gOw0GshZ0Vek.png)
 
 4. Review and approve the permissions requested (read/write contacts and companies) and click **Connect app**.
 
-![Airscale for HubSpot app — 1. Install the Airscale app on your HubSpot account](/images/docs/SzUROKyfQJGjIZXbzmk0ByYZVQ.png)
+![Airschool for HubSpot app — 1. Install the Airschool app on your HubSpot account](/images/docs/SzUROKyfQJGjIZXbzmk0ByYZVQ.png)
 
-**✔️ Installation successful.** At this point, Airscale has automatically created a **Airscale Enrichment** property group on your contact records and added the custom properties needed (`airscale_found_email`, `airscale_found_phone`, `airscale_enrichment_date`, `airscale_email_status`).
+**✔️ Installation successful.** At this point, Airschool has automatically created a **Airschool Enrichment** property group on your contact records and added the custom properties needed (`airscale_found_email`, `airscale_found_phone`, `airscale_enrichment_date`, `airscale_email_status`).
 
-## 2. Add your Airscale API key
+## 2. Add your Airschool API key
 
 1. Open any contact record in HubSpot : go to Contacts → select a contact.
-2. Locate the Airscale Enrichment card : in the right sidebar, scroll down until you see the **Airscale Enrichment** card. *If you don't see it, go to step 3 to pin it properly.*
+2. Locate the Airschool Enrichment card : in the right sidebar, scroll down until you see the **Airschool Enrichment** card. *If you don't see it, go to step 3 to pin it properly.*
 
-![Airscale for HubSpot app — 2. Add your Airscale API key](/images/docs/K7cqhqsrpvr0vHeqsN2FpFksO8c.png)
+![Airschool for HubSpot app — 2. Add your Airschool API key](/images/docs/K7cqhqsrpvr0vHeqsN2FpFksO8c.png)
 
-3. Open the Settings modal : inside the Airscale card, click **Actions → Settings**.
+3. Open the Settings modal : inside the Airschool card, click **Actions → Settings**.
 
-![Airscale for HubSpot app — 2. Add your Airscale API key](/images/docs/QgUv1EMsbFYirDK3s42cU3hrMc0.png)
+![Airschool for HubSpot app — 2. Add your Airschool API key](/images/docs/QgUv1EMsbFYirDK3s42cU3hrMc0.png)
 
-4. A modal opens : **paste your Airscale API key into the input field**. You can find your API key at [app.airscale.io/dashboard?page=settings&tab=key](https://app.airscale.io/dashboard?page=settings&tab=key).
+4. A modal opens : **paste your Airschool API key into the input field**. You can find your API key at [app.airscale.io/dashboard?page=settings&tab=key](https://app.airscale.io/dashboard?page=settings&tab=key).
 
-![Airscale for HubSpot app — 2. Add your Airscale API key](/images/docs/JiKVoexsAsqiyNq8PKT7b7224k.png)
+![Airschool for HubSpot app — 2. Add your Airschool API key](/images/docs/JiKVoexsAsqiyNq8PKT7b7224k.png)
 
 5. Click **Save API Key**. You'll see a green confirmation: *"API key saved successfully."* Close the modal. Setup is complete.
 
 *To remove or replace your API key later: open the Settings modal again, then click Remove API Key (you'll have to click twice within 5 seconds to confirm).*
 
-## 3. Pin the Airscale card to the top (recommended)
+## 3. Pin the Airschool card to the top (recommended)
 
-By default, HubSpot may place the Airscale card at the bottom of the sidebar. For faster access, pin it to the top.
+By default, HubSpot may place the Airschool card at the bottom of the sidebar. For faster access, pin it to the top.
 
 1. Open any contact record : navigate to contacts and open any contact.
 2. At the top of the contact record, click **Customize** (or **Personnaliser** in French). No need to scroll, the button is in the top nav bar.
 
-![Airscale for HubSpot app — 3. Pin the Airscale card to the top (recommended)](/images/docs/3rVl7LL58YCUaxg9oSpRf2cISKY.png)
+![Airschool for HubSpot app — 3. Pin the Airschool card to the top (recommended)](/images/docs/3rVl7LL58YCUaxg9oSpRf2cISKY.png)
 
 3. You'll be redirected to a page listing the available views. Click on the **default view** (or the specific view you want to customize).
 
-4. In the sidebar customization panel, locate the **Airscale Enrichment** card and drag it to the top (or just below "About this contact").
+4. In the sidebar customization panel, locate the **Airschool Enrichment** card and drag it to the top (or just below "About this contact").
 
-![Airscale for HubSpot app — 3. Pin the Airscale card to the top (recommended)](/images/docs/x26RzBgdjqSbPUzpZldYPfggkk.png)
+![Airschool for HubSpot app — 3. Pin the Airschool card to the top (recommended)](/images/docs/x26RzBgdjqSbPUzpZldYPfggkk.png)
 
-5. Click **Save** at the top right, then refresh the contact page. The Airscale card is now pinned at the top.
+5. Click **Save** at the top right, then refresh the contact page. The Airschool card is now pinned at the top.
 
 ***Tip:** This layout applies to all contacts for your user. If you want to apply it team-wide, ask your HubSpot admin to update the default contact record view.*
 
@@ -2253,7 +2253,7 @@ By default, HubSpot may place the Airscale card at the bottom of the sidebar. Fo
 
    - **First name + Last name + Company name** (or company domain), OR
    - A **LinkedIn URL** in the field "URL LinkedIn"
-2. In the Airscale card, click **Actions**. You have four options:
+2. In the Airschool card, click **Actions**. You have four options:
 
    | **Action** | **What it does** |
    | --- | --- |
@@ -2262,31 +2262,31 @@ By default, HubSpot may place the Airscale card at the bottom of the sidebar. Fo
    | **Find Phone** | Finds mobile phone only (requires LinkedIn URL) |
    | **Settings** | Opens the API key configuration modal |
 
-![Airscale for HubSpot app — 4. Run your first enrichment](/images/docs/QgUv1EMsbFYirDK3s42cU3hrMc0.png)
+![Airschool for HubSpot app — 4. Run your first enrichment](/images/docs/QgUv1EMsbFYirDK3s42cU3hrMc0.png)
 
 3. **Click Enrich All** (a modal opens with a spinner: *"Enriching contact..."*).
 
-![Airscale for HubSpot app — 4. Run your first enrichment](/images/docs/llylGwLFBnZA6qALQBejUF6LHc.png)
+![Airschool for HubSpot app — 4. Run your first enrichment](/images/docs/llylGwLFBnZA6qALQBejUF6LHc.png)
 
 4. After a few seconds, you'll see:
 
    - ✅ **Enrichment complete!** meaning the enrichment request was successfully launched
    - ❌ An error message if something went wrong (e.g. missing input, API key not configured)
 
-![Airscale for HubSpot app — 4. Run your first enrichment](/images/docs/hoxiUVDOAFLDFjANK2ZxosUVsw.png)
+![Airschool for HubSpot app — 4. Run your first enrichment](/images/docs/hoxiUVDOAFLDFjANK2ZxosUVsw.png)
 
 5. Refresh to see the new data : close the modal and press **Cmd+R** (Mac) or **Ctrl+R** (Windows) to refresh the page. The new data appears:
 
-   - In the Airscale card: *Found email*, *Found phone*, *Status*, *Enrichment date*
+   - In the Airschool card: *Found email*, *Found phone*, *Status*, *Enrichment date*
    - In the left sidebar: the standard HubSpot **Email** and **Phone** fields are automatically filled if they were empty
 
-![Airscale for HubSpot app — 4. Run your first enrichment](/images/docs/tL8Dgzb9SteKGRTe1fmR9PQtOyM.png)
+![Airschool for HubSpot app — 4. Run your first enrichment](/images/docs/tL8Dgzb9SteKGRTe1fmR9PQtOyM.png)
 
 #### How the data is written in Hubspot
 
-When Airscale finds an email or phone, the app writes:
+When Airschool finds an email or phone, the app writes:
 
-**Always, to Airscale custom properties**
+**Always, to Airschool custom properties**
 
 - `airscale_found_email`
 - `airscale_found_phone`
@@ -2302,19 +2302,19 @@ This means your existing data is **never overwritten**. To force an update of th
 
 ## 5. Automate enrichment with Workflows
 
-Once the Airscale app is installed and your API key is configured, you can automate enrichment at scale using HubSpot Workflows. Instead of enriching contacts one by one, you can set up workflows that automatically enrich contacts based on triggers you define.
+Once the Airschool app is installed and your API key is configured, you can automate enrichment at scale using HubSpot Workflows. Instead of enriching contacts one by one, you can set up workflows that automatically enrich contacts based on triggers you define.
 
 **Requirement:** HubSpot Workflows with custom actions require **Sales Hub Pro/Enterprise**, **Marketing Hub Pro/Enterprise**, or **Operations Hub Pro/Enterprise**. This feature is not available on Starter plans.
 
 #### Available workflow actions
 
-Airscale adds three actions to the HubSpot workflow builder:
+Airschool adds three actions to the HubSpot workflow builder:
 
 | **Action** | **What it does** |
 | --- | --- |
-| **Airscale - Enrich All** | Finds both email + phone (recommended) |
-| **Airscale - Find Email** | Finds verified email only |
-| **Airscale - Find Phone** | Finds mobile phone only (requires LinkedIn URL on the contact) |
+| **Airschool - Enrich All** | Finds both email + phone (recommended) |
+| **Airschool - Find Email** | Finds verified email only |
+| **Airschool - Find Phone** | Finds mobile phone only (requires LinkedIn URL on the contact) |
 
 #### How to create an enrichment workflow
 
@@ -2325,30 +2325,30 @@ Airscale adds three actions to the HubSpot workflow builder:
    - **Contact fills out a form**: enrich inbound leads automatically
    - **Contact property changes**: e.g., when a LinkedIn URL is added
    - **Manual trigger**: enrich contacts on demand by selecting them manually
-3. Add the Airscale action: click the **+** button to add an action. In the search bar, type **"Airscale"**. You'll see the three Airscale actions under **Integrated apps → Airscale Data Enrichment**. Select the one you want (we recommend **"Airscale - Enrich All"** for most use cases).
+3. Add the Airschool action: click the **+** button to add an action. In the search bar, type **"Airschool"**. You'll see the three Airschool actions under **Integrated apps → Airschool Data Enrichment**. Select the one you want (we recommend **"Airschool - Enrich All"** for most use cases).
 4. Activate the workflow: click **Review and activate** in the top right corner. Review the settings and click **Activate**. Contacts matching your trigger will now be automatically enriched.
 
 #### Example use cases
 
 | **Use case** | **Trigger** | **Action** |
 | --- | --- | --- |
-| Enrich all new leads from a form | Contact fills out form "Contact Us" | Airscale - Enrich All |
-| Enrich imported contact lists | Contact is added to list "New Import" | Airscale - Enrich All |
-| Find phone when LinkedIn is added | LinkedIn URL becomes known | Airscale - Find Phone |
-| Enrich contacts entering a deal stage | Associated deal moves to "Discovery" | Airscale - Find Email |
+| Enrich all new leads from a form | Contact fills out form "Contact Us" | Airschool - Enrich All |
+| Enrich imported contact lists | Contact is added to list "New Import" | Airschool - Enrich All |
+| Find phone when LinkedIn is added | LinkedIn URL becomes known | Airschool - Find Phone |
+| Enrich contacts entering a deal stage | Associated deal moves to "Discovery" | Airschool - Find Email |
 
-**Credit usage:** Each enrichment in a workflow uses credits from your Airscale account, just like manual enrichment. If your credits run out, the workflow action will return an error for remaining contacts but will not block the rest of the workflow. Monitor your balance at [app.airscale.io](https://app.airscale.io/).
+**Credit usage:** Each enrichment in a workflow uses credits from your Airschool account, just like manual enrichment. If your credits run out, the workflow action will return an error for remaining contacts but will not block the rest of the workflow. Monitor your balance at [app.airscale.io](https://app.airscale.io/).
 
 ## Troubleshooting
 
-#### The Airscale card doesn't appear on the contact page
+#### The Airschool card doesn't appear on the contact page
 
-- On the contact record, click **Customize** in the top nav → select your view → make sure "Airscale Enrichment" is enabled.
+- On the contact record, click **Customize** in the top nav → select your view → make sure "Airschool Enrichment" is enabled.
 - If it's not in the list, the install may have failed. Reinstall via the install link.
 
 #### "API key not configured" error when enriching
 
-- Open the Airscale card → **Actions → Settings** → paste a valid API key from [app.airscale.io/dashboard?page=settings&tab=key](https://app.airscale.io/dashboard?page=settings&tab=key).
+- Open the Airschool card → **Actions → Settings** → paste a valid API key from [app.airscale.io/dashboard?page=settings&tab=key](https://app.airscale.io/dashboard?page=settings&tab=key).
 
 #### "Not enough data to find email" error
 
@@ -2356,17 +2356,17 @@ Airscale adds three actions to the HubSpot workflow builder:
 
   - **First name + Last name + (Company name OR company domain)**
   - A **LinkedIn URL** in `hs_linkedin_url` or `linkedin_url`
-- Tip: associate a company to the contact in HubSpot. Airscale will use the associated company's domain automatically.
+- Tip: associate a company to the contact in HubSpot. Airschool will use the associated company's domain automatically.
 
 #### "LinkedIn URL is required for phone enrichment"
 
-- Airscale's phone enrichment requires a LinkedIn profile URL to work. Add it to the contact in the **URL LinkedIn** field.
+- Airschool's phone enrichment requires a LinkedIn profile URL to work. Add it to the contact in the **URL LinkedIn** field.
 
 #### The enriched data doesn't show up
 
 - Make sure you refreshed the page (**Cmd+R / Ctrl+R**) after closing the enrichment modal. HubSpot doesn't auto-refresh the sidebar.
 
-#### I don't have enough Airscale credits
+#### I don't have enough Airschool credits
 
 - Check your balance at [app.airscale.io](https://app.airscale.io/). Top up via your account settings or contact us.
 
@@ -2519,9 +2519,9 @@ Description: Move or copy data from one column to another to reorganize or updat
 
 Source: https://airscale.mintlify.app/api-reference/api-overview.md
 
-Description: Authenticate with Airscale and make your first API request.
+Description: Authenticate with Airschool and make your first API request.
 
-Use the Airscale API to search for people and companies and enrich contact data from your application.
+Use the Airschool API to search for people and companies and enrich contact data from your application.
 
 <CardGroup cols={2}>
   <Card title="Make your first request" href="/api-reference/credit-count">
@@ -2536,7 +2536,7 @@ Use the Airscale API to search for people and companies and enrich contact data 
 
 <Steps>
   <Step title="Create an API key">
-    In Airscale, open **Settings → API key** and create a key for your server-side application.
+    In Airschool, open **Settings → API key** and create a key for your server-side application.
   </Step>
   <Step title="Authenticate">
     Store the key in an environment variable and send it as a Bearer token on every request.
@@ -2592,13 +2592,13 @@ Before you build a production integration, review [Authentication](/api-referenc
 
 Source: https://airscale.mintlify.app/api-reference/authentication.md
 
-Description: Create, send, protect, and rotate an Airscale API key.
+Description: Create, send, protect, and rotate an Airschool API key.
 
-Airscale authenticates API requests with a workspace API key sent as a Bearer token.
+Airschool authenticates API requests with a workspace API key sent as a Bearer token.
 
 ## Create an API key
 
-Create the key in **Airscale Settings**: open the [Airscale dashboard](https://app.airscale.io/dashboard), choose **Settings → API key**, and generate a key for your integration.
+Create the key in **Airschool Settings**: open the [Airschool dashboard](https://app.airscale.io/dashboard), choose **Settings → API key**, and generate a key for your integration.
 
 Store the value in your server's secret manager or environment configuration:
 
@@ -2624,7 +2624,7 @@ Keep API keys server-side. Never commit them to source control, place them in ex
 
 ## Rotate a compromised key
 
-If a key is exposed, rotate it immediately in **Airscale Settings**. Update the server-side secret, deploy the new value, verify an authenticated request, and stop using the old key.
+If a key is exposed, rotate it immediately in **Airschool Settings**. Update the server-side secret, deploy the new value, verify an authenticated request, and stop using the old key.
 
 Next, review [Rate limits](/api-reference/rate-limits) before adding request concurrency or retries.
 
@@ -2636,7 +2636,7 @@ Source: https://airscale.mintlify.app/api-reference/rate-limits.md
 
 Description: Understand endpoint-specific request limits and 429 responses.
 
-Airscale rate limits are endpoint-specific. Each endpoint can enforce a different request limit and time window, so use the value documented on the endpoint page you are calling.
+Airschool rate limits are endpoint-specific. Each endpoint can enforce a different request limit and time window, so use the value documented on the endpoint page you are calling.
 
 ## Handle rate-limit responses
 
@@ -2696,7 +2696,7 @@ Description: Count people matching person, role, and company filters.
 Estimate an audience before retrieving any lead records. Count accepts the same person, role, current-company, and past-experience filters as [Find people](/api-reference/find-people).
 
 <Note>
-Count is free. It neither reserves nor debits Airscale credits, and its response contains only the matching total.
+Count is free. It neither reserves nor debits Airschool credits, and its response contains only the matching total.
 </Note>
 
 ## Reuse a search audience
@@ -2746,7 +2746,7 @@ Description: Search supported values for Find Companies filters.
 Discover accepted values before adding a city, region, industry, topic, or technology filter to [Find companies](/api-reference/find-companies).
 
 <Note>
-Filter-values is free and has no request body. It does not reserve or debit Airscale credits.
+Filter-values is free and has no request body. It does not reserve or debit Airschool credits.
 </Note>
 
 ## Choose useful context
@@ -2827,7 +2827,7 @@ The acceptance response only confirms that the batch was queued. Processing cont
 
 ## Webhook callbacks
 
-Every callback echoes `custom_id`. When the submitted value is omitted or `null`, Airscale uses that item's zero-based input index.
+Every callback echoes `custom_id`. When the submitted value is omitted or `null`, Airschool uses that item's zero-based input index.
 
 - A found email has `status: "success"`, the resolved `email`, `email_status: "valid"`, and the public `provider` and `verifier` labels.
 - An item skipped after the remaining batch balance drops below 2 credits has `status: "error"`, `error: "insufficient_credits"`, and `email: null`.
@@ -2999,15 +2999,15 @@ Use [People profile](/api-reference/extract-people-profile) when you already hav
 
 Source: https://airscale.mintlify.app/api-reference/credit-count.md
 
-Description: Check the remaining credit balance for your Airscale workspace.
+Description: Check the remaining credit balance for your Airschool workspace.
 
 Read the remaining credit balance for the workspace associated with your API key before starting paid enrichment work.
 
 <Note>
-Send no request body. Checking the balance is free and does not debit Airscale credits.
+Send no request body. Checking the balance is free and does not debit Airschool credits.
 </Note>
 
-An invalid or missing key returns `401 Unauthorized`. Confirm the current key in the Airscale dashboard and update your server-side secret; rotate it only if it was exposed.
+An invalid or missing key returns `401 Unauthorized`. Confirm the current key in the Airschool dashboard and update your server-side secret; rotate it only if it was exposed.
 
 ## Next step
 
@@ -3015,28 +3015,28 @@ Use your authenticated client to [find people](/api-reference/find-people), or r
 
 ---
 
-## How to use the Airscale MCP (+Claude demo)
+## How to use the Airschool MCP (+Claude demo)
 
 Source: https://airscale.mintlify.app/mcp/how-to-use-the-airscale-mcp.md
 
-Description: Prospect through conversation with Airscale search, enrichment, and export tools.
+Description: Prospect through conversation with Airschool search, enrichment, and export tools.
 
-Prospect without leaving your AI chat. Airscale connects Claude, ChatGPT, and other compatible assistants to search, enrichment, research, and export tools, so you can build a list through natural-language conversation.
+Prospect without leaving your AI chat. Airschool connects Claude, ChatGPT, and other compatible assistants to search, enrichment, research, and export tools, so you can build a list through natural-language conversation.
 
 <Frame>
   <iframe
     className="w-full aspect-video rounded-xl"
     src="https://www.youtube.com/embed/t4coJ0P8YVM"
-    title="How to prospect with Airscale MCP in Claude"
+    title="How to prospect with Airschool MCP in Claude"
     allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
     referrerPolicy="strict-origin-when-cross-origin"
     allowFullScreen
   />
 </Frame>
 
-## What is the Airscale MCP?
+## What is the Airschool MCP?
 
-The Airscale MCP gives your assistant 22 typed tools that can:
+The Airschool MCP gives your assistant 22 typed tools that can:
 
 - Check your workspace credit balance.
 - Search for people and companies.
@@ -3091,19 +3091,19 @@ Do not start a duplicate export while the existing job is `queued` or `running`;
 
 ## Get started
 
-- [Connect Airscale MCP to ChatGPT](/mcp/connect-airscale-mcp-to-chatgpt)
-- [Connect Airscale MCP to Claude](/mcp/connect-airscale-mcp-to-claude)
-- [Read the Airscale MCP server reference](/mcp/airscale-mcp-server)
+- [Connect Airschool MCP to ChatGPT](/mcp/connect-airscale-mcp-to-chatgpt)
+- [Connect Airschool MCP to Claude](/mcp/connect-airscale-mcp-to-claude)
+- [Read the Airschool MCP server reference](/mcp/airscale-mcp-server)
 
 ---
 
-## Connect Airscale MCP to ChatGPT
+## Connect Airschool MCP to ChatGPT
 
 Source: https://airscale.mintlify.app/mcp/connect-airscale-mcp-to-chatgpt.md
 
-Description: Connect ChatGPT to Airscale through browser OAuth and validate the connection without spending credits.
+Description: Connect ChatGPT to Airschool through browser OAuth and validate the connection without spending credits.
 
-Connect ChatGPT to your Airscale workspace with browser OAuth, then verify the connection with a free tool call before you approve any paid work.
+Connect ChatGPT to your Airschool workspace with browser OAuth, then verify the connection with a free tool call before you approve any paid work.
 
 ## MCP server URL
 
@@ -3113,9 +3113,9 @@ Use the official remote MCP endpoint exactly as shown:
 https://mcp.airscale.io/mcp
 ```
 
-## What ChatGPT can do with Airscale MCP
+## What ChatGPT can do with Airschool MCP
 
-Airscale MCP gives ChatGPT 22 typed tools that can:
+Airschool MCP gives ChatGPT 22 typed tools that can:
 
 - Check the authorized workspace's credit balance.
 - Search for people and companies.
@@ -3128,11 +3128,11 @@ Managed large contact enrichment is work-email-only in its current phase. Review
 
 ## Before you start
 
-You need an Airscale account with access to the intended workspace, API access enabled, and an active workspace credential. You also need a ChatGPT account and workspace where Developer mode is available; availability can depend on account and workspace policy.
+You need an Airschool account with access to the intended workspace, API access enabled, and an active workspace credential. You also need a ChatGPT account and workspace where Developer mode is available; availability can depend on account and workspace policy.
 
-ChatGPT uses browser OAuth for this connection: if prompted, the browser asks you to sign in to Airscale, choose a workspace, and authorize ChatGPT. OpenAI's [current plugin connection guide](https://developers.openai.com/plugins/deploy/connect-chatgpt) is the source for the navigation below.
+ChatGPT uses browser OAuth for this connection: if prompted, the browser asks you to sign in to Airschool, choose a workspace, and authorize ChatGPT. OpenAI's [current plugin connection guide](https://developers.openai.com/plugins/deploy/connect-chatgpt) is the source for the navigation below.
 
-After OAuth, Airscale's MCP server resolves the authorized workspace's current credential server-side on each tool call; ChatGPT neither receives nor stores that API key. Do not paste an Airscale API key into ChatGPT, prompts, or tool inputs.
+After OAuth, Airschool's MCP server resolves the authorized workspace's current credential server-side on each tool call; ChatGPT neither receives nor stores that API key. Do not paste an Airschool API key into ChatGPT, prompts, or tool inputs.
 
 ## Step-by-step setup
 
@@ -3144,16 +3144,16 @@ After OAuth, Airscale's MCP server resolves the authorized workspace's current c
     Go to **ChatGPT Plugins** and select the plus button.
   </Step>
   <Step title="Describe the connection">
-    Enter a user-facing name and description, such as **Airscale MCP** and a short description of its search, enrichment, research, and export tools.
+    Enter a user-facing name and description, such as **Airschool MCP** and a short description of its search, enrichment, research, and export tools.
   </Step>
-  <Step title="Connect and authorize Airscale">
-    Under **Connection**, choose the public endpoint option and enter `https://mcp.airscale.io/mcp`, including the `/mcp` path. Create the connection. If prompted, complete browser OAuth, sign in to Airscale, select the intended workspace, and return to ChatGPT. Do not enter an API key or static authorization value.
+  <Step title="Connect and authorize Airschool">
+    Under **Connection**, choose the public endpoint option and enter `https://mcp.airscale.io/mcp`, including the `/mcp` path. Create the connection. If prompted, complete browser OAuth, sign in to Airschool, select the intended workspace, and return to ChatGPT. Do not enter an API key or static authorization value.
   </Step>
   <Step title="Review discovered tools">
-    Review the tools and metadata discovered from the server. Confirm that the Airscale connection shows the expected 22 typed tools before testing it.
+    Review the tools and metadata discovered from the server. Confirm that the Airschool connection shows the expected 22 typed tools before testing it.
   </Step>
   <Step title="Verify the connection for free">
-    Start a new conversation, add the Airscale MCP connection from the tools menu, and run `airscale_check_credits` without another tool. A returned balance confirms tool discovery and authentication to an Airscale workspace without debiting credits, but it does not identify which workspace. Separately verify the workspace shown during OAuth before paid actions.
+    Start a new conversation, add the Airschool MCP connection from the tools menu, and run `airscale_check_credits` without another tool. A returned balance confirms tool discovery and authentication to an Airschool workspace without debiting credits, but it does not identify which workspace. Separately verify the workspace shown during OAuth before paid actions.
   </Step>
 </Steps>
 
@@ -3161,13 +3161,13 @@ After OAuth, Airscale's MCP server resolves the authorized workspace's current c
 
 The identities and domains below are synthetic.
 
-> Use `airscale_check_credits` to show my current Airscale credit balance. Do not call another tool.
+> Use `airscale_check_credits` to show my current Airschool credit balance. Do not call another tool.
 
-This is the free connection test. A returned balance confirms tool discovery and authentication to an Airscale workspace without debiting credits. It does not identify which workspace; verify the workspace shown during OAuth before paid actions.
+This is the free connection test. A returned balance confirms tool discovery and authentication to an Airschool workspace without debiting credits. It does not identify which workspace; verify the workspace shown during OAuth before paid actions.
 
 > Count people named Jordan Example who work at `northstar.example`. Do not run a paid search.
 
-> Plan an Airscale search for up to five companies matching `sample-company.test`. Show the proposed Airscale tool, arguments, and maximum cost, then wait for my approval.
+> Plan an Airschool search for up to five companies matching `sample-company.test`. Show the proposed Airschool tool, arguments, and maximum cost, then wait for my approval.
 
 For a complete staged sequence, follow the [safe MCP workflow](/mcp/how-to-use-the-airscale-mcp).
 
@@ -3185,7 +3185,7 @@ Paid export starts fail closed until `confirm_credit_spend` is explicitly `true`
 
 ## Refreshing tools
 
-If Airscale tools or metadata are stale, open the connection in **ChatGPT Plugins**, select **Refresh**, confirm the advertised metadata changed, then start a new conversation and add the connection again from the tools menu.
+If Airschool tools or metadata are stale, open the connection in **ChatGPT Plugins**, select **Refresh**, confirm the advertised metadata changed, then start a new conversation and add the connection again from the tools menu.
 
 ## Troubleshooting
 
@@ -3194,10 +3194,10 @@ If Airscale tools or metadata are stale, open the connection in **ChatGPT Plugin
     Open **Settings → Security and login** and look for **Developer mode**. Availability can depend on account and workspace policy, so ask the workspace administrator to check policy if the control is unavailable.
   </Accordion>
   <Accordion title="The connection cannot be created">
-    Confirm the exact public endpoint, including the `/mcp` path. Complete Airscale browser authorization if prompted, return to ChatGPT, and review any connection or discovered-tool errors before retrying.
+    Confirm the exact public endpoint, including the `/mcp` path. Complete Airschool browser authorization if prompted, return to ChatGPT, and review any connection or discovered-tool errors before retrying.
   </Accordion>
   <Accordion title="Authentication succeeds but a tool fails">
-    Confirm that the selected Airscale workspace has API access, an active workspace credential, and enough credits for the proposed paid tool. Run `airscale_check_credits` before retrying.
+    Confirm that the selected Airschool workspace has API access, an active workspace credential, and enough credits for the proposed paid tool. Run `airscale_check_credits` before retrying.
   </Accordion>
   <Accordion title="An export remains queued">
     Poll `airscale_get_export_status` with the same identifier and the returned `poll_after_seconds`. Do not create another paid job.
@@ -3206,23 +3206,23 @@ If Airscale tools or metadata are stale, open the connection in **ChatGPT Plugin
 
 ## Security note
 
-Authorize only the Airscale workspace you intend to use. Keep secrets out of chats and tool inputs, review every proposed paid action, and remove the Airscale MCP connection when it is no longer needed.
+Authorize only the Airschool workspace you intend to use. Keep secrets out of chats and tool inputs, review every proposed paid action, and remove the Airschool MCP connection when it is no longer needed.
 
 ## Need help?
 
 - Review the [MCP tool catalog](/mcp/tools) for exact schemas and credit behavior.
 - Use the [safe MCP workflow](/mcp/how-to-use-the-airscale-mcp) before running a search or export.
-- Read the [Airscale MCP server overview](/mcp/airscale-mcp-server) for authentication and security guidance.
+- Read the [Airschool MCP server overview](/mcp/airscale-mcp-server) for authentication and security guidance.
 
 ---
 
-## Connect Airscale MCP to Claude
+## Connect Airschool MCP to Claude
 
 Source: https://airscale.mintlify.app/mcp/connect-airscale-mcp-to-claude.md
 
-Description: Connect Claude clients to Airscale with hosted OAuth or a protected Claude Code authorization header.
+Description: Connect Claude clients to Airschool with hosted OAuth or a protected Claude Code authorization header.
 
-Connect Claude to your Airscale workspace through hosted remote OAuth where supported, or configure Claude Code with a protected environment-backed header.
+Connect Claude to your Airschool workspace through hosted remote OAuth where supported, or configure Claude Code with a protected environment-backed header.
 
 ## MCP server URL
 
@@ -3232,9 +3232,9 @@ Use the official remote MCP endpoint exactly as shown:
 https://mcp.airscale.io/mcp
 ```
 
-## What Claude can do with Airscale MCP
+## What Claude can do with Airschool MCP
 
-Airscale MCP gives Claude 22 typed tools that can:
+Airschool MCP gives Claude 22 typed tools that can:
 
 - Check the authorized workspace's credit balance.
 - Search for people and companies.
@@ -3247,9 +3247,9 @@ Managed large contact enrichment is work-email-only in its current phase. Review
 
 ## Before you start
 
-You need an Airscale account with access to the intended workspace, API access enabled, and an active workspace credential.
+You need an Airschool account with access to the intended workspace, API access enabled, and an active workspace credential.
 
-Claude web and desktop clients can use remote OAuth in the browser where supported by the Claude account and client. Each hosted user signs in to Airscale and authorizes a workspace.
+Claude web and desktop clients can use remote OAuth in the browser where supported by the Claude account and client. Each hosted user signs in to Airschool and authorizes a workspace.
 
 Claude Code can instead use a protected authorization header sourced from an environment variable. Hosted OAuth and Claude Code header authentication are separate connection methods. Never put the credential in a prompt or MCP tool argument.
 
@@ -3265,30 +3265,30 @@ Individual Free, Pro, or Max accounts can add a custom connector directly. A Fre
   <Step title="Open connector settings">
     Sign in to Claude web or desktop and open **Customize → Connectors**. Use the current connectors or integrations settings if the label differs.
   </Step>
-  <Step title="Add Airscale">
-    Choose the control to add a custom connector, name it **Airscale MCP**, and enter `https://mcp.airscale.io/mcp` as the remote server URL.
+  <Step title="Add Airschool">
+    Choose the control to add a custom connector, name it **Airschool MCP**, and enter `https://mcp.airscale.io/mcp` as the remote server URL.
   </Step>
-  <Step title="Authorize your Airscale workspace">
-    Continue to the browser sign-in, authenticate with Airscale, select the intended workspace, approve access, and return to Claude.
+  <Step title="Authorize your Airschool workspace">
+    Continue to the browser sign-in, authenticate with Airschool, select the intended workspace, approve access, and return to Claude.
   </Step>
   <Step title="Enable the tools">
-    Select Airscale MCP for a new conversation and confirm that Claude can see its tools.
+    Select Airschool MCP for a new conversation and confirm that Claude can see its tools.
   </Step>
 </Steps>
 
 ### Claude Team and Enterprise
 
-For Claude Team or Enterprise, an Owner or Primary Owner must add Airscale through **Custom → Web** before members can connect.
+For Claude Team or Enterprise, an Owner or Primary Owner must add Airschool through **Custom → Web** before members can connect.
 
 <Steps>
   <Step title="Owner adds the organization connector">
     Open **Organization settings → Connectors**, choose **Add**, hover over **Custom**, select **Web**, and enter `https://mcp.airscale.io/mcp`. Add the connector to the organization.
   </Step>
-  <Step title="Each member authorizes Airscale">
-    Each member opens **Customize → Connectors**, finds Airscale MCP, clicks **Connect**, and authenticates with their own Airscale account in the browser.
+  <Step title="Each member authorizes Airschool">
+    Each member opens **Customize → Connectors**, finds Airschool MCP, clicks **Connect**, and authenticates with their own Airschool account in the browser.
   </Step>
   <Step title="Each member enables the tools">
-    Select Airscale MCP and the tools needed for the conversation. Organization approval makes the connector available; it does not share an Owner's Airscale authorization with members.
+    Select Airschool MCP and the tools needed for the conversation. Organization approval makes the connector available; it does not share an Owner's Airschool authorization with members.
   </Step>
 </Steps>
 
@@ -3326,13 +3326,13 @@ Inside Claude Code, run `/mcp` to inspect connection status and the available to
 
 The identities and domains below are synthetic.
 
-> Use `airscale_check_credits` to show my current Airscale credit balance. Do not call another tool.
+> Use `airscale_check_credits` to show my current Airschool credit balance. Do not call another tool.
 
-This is the free connection test. A returned balance confirms tool discovery and authentication to an Airscale workspace without debiting credits, but it does not identify which workspace. Hosted users must verify the OAuth-selected workspace, and Claude Code users must verify which workspace owns the configured credential before paid actions.
+This is the free connection test. A returned balance confirms tool discovery and authentication to an Airschool workspace without debiting credits, but it does not identify which workspace. Hosted users must verify the OAuth-selected workspace, and Claude Code users must verify which workspace owns the configured credential before paid actions.
 
-> Use Airscale MCP to count people named Taylor Example at `northstar.example`. Do not run a paid search.
+> Use Airschool MCP to count people named Taylor Example at `northstar.example`. Do not run a paid search.
 
-> Plan an Airscale search for up to five companies matching `sample-company.test`. Show the proposed Airscale tool, arguments, and maximum cost, then wait for my approval.
+> Plan an Airschool search for up to five companies matching `sample-company.test`. Show the proposed Airschool tool, arguments, and maximum cost, then wait for my approval.
 
 For a complete staged sequence, follow the [safe MCP workflow](/mcp/how-to-use-the-airscale-mcp).
 
@@ -3350,16 +3350,16 @@ Paid export starts fail closed until `confirm_credit_spend` is explicitly `true`
 
 ## Refreshing tools
 
-If Airscale tools are stale or missing, refresh or reconnect the hosted connector and start a new conversation. In Claude Code, verify the environment and server with `claude mcp list`, then use `/mcp` to inspect the refreshed connection.
+If Airschool tools are stale or missing, refresh or reconnect the hosted connector and start a new conversation. In Claude Code, verify the environment and server with `claude mcp list`, then use `/mcp` to inspect the refreshed connection.
 
 ## Troubleshooting
 
 <AccordionGroup>
   <Accordion title="Hosted connector controls are unavailable">
-    Confirm that the Claude client and account support remote MCP connectors. In Team or Enterprise, ask an Owner or Primary Owner to add Airscale before each member connects their own account.
+    Confirm that the Claude client and account support remote MCP connectors. In Team or Enterprise, ask an Owner or Primary Owner to add Airschool before each member connects their own account.
   </Accordion>
   <Accordion title="OAuth opens but the connection stays pending">
-    Complete the Airscale browser sign-in, wait for the authorization confirmation, and return to Claude. Reconnect while signed in to the intended workspace if the state does not update.
+    Complete the Airschool browser sign-in, wait for the authorization confirmation, and return to Claude. Reconnect while signed in to the intended workspace if the state does not update.
   </Accordion>
   <Accordion title="Claude Code reports an authentication error">
     Confirm that the environment variable is available to the Claude Code process and that the project configuration uses the `Bearer` scheme. Do not print the value while debugging.
@@ -3371,23 +3371,23 @@ If Airscale tools are stale or missing, refresh or reconnect the hosted connecto
 
 ## Security note
 
-Hosted Claude users should authorize only the Airscale workspace they intend to use. Claude Code users should keep the environment value out of version control, prompts, and tool inputs. For either method, review every proposed paid action and remove access when it is no longer needed.
+Hosted Claude users should authorize only the Airschool workspace they intend to use. Claude Code users should keep the environment value out of version control, prompts, and tool inputs. For either method, review every proposed paid action and remove access when it is no longer needed.
 
 ## Need help?
 
 - Review the [MCP tool catalog](/mcp/tools) for exact schemas and credit behavior.
 - Use the [safe MCP workflow](/mcp/how-to-use-the-airscale-mcp) before running a search or export.
-- Read the [Airscale MCP server overview](/mcp/airscale-mcp-server) for authentication and security guidance.
+- Read the [Airschool MCP server overview](/mcp/airscale-mcp-server) for authentication and security guidance.
 
 ---
 
-## Airscale MCP Server
+## Airschool MCP Server
 
 Source: https://airscale.mintlify.app/mcp/airscale-mcp-server.md
 
-Description: Connect Airscale to your AI assistant and prospect without leaving the chat.
+Description: Connect Airschool to your AI assistant and prospect without leaving the chat.
 
-Airscale MCP gives compatible AI assistants a concise, typed interface for prospecting through conversation while keeping authentication and paid actions explicit.
+Airschool MCP gives compatible AI assistants a concise, typed interface for prospecting through conversation while keeping authentication and paid actions explicit.
 
 ## MCP server URL
 
@@ -3395,7 +3395,7 @@ Airscale MCP gives compatible AI assistants a concise, typed interface for prosp
 https://mcp.airscale.io/mcp
 ```
 
-This remote Streamable HTTP server works with hosted assistants and trusted developer clients. For hosted clients, OAuth is preferred and uses browser sign-in. The Airscale MCP server resolves the authorized workspace credential server-side; the client neither receives nor stores the API key.
+This remote Streamable HTTP server works with hosted assistants and trusted developer clients. For hosted clients, OAuth is preferred and uses browser sign-in. The Airschool MCP server resolves the authorized workspace credential server-side; the client neither receives nor stores the API key.
 
 Trusted header-capable developer clients must load `AIRSCALE_API_KEY` from a protected runtime environment or secret manager. Never place a literal API key in a prompt or tool argument, source or browser code, or a shell command or shell history.
 
@@ -3407,13 +3407,13 @@ Trusted header-capable developer clients must load `AIRSCALE_API_KEY` from a pro
 4. Select and verify the intended workspace.
 5. Run `airscale_check_credits` as the free connection check before any paid tool.
 
-The credit check confirms authentication to an Airscale workspace without debiting credits, but it does not identify which workspace. Verify the workspace selected during OAuth—or the workspace that owns a developer credential—before paid actions.
+The credit check confirms authentication to an Airschool workspace without debiting credits, but it does not identify which workspace. Verify the workspace selected during OAuth—or the workspace that owns a developer credential—before paid actions.
 
 ## Setup walkthroughs
 
 - [ChatGPT setup guide](/mcp/connect-airscale-mcp-to-chatgpt)
 - [Claude setup guide](/mcp/connect-airscale-mcp-to-claude)
-- [Airscale MCP workflow](/mcp/how-to-use-the-airscale-mcp)
+- [Airschool MCP workflow](/mcp/how-to-use-the-airscale-mcp)
 
 These guides contain the client-specific connection steps; this page keeps the shared server contract in one place.
 
@@ -3489,7 +3489,7 @@ Start once. While status is `queued` or `running`, poll status for the same expo
 
 ## Security notes
 
-- OAuth keeps workspace credential resolution server-side; the hosted client does not receive or store the Airscale API key.
+- OAuth keeps workspace credential resolution server-side; the hosted client does not receive or store the Airschool API key.
 - Header-capable developer clients should read `AIRSCALE_API_KEY` only from a protected runtime environment or secret manager.
 - Never put a literal key in prompts, tool arguments, source control, browser code, shell commands, or shell history.
 - Verify the intended workspace before paid actions because a credit balance alone does not identify it.
@@ -3503,7 +3503,7 @@ Start once. While status is `queued` or `running`, poll status for the same expo
   <Accordion title="The client cannot authenticate">
     For OAuth, restart browser sign-in and verify the intended workspace. For a header-capable developer client, confirm that its protected runtime can read the configured secret.
   </Accordion>
-  <Accordion title="The Airscale tools do not appear">
+  <Accordion title="The Airschool tools do not appear">
     Confirm that the server URL is exactly `https://mcp.airscale.io/mcp`, then disconnect and reconnect so the client refreshes all 22 tools.
   </Accordion>
   <Accordion title="A request reports insufficient credits">
@@ -3520,7 +3520,7 @@ Start once. While status is `queued` or `running`, poll status for the same expo
 
 Source: https://airscale.mintlify.app/usecases/quick-beginner-guide.md
 
-Description: This quick beginner tutorial shows you how to navigate the Airscale platform and start using its key features
+Description: This quick beginner tutorial shows you how to navigate the Airschool platform and start using its key features
 
 <iframe
   className="w-full aspect-video rounded-xl"
@@ -3530,11 +3530,11 @@ Description: This quick beginner tutorial shows you how to navigate the Airscale
   allowFullScreen
 ></iframe>
 
-In this video, we walk through the fundamentals of Airscale, from building targeted lead lists to enriching them with high-quality data in real time.
+In this video, we walk through the fundamentals of Airschool, from building targeted lead lists to enriching them with high-quality data in real time.
 
 ## Core functionalities
 
-Airscale is built around two main use cases:
+Airschool is built around two main use cases:
 
 - Building lead lists
 - Enriching contacts
@@ -3564,11 +3564,11 @@ From there, you can enrich your data directly within the platform. You simply se
 - Company data
 - etc.
 
-Airscale uses a waterfall enrichment logic for emails and phones, meaning multiple providers are tested automatically to maximize results. Importantly, no credits are used when no data is found.
+Airschool uses a waterfall enrichment logic for emails and phones, meaning multiple providers are tested automatically to maximize results. Importantly, no credits are used when no data is found.
 
 ## Built-in AI feature
 
-Airscale also includes a built-in AI feature that allows you to go further with your data. You can write prompts, select different LLMs, and optionally connect your own API key.
+Airschool also includes a built-in AI feature that allows you to go further with your data. You can write prompts, select different LLMs, and optionally connect your own API key.
 
 Depending on your setup:
 
@@ -3581,7 +3581,7 @@ Once your data is ready, you can easily export it as a CSV or send it directly t
 
 ## Workspace & plans
 
-Airscale provides a collaborative workspace where you can manage your profile, invite team members for free, and access billing.
+Airschool provides a collaborative workspace where you can manage your profile, invite team members for free, and access billing.
 
 Several plans are available, all without commitment:
 
@@ -3592,9 +3592,9 @@ Several plans are available, all without commitment:
 
 ## API & automation
 
-You can generate an API key and connect Airscale to tools like Clay. This allows you to automate enrichment workflows and significantly reduce costs.
+You can generate an API key and connect Airschool to tools like Clay. This allows you to automate enrichment workflows and significantly reduce costs.
 
-If you have any questions, feel free to reach out, the Airscale team is always happy to help.
+If you have any questions, feel free to reach out, the Airschool team is always happy to help.
 
 ---
 
@@ -3602,11 +3602,11 @@ If you have any questions, feel free to reach out, the Airscale team is always h
 
 Source: https://airscale.mintlify.app/usecases/the-basics-of-ai.md
 
-Description: Run AI on Airscale with the best LLMs using custom prompts
+Description: Run AI on Airschool with the best LLMs using custom prompts
 
-## 1. Why use the AI enrichment with Airscale ?
+## 1. Why use the AI enrichment with Airschool ?
 
-Manual contact enrichment or cleaning is slow, and impossible to scale. Airscale's AI enrichment module automates the entire process, directly from your lead lists. For example:
+Manual contact enrichment or cleaning is slow, and impossible to scale. Airschool's AI enrichment module automates the entire process, directly from your lead lists. For example:
 
 - Infer job seniority and ICP fit
 - Generate personalized icebreakers
@@ -3657,7 +3657,7 @@ Specify the exact format expected. The AI will fill whatever shape you give it. 
 
 ## 4. Save & import templates
 
-Once you've built a prompt that works, you don't want to rewrite it from scratch every time. Airscale lets you save any AI enrichment prompt as a reusable template, so your best configurations are always one click away.
+Once you've built a prompt that works, you don't want to rewrite it from scratch every time. Airschool lets you save any AI enrichment prompt as a reusable template, so your best configurations are always one click away.
 
 Saved templates can then be imported directly into any workflow or enrichment column, whether you're setting up a new campaign, onboarding a new lead list, or simply duplicating a process that's already proven its value. No copy-pasting, no risk of losing a prompt that took time to calibrate.
 
@@ -3721,7 +3721,7 @@ Description: Capture valuable data from any webpage instantly, making data colle
   allowFullScreen
 ></iframe>
 
-In this video, we walk through how to use Airsearch, Airscale's built-in AI with real-time web access, to automatically extract specific information from company websites. In this example: identifying which companies have a partnership page and retrieving the URL.
+In this video, we walk through how to use Airsearch, Airschool's built-in AI with real-time web access, to automatically extract specific information from company websites. In this example: identifying which companies have a partnership page and retrieving the URL.
 
 ## 0. Why use Airsearch?
 
@@ -3731,7 +3731,7 @@ In this use case, we imagine being a company looking to partner with others. The
 
 ## 1. Start from a company table
 
-The workflow begins with a table of companies, previously built using the Find Companies module in Airscale (tutorials available on the AirSchool page).
+The workflow begins with a table of companies, previously built using the Find Companies module in Airschool (tutorials available on the AirSchool page).
 
 Before launching the AI search, make sure your table already contains the columns that will be used as inputs in your prompt. In this example:
 
@@ -3778,9 +3778,9 @@ By combining real-time web scraping with structured outputs, AirSearch turns a s
 
 ### You can also connect your API key with Airsearch
 
-**Prerequisite** : you will need to be on a paid plan in order to use Airscale's API
+**Prerequisite** : you will need to be on a paid plan in order to use Airschool's API
 
-Use the Airscale API endpoint to fetch anything about a company or a prospect from a prompt with some advanced web browsing capabilities.
+Use the Airschool API endpoint to fetch anything about a company or a prospect from a prompt with some advanced web browsing capabilities.
 
 Find the full tutorial in: [Airsearch (AI research agent)](/api-reference/airsearch)
 
@@ -4399,7 +4399,7 @@ Description: Find decision makers from hiring companies, qualify them with AI, a
   allowFullScreen
 ></iframe>
 
-In this video, we walk through one of the most popular workflows in Airscale: going from hiring signals to a qualified list of decision-makers ready for outreach.
+In this video, we walk through one of the most popular workflows in Airschool: going from hiring signals to a qualified list of decision-makers ready for outreach.
 
 ## Identify companies actively hiring
 
@@ -4407,7 +4407,7 @@ The process starts by using the "Find Companies Hiring for Specific Positions" m
 
 In this example, we search for companies hiring a Head of Sales in London, which is a strong signal that the company may be investing in sales growth.
 
-Airscale automatically builds a table containing key information such as:
+Airschool automatically builds a table containing key information such as:
 
 - Company name
 - LinkedIn company URL
@@ -4421,20 +4421,20 @@ The LinkedIn company URL is especially important because it becomes the unique i
 
 Next, we use the Leads Finder module to identify the right contacts inside those companies.
 
-Using the previously created company table, Airscale searches for people with specific roles, such as:
+Using the previously created company table, Airschool searches for people with specific roles, such as:
 
 - CEO
 - Founder
 
 You can also apply filters like location (United Kingdom) to refine the results.
 
-Within seconds, Airscale transforms a list of companies into a targeted list of decision-makers working at those organizations.
+Within seconds, Airschool transforms a list of companies into a targeted list of decision-makers working at those organizations.
 
 ## Enrich company data for better qualification
 
 Before contacting those leads, it's important to ensure they match your Ideal Customer Profile (ICP).
 
-To do this, Airscale enriches the data with additional company insights:
+To do this, Airschool enriches the data with additional company insights:
 
 **LinkedIn company enrichment**
 
@@ -4448,7 +4448,7 @@ These enrichments provide the data needed to automatically qualify companies.
 
 ## Use AI to qualify your ICP automatically
 
-Airscale integrates multiple LLMs (such as Gemini 2.5 Flash) to automate lead qualification.
+Airschool integrates multiple LLMs (such as Gemini 2.5 Flash) to automate lead qualification.
 
 In this example, the AI evaluates companies based on two criteria:
 
@@ -4461,7 +4461,7 @@ Companies that do not match the ICP are automatically filtered out, ensuring tha
 
 ## Enrich verified professional emails
 
-Once the list has been cleaned and qualified, Airscale can find and verify professional emails for each decision-maker.
+Once the list has been cleaned and qualified, Airschool can find and verify professional emails for each decision-maker.
 
 Emails are automatically verified, eliminating the need for additional verification tools and ensuring high deliverability for outreach campaigns.
 
@@ -4482,7 +4482,7 @@ This makes it easy to activate your leads immediately in your sales workflow.
 
 Source: https://airscale.mintlify.app/usecases/scrape-a-linkedin-post.md
 
-Description: In just a few steps, Airscale transforms raw LinkedIn engagement into a qualified, enriched prospect list - ready to be exported to your CRM, cold email platform, or outbound tool of choice.
+Description: In just a few steps, Airschool transforms raw LinkedIn engagement into a qualified, enriched prospect list - ready to be exported to your CRM, cold email platform, or outbound tool of choice.
 
 <iframe
   className="w-full aspect-video rounded-xl"
@@ -4492,7 +4492,7 @@ Description: In just a few steps, Airscale transforms raw LinkedIn engagement in
   allowFullScreen
 ></iframe>
 
-In this video, we walk through one of the most effective prospecting workflows in Airscale: scraping the likers and commenters of a LinkedIn post, qualifying them automatically with AI, and enriching only those who match your Ideal Customer Profile.
+In this video, we walk through one of the most effective prospecting workflows in Airschool: scraping the likers and commenters of a LinkedIn post, qualifying them automatically with AI, and enriching only those who match your Ideal Customer Profile.
 
 ## Why scrape LinkedIn posts?
 
@@ -4504,13 +4504,13 @@ This engagement data can be turned into a targeted list of high-quality prospect
 
 Start by copying the URL of the LinkedIn post you want to scrape.
 
-Then, on the Airscale platform, open the **Extract LinkedIn post likers and commenters** module and:
+Then, on the Airschool platform, open the **Extract LinkedIn post likers and commenters** module and:
 
 - Give your search a name
 - Paste the LinkedIn post URL
 - Select what you want to extract: likers, commenters, or both
 
-Once launched, Airscale builds a table containing key information for each profile, including:
+Once launched, Airschool builds a table containing key information for each profile, including:
 
 - First Name
 - Last Name
@@ -4533,7 +4533,7 @@ To do this:
 2. Choose your language model (e.g. GPT-5 Mini for speed and cost efficiency)
 3. Write your qualification prompt or import a saved template
 
-In this example, the prompt evaluates whether the person matches Airscale's ICP based on their LinkedIn profile data.
+In this example, the prompt evaluates whether the person matches Airschool's ICP based on their LinkedIn profile data.
 
 > **Important:** make sure the People Profile field is correctly set as the input before running the workflow.
 
@@ -4573,7 +4573,7 @@ Description: Scrape local businesses, identify their owners, and find verified c
   allowFullScreen
 ></iframe>
 
-In this video, we walk through a practical Airscale workflow: scraping local businesses from Google Maps, identifying the right decision-makers inside those companies, and enriching their professional contact data.
+In this video, we walk through a practical Airschool workflow: scraping local businesses from Google Maps, identifying the right decision-makers inside those companies, and enriching their professional contact data.
 
 ## Scrape local businesses with Google Maps
 
@@ -4587,7 +4587,7 @@ Configure your search by entering:
 
 You can also choose to include contact information, which will trigger additional scraping from each company's website.
 
-Once launched, Airscale builds a table automatically populated with key fields, including:
+Once launched, Airschool builds a table automatically populated with key fields, including:
 
 - Company name
 - **Company domain**
@@ -4607,20 +4607,20 @@ Configure the enrichment with:
 
 > **Important:** this enrichment returns one contact per company, prioritizing the first job title listed. If you need multiple decision-makers per company, see the alternative method below.
 
-Once complete, Airscale automatically adds several new columns: first name, last name, job title, and LinkedIn URL.
+Once complete, Airschool automatically adds several new columns: first name, last name, job title, and LinkedIn URL.
 
 ## Enrich verified professional emails
 
 With the LinkedIn URL or company domain available, you can run an email enrichment directly on the results.
 
-Emails found are automatically verified by Airscale: no additional verification tool needed, and no credits are spent when no data is found.
+Emails found are automatically verified by Airschool: no additional verification tool needed, and no credits are spent when no data is found.
 
 ## Finding multiple job titles per company
 
 If you need to find several roles within the same companies, use the **Leads Finder** module instead:
 
 1. Go to the home section and open Leads Finder
-2. Under People attributes → Current company, select **from an Airscale table** and choose your existing company table
+2. Under People attributes → Current company, select **from an Airschool table** and choose your existing company table
 3. Use the company domain as the matching field
 4. Add as many job titles as needed
 5. Preview and load the results
@@ -4643,7 +4643,7 @@ Description: Find decision-makers in hiring companies, qualify them with AI, and
   allowFullScreen
 ></iframe>
 
-In this video, we walk through a full prospecting workflow in Airscale: starting from a list of companies identified through intent signals, finding the right decision-makers inside them, and using AI to generate a personalized outreach message for each contact.
+In this video, we walk through a full prospecting workflow in Airschool: starting from a list of companies identified through intent signals, finding the right decision-makers inside them, and using AI to generate a personalized outreach message for each contact.
 
 ## Identify companies based on intent signals
 
@@ -4656,7 +4656,7 @@ Filters applied:
 - Location: United States
 - Recent event: Hiring in sales department (last 60 days)
 
-Airscale instantly builds a table of matching companies with key information included by default.
+Airschool instantly builds a table of matching companies with key information included by default.
 
 ## Qualify companies with AI
 
@@ -4665,7 +4665,7 @@ Before moving to the next step, use the **Use** **AI feature** to automatically 
 To do this:
 
 1. Click **Use AI** and select the rows to process
-2. Grant web access so Airscale can search for additional context
+2. Grant web access so Airschool can search for additional context
 3. Import or write your qualification prompt
 4. Connect the prompt inputs to the correct table columns (company domain, LinkedIn URL)
 5. Run the workflow
@@ -4703,7 +4703,7 @@ Once the enrichments are complete:
 4. Connect the inputs to the profile data and LinkedIn post columns
 5. Run the workflow
 
-Airscale generates a **personalized outreach message** for each decision-maker, added as a new column in your table. No web access is needed at this stage since all the relevant data has already been collected.
+Airschool generates a **personalized outreach message** for each decision-maker, added as a new column in your table. No web access is needed at this stage since all the relevant data has already been collected.
 
 ## Enrich contact data and export
 
@@ -4712,11 +4712,11 @@ To complete the workflow:
 - Enrich the list with **verified emails** and **phone numbers**
 - Export directly to your outreach tools
 
-When exporting to platforms like Lemlist, you can map Airscale columns to the corresponding fields: for example, setting the AI-generated message as the icebreaker in your email sequence.
+When exporting to platforms like Lemlist, you can map Airschool columns to the corresponding fields: for example, setting the AI-generated message as the icebreaker in your email sequence.
 
 ---
 
 ## Machine-readable contracts
 
 - [MCP tool catalog](https://airscale.mintlify.app/mcp/tools.md): Hosted Markdown for all 22 operational MCP tools.
-- [Agent resource directory](https://airscale.mintlify.app/mcp/agent-resources.md): Human and machine entry points for Airscale agents and documentation consumers.
+- [Agent resource directory](https://airscale.mintlify.app/mcp/agent-resources.md): Human and machine entry points for Airschool agents and documentation consumers.

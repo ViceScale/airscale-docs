@@ -1,14 +1,14 @@
 ---
 title: "Authentication"
-description: "Create, send, protect, and rotate an Airscale API key."
+description: "Create, send, protect, and rotate an Airschool API key."
 canonical: "https://airscale.mintlify.app/api-reference/authentication"
 ---
 
-Airscale authenticates API requests with a workspace API key sent as a Bearer token.
+Airschool authenticates API requests with a workspace API key sent as a Bearer token.
 
 ## Create an API key
 
-Create the key in **Airscale Settings**: open the [Airscale dashboard](https://app.airscale.io/dashboard), choose **Settings → API key**, and generate a key for your integration.
+Create the key in **Airschool Settings**: open the [Airschool dashboard](https://app.airscale.io/dashboard), choose **Settings → API key**, and generate a key for your integration.
 
 Store the value in your server's secret manager or environment configuration:
 
@@ -34,6 +34,6 @@ Keep API keys server-side. Never commit them to source control, place them in ex
 
 ## Rotate a compromised key
 
-If a key is exposed, rotate it immediately in **Airscale Settings**. Update the server-side secret, deploy the new value, verify an authenticated request, and stop using the old key.
+If a key is exposed, rotate it immediately in **Airschool Settings**. Update the server-side secret, deploy the new value, verify an authenticated request, and stop using the old key.
 
 Next, review [Rate limits](/api-reference/rate-limits) before adding request concurrency or retries.

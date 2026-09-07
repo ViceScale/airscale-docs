@@ -414,12 +414,12 @@ function waitForChildExit(child, stdout, stderr) {
 test("catalog renderer emits the exact page framing, category order, headings, anchors, and summary links", () => {
   const contract = readContract();
   const source = renderCatalog(contract);
-  const expectedFrontmatter = `---\ntitle: "MCP tool catalog"\ndescription: "Browse all 22 typed tools exposed by the Airscale MCP server."\ncanonical: "https://airscale.mintlify.app/mcp/tools"\n---\n`;
+  const expectedFrontmatter = `---\ntitle: "MCP tool catalog"\ndescription: "Browse all 22 typed tools exposed by the Airschool MCP server."\ncanonical: "https://airscale.mintlify.app/mcp/tools"\n---\n`;
 
   assert.equal(source.startsWith(expectedFrontmatter), true);
   assert.match(
     source,
-    /Airscale MCP exposes 22 typed tools for workspace checks, search, enrichment, research, managed batches, and asynchronous exports\./
+    /Airschool MCP exposes 22 typed tools for workspace checks, search, enrichment, research, managed batches, and asynchronous exports\./
   );
   assert.match(source, /<Warning>[\s\S]*Review each tool's credit behavior[\s\S]*`confirm_credit_spend: true`[\s\S]*<\/Warning>/);
   assert.equal(source.endsWith("\n"), true);
@@ -1195,8 +1195,8 @@ test("public manifest exposes only public metadata, exact schemas, and documenta
     "tools"
   ]);
   assert.equal(output.schemaVersion, "1.0");
-  assert.equal(output.name, "Airscale MCP tools");
-  assert.equal(output.description, "Browse all 22 typed tools exposed by the Airscale MCP server.");
+  assert.equal(output.name, "Airschool MCP tools");
+  assert.equal(output.description, "Browse all 22 typed tools exposed by the Airschool MCP server.");
   assert.equal(output.serverUrl, "https://mcp.airscale.io/mcp");
   assert.equal(output.toolCount, 22);
   assert.equal(output.sourceSha, contract.sourceSha);
@@ -2981,7 +2981,7 @@ test("agent renderers publish only the platform-supported custom agent files", (
   assert.equal(outputs["llms-full.txt"], renderLlmsFull(inputs));
   assert.equal(outputs["skill.md"], renderSkill(inputs));
   assert.match(outputs["llms.txt"], /^## MCP & Agents — Getting started$/mu);
-  assert.match(outputs["llms.txt"], /\[How to use the Airscale MCP \(\+Claude demo\)\]\(https:\/\/airscale\.mintlify\.app\/mcp\/how-to-use-the-airscale-mcp\.md\)/);
+  assert.match(outputs["llms.txt"], /\[How to use the Airschool MCP \(\+Claude demo\)\]\(https:\/\/airscale\.mintlify\.app\/mcp\/how-to-use-the-airscale-mcp\.md\)/);
   assert.doesNotMatch(outputs["llms.txt"], /^## MCP & Agents — (?:Start|Connect|Use|For agents)$/mu);
 
   const navigationPaths = inputs.docsConfig.navigation.tabs.flatMap(({ groups }) => (
@@ -3001,7 +3001,7 @@ test("agent renderers publish only the platform-supported custom agent files", (
     );
   }
 
-  assert.match(outputs["skill.md"], /^---\nname: airscale\ndescription: Search for people and companies, enrich professional contact data, run web research, and create asynchronous exports through the Airscale API or MCP server\./);
+  assert.match(outputs["skill.md"], /^---\nname: airscale\ndescription: Search for people and companies, enrich professional contact data, run web research, and create asynchronous exports through the Airschool API or MCP server\./);
   assert.match(outputs["skill.md"], /version: "1\.0"/);
   assert.match(outputs["skill.md"], /source_sha: "b06ea2c46276f8415a97721f6901437ce07f13fa"/);
   assert.match(outputs["skill.md"], /API authentication[\s\S]*MCP authentication/i);
@@ -3064,7 +3064,7 @@ test("agent renderers escape compact-index metadata and reject unsafe or incompl
   inputs.pageSources[firstPath] = inputs.pageSources[firstPath]
     .replace('title: "API Overview"', 'title: "API [Overview]"')
     .replace(
-      'description: "Authenticate with Airscale and make your first API request."',
+      'description: "Authenticate with Airschool and make your first API request."',
       'description: "Authenticate [safely] | without injecting a link."'
     );
   const index = renderLlmsIndex(inputs);

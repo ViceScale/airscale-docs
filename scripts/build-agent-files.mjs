@@ -21,7 +21,7 @@ const PROJECT_ROOT = fileURLToPath(new URL("..", import.meta.url));
 const PREVIEW_ORIGIN = "https://airscale.mintlify.app";
 const OPERATIONAL_MCP_URL = "https://mcp.airscale.io/mcp";
 const SOURCE_SHA = "b06ea2c46276f8415a97721f6901437ce07f13fa";
-const SKILL_DESCRIPTION = "Search for people and companies, enrich professional contact data, run web research, and create asynchronous exports through the Airscale API or MCP server.";
+const SKILL_DESCRIPTION = "Search for people and companies, enrich professional contact data, run web research, and create asynchronous exports through the Airschool API or MCP server.";
 const OUTPUT_PATHS = Object.freeze([
   "llms.txt",
   "llms-full.txt",
@@ -121,7 +121,7 @@ function validateOpenApi(openapi) {
     throw new Error("openapi.json must expose at least one path");
   }
   if (!Array.isArray(openapi.servers) || !openapi.servers.some(({ url }) => url === "https://api.airscale.io")) {
-    throw new Error("openapi.json must identify the production Airscale API server");
+    throw new Error("openapi.json must identify the production Airschool API server");
   }
 }
 
@@ -218,7 +218,7 @@ function renderLlmsIndexModel(model) {
     "",
     `- [OpenAPI specification](${PREVIEW_ORIGIN}/openapi.json): HTTP API operations, schemas, authentication, and responses.`,
     `- [MCP tool catalog](${PREVIEW_ORIGIN}/mcp/tools.md): Hosted Markdown with names, input schemas, credit behavior, examples, and API mappings for all 22 operational MCP tools.`,
-    `- [Agent resource directory](${PREVIEW_ORIGIN}/mcp/agent-resources.md): Human and machine entry points for Airscale agents and documentation consumers.`,
+    `- [Agent resource directory](${PREVIEW_ORIGIN}/mcp/agent-resources.md): Human and machine entry points for Airschool agents and documentation consumers.`,
     `- [Agent skill](${PREVIEW_ORIGIN}/skill.md): Capability, authentication, credit, and approval guidance for agents.`,
     ""
   );
@@ -251,7 +251,7 @@ function renderLlmsFullModel(model) {
     "## Machine-readable contracts",
     "",
     `- [MCP tool catalog](${PREVIEW_ORIGIN}/mcp/tools.md): Hosted Markdown for all 22 operational MCP tools.`,
-    `- [Agent resource directory](${PREVIEW_ORIGIN}/mcp/agent-resources.md): Human and machine entry points for Airscale agents and documentation consumers.`,
+    `- [Agent resource directory](${PREVIEW_ORIGIN}/mcp/agent-resources.md): Human and machine entry points for Airschool agents and documentation consumers.`,
     ""
   );
   return lines.join("\n");
@@ -266,15 +266,15 @@ metadata:
   source_sha: "${SOURCE_SHA}"
 ---
 
-# Airscale
+# Airschool
 
-Use Airscale to search for people and companies, enrich professional contact data, research the web, and create asynchronous exports. Start with free checks, keep paid samples narrow, and never execute a paid export without the user's explicit approval.
+Use Airschool to search for people and companies, enrich professional contact data, research the web, and create asynchronous exports. Start with free checks, keep paid samples narrow, and never execute a paid export without the user's explicit approval.
 
 ## Choose the correct interface
 
 - Use the HTTP API when application code needs direct request and response control. Start at ${PREVIEW_ORIGIN}/api-reference/api-overview.
-- Use the authenticated Airscale MCP product server at ${OPERATIONAL_MCP_URL} when an MCP client should call Airscale tools. Some tools spend workspace credits.
-- Use the documentation-scoped MCP at ${PREVIEW_ORIGIN}/mcp only for documentation. Its search and filesystem tools are read-only; submit_feedback can send documentation feedback. It does not execute Airscale product tools or consume Airscale credits.
+- Use the authenticated Airschool MCP product server at ${OPERATIONAL_MCP_URL} when an MCP client should call Airschool tools. Some tools spend workspace credits.
+- Use the documentation-scoped MCP at ${PREVIEW_ORIGIN}/mcp only for documentation. Its search and filesystem tools are read-only; submit_feedback can send documentation feedback. It does not execute Airschool product tools or consume Airschool credits.
 
 ## Authentication boundaries
 
@@ -284,7 +284,7 @@ Send the workspace API key as a Bearer token in the HTTP Authorization header. K
 
 ### MCP authentication
 
-Prefer browser OAuth in supported remote MCP clients. Header-capable local clients may read the Airscale API key from an environment variable and send it as the Authorization header. Never include an API key in MCP tool arguments.
+Prefer browser OAuth in supported remote MCP clients. Header-capable local clients may read the Airschool API key from an environment variable and send it as the Authorization header. Never include an API key in MCP tool arguments.
 
 ## Free-first workflow
 

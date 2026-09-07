@@ -1,10 +1,10 @@
 ---
-title: "Connect Airscale MCP to ChatGPT"
-description: "Connect ChatGPT to Airscale through browser OAuth and validate the connection without spending credits."
+title: "Connect Airschool MCP to ChatGPT"
+description: "Connect ChatGPT to Airschool through browser OAuth and validate the connection without spending credits."
 canonical: "https://airscale.mintlify.app/mcp/connect-airscale-mcp-to-chatgpt"
 ---
 
-Connect ChatGPT to your Airscale workspace with browser OAuth, then verify the connection with a free tool call before you approve any paid work.
+Connect ChatGPT to your Airschool workspace with browser OAuth, then verify the connection with a free tool call before you approve any paid work.
 
 ## MCP server URL
 
@@ -14,9 +14,9 @@ Use the official remote MCP endpoint exactly as shown:
 https://mcp.airscale.io/mcp
 ```
 
-## What ChatGPT can do with Airscale MCP
+## What ChatGPT can do with Airschool MCP
 
-Airscale MCP gives ChatGPT 22 typed tools that can:
+Airschool MCP gives ChatGPT 22 typed tools that can:
 
 - Check the authorized workspace's credit balance.
 - Search for people and companies.
@@ -29,11 +29,11 @@ Managed large contact enrichment is work-email-only in its current phase. Review
 
 ## Before you start
 
-You need an Airscale account with access to the intended workspace, API access enabled, and an active workspace credential. You also need a ChatGPT account and workspace where Developer mode is available; availability can depend on account and workspace policy.
+You need an Airschool account with access to the intended workspace, API access enabled, and an active workspace credential. You also need a ChatGPT account and workspace where Developer mode is available; availability can depend on account and workspace policy.
 
-ChatGPT uses browser OAuth for this connection: if prompted, the browser asks you to sign in to Airscale, choose a workspace, and authorize ChatGPT. OpenAI's [current plugin connection guide](https://developers.openai.com/plugins/deploy/connect-chatgpt) is the source for the navigation below.
+ChatGPT uses browser OAuth for this connection: if prompted, the browser asks you to sign in to Airschool, choose a workspace, and authorize ChatGPT. OpenAI's [current plugin connection guide](https://developers.openai.com/plugins/deploy/connect-chatgpt) is the source for the navigation below.
 
-After OAuth, Airscale's MCP server resolves the authorized workspace's current credential server-side on each tool call; ChatGPT neither receives nor stores that API key. Do not paste an Airscale API key into ChatGPT, prompts, or tool inputs.
+After OAuth, Airschool's MCP server resolves the authorized workspace's current credential server-side on each tool call; ChatGPT neither receives nor stores that API key. Do not paste an Airschool API key into ChatGPT, prompts, or tool inputs.
 
 ## Step-by-step setup
 
@@ -45,16 +45,16 @@ After OAuth, Airscale's MCP server resolves the authorized workspace's current c
     Go to **ChatGPT Plugins** and select the plus button.
   </Step>
   <Step title="Describe the connection">
-    Enter a user-facing name and description, such as **Airscale MCP** and a short description of its search, enrichment, research, and export tools.
+    Enter a user-facing name and description, such as **Airschool MCP** and a short description of its search, enrichment, research, and export tools.
   </Step>
-  <Step title="Connect and authorize Airscale">
-    Under **Connection**, choose the public endpoint option and enter `https://mcp.airscale.io/mcp`, including the `/mcp` path. Create the connection. If prompted, complete browser OAuth, sign in to Airscale, select the intended workspace, and return to ChatGPT. Do not enter an API key or static authorization value.
+  <Step title="Connect and authorize Airschool">
+    Under **Connection**, choose the public endpoint option and enter `https://mcp.airscale.io/mcp`, including the `/mcp` path. Create the connection. If prompted, complete browser OAuth, sign in to Airschool, select the intended workspace, and return to ChatGPT. Do not enter an API key or static authorization value.
   </Step>
   <Step title="Review discovered tools">
-    Review the tools and metadata discovered from the server. Confirm that the Airscale connection shows the expected 22 typed tools before testing it.
+    Review the tools and metadata discovered from the server. Confirm that the Airschool connection shows the expected 22 typed tools before testing it.
   </Step>
   <Step title="Verify the connection for free">
-    Start a new conversation, add the Airscale MCP connection from the tools menu, and run `airscale_check_credits` without another tool. A returned balance confirms tool discovery and authentication to an Airscale workspace without debiting credits, but it does not identify which workspace. Separately verify the workspace shown during OAuth before paid actions.
+    Start a new conversation, add the Airschool MCP connection from the tools menu, and run `airscale_check_credits` without another tool. A returned balance confirms tool discovery and authentication to an Airschool workspace without debiting credits, but it does not identify which workspace. Separately verify the workspace shown during OAuth before paid actions.
   </Step>
 </Steps>
 
@@ -62,13 +62,13 @@ After OAuth, Airscale's MCP server resolves the authorized workspace's current c
 
 The identities and domains below are synthetic.
 
-> Use `airscale_check_credits` to show my current Airscale credit balance. Do not call another tool.
+> Use `airscale_check_credits` to show my current Airschool credit balance. Do not call another tool.
 
-This is the free connection test. A returned balance confirms tool discovery and authentication to an Airscale workspace without debiting credits. It does not identify which workspace; verify the workspace shown during OAuth before paid actions.
+This is the free connection test. A returned balance confirms tool discovery and authentication to an Airschool workspace without debiting credits. It does not identify which workspace; verify the workspace shown during OAuth before paid actions.
 
 > Count people named Jordan Example who work at `northstar.example`. Do not run a paid search.
 
-> Plan an Airscale search for up to five companies matching `sample-company.test`. Show the proposed Airscale tool, arguments, and maximum cost, then wait for my approval.
+> Plan an Airschool search for up to five companies matching `sample-company.test`. Show the proposed Airschool tool, arguments, and maximum cost, then wait for my approval.
 
 For a complete staged sequence, follow the [safe MCP workflow](/mcp/how-to-use-the-airscale-mcp).
 
@@ -86,7 +86,7 @@ Paid export starts fail closed until `confirm_credit_spend` is explicitly `true`
 
 ## Refreshing tools
 
-If Airscale tools or metadata are stale, open the connection in **ChatGPT Plugins**, select **Refresh**, confirm the advertised metadata changed, then start a new conversation and add the connection again from the tools menu.
+If Airschool tools or metadata are stale, open the connection in **ChatGPT Plugins**, select **Refresh**, confirm the advertised metadata changed, then start a new conversation and add the connection again from the tools menu.
 
 ## Troubleshooting
 
@@ -95,10 +95,10 @@ If Airscale tools or metadata are stale, open the connection in **ChatGPT Plugin
     Open **Settings → Security and login** and look for **Developer mode**. Availability can depend on account and workspace policy, so ask the workspace administrator to check policy if the control is unavailable.
   </Accordion>
   <Accordion title="The connection cannot be created">
-    Confirm the exact public endpoint, including the `/mcp` path. Complete Airscale browser authorization if prompted, return to ChatGPT, and review any connection or discovered-tool errors before retrying.
+    Confirm the exact public endpoint, including the `/mcp` path. Complete Airschool browser authorization if prompted, return to ChatGPT, and review any connection or discovered-tool errors before retrying.
   </Accordion>
   <Accordion title="Authentication succeeds but a tool fails">
-    Confirm that the selected Airscale workspace has API access, an active workspace credential, and enough credits for the proposed paid tool. Run `airscale_check_credits` before retrying.
+    Confirm that the selected Airschool workspace has API access, an active workspace credential, and enough credits for the proposed paid tool. Run `airscale_check_credits` before retrying.
   </Accordion>
   <Accordion title="An export remains queued">
     Poll `airscale_get_export_status` with the same identifier and the returned `poll_after_seconds`. Do not create another paid job.
@@ -107,10 +107,10 @@ If Airscale tools or metadata are stale, open the connection in **ChatGPT Plugin
 
 ## Security note
 
-Authorize only the Airscale workspace you intend to use. Keep secrets out of chats and tool inputs, review every proposed paid action, and remove the Airscale MCP connection when it is no longer needed.
+Authorize only the Airschool workspace you intend to use. Keep secrets out of chats and tool inputs, review every proposed paid action, and remove the Airschool MCP connection when it is no longer needed.
 
 ## Need help?
 
 - Review the [MCP tool catalog](/mcp/tools) for exact schemas and credit behavior.
 - Use the [safe MCP workflow](/mcp/how-to-use-the-airscale-mcp) before running a search or export.
-- Read the [Airscale MCP server overview](/mcp/airscale-mcp-server) for authentication and security guidance.
+- Read the [Airschool MCP server overview](/mcp/airscale-mcp-server) for authentication and security guidance.

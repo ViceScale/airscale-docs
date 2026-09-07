@@ -1,9 +1,9 @@
 export const baseSpec = {
   openapi: "3.1.0",
   info: {
-    title: "Airscale Public API",
+    title: "Airschool Public API",
     version: "2026-08-30",
-    description: "Search, enrich, and resolve public business data with Airscale.",
+    description: "Search, enrich, and resolve public business data with Airschool.",
     "x-airscale-source-repository": "ViceScale/airscale-code",
     "x-airscale-source-sha": "8606866a5fb1f9405a94d49cfa9fbddaf4aaf431"
   },
@@ -22,7 +22,7 @@ export const baseSpec = {
         type: "http",
         scheme: "bearer",
         bearerFormat: "API key",
-        description: "Use an Airscale workspace API key. Never expose the key in client-side code."
+        description: "Use an Airschool workspace API key. Never expose the key in client-side code."
       }
     },
     schemas: {
@@ -102,7 +102,7 @@ export const baseSpec = {
       LinkedInPersonUrl: {
         type: "string",
         minLength: 1,
-        description: "A recognized LinkedIn person-profile URL or identifier. Airscale normalizes supported profile inputs.",
+        description: "A recognized LinkedIn person-profile URL or identifier. Airschool normalizes supported profile inputs.",
         example: "https://www.linkedin.com/in/example-person-000000"
       },
       SuccessEmail: {

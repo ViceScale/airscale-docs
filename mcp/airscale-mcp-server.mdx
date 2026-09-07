@@ -1,10 +1,10 @@
 ---
-title: "Airscale MCP Server"
-description: "Connect Airscale to your AI assistant and prospect without leaving the chat."
+title: "Airschool MCP Server"
+description: "Connect Airschool to your AI assistant and prospect without leaving the chat."
 canonical: "https://airscale.mintlify.app/mcp/airscale-mcp-server"
 ---
 
-Airscale MCP gives compatible AI assistants a concise, typed interface for prospecting through conversation while keeping authentication and paid actions explicit.
+Airschool MCP gives compatible AI assistants a concise, typed interface for prospecting through conversation while keeping authentication and paid actions explicit.
 
 ## MCP server URL
 
@@ -12,7 +12,7 @@ Airscale MCP gives compatible AI assistants a concise, typed interface for prosp
 https://mcp.airscale.io/mcp
 ```
 
-This remote Streamable HTTP server works with hosted assistants and trusted developer clients. For hosted clients, OAuth is preferred and uses browser sign-in. The Airscale MCP server resolves the authorized workspace credential server-side; the client neither receives nor stores the API key.
+This remote Streamable HTTP server works with hosted assistants and trusted developer clients. For hosted clients, OAuth is preferred and uses browser sign-in. The Airschool MCP server resolves the authorized workspace credential server-side; the client neither receives nor stores the API key.
 
 Trusted header-capable developer clients must load `AIRSCALE_API_KEY` from a protected runtime environment or secret manager. Never place a literal API key in a prompt or tool argument, source or browser code, or a shell command or shell history.
 
@@ -24,13 +24,13 @@ Trusted header-capable developer clients must load `AIRSCALE_API_KEY` from a pro
 4. Select and verify the intended workspace.
 5. Run `airscale_check_credits` as the free connection check before any paid tool.
 
-The credit check confirms authentication to an Airscale workspace without debiting credits, but it does not identify which workspace. Verify the workspace selected during OAuth—or the workspace that owns a developer credential—before paid actions.
+The credit check confirms authentication to an Airschool workspace without debiting credits, but it does not identify which workspace. Verify the workspace selected during OAuth—or the workspace that owns a developer credential—before paid actions.
 
 ## Setup walkthroughs
 
 - [ChatGPT setup guide](/mcp/connect-airscale-mcp-to-chatgpt)
 - [Claude setup guide](/mcp/connect-airscale-mcp-to-claude)
-- [Airscale MCP workflow](/mcp/how-to-use-the-airscale-mcp)
+- [Airschool MCP workflow](/mcp/how-to-use-the-airscale-mcp)
 
 These guides contain the client-specific connection steps; this page keeps the shared server contract in one place.
 
@@ -106,7 +106,7 @@ Start once. While status is `queued` or `running`, poll status for the same expo
 
 ## Security notes
 
-- OAuth keeps workspace credential resolution server-side; the hosted client does not receive or store the Airscale API key.
+- OAuth keeps workspace credential resolution server-side; the hosted client does not receive or store the Airschool API key.
 - Header-capable developer clients should read `AIRSCALE_API_KEY` only from a protected runtime environment or secret manager.
 - Never put a literal key in prompts, tool arguments, source control, browser code, shell commands, or shell history.
 - Verify the intended workspace before paid actions because a credit balance alone does not identify it.
@@ -120,7 +120,7 @@ Start once. While status is `queued` or `running`, poll status for the same expo
   <Accordion title="The client cannot authenticate">
     For OAuth, restart browser sign-in and verify the intended workspace. For a header-capable developer client, confirm that its protected runtime can read the configured secret.
   </Accordion>
-  <Accordion title="The Airscale tools do not appear">
+  <Accordion title="The Airschool tools do not appear">
     Confirm that the server URL is exactly `https://mcp.airscale.io/mcp`, then disconnect and reconnect so the client refreshes all 22 tools.
   </Accordion>
   <Accordion title="A request reports insufficient credits">

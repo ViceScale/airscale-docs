@@ -1,7 +1,7 @@
 {
   "schemaVersion": "1.0",
-  "name": "Airscale MCP tools",
-  "description": "Browse all 22 typed tools exposed by the Airscale MCP server.",
+  "name": "Airschool MCP tools",
+  "description": "Browse all 22 typed tools exposed by the Airschool MCP server.",
   "serverUrl": "https://mcp.airscale.io/mcp",
   "toolCount": 22,
   "sourceSha": "b06ea2c46276f8415a97721f6901437ce07f13fa",

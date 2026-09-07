@@ -1,10 +1,10 @@
 ---
-title: "Connect Airscale MCP to Claude"
-description: "Connect Claude clients to Airscale with hosted OAuth or a protected Claude Code authorization header."
+title: "Connect Airschool MCP to Claude"
+description: "Connect Claude clients to Airschool with hosted OAuth or a protected Claude Code authorization header."
 canonical: "https://airscale.mintlify.app/mcp/connect-airscale-mcp-to-claude"
 ---
 
-Connect Claude to your Airscale workspace through hosted remote OAuth where supported, or configure Claude Code with a protected environment-backed header.
+Connect Claude to your Airschool workspace through hosted remote OAuth where supported, or configure Claude Code with a protected environment-backed header.
 
 ## MCP server URL
 
@@ -14,9 +14,9 @@ Use the official remote MCP endpoint exactly as shown:
 https://mcp.airscale.io/mcp
 ```
 
-## What Claude can do with Airscale MCP
+## What Claude can do with Airschool MCP
 
-Airscale MCP gives Claude 22 typed tools that can:
+Airschool MCP gives Claude 22 typed tools that can:
 
 - Check the authorized workspace's credit balance.
 - Search for people and companies.
@@ -29,9 +29,9 @@ Managed large contact enrichment is work-email-only in its current phase. Review
 
 ## Before you start
 
-You need an Airscale account with access to the intended workspace, API access enabled, and an active workspace credential.
+You need an Airschool account with access to the intended workspace, API access enabled, and an active workspace credential.
 
-Claude web and desktop clients can use remote OAuth in the browser where supported by the Claude account and client. Each hosted user signs in to Airscale and authorizes a workspace.
+Claude web and desktop clients can use remote OAuth in the browser where supported by the Claude account and client. Each hosted user signs in to Airschool and authorizes a workspace.
 
 Claude Code can instead use a protected authorization header sourced from an environment variable. Hosted OAuth and Claude Code header authentication are separate connection methods. Never put the credential in a prompt or MCP tool argument.
 
@@ -47,30 +47,30 @@ Individual Free, Pro, or Max accounts can add a custom connector directly. A Fre
   <Step title="Open connector settings">
     Sign in to Claude web or desktop and open **Customize → Connectors**. Use the current connectors or integrations settings if the label differs.
   </Step>
-  <Step title="Add Airscale">
-    Choose the control to add a custom connector, name it **Airscale MCP**, and enter `https://mcp.airscale.io/mcp` as the remote server URL.
+  <Step title="Add Airschool">
+    Choose the control to add a custom connector, name it **Airschool MCP**, and enter `https://mcp.airscale.io/mcp` as the remote server URL.
   </Step>
-  <Step title="Authorize your Airscale workspace">
-    Continue to the browser sign-in, authenticate with Airscale, select the intended workspace, approve access, and return to Claude.
+  <Step title="Authorize your Airschool workspace">
+    Continue to the browser sign-in, authenticate with Airschool, select the intended workspace, approve access, and return to Claude.
   </Step>
   <Step title="Enable the tools">
-    Select Airscale MCP for a new conversation and confirm that Claude can see its tools.
+    Select Airschool MCP for a new conversation and confirm that Claude can see its tools.
   </Step>
 </Steps>
 
 ### Claude Team and Enterprise
 
-For Claude Team or Enterprise, an Owner or Primary Owner must add Airscale through **Custom → Web** before members can connect.
+For Claude Team or Enterprise, an Owner or Primary Owner must add Airschool through **Custom → Web** before members can connect.
 
 <Steps>
   <Step title="Owner adds the organization connector">
     Open **Organization settings → Connectors**, choose **Add**, hover over **Custom**, select **Web**, and enter `https://mcp.airscale.io/mcp`. Add the connector to the organization.
   </Step>
-  <Step title="Each member authorizes Airscale">
-    Each member opens **Customize → Connectors**, finds Airscale MCP, clicks **Connect**, and authenticates with their own Airscale account in the browser.
+  <Step title="Each member authorizes Airschool">
+    Each member opens **Customize → Connectors**, finds Airschool MCP, clicks **Connect**, and authenticates with their own Airschool account in the browser.
   </Step>
   <Step title="Each member enables the tools">
-    Select Airscale MCP and the tools needed for the conversation. Organization approval makes the connector available; it does not share an Owner's Airscale authorization with members.
+    Select Airschool MCP and the tools needed for the conversation. Organization approval makes the connector available; it does not share an Owner's Airschool authorization with members.
   </Step>
 </Steps>
 
@@ -108,13 +108,13 @@ Inside Claude Code, run `/mcp` to inspect connection status and the available to
 
 The identities and domains below are synthetic.
 
-> Use `airscale_check_credits` to show my current Airscale credit balance. Do not call another tool.
+> Use `airscale_check_credits` to show my current Airschool credit balance. Do not call another tool.
 
-This is the free connection test. A returned balance confirms tool discovery and authentication to an Airscale workspace without debiting credits, but it does not identify which workspace. Hosted users must verify the OAuth-selected workspace, and Claude Code users must verify which workspace owns the configured credential before paid actions.
+This is the free connection test. A returned balance confirms tool discovery and authentication to an Airschool workspace without debiting credits, but it does not identify which workspace. Hosted users must verify the OAuth-selected workspace, and Claude Code users must verify which workspace owns the configured credential before paid actions.
 
-> Use Airscale MCP to count people named Taylor Example at `northstar.example`. Do not run a paid search.
+> Use Airschool MCP to count people named Taylor Example at `northstar.example`. Do not run a paid search.
 
-> Plan an Airscale search for up to five companies matching `sample-company.test`. Show the proposed Airscale tool, arguments, and maximum cost, then wait for my approval.
+> Plan an Airschool search for up to five companies matching `sample-company.test`. Show the proposed Airschool tool, arguments, and maximum cost, then wait for my approval.
 
 For a complete staged sequence, follow the [safe MCP workflow](/mcp/how-to-use-the-airscale-mcp).
 
@@ -132,16 +132,16 @@ Paid export starts fail closed until `confirm_credit_spend` is explicitly `true`
 
 ## Refreshing tools
 
-If Airscale tools are stale or missing, refresh or reconnect the hosted connector and start a new conversation. In Claude Code, verify the environment and server with `claude mcp list`, then use `/mcp` to inspect the refreshed connection.
+If Airschool tools are stale or missing, refresh or reconnect the hosted connector and start a new conversation. In Claude Code, verify the environment and server with `claude mcp list`, then use `/mcp` to inspect the refreshed connection.
 
 ## Troubleshooting
 
 <AccordionGroup>
   <Accordion title="Hosted connector controls are unavailable">
-    Confirm that the Claude client and account support remote MCP connectors. In Team or Enterprise, ask an Owner or Primary Owner to add Airscale before each member connects their own account.
+    Confirm that the Claude client and account support remote MCP connectors. In Team or Enterprise, ask an Owner or Primary Owner to add Airschool before each member connects their own account.
   </Accordion>
   <Accordion title="OAuth opens but the connection stays pending">
-    Complete the Airscale browser sign-in, wait for the authorization confirmation, and return to Claude. Reconnect while signed in to the intended workspace if the state does not update.
+    Complete the Airschool browser sign-in, wait for the authorization confirmation, and return to Claude. Reconnect while signed in to the intended workspace if the state does not update.
   </Accordion>
   <Accordion title="Claude Code reports an authentication error">
     Confirm that the environment variable is available to the Claude Code process and that the project configuration uses the `Bearer` scheme. Do not print the value while debugging.
@@ -153,10 +153,10 @@ If Airscale tools are stale or missing, refresh or reconnect the hosted connecto
 
 ## Security note
 
-Hosted Claude users should authorize only the Airscale workspace they intend to use. Claude Code users should keep the environment value out of version control, prompts, and tool inputs. For either method, review every proposed paid action and remove access when it is no longer needed.
+Hosted Claude users should authorize only the Airschool workspace they intend to use. Claude Code users should keep the environment value out of version control, prompts, and tool inputs. For either method, review every proposed paid action and remove access when it is no longer needed.
 
 ## Need help?
 
 - Review the [MCP tool catalog](/mcp/tools) for exact schemas and credit behavior.
 - Use the [safe MCP workflow](/mcp/how-to-use-the-airscale-mcp) before running a search or export.
-- Read the [Airscale MCP server overview](/mcp/airscale-mcp-server) for authentication and security guidance.
+- Read the [Airschool MCP server overview](/mcp/airscale-mcp-server) for authentication and security guidance.
