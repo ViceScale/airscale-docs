@@ -600,8 +600,8 @@ const DURABLE_OPERATION_GUIDANCE = {
   "api-reference/find-companies": [/6 requests per second/i, /0\.1 credits per returned company/i, /zero returned rows cost zero credits/i, /when `next_cursor` is not `null`.*send the exact value unchanged as `cursor`/is, /10,000 companies/i],
   "api-reference/find-companies/filter-values": [/free and has no request body/i, /6 requests per second/i, /`q` parameter takes precedence/i],
   "api-reference/airsearch": [/300 requests per minute/i, /1 credit/i, /`not_found` and `timeout` are not charged/i, /reservation is settled only for `success`/i, /initial-stage timeout.*`504 Gateway Timeout`/i],
-  "api-reference/post-likers": [/synchronous/i, /one credit/i, /Idempotency-Key/i, /next_cursor/i, /provider.*pinned/i, /failed.*refunded/i],
-  "api-reference/post-commenters": [/synchronous/i, /one credit/i, /Idempotency-Key/i, /next_cursor/i, /provider.*pinned/i, /failed.*refunded/i],
+  "api-reference/post-likers": [/synchronous/i, /one credit/i, /next_cursor/i, /provider.*pinned/i, /failed.*refunded/i, /response.*lost.*again/i],
+  "api-reference/post-commenters": [/synchronous/i, /one credit/i, /next_cursor/i, /provider.*pinned/i, /failed.*refunded/i, /response.*lost.*again/i],
   "api-reference/job-change-monitors/create": [/before retrying/i, /signing_secret/i, /Verify webhook signatures/i],
   "api-reference/job-change-monitors/list": [/unread event count/i, /read-only/i],
   "api-reference/job-change-monitors/get": [/latest 200 events/i, /removed_at/i],
@@ -618,5 +618,11 @@ test("operation wrappers retain durable rate, credit, retry, and asynchronous gu
   for (const [page, patterns] of Object.entries(DURABLE_OPERATION_GUIDANCE)) {
     const { body } = readPage(page);
     for (const pattern of patterns) assert.match(body, pattern, `${page} must retain ${pattern}`);
+  }
+});
+
+test("post engagement pages do not expose a public idempotency header", () => {
+  for (const page of ["api-reference/post-likers", "api-reference/post-commenters"]) {
+    assert.doesNotMatch(readPage(page).body, /Idempotency-Key/i, `${page} must omit the public idempotency header`);
   }
 });
