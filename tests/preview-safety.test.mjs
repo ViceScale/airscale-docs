@@ -84,7 +84,7 @@ test("package toolchain pins local Mint and YAML validation dependencies", () =>
 
 test("every current content page declares its preview-host canonical", () => {
   const files = mdxFiles("api-reference");
-  assert.equal(files.length, 30);
+  assert.equal(files.length, 32);
 
   for (const path of files) {
     const source = readFileSync(path, "utf8");

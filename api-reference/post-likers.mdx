@@ -1,0 +1,24 @@
+---
+title: "Post likers"
+description: "Retrieve and enrich people who liked a LinkedIn post."
+canonical: "https://airscale.mintlify.app/api-reference/post-likers"
+openapi: "/openapi.json POST /v1/post-likers"
+---
+
+Retrieve one synchronous page of people who liked a LinkedIn post, with public profile fields enriched for each returned engagement.
+
+<Note>
+Each returned engagement reserves one credit for profile enrichment. A successful enrichment consumes one credit; `not_found` and `error` outcomes remain in the page and are refunded, so they have zero net credit cost.
+</Note>
+
+Omit `cursor` on the first request. When `pagination.next_cursor` is not `null`, send that value unchanged with the same post URL and `limit` to fetch the next page. Cursors are bound to the workspace, post, engagement type, and page size, and expire within 15 minutes.
+
+The provider selected for the first page is pinned into the cursor. If a later page returns `503` with `code: "provider_page_unavailable"`, retry the same cursor. The API retries that page against the pinned provider and does not silently switch providers or reorder the result set.
+
+Every request requires a UUID `Idempotency-Key`. Reuse the same key and request body if a response is lost; reusing the key with different input returns `409`.
+
+After `429 Too Many Requests`, wait and retry with bounded exponential backoff. A failed profile enrichment is refunded, and a failed provider page is not charged.
+
+## Next step
+
+Use [Post commenters](/api-reference/post-commenters) to retrieve people who commented on a LinkedIn post, or read the [post engagement workflow](/docs/likers-commenters) for the dashboard flow.

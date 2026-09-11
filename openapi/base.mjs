@@ -5,13 +5,14 @@ export const baseSpec = {
     version: "2026-09-11",
     description: "Search, enrich, resolve public business data, and monitor job changes with Airschool.",
     "x-airscale-source-repository": "ViceScale/airscale-code",
-    "x-airscale-source-sha": "84596e27f6a2042195d0705a6bcfa2bc31e81af5"
+    "x-airscale-source-sha": "4e25a163dc94bd8ee34431b164670e9811a013ee"
   },
   servers: [{ url: "https://api.airscale.io", description: "Production" }],
   tags: [
     { name: "Search and discovery", description: "Search people, companies, and the web." },
     { name: "Contact data", description: "Find professional and personal contact data." },
     { name: "Profiles and reverse lookup", description: "Extract profiles or resolve a person from known contact data." },
+    { name: "Post engagement", description: "Retrieve and enrich people who liked or commented on LinkedIn posts." },
     { name: "Job change monitoring", description: "Track LinkedIn profiles and receive job-change events." },
     { name: "Account", description: "Inspect workspace account state." }
   ],
