@@ -1,0 +1,18 @@
+---
+title: "Remove a profile from a job-change monitor"
+description: "Stop checking one profile while preserving its event history."
+canonical: "https://airscale.mintlify.app/api-reference/job-change-monitors/profiles/remove"
+openapi: "/openapi.json DELETE /v1/job-change-monitors/{monitor_id}/profiles/{profile_id}"
+---
+
+Soft-remove one profile with its `monitor_id` and `profile_id`. The profile no longer participates in future checks, but its record and event history remain available.
+
+<Info>
+To monitor the same LinkedIn URL again, call [Add profiles](/api-reference/job-change-monitors/profiles/add). Airschool creates a new profile ID and baseline instead of reusing the removed history.
+</Info>
+
+The returned profile has `status: "removed"` and a `removed_at` timestamp. Removing a profile does not pause the monitor or affect its other active profiles.
+
+## Next step
+
+Use [List job-change events](/api-reference/job-change-monitors/events) to review the retained history.

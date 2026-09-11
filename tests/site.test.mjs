@@ -32,6 +32,22 @@ const GROUPS = [
     "api-reference/reverse-email",
     "api-reference/reverse-phone"
   ]],
+  ["Miscellaneous", [
+    "api-reference/miscale-news/whatsapp-check",
+    "api-reference/miscale-news/meta-ads",
+    "api-reference/miscale-news/email-verifier"
+  ], { expanded: false }],
+  ["Job change monitoring", [
+    "api-reference/job-change-monitors/create",
+    "api-reference/job-change-monitors/list",
+    "api-reference/job-change-monitors/get",
+    "api-reference/job-change-monitors/update",
+    "api-reference/job-change-monitors/delete",
+    "api-reference/job-change-monitors/profiles/add",
+    "api-reference/job-change-monitors/profiles/remove",
+    "api-reference/job-change-monitors/events",
+    "api-reference/job-change-monitors/events/read"
+  ]],
   ["Account", ["api-reference/credit-count"]]
 ];
 
@@ -39,7 +55,7 @@ const PAGE_PATHS = GROUPS.flatMap(([, pages]) => pages);
 const GUIDE_PATHS = ["api-reference/api-overview", "api-reference/authentication", "api-reference/rate-limits"];
 const EXPECTED_API_TAB = {
   tab: "API Reference",
-  groups: GROUPS.map(([group, pages]) => ({ group, pages }))
+  groups: GROUPS.map(([group, pages, options]) => ({ group, pages, ...(options ?? {}) }))
 };
 const CANONICAL_SYMBOL_PATH = "m41.368,46.100 2.600,7.900c.700,2.200,2.800,3.600,5,3.600,1.700,0,3.300-.800,4.300-2.200,1-1.400,1.200-3.200.700-4.800l-4.700-13.400-7.900,8.900Zm-26.800-7.200 9-26.600c.5-1.400,1.800-2.300,3.300-2.300s2.800.900,3.300,2.300l6.200,18.500,7.800-8.800-4.600-13.100c-1.900-5.400-7-8.900-12.600-8.900-5.700,0-10.700,3.600-12.600,8.900L.367,48.800c-.700,2.100-.400,4.300.900,6.100,1.300,1.800,3.300,2.800,5.500,2.800,1.900,0,3.700-.800,5-2.200l13.800-15.400,2.800,8.300c.200.700.700,1.300,1.200,1.800s1.200.800,1.900,1c.700.100,1.500.1,2.100-.1.700-.200,1.300-.600,1.800-1.200l21-24.300c.5-.600.900-1.400,1-2.400.200-.9.100-1.9-.1-2.600l-1.700-4.800c-.1-.4-.3-.7-.5-.8-.1-.1-.2-.2-.4-.2h-.4c-.2.1-.5.200-.8.600l-19.800,22.500-2.700-8.100c-.8-3.200-4.900-3.800-7-1.400l-9.9,10.700";
 function readPage(path) {
@@ -455,7 +471,7 @@ test("authorization bearer checks reject unsafe token formats", () => {
   }
 });
 
-test("navigation contains exactly the approved 18 pages in five groups", () => {
+test("navigation contains exactly the approved 30 pages in seven groups", () => {
   const config = JSON.parse(readFileSync("docs.json", "utf8"));
   assert.deepEqual(config.navigation.tabs.find(({ tab }) => tab === "API Reference"), EXPECTED_API_TAB);
   assert.deepEqual(mdxPagePaths(), [...PAGE_PATHS].sort());
@@ -472,18 +488,20 @@ test("every public operation has one exact OpenAPI-backed wrapper", () => {
   for (const page of PAGE_PATHS) {
     const { body, frontmatter } = readPage(page);
     if (!frontmatter.openapi) continue;
+    const expectedBinding = expectedBindings.get(page);
+    if (!expectedBinding) continue;
     actualBindings.set(page, frontmatter.openapi);
-    assert.equal(frontmatter.openapi, expectedBindings.get(page), `${page} must bind its catalog operation`);
-    assert.doesNotMatch(body, /<Badge\b[^>]*>\s*(?:GET|POST)\s*<\/Badge>/i);
+    assert.equal(frontmatter.openapi, expectedBinding, `${page} must bind its catalog operation`);
+    assert.doesNotMatch(body, /<Badge\b[^>]*>\s*(?:GET|POST|PATCH|DELETE)\s*<\/Badge>/i);
     assert.doesNotMatch(body, /^## (?:Request|Response|Errors|Examples)$/m);
     assert.doesNotMatch(body, /<CodeGroup>|^```/m);
     assert.match(body, /^## Next step$/m, `${page} must retain next-step guidance`);
     assert.ok(body.split(/\n\s*\n/)[0].trim(), `${page} must retain a purpose statement`);
   }
 
-  assert.equal(expectedBindings.size, 15);
-  assert.equal(new Set(expectedBindings.values()).size, 15);
-  assert.equal(actualBindings.size, 15);
+  assert.equal(expectedBindings.size, 24);
+  assert.equal(new Set(expectedBindings.values()).size, 24);
+  assert.equal(actualBindings.size, 24);
   assert.deepEqual(actualBindings, expectedBindings);
 });
 
@@ -494,7 +512,7 @@ test("every wrapper binding resolves to its cataloged generated OpenAPI operatio
 
   for (const entry of catalog.operations) {
     const binding = readPage(entry.page).frontmatter.openapi;
-    const match = binding?.match(/^\/openapi\.json (GET|POST) (\/v1\/[^\s]+)$/);
+    const match = binding?.match(/^\/openapi\.json (GET|POST|PATCH|DELETE) (\/v1\/[^\s]+)$/);
     assert.ok(match, `${entry.page} must have a parseable OpenAPI binding`);
     const [, method, path] = match;
     const operation = specification.paths?.[path]?.[method.toLowerCase()];
@@ -503,7 +521,7 @@ test("every wrapper binding resolves to its cataloged generated OpenAPI operatio
     resolved.push(`${method} ${path}`);
   }
 
-  assert.equal(new Set(resolved).size, 15);
+  assert.equal(new Set(resolved).size, 24);
   assert.deepEqual(resolved.sort(), catalog.operations.map(({ method, path }) => `${method} ${path}`).sort());
 });
 
@@ -577,11 +595,20 @@ const DURABLE_OPERATION_GUIDANCE = {
   "api-reference/find-people/count": [/Count is free/i, /same `query`/i, /no pagination fields/i, /6 requests per second/i],
   "api-reference/find-companies": [/6 requests per second/i, /0\.1 credits per returned company/i, /zero returned rows cost zero credits/i, /when `next_cursor` is not `null`.*send the exact value unchanged as `cursor`/is, /10,000 companies/i],
   "api-reference/find-companies/filter-values": [/free and has no request body/i, /6 requests per second/i, /`q` parameter takes precedence/i],
-  "api-reference/airsearch": [/300 requests per minute/i, /1 credit/i, /`not_found` and `timeout` are not charged/i, /reservation is settled only for `success`/i, /initial-stage timeout.*`504 Gateway Timeout`/i]
+  "api-reference/airsearch": [/300 requests per minute/i, /1 credit/i, /`not_found` and `timeout` are not charged/i, /reservation is settled only for `success`/i, /initial-stage timeout.*`504 Gateway Timeout`/i],
+  "api-reference/job-change-monitors/create": [/Idempotency-Key/i, /signing_secret/i, /Verify webhook signatures/i],
+  "api-reference/job-change-monitors/list": [/unread event count/i, /read-only/i],
+  "api-reference/job-change-monitors/get": [/latest 200 events/i, /removed_at/i],
+  "api-reference/job-change-monitors/update": [/admission/i, /frequency/i, /pausing clears/i],
+  "api-reference/job-change-monitors/delete": [/permanently removes/i, /cannot be undone/i],
+  "api-reference/job-change-monitors/profiles/add": [/already active/i, /new baseline/i, /500-profile limit/i],
+  "api-reference/job-change-monitors/profiles/remove": [/Soft-remove/i, /event history/i, /new profile ID/i],
+  "api-reference/job-change-monitors/events": [/next_cursor/i, /external_id/i, /durable fallback/i],
+  "api-reference/job-change-monitors/events/read": [/event ID/i, /read_at/i, /does not delete/i]
 };
 
 test("operation wrappers retain durable rate, credit, retry, and asynchronous guidance", () => {
-  assert.equal(Object.keys(DURABLE_OPERATION_GUIDANCE).length, 15);
+  assert.equal(Object.keys(DURABLE_OPERATION_GUIDANCE).length, 24);
   for (const [page, patterns] of Object.entries(DURABLE_OPERATION_GUIDANCE)) {
     const { body } = readPage(page);
     for (const pattern of patterns) assert.match(body, pattern, `${page} must retain ${pattern}`);

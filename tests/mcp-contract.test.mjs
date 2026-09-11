@@ -402,13 +402,16 @@ test("core tools map one-to-one to approved OpenAPI operations and batch tools m
   const batchTools = manifest.tools.filter(({ operationId }) => !operationId);
   const operations = JSON.parse(readFileSync("contracts/public-api-operations.json", "utf8")).operations;
   const operationsById = new Map(operations.map((operation) => [operation.operationId, operation]));
+  const coreOperationIds = new Set(tools.map(({ operationId }) => operationId));
+  const coreOperations = operations.filter(({ operationId }) => coreOperationIds.has(operationId));
 
   assert.equal(tools.length, 15);
   assert.equal(new Set(tools.map(({ operationId }) => operationId)).size, 15);
+  assert.equal(coreOperations.length, 15);
   assert.deepEqual(Object.fromEntries(tools.map(({ name, operationId }) => [name, operationId])), CORE_OPERATION_IDS);
   assert.deepEqual(
     tools.map(({ operationId }) => operationId).sort(),
-    operations.map(({ operationId }) => operationId).sort()
+    coreOperations.map(({ operationId }) => operationId).sort()
   );
   for (const tool of tools) {
     assert.equal(tool.apiPage, `/${operationsById.get(tool.operationId).page}`);

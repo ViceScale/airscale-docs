@@ -2,16 +2,17 @@ export const baseSpec = {
   openapi: "3.1.0",
   info: {
     title: "Airschool Public API",
-    version: "2026-08-30",
-    description: "Search, enrich, and resolve public business data with Airschool.",
+    version: "2026-09-11",
+    description: "Search, enrich, resolve public business data, and monitor job changes with Airschool.",
     "x-airscale-source-repository": "ViceScale/airscale-code",
-    "x-airscale-source-sha": "8606866a5fb1f9405a94d49cfa9fbddaf4aaf431"
+    "x-airscale-source-sha": "d2efbd9a2ac627af1dc8c1c865dea20a3bdb70a8"
   },
   servers: [{ url: "https://api.airscale.io", description: "Production" }],
   tags: [
     { name: "Search and discovery", description: "Search people, companies, and the web." },
     { name: "Contact data", description: "Find professional and personal contact data." },
     { name: "Profiles and reverse lookup", description: "Extract profiles or resolve a person from known contact data." },
+    { name: "Job change monitoring", description: "Track LinkedIn profiles and receive job-change events." },
     { name: "Account", description: "Inspect workspace account state." }
   ],
   security: [{ bearerAuth: [] }],
@@ -175,6 +176,92 @@ export const baseSpec = {
         properties: {
           error: { type: "string" },
           message: { type: "string" }
+        }
+      },
+      JobChangeError: {
+        type: "object",
+        additionalProperties: false,
+        required: ["error"],
+        properties: {
+          error: {
+            type: "object",
+            additionalProperties: false,
+            required: ["code", "message"],
+            properties: {
+              code: { type: "string" },
+              message: { type: "string" }
+            }
+          }
+        }
+      },
+      JobChangeMonitor: {
+        type: "object",
+        additionalProperties: false,
+        required: [
+          "id", "name", "frequency", "status", "next_check_at", "last_successful_check_at",
+          "created_at", "updated_at", "webhook_url", "webhook_configured", "active_profile_count", "unread_event_count"
+        ],
+        properties: {
+          id: { type: "string", format: "uuid" },
+          name: { type: "string" },
+          frequency: { type: "string", enum: ["weekly", "every_30_days", "every_90_days"] },
+          status: { type: "string", enum: ["active", "paused", "running", "setup_failed"] },
+          next_check_at: { type: ["string", "null"], format: "date-time" },
+          last_successful_check_at: { type: ["string", "null"], format: "date-time" },
+          created_at: { type: "string", format: "date-time" },
+          updated_at: { type: "string", format: "date-time" },
+          webhook_url: { type: ["string", "null"], format: "uri" },
+          webhook_configured: { type: "boolean" },
+          active_profile_count: { type: "integer", minimum: 0, maximum: 500 },
+          unread_event_count: { type: "integer", minimum: 0 }
+        }
+      },
+      JobChangeProfile: {
+        type: "object",
+        additionalProperties: false,
+        required: ["id", "linkedin_url", "external_id", "status", "removed_at"],
+        properties: {
+          id: { type: "string", format: "uuid" },
+          linkedin_url: { type: "string", format: "uri" },
+          external_id: { type: ["string", "null"] },
+          status: { type: "string", enum: ["pending", "baseline", "checked", "unavailable", "failed", "removed"] },
+          removed_at: { type: ["string", "null"], format: "date-time" }
+        }
+      },
+      JobChangeEmployer: {
+        type: "object",
+        additionalProperties: false,
+        required: ["identity", "name"],
+        properties: {
+          identity: { type: ["string", "null"] },
+          name: { type: ["string", "null"] }
+        }
+      },
+      JobChangeEvent: {
+        type: "object",
+        additionalProperties: false,
+        required: [
+          "id", "monitor_id", "profile_id", "linkedin_url", "external_id", "previous_employer",
+          "new_employer", "detected_at", "read_at"
+        ],
+        properties: {
+          id: { type: "string", format: "uuid" },
+          monitor_id: { type: "string", format: "uuid" },
+          profile_id: { type: "string", format: "uuid" },
+          linkedin_url: { type: "string", format: "uri" },
+          external_id: { type: ["string", "null"] },
+          previous_employer: { $ref: "#/components/schemas/JobChangeEmployer" },
+          new_employer: {
+            type: "object",
+            additionalProperties: false,
+            required: ["identity", "name"],
+            properties: {
+              identity: { type: "string" },
+              name: { type: ["string", "null"] }
+            }
+          },
+          detected_at: { type: "string", format: "date-time" },
+          read_at: { type: ["string", "null"], format: "date-time" }
         }
       }
     },

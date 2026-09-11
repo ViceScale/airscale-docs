@@ -1,6 +1,6 @@
 {
   "sourceRepository": "ViceScale/airscale-code",
-  "sourceSha": "8606866a5fb1f9405a94d49cfa9fbddaf4aaf431",
+  "sourceSha": "d2efbd9a2ac627af1dc8c1c865dea20a3bdb70a8",
   "operations": [
     {
       "method": "POST",
@@ -136,6 +136,87 @@
       "tag": "Search and discovery",
       "sourcePage": "airsearch",
       "sourceFiles": ["workers/public-api/airsearch-worker.js", "workers/public-api/airsearch-worker.test.mjs"]
+    },
+    {
+      "method": "POST",
+      "path": "/v1/job-change-monitors",
+      "operationId": "createJobChangeMonitor",
+      "page": "api-reference/job-change-monitors/create",
+      "tag": "Job change monitoring",
+      "sourcePage": "job-change-monitors",
+      "sourceFiles": ["workers/public-api/job-change-monitors.js", "workers/public-api/job-change-monitors.test.mjs", "api/src/routes/publicJobChangeMonitors.ts", "api/src/routes/publicJobChangeMonitors.test.ts"]
+    },
+    {
+      "method": "GET",
+      "path": "/v1/job-change-monitors",
+      "operationId": "listJobChangeMonitors",
+      "page": "api-reference/job-change-monitors/list",
+      "tag": "Job change monitoring",
+      "sourcePage": "job-change-monitors",
+      "sourceFiles": ["workers/public-api/job-change-monitors.js", "workers/public-api/job-change-monitors.test.mjs", "api/src/routes/publicJobChangeMonitors.ts", "api/src/routes/publicJobChangeMonitors.test.ts"]
+    },
+    {
+      "method": "GET",
+      "path": "/v1/job-change-monitors/{monitor_id}",
+      "operationId": "getJobChangeMonitor",
+      "page": "api-reference/job-change-monitors/get",
+      "tag": "Job change monitoring",
+      "sourcePage": "job-change-monitors",
+      "sourceFiles": ["workers/public-api/job-change-monitors.js", "workers/public-api/job-change-monitors.test.mjs", "api/src/routes/publicJobChangeMonitors.ts", "api/src/routes/publicJobChangeMonitors.test.ts"]
+    },
+    {
+      "method": "PATCH",
+      "path": "/v1/job-change-monitors/{monitor_id}",
+      "operationId": "updateJobChangeMonitor",
+      "page": "api-reference/job-change-monitors/update",
+      "tag": "Job change monitoring",
+      "sourcePage": "job-change-monitors",
+      "sourceFiles": ["workers/public-api/job-change-monitors.js", "workers/public-api/job-change-monitors.test.mjs", "api/src/routes/publicJobChangeMonitors.ts", "api/src/routes/publicJobChangeMonitors.test.ts"]
+    },
+    {
+      "method": "DELETE",
+      "path": "/v1/job-change-monitors/{monitor_id}",
+      "operationId": "deleteJobChangeMonitor",
+      "page": "api-reference/job-change-monitors/delete",
+      "tag": "Job change monitoring",
+      "sourcePage": "job-change-monitors",
+      "sourceFiles": ["workers/public-api/job-change-monitors.js", "workers/public-api/job-change-monitors.test.mjs", "api/src/routes/publicJobChangeMonitors.ts", "api/src/routes/publicJobChangeMonitors.test.ts"]
+    },
+    {
+      "method": "POST",
+      "path": "/v1/job-change-monitors/{monitor_id}/profiles",
+      "operationId": "addJobChangeMonitorProfiles",
+      "page": "api-reference/job-change-monitors/profiles/add",
+      "tag": "Job change monitoring",
+      "sourcePage": "job-change-monitors",
+      "sourceFiles": ["workers/public-api/job-change-monitors.js", "workers/public-api/job-change-monitors.test.mjs", "api/src/routes/publicJobChangeMonitors.ts", "api/src/routes/publicJobChangeMonitors.test.ts"]
+    },
+    {
+      "method": "DELETE",
+      "path": "/v1/job-change-monitors/{monitor_id}/profiles/{profile_id}",
+      "operationId": "removeJobChangeMonitorProfile",
+      "page": "api-reference/job-change-monitors/profiles/remove",
+      "tag": "Job change monitoring",
+      "sourcePage": "job-change-monitors",
+      "sourceFiles": ["workers/public-api/job-change-monitors.js", "workers/public-api/job-change-monitors.test.mjs", "api/src/routes/publicJobChangeMonitors.ts", "api/src/routes/publicJobChangeMonitors.test.ts"]
+    },
+    {
+      "method": "GET",
+      "path": "/v1/job-change-monitors/{monitor_id}/events",
+      "operationId": "listJobChangeMonitorEvents",
+      "page": "api-reference/job-change-monitors/events",
+      "tag": "Job change monitoring",
+      "sourcePage": "job-change-monitors",
+      "sourceFiles": ["workers/public-api/job-change-monitors.js", "workers/public-api/job-change-monitors.test.mjs", "api/src/routes/publicJobChangeMonitors.ts", "api/src/routes/publicJobChangeMonitors.test.ts"]
+    },
+    {
+      "method": "POST",
+      "path": "/v1/job-change-monitors/{monitor_id}/events/{event_id}/read",
+      "operationId": "markJobChangeEventRead",
+      "page": "api-reference/job-change-monitors/events/read",
+      "tag": "Job change monitoring",
+      "sourcePage": "job-change-monitors",
+      "sourceFiles": ["workers/public-api/job-change-monitors.js", "workers/public-api/job-change-monitors.test.mjs", "api/src/routes/publicJobChangeMonitors.ts", "api/src/routes/publicJobChangeMonitors.test.ts"]
     }
   ]
 }

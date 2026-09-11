@@ -1,0 +1,18 @@
+---
+title: "List job-change monitors"
+description: "List the monitors and unread-event counts in a workspace."
+canonical: "https://airscale.mintlify.app/api-reference/job-change-monitors/list"
+openapi: "/openapi.json GET /v1/job-change-monitors"
+---
+
+List every job-change monitor in the authenticated workspace. Each monitor includes its current status, schedule, active profile count, and unread event count.
+
+<Info>
+This operation is read-only and does not change schedules or consume monitoring credits.
+</Info>
+
+Use the monitor `id` returned here with the detail, update, profile, and event operations. A paused monitor remains in the list so you can resume it later.
+
+## Next step
+
+Open [Get a monitor](/api-reference/job-change-monitors/get) for its profiles and latest events.

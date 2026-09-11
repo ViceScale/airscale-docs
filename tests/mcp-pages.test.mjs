@@ -50,6 +50,29 @@ const API_REFERENCE_TAB = {
       ]
     },
     {
+      group: "Miscellaneous",
+      pages: [
+        "api-reference/miscale-news/whatsapp-check",
+        "api-reference/miscale-news/meta-ads",
+        "api-reference/miscale-news/email-verifier"
+      ],
+      expanded: false
+    },
+    {
+      group: "Job change monitoring",
+      pages: [
+        "api-reference/job-change-monitors/create",
+        "api-reference/job-change-monitors/list",
+        "api-reference/job-change-monitors/get",
+        "api-reference/job-change-monitors/update",
+        "api-reference/job-change-monitors/delete",
+        "api-reference/job-change-monitors/profiles/add",
+        "api-reference/job-change-monitors/profiles/remove",
+        "api-reference/job-change-monitors/events",
+        "api-reference/job-change-monitors/events/read"
+      ]
+    },
+    {
       group: "Account",
       pages: ["api-reference/credit-count"]
     }

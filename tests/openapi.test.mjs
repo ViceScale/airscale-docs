@@ -15,7 +15,7 @@ import { join } from "node:path";
 import { tmpdir } from "node:os";
 import { runCli, writeOpenApiAtomic } from "../scripts/build-openapi.mjs";
 
-const SOURCE_SHA = "8606866a5fb1f9405a94d49cfa9fbddaf4aaf431";
+const SOURCE_SHA = "d2efbd9a2ac627af1dc8c1c865dea20a3bdb70a8";
 const ACCOUNT_CONTACT_PATHS = new Set([
   "/v1/credits",
   "/v1/email",
@@ -128,7 +128,7 @@ function requestValidator(schema) {
 }
 
 function errorStatuses(operation) {
-  return Object.keys(operation.responses).filter((status) => !["200", "202"].includes(status));
+  return Object.keys(operation.responses).filter((status) => !["200", "201", "202"].includes(status));
 }
 
 function assertUnauthorizedReference(operation) {
@@ -312,8 +312,8 @@ function assertAtomicFailure({ failure, initialContents }) {
 test("base spec identifies the Airschool public API", () => {
   assert.equal(baseSpec.openapi, "3.1.0");
   assert.equal(baseSpec.info.title, "Airschool Public API");
-  assert.equal(baseSpec.info.version, "2026-08-30");
-  assert.equal(baseSpec.info.description, "Search, enrich, and resolve public business data with Airschool.");
+  assert.equal(baseSpec.info.version, "2026-09-11");
+  assert.equal(baseSpec.info.description, "Search, enrich, resolve public business data, and monitor job changes with Airschool.");
   assert.equal(baseSpec.info["x-airscale-source-repository"], "ViceScale/airscale-code");
   assert.equal(baseSpec.info["x-airscale-source-sha"], SOURCE_SHA);
   assert.deepEqual(baseSpec.servers, [
@@ -324,6 +324,7 @@ test("base spec identifies the Airschool public API", () => {
     { name: "Search and discovery", description: "Search people, companies, and the web." },
     { name: "Contact data", description: "Find professional and personal contact data." },
     { name: "Profiles and reverse lookup", description: "Extract profiles or resolve a person from known contact data." },
+    { name: "Job change monitoring", description: "Track LinkedIn profiles and receive job-change events." },
     { name: "Account", description: "Inspect workspace account state." }
   ]);
   assert.deepEqual(baseSpec.components.securitySchemes.bearerAuth, {
@@ -1674,7 +1675,7 @@ test("example safety rejects routable identities while allowing approved documen
   assert.throws(() => assertExampleDataSafety([{ sources: ["https://airscale.io"] }]), /non-approved example web host/);
 });
 
-test("committed OpenAPI 3.1 artifact matches the pinned 15-operation catalog exactly", async () => {
+test("committed OpenAPI 3.1 artifact matches the pinned 24-operation catalog exactly", async () => {
   const parsed = await SwaggerParser.validate("openapi.json");
   const generated = buildSpec();
   const committed = committedSpec();
@@ -1685,17 +1686,19 @@ test("committed OpenAPI 3.1 artifact matches the pinned 15-operation catalog exa
   assert.deepEqual(committed.servers, baseSpec.servers);
   assert.deepEqual(committed.security, baseSpec.security);
   assert.equal(approvedCatalog.sourceSha, SOURCE_SHA);
-  assert.equal(approvedCatalog.operations.length, 15);
+  assert.equal(approvedCatalog.operations.length, 24);
 
   const actualOperations = [];
   for (const [path, pathItem] of Object.entries(committed.paths)) {
-    for (const method of ["get", "post"]) {
+    for (const method of ["get", "post", "patch", "delete"]) {
       if (pathItem[method]) actualOperations.push({ method: method.toUpperCase(), path, operation: pathItem[method] });
     }
   }
-  assert.equal(actualOperations.length, 15);
-  assert.equal(actualOperations.filter(({ method }) => method === "POST").length, 14);
-  assert.equal(actualOperations.filter(({ method }) => method === "GET").length, 1);
+  assert.equal(actualOperations.length, 24);
+  assert.equal(actualOperations.filter(({ method }) => method === "POST").length, 17);
+  assert.equal(actualOperations.filter(({ method }) => method === "GET").length, 4);
+  assert.equal(actualOperations.filter(({ method }) => method === "PATCH").length, 1);
+  assert.equal(actualOperations.filter(({ method }) => method === "DELETE").length, 2);
   assert.deepEqual(
     actualOperations.map(({ method, path }) => `${method} ${path}`).sort(),
     approvedCatalog.operations.map(({ method, path }) => `${method} ${path}`).sort()
@@ -1707,7 +1710,7 @@ test("committed OpenAPI 3.1 artifact matches the pinned 15-operation catalog exa
     assert.equal(operation.operationId, expected.operationId);
     assert.equal(operation.tags[0], expected.tag);
     assertPublicOperationMetadata(operation);
-    assert.ok(operation.responses["200"] || operation.responses["202"]);
+    assert.ok(operation.responses["200"] || operation.responses["201"] || operation.responses["202"]);
     assertUnauthorizedReference(operation);
   }
 

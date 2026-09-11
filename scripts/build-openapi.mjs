@@ -6,13 +6,15 @@ import { accountOperations } from "../openapi/operations/account.mjs";
 import { contactDataOperations } from "../openapi/operations/contact-data.mjs";
 import { profileLookupOperations } from "../openapi/operations/profile-lookup.mjs";
 import { searchDiscoveryOperations } from "../openapi/operations/search-discovery.mjs";
+import { jobChangeMonitorOperations } from "../openapi/operations/job-change-monitors.mjs";
 
 const defaultCatalog = JSON.parse(readFileSync(new URL("../contracts/public-api-operations.json", import.meta.url), "utf8"));
 const defaultOperationModules = [
   accountOperations,
   contactDataOperations,
   profileLookupOperations,
-  searchDiscoveryOperations
+  searchDiscoveryOperations,
+  jobChangeMonitorOperations
 ];
 const defaultOutputPath = fileURLToPath(new URL("../openapi.json", import.meta.url));
 const defaultFileIO = { closeSync, existsSync, fsyncSync, openSync, readFileSync, renameSync, unlinkSync, writeFileSync };
