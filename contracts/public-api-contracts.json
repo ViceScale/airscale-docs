@@ -1,6 +1,6 @@
 {
   "sourceRepository": "ViceScale/airscale-code",
-  "sourceSha": "d2efbd9a2ac627af1dc8c1c865dea20a3bdb70a8",
+  "sourceSha": "84596e27f6a2042195d0705a6bcfa2bc31e81af5",
   "operationCatalog": "contracts/public-api-operations.json",
   "pages": {
     "api-overview": {

@@ -5,7 +5,7 @@ export const baseSpec = {
     version: "2026-09-11",
     description: "Search, enrich, resolve public business data, and monitor job changes with Airschool.",
     "x-airscale-source-repository": "ViceScale/airscale-code",
-    "x-airscale-source-sha": "d2efbd9a2ac627af1dc8c1c865dea20a3bdb70a8"
+    "x-airscale-source-sha": "84596e27f6a2042195d0705a6bcfa2bc31e81af5"
   },
   servers: [{ url: "https://api.airscale.io", description: "Production" }],
   tags: [

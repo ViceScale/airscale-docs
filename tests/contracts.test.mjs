@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import test from "node:test";
 
-const EXPECTED_SOURCE_SHA = "d2efbd9a2ac627af1dc8c1c865dea20a3bdb70a8";
+const EXPECTED_SOURCE_SHA = "84596e27f6a2042195d0705a6bcfa2bc31e81af5";
 const EXPECTED_OPERATIONS = [
   ["POST", "/v1/credits", "getCredits", "api-reference/credit-count", "Account"],
   ["POST", "/v1/email", "findProfessionalEmail", "api-reference/email-finder", "Contact data"],
