@@ -11,55 +11,74 @@ import {
 } from "./helpers/content-safety.mjs";
 
 const GROUPS = [
-  ["Start here", ["api-reference/api-overview", "api-reference/authentication", "api-reference/rate-limits"]],
-  ["Search and discovery", [
+  { group: "Start here", pages: ["api-reference/api-overview", "api-reference/authentication", "api-reference/rate-limits"] },
+  { group: "Search and discovery", pages: [
     "api-reference/find-people",
     "api-reference/find-people/count",
     "api-reference/find-companies",
     "api-reference/find-companies/filter-values",
     "api-reference/airsearch"
-  ]],
-  ["Post engagement", [
+  ] },
+  { group: "Post engagement", pages: [
     "api-reference/post-likers",
     "api-reference/post-commenters"
-  ]],
-  ["Contact data", [
+  ] },
+  { group: "Contact data", pages: [
     "api-reference/email-finder",
     "api-reference/email-finder-(bulk)",
     "api-reference/mobile-finder",
     "api-reference/personal-email",
     "api-reference/people-url-finder"
-  ]],
-  ["Profiles and reverse lookup", [
+  ] },
+  { group: "Profiles and reverse lookup", pages: [
     "api-reference/extract-people-profile",
     "api-reference/extract-company-profile",
     "api-reference/reverse-email",
     "api-reference/reverse-phone"
-  ]],
-  ["Miscellaneous", [
-    "api-reference/miscale-news/whatsapp-check",
-    "api-reference/miscale-news/meta-ads",
-    "api-reference/miscale-news/email-verifier"
-  ], { expanded: false }],
-  ["Job change monitoring", [
-    "api-reference/job-change-monitors/create",
-    "api-reference/job-change-monitors/list",
-    "api-reference/job-change-monitors/get",
-    "api-reference/job-change-monitors/update",
-    "api-reference/job-change-monitors/delete",
-    "api-reference/job-change-monitors/profiles/add",
-    "api-reference/job-change-monitors/profiles/remove",
-    "api-reference/job-change-monitors/events",
-    "api-reference/job-change-monitors/events/read"
-  ]],
-  ["Account", ["api-reference/credit-count"]]
+  ] },
+  {
+    group: "Additional endpoints",
+    pages: [
+      {
+        group: "Miscellaneous",
+        pages: [
+          "api-reference/miscale-news/whatsapp-check",
+          "api-reference/miscale-news/meta-ads",
+          "api-reference/miscale-news/email-verifier"
+        ],
+        expanded: false
+      },
+      {
+        group: "Job change monitoring",
+        pages: [
+          "api-reference/job-change-monitors/create",
+          "api-reference/job-change-monitors/list",
+          "api-reference/job-change-monitors/get",
+          "api-reference/job-change-monitors/update",
+          "api-reference/job-change-monitors/delete",
+          "api-reference/job-change-monitors/profiles/add",
+          "api-reference/job-change-monitors/profiles/remove",
+          "api-reference/job-change-monitors/events",
+          "api-reference/job-change-monitors/events/read"
+        ],
+        expanded: false
+      }
+    ]
+  },
+  { group: "Account", pages: ["api-reference/credit-count"] }
 ];
 
-const PAGE_PATHS = GROUPS.flatMap(([, pages]) => pages);
+function navigablePagePaths(groups) {
+  return groups.flatMap(({ pages }) => pages.flatMap((page) => (
+    typeof page === "string" ? [page] : navigablePagePaths([page])
+  )));
+}
+
+const PAGE_PATHS = navigablePagePaths(GROUPS);
 const GUIDE_PATHS = ["api-reference/api-overview", "api-reference/authentication", "api-reference/rate-limits"];
 const EXPECTED_API_TAB = {
   tab: "API Reference",
-  groups: GROUPS.map(([group, pages, options]) => ({ group, pages, ...(options ?? {}) }))
+  groups: GROUPS
 };
 const CANONICAL_SYMBOL_PATH = "m41.368,46.100 2.600,7.900c.700,2.200,2.800,3.600,5,3.600,1.700,0,3.300-.800,4.300-2.200,1-1.400,1.200-3.200.700-4.800l-4.700-13.400-7.900,8.900Zm-26.800-7.200 9-26.600c.5-1.400,1.800-2.300,3.300-2.300s2.800.900,3.300,2.300l6.200,18.500,7.800-8.800-4.600-13.100c-1.900-5.400-7-8.900-12.600-8.900-5.700,0-10.700,3.600-12.600,8.900L.367,48.800c-.700,2.100-.400,4.300.900,6.100,1.300,1.800,3.300,2.800,5.500,2.800,1.900,0,3.700-.800,5-2.200l13.800-15.400,2.800,8.300c.200.700.700,1.300,1.200,1.800s1.200.800,1.900,1c.700.100,1.500.1,2.100-.1.700-.200,1.300-.600,1.800-1.200l21-24.300c.5-.600.900-1.400,1-2.400.200-.9.100-1.9-.1-2.600l-1.700-4.800c-.1-.4-.3-.7-.5-.8-.1-.1-.2-.2-.4-.2h-.4c-.2.1-.5.200-.8.600l-19.800,22.500-2.700-8.100c-.8-3.200-4.900-3.800-7-1.400l-9.9,10.700";
 function readPage(path) {
@@ -475,9 +494,10 @@ test("authorization bearer checks reject unsafe token formats", () => {
   }
 });
 
-test("navigation contains exactly the approved 32 pages in eight groups", () => {
+test("navigation contains exactly the approved 32 pages with collapsed additional endpoint groups", () => {
   const config = JSON.parse(readFileSync("docs.json", "utf8"));
   assert.deepEqual(config.navigation.tabs.find(({ tab }) => tab === "API Reference"), EXPECTED_API_TAB);
+  assert.equal(config.interaction?.drilldown, false);
   assert.deepEqual(mdxPagePaths(), [...PAGE_PATHS].sort());
 });
 

@@ -105,10 +105,16 @@ const AGENT_OUTPUT_PATHS = [
   "skill.md"
 ];
 
+function navigablePagePaths(groups) {
+  return groups.flatMap(({ pages }) => pages.flatMap((page) => (
+    typeof page === "string" ? [page] : navigablePagePaths([page])
+  )));
+}
+
 function agentFixtureInputs() {
   const docsConfig = JSON.parse(readFileSync("docs.json", "utf8"));
   const pagePaths = docsConfig.navigation.tabs.flatMap(({ groups }) => (
-    groups.flatMap(({ pages }) => pages)
+    navigablePagePaths(groups)
   ));
   return {
     docsConfig,
@@ -2985,7 +2991,7 @@ test("agent renderers publish only the platform-supported custom agent files", (
   assert.doesNotMatch(outputs["llms.txt"], /^## MCP & Agents — (?:Start|Connect|Use|For agents)$/mu);
 
   const navigationPaths = inputs.docsConfig.navigation.tabs.flatMap(({ groups }) => (
-    groups.flatMap(({ pages }) => pages)
+    navigablePagePaths(groups)
   ));
   const pageDirectory = outputs["llms.txt"].slice(0, outputs["llms.txt"].indexOf("## Machine-readable contracts"));
   const indexLinks = pageDirectory.split("\n").flatMap((line) => {

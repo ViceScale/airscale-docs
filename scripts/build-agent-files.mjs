@@ -57,6 +57,25 @@ function assertSafeNavigationPath(value) {
   return value;
 }
 
+function navigationGroupEntries(tabName, group, seen, entries) {
+  const groupName = assertSafeText(group?.group, `${tabName} navigation group`, { maxLength: 120 });
+  if (!Array.isArray(group.pages) || group.pages.length === 0) {
+    throw new Error(`${tabName} / ${groupName} must define navigable pages`);
+  }
+  for (const page of group.pages) {
+    if (typeof page === "string") {
+      const path = assertSafeNavigationPath(page);
+      if (seen.has(path)) throw new Error(`duplicate navigable page: ${path}`);
+      seen.add(path);
+      entries.push({ tab: tabName, group: groupName, path });
+    } else if (isPlainObject(page)) {
+      navigationGroupEntries(tabName, page, seen, entries);
+    } else {
+      throw new Error(`${tabName} / ${groupName} contains an invalid navigation entry`);
+    }
+  }
+}
+
 function navigationEntries(docsConfig) {
   if (!isPlainObject(docsConfig)) throw new Error("docs.json must contain an object");
   assertSafeText(docsConfig.name, "docs.json name", { maxLength: 120 });
@@ -74,16 +93,7 @@ function navigationEntries(docsConfig) {
     const tabName = assertSafeText(tab?.tab, "navigation tab", { maxLength: 120 });
     if (!Array.isArray(tab.groups) || tab.groups.length === 0) throw new Error(`${tabName} must define navigation groups`);
     for (const group of tab.groups) {
-      const groupName = assertSafeText(group?.group, `${tabName} navigation group`, { maxLength: 120 });
-      if (!Array.isArray(group.pages) || group.pages.length === 0) {
-        throw new Error(`${tabName} / ${groupName} must define navigable pages`);
-      }
-      for (const rawPath of group.pages) {
-        const path = assertSafeNavigationPath(rawPath);
-        if (seen.has(path)) throw new Error(`duplicate navigable page: ${path}`);
-        seen.add(path);
-        entries.push({ tab: tabName, group: groupName, path });
-      }
+      navigationGroupEntries(tabName, group, seen, entries);
     }
   }
   return entries;
