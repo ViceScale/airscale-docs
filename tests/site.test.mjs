@@ -19,6 +19,10 @@ const GROUPS = [
     "api-reference/find-companies/filter-values",
     "api-reference/airsearch"
   ]],
+  ["Post engagement", [
+    "api-reference/post-likers",
+    "api-reference/post-commenters"
+  ]],
   ["Contact data", [
     "api-reference/email-finder",
     "api-reference/email-finder-(bulk)",
@@ -471,7 +475,7 @@ test("authorization bearer checks reject unsafe token formats", () => {
   }
 });
 
-test("navigation contains exactly the approved 30 pages in seven groups", () => {
+test("navigation contains exactly the approved 32 pages in eight groups", () => {
   const config = JSON.parse(readFileSync("docs.json", "utf8"));
   assert.deepEqual(config.navigation.tabs.find(({ tab }) => tab === "API Reference"), EXPECTED_API_TAB);
   assert.deepEqual(mdxPagePaths(), [...PAGE_PATHS].sort());
@@ -499,9 +503,9 @@ test("every public operation has one exact OpenAPI-backed wrapper", () => {
     assert.ok(body.split(/\n\s*\n/)[0].trim(), `${page} must retain a purpose statement`);
   }
 
-  assert.equal(expectedBindings.size, 24);
-  assert.equal(new Set(expectedBindings.values()).size, 24);
-  assert.equal(actualBindings.size, 24);
+  assert.equal(expectedBindings.size, 26);
+  assert.equal(new Set(expectedBindings.values()).size, 26);
+  assert.equal(actualBindings.size, 26);
   assert.deepEqual(actualBindings, expectedBindings);
 });
 
@@ -521,7 +525,7 @@ test("every wrapper binding resolves to its cataloged generated OpenAPI operatio
     resolved.push(`${method} ${path}`);
   }
 
-  assert.equal(new Set(resolved).size, 24);
+  assert.equal(new Set(resolved).size, 26);
   assert.deepEqual(resolved.sort(), catalog.operations.map(({ method, path }) => `${method} ${path}`).sort());
 });
 
@@ -596,6 +600,8 @@ const DURABLE_OPERATION_GUIDANCE = {
   "api-reference/find-companies": [/6 requests per second/i, /0\.1 credits per returned company/i, /zero returned rows cost zero credits/i, /when `next_cursor` is not `null`.*send the exact value unchanged as `cursor`/is, /10,000 companies/i],
   "api-reference/find-companies/filter-values": [/free and has no request body/i, /6 requests per second/i, /`q` parameter takes precedence/i],
   "api-reference/airsearch": [/300 requests per minute/i, /1 credit/i, /`not_found` and `timeout` are not charged/i, /reservation is settled only for `success`/i, /initial-stage timeout.*`504 Gateway Timeout`/i],
+  "api-reference/post-likers": [/synchronous/i, /one credit/i, /Idempotency-Key/i, /next_cursor/i, /provider.*pinned/i, /failed.*refunded/i],
+  "api-reference/post-commenters": [/synchronous/i, /one credit/i, /Idempotency-Key/i, /next_cursor/i, /provider.*pinned/i, /failed.*refunded/i],
   "api-reference/job-change-monitors/create": [/before retrying/i, /signing_secret/i, /Verify webhook signatures/i],
   "api-reference/job-change-monitors/list": [/unread event count/i, /read-only/i],
   "api-reference/job-change-monitors/get": [/latest 200 events/i, /removed_at/i],
@@ -608,7 +614,7 @@ const DURABLE_OPERATION_GUIDANCE = {
 };
 
 test("operation wrappers retain durable rate, credit, retry, and asynchronous guidance", () => {
-  assert.equal(Object.keys(DURABLE_OPERATION_GUIDANCE).length, 24);
+  assert.equal(Object.keys(DURABLE_OPERATION_GUIDANCE).length, 26);
   for (const [page, patterns] of Object.entries(DURABLE_OPERATION_GUIDANCE)) {
     const { body } = readPage(page);
     for (const pattern of patterns) assert.match(body, pattern, `${page} must retain ${pattern}`);

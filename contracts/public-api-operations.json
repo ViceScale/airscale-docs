@@ -1,6 +1,6 @@
 {
   "sourceRepository": "ViceScale/airscale-code",
-  "sourceSha": "84596e27f6a2042195d0705a6bcfa2bc31e81af5",
+  "sourceSha": "4e25a163dc94bd8ee34431b164670e9811a013ee",
   "operations": [
     {
       "method": "POST",
@@ -136,6 +136,42 @@
       "tag": "Search and discovery",
       "sourcePage": "airsearch",
       "sourceFiles": ["workers/public-api/airsearch-worker.js", "workers/public-api/airsearch-worker.test.mjs"]
+    },
+    {
+      "method": "POST",
+      "path": "/v1/post-likers",
+      "operationId": "listPostLikers",
+      "page": "api-reference/post-likers",
+      "tag": "Post engagement",
+      "sourcePage": "post-engagement",
+      "sourceFiles": [
+        "workers/public-api/post-engagement-worker.js",
+        "workers/public-api/post-engagement-worker.test.mjs",
+        "api/src/routes/publicPostEngagement.ts",
+        "api/src/routes/publicPostEngagement.test.ts",
+        "api/src/lib/publicPostEngagementService.ts",
+        "api/src/lib/publicPostEngagementService.test.ts",
+        "api/src/lib/publicPostEngagementBilling.ts",
+        "api/src/lib/publicPostEngagementBilling.test.ts"
+      ]
+    },
+    {
+      "method": "POST",
+      "path": "/v1/post-commenters",
+      "operationId": "listPostCommenters",
+      "page": "api-reference/post-commenters",
+      "tag": "Post engagement",
+      "sourcePage": "post-engagement",
+      "sourceFiles": [
+        "workers/public-api/post-engagement-worker.js",
+        "workers/public-api/post-engagement-worker.test.mjs",
+        "api/src/routes/publicPostEngagement.ts",
+        "api/src/routes/publicPostEngagement.test.ts",
+        "api/src/lib/publicPostEngagementService.ts",
+        "api/src/lib/publicPostEngagementService.test.ts",
+        "api/src/lib/publicPostEngagementBilling.ts",
+        "api/src/lib/publicPostEngagementBilling.test.ts"
+      ]
     },
     {
       "method": "POST",

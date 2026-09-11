@@ -80,6 +80,11 @@
 - [Company filter values](https://airscale.mintlify.app/api-reference/find-companies/filter-values.md): Search supported values for Find Companies filters.
 - [Airsearch](https://airscale.mintlify.app/api-reference/airsearch.md): Research the web and return structured answers with Airsearch.
 
+## API Reference — Post engagement
+
+- [Post likers](https://airscale.mintlify.app/api-reference/post-likers.md): Retrieve and enrich people who liked a LinkedIn post.
+- [Post commenters](https://airscale.mintlify.app/api-reference/post-commenters.md): Retrieve and enrich people who commented on a LinkedIn post.
+
 ## API Reference — Contact data
 
 - [Email finder](https://airscale.mintlify.app/api-reference/email-finder.md): Find a professional email address for one person.

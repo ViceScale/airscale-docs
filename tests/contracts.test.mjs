@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import test from "node:test";
 
-const EXPECTED_SOURCE_SHA = "84596e27f6a2042195d0705a6bcfa2bc31e81af5";
+const EXPECTED_SOURCE_SHA = "4e25a163dc94bd8ee34431b164670e9811a013ee";
 const EXPECTED_OPERATIONS = [
   ["POST", "/v1/credits", "getCredits", "api-reference/credit-count", "Account"],
   ["POST", "/v1/email", "findProfessionalEmail", "api-reference/email-finder", "Contact data"],
@@ -19,6 +19,8 @@ const EXPECTED_OPERATIONS = [
   ["POST", "/v1/find-companies", "findCompanies", "api-reference/find-companies", "Search and discovery"],
   ["GET", "/v1/find-companies/filter-values", "listFindCompanyFilterValues", "api-reference/find-companies/filter-values", "Search and discovery"],
   ["POST", "/v1/airsearch", "airsearch", "api-reference/airsearch", "Search and discovery"],
+  ["POST", "/v1/post-likers", "listPostLikers", "api-reference/post-likers", "Post engagement"],
+  ["POST", "/v1/post-commenters", "listPostCommenters", "api-reference/post-commenters", "Post engagement"],
   ["POST", "/v1/job-change-monitors", "createJobChangeMonitor", "api-reference/job-change-monitors/create", "Job change monitoring"],
   ["GET", "/v1/job-change-monitors", "listJobChangeMonitors", "api-reference/job-change-monitors/list", "Job change monitoring"],
   ["GET", "/v1/job-change-monitors/{monitor_id}", "getJobChangeMonitor", "api-reference/job-change-monitors/get", "Job change monitoring"],
@@ -46,6 +48,7 @@ const EXPECTED_PAGES = [
   "find-people",
   "find-companies",
   "airsearch",
+  "post-engagement",
   "job-change-monitors"
 ];
 
@@ -126,9 +129,25 @@ const EXPECTED_CONTRACTS = deepFreeze({
     ],
     sourceFiles: ["workers/public-api/find-companies-worker.js", "workers/public-api/find-companies-worker.test.mjs"]
   },
-  airsearch: {
+    airsearch: {
       endpoints: [{ method: "POST", path: "/v1/airsearch" }],
       sourceFiles: ["workers/public-api/airsearch-worker.js", "workers/public-api/airsearch-worker.test.mjs"]
+    },
+    "post-engagement": {
+      endpoints: [
+        { method: "POST", path: "/v1/post-likers" },
+        { method: "POST", path: "/v1/post-commenters" }
+      ],
+      sourceFiles: [
+        "workers/public-api/post-engagement-worker.js",
+        "workers/public-api/post-engagement-worker.test.mjs",
+        "api/src/routes/publicPostEngagement.ts",
+        "api/src/routes/publicPostEngagement.test.ts",
+        "api/src/lib/publicPostEngagementService.ts",
+        "api/src/lib/publicPostEngagementService.test.ts",
+        "api/src/lib/publicPostEngagementBilling.ts",
+        "api/src/lib/publicPostEngagementBilling.test.ts"
+      ]
     },
     "job-change-monitors": {
       endpoints: [
@@ -200,14 +219,14 @@ test("operation catalog preserves the approved operation order and routing metad
   const catalog = JSON.parse(readFileSync("contracts/public-api-operations.json", "utf8"));
   assert.equal(catalog.sourceRepository, "ViceScale/airscale-code");
   assert.equal(catalog.sourceSha, EXPECTED_SOURCE_SHA);
-  assert.equal(catalog.operations.length, 24);
+  assert.equal(catalog.operations.length, 26);
   assert.deepEqual(
     catalog.operations.map(({ method, path, operationId, page, tag }) => [method, path, operationId, page, tag]),
     EXPECTED_OPERATIONS
   );
-  assert.equal(new Set(catalog.operations.map(({ method, path }) => `${method} ${path}`)).size, 24);
-  assert.equal(new Set(catalog.operations.map(({ operationId }) => operationId)).size, 24);
-  assert.equal(new Set(catalog.operations.map(({ page }) => page)).size, 24);
+  assert.equal(new Set(catalog.operations.map(({ method, path }) => `${method} ${path}`)).size, 26);
+  assert.equal(new Set(catalog.operations.map(({ operationId }) => operationId)).size, 26);
+  assert.equal(new Set(catalog.operations.map(({ page }) => page)).size, 26);
 });
 
 test("operation catalog links each operation to matching source-page evidence", () => {

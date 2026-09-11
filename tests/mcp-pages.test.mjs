@@ -31,6 +31,13 @@ const API_REFERENCE_TAB = {
       ]
     },
     {
+      group: "Post engagement",
+      pages: [
+        "api-reference/post-likers",
+        "api-reference/post-commenters"
+      ]
+    },
+    {
       group: "Contact data",
       pages: [
         "api-reference/email-finder",
