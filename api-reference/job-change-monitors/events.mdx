@@ -1,0 +1,18 @@
+---
+title: "List job-change events"
+description: "Read cursor-paginated employer-change events for a monitor."
+canonical: "https://airscale.mintlify.app/api-reference/job-change-monitors/events"
+openapi: "/openapi.json GET /v1/job-change-monitors/{monitor_id}/events"
+---
+
+List job-change events for one monitor, newest first. Set `limit` from 1 to 100; when `next_cursor` is not `null`, send that value unchanged as `cursor` on the next request.
+
+<Note>
+An event is created when a checked profile's employer identity changes. The event includes your `external_id` when one was supplied for the profile.
+</Note>
+
+Events include the previous and new employer identities, detection time, and `read_at`. This endpoint is also the durable fallback when webhook delivery is delayed or unavailable.
+
+## Next step
+
+Use [Mark an event as read](/api-reference/job-change-monitors/events/read) after your application has processed an event.

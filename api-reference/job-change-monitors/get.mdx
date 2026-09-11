@@ -1,0 +1,18 @@
+---
+title: "Get a job-change monitor"
+description: "Retrieve one monitor, its profiles, and its latest events."
+canonical: "https://airscale.mintlify.app/api-reference/job-change-monitors/get"
+openapi: "/openapi.json GET /v1/job-change-monitors/{monitor_id}"
+---
+
+Retrieve one monitor by `monitor_id`. The response contains all profiles, including soft-removed profiles, and up to the latest 200 events ordered newest first.
+
+<Note>
+Use the profile `status` and `removed_at` fields to distinguish an active profile from one removed from future checks. Historical events remain available after a profile is removed.
+</Note>
+
+The monitor object reports `next_check_at` and `last_successful_check_at` as ISO 8601 timestamps. A paused monitor has no next check scheduled.
+
+## Next step
+
+Use [List job-change events](/api-reference/job-change-monitors/events) when you need cursor pagination beyond the latest 200 events.

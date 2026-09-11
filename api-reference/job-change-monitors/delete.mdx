@@ -1,0 +1,18 @@
+---
+title: "Delete a job-change monitor"
+description: "Permanently remove a monitor and its stored monitoring data."
+canonical: "https://airscale.mintlify.app/api-reference/job-change-monitors/delete"
+openapi: "/openapi.json DELETE /v1/job-change-monitors/{monitor_id}"
+---
+
+Delete a monitor by `monitor_id`. This permanently removes the monitor, its profile baselines, and its events from the workspace.
+
+<Warning>
+Deletion cannot be undone. Remove individual profiles instead when you need to stop checking a contact while retaining its event history.
+</Warning>
+
+The operation returns `{ "ok": true }` after the monitor and its cascaded data are deleted.
+
+## Next step
+
+Use [List job-change monitors](/api-reference/job-change-monitors/list) to verify the monitor no longer appears.

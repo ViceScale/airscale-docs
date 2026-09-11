@@ -1,0 +1,18 @@
+---
+title: "Add profiles to a job-change monitor"
+description: "Add personal LinkedIn profiles while preserving existing baselines."
+canonical: "https://airscale.mintlify.app/api-reference/job-change-monitors/profiles/add"
+openapi: "/openapi.json POST /v1/job-change-monitors/{monitor_id}/profiles"
+---
+
+Add one to 500 personal LinkedIn profiles to an existing monitor. Airschool ignores a URL that is already active and reports how many profiles were actually added.
+
+<Note>
+Adding a URL after it was removed creates a new profile and a new baseline. The previous profile's events remain associated with its original profile ID.
+</Note>
+
+The response includes the newly created profile records, `added_profile_count`, and the monitor's resulting `active_profile_count`. The 500-profile limit applies to the monitor's active profiles.
+
+## Next step
+
+Use [Get a monitor](/api-reference/job-change-monitors/get) to inspect each profile's baseline and scan status.

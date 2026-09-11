@@ -1,0 +1,18 @@
+---
+title: "Update a job-change monitor"
+description: "Change a monitor's name or frequency, or pause and resume checks."
+canonical: "https://airscale.mintlify.app/api-reference/job-change-monitors/update"
+openapi: "/openapi.json PATCH /v1/job-change-monitors/{monitor_id}"
+---
+
+Update one or more monitor fields with `PATCH`. Send a new `name`, a supported `frequency`, an `action` of `pause`, or an `action` of `resume`.
+
+<Warning>
+Resuming requires at least one active profile and reruns monitoring admission. Changing the frequency updates the next check when the monitor is resumed; pausing clears the scheduled check.
+</Warning>
+
+The response returns the complete updated monitor, including its active profile and unread event counts.
+
+## Next step
+
+Use [Add profiles](/api-reference/job-change-monitors/profiles/add) before resuming a monitor with no active profiles.

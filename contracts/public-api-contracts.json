@@ -1,6 +1,6 @@
 {
   "sourceRepository": "ViceScale/airscale-code",
-  "sourceSha": "8606866a5fb1f9405a94d49cfa9fbddaf4aaf431",
+  "sourceSha": "d2efbd9a2ac627af1dc8c1c865dea20a3bdb70a8",
   "operationCatalog": "contracts/public-api-operations.json",
   "pages": {
     "api-overview": {
@@ -72,6 +72,20 @@
     "airsearch": {
       "endpoints": [{ "method": "POST", "path": "/v1/airsearch" }],
       "sourceFiles": ["workers/public-api/airsearch-worker.js", "workers/public-api/airsearch-worker.test.mjs"]
+    },
+    "job-change-monitors": {
+      "endpoints": [
+        { "method": "POST", "path": "/v1/job-change-monitors" },
+        { "method": "GET", "path": "/v1/job-change-monitors" },
+        { "method": "GET", "path": "/v1/job-change-monitors/{monitor_id}" },
+        { "method": "PATCH", "path": "/v1/job-change-monitors/{monitor_id}" },
+        { "method": "DELETE", "path": "/v1/job-change-monitors/{monitor_id}" },
+        { "method": "POST", "path": "/v1/job-change-monitors/{monitor_id}/profiles" },
+        { "method": "DELETE", "path": "/v1/job-change-monitors/{monitor_id}/profiles/{profile_id}" },
+        { "method": "GET", "path": "/v1/job-change-monitors/{monitor_id}/events" },
+        { "method": "POST", "path": "/v1/job-change-monitors/{monitor_id}/events/{event_id}/read" }
+      ],
+      "sourceFiles": ["workers/public-api/job-change-monitors.js", "workers/public-api/job-change-monitors.test.mjs", "api/src/routes/publicJobChangeMonitors.ts", "api/src/routes/publicJobChangeMonitors.test.ts"]
     }
   }
 }

@@ -13,7 +13,13 @@ const document = await SwaggerParser.dereference(structuredClone(rawDocument));
 
 const BODYLESS_OPERATIONS = new Set([
   "GET /v1/find-companies/filter-values",
-  "POST /v1/credits"
+  "POST /v1/credits",
+  "GET /v1/job-change-monitors",
+  "GET /v1/job-change-monitors/{monitor_id}",
+  "DELETE /v1/job-change-monitors/{monitor_id}",
+  "DELETE /v1/job-change-monitors/{monitor_id}/profiles/{profile_id}",
+  "GET /v1/job-change-monitors/{monitor_id}/events",
+  "POST /v1/job-change-monitors/{monitor_id}/events/{event_id}/read"
 ]);
 const PRIVATE_IDENTITY_FIELDS = new Set(["provider", "verifier", "provider_internal"]);
 const PROVIDER_IDENTITIES = /\b(?:Prospeo|Icypeas|RapidAPI|Leadmagic|SalesQL|Limadata|ContactOut|Wiza|Forager|Bounceban|Findymail|Trykitt|Kitt|A-?Leads|Explorium|OpenAI|Serper|Jina|HistoricalImport|EmailLogCache|Supabase|Bubble|Durable Object)\b/i;
@@ -39,7 +45,7 @@ function assertValid(schema, value, label) {
 function operationsFrom(openapiDocument) {
   const operations = [];
   for (const [path, pathItem] of Object.entries(openapiDocument.paths ?? {})) {
-    for (const method of ["get", "post"]) {
+    for (const method of ["get", "post", "patch", "delete"]) {
       if (pathItem[method]) {
         operations.push({
           method: method.toUpperCase(),
@@ -386,7 +392,7 @@ function assertCodeSampleShapes(operation, label) {
 test("all public operation examples validate against their dereferenced schemas", (t) => {
   assertAuthoredExampleShapes(rawDocument);
   const operations = operationsFrom(document);
-  assert.equal(operations.length, 15, "expected exactly 15 GET/POST public operations");
+  assert.equal(operations.length, 24, "expected exactly 24 public operations");
 
   const exampleValues = [];
   const seenSchemas = new Set();
@@ -428,7 +434,7 @@ test("all public operation examples validate against their dereferenced schemas"
           `${operationLabel} response ${status} ${mediaType}`,
           exampleValues
         );
-        if (status === "200" || status === "202") successExamples += count;
+        if (status === "200" || status === "201" || status === "202") successExamples += count;
         responseExamples += count;
         collectSchemaExamples(
           content.schema,
