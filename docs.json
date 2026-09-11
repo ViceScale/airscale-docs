@@ -191,6 +191,10 @@
             ]
           },
           {
+            "group": "Miscale News",
+            "pages": []
+          },
+          {
             "group": "Account",
             "pages": [
               "api-reference/credit-count"
