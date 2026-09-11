@@ -5,7 +5,7 @@
     "version": "2026-09-11",
     "description": "Search, enrich, resolve public business data, and monitor job changes with Airschool.",
     "x-airscale-source-repository": "ViceScale/airscale-code",
-    "x-airscale-source-sha": "d2efbd9a2ac627af1dc8c1c865dea20a3bdb70a8"
+    "x-airscale-source-sha": "84596e27f6a2042195d0705a6bcfa2bc31e81af5"
   },
   "servers": [
     {
@@ -3912,23 +3912,9 @@
           "Job change monitoring"
         ],
         "summary": "Create a job-change monitor",
-        "description": "Creates an active monitor for 1–500 personal LinkedIn profiles. If webhook_url is set, the 202 response includes a signing_secret exactly once.",
+        "description": "Creates a new active monitor for 1–500 personal LinkedIn profiles. If webhook_url is set, the 202 response includes a signing_secret exactly once. Each request creates a new monitor; inspect existing monitors before retrying an unknown response.",
         "x-airscale-rate-limit": "120 requests per minute per workspace.",
         "x-airscale-credit-cost": "Monitoring admission checks the workspace balance; the per-profile check price is configured for the workspace.",
-        "parameters": [
-          {
-            "name": "Idempotency-Key",
-            "in": "header",
-            "required": true,
-            "description": "A unique 8–200 character key for this create request. Reusing it with the same body returns the original monitor.",
-            "schema": {
-              "type": "string",
-              "minLength": 8,
-              "maxLength": 200
-            },
-            "example": "crm-champions-2026-09-11"
-          }
-        ],
         "requestBody": {
           "required": true,
           "description": "Choose a check frequency and provide at least one personal LinkedIn profile.",
@@ -4078,7 +4064,7 @@
                         }
                       ],
                       "signing_secret": "example-signing-secret",
-                      "signing_secret_warning": "Store this secret now. It is not returned on idempotent replays."
+                      "signing_secret_warning": "Store this secret now. It is not returned again."
                     }
                   }
                 }
@@ -4100,16 +4086,6 @@
           },
           "402": {
             "description": "The workspace does not have enough credits for monitoring admission.",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/JobChangeError"
-                }
-              }
-            }
-          },
-          "409": {
-            "description": "The Idempotency-Key was already used with a different request.",
             "content": {
               "application/json": {
                 "schema": {

@@ -596,7 +596,7 @@ const DURABLE_OPERATION_GUIDANCE = {
   "api-reference/find-companies": [/6 requests per second/i, /0\.1 credits per returned company/i, /zero returned rows cost zero credits/i, /when `next_cursor` is not `null`.*send the exact value unchanged as `cursor`/is, /10,000 companies/i],
   "api-reference/find-companies/filter-values": [/free and has no request body/i, /6 requests per second/i, /`q` parameter takes precedence/i],
   "api-reference/airsearch": [/300 requests per minute/i, /1 credit/i, /`not_found` and `timeout` are not charged/i, /reservation is settled only for `success`/i, /initial-stage timeout.*`504 Gateway Timeout`/i],
-  "api-reference/job-change-monitors/create": [/Idempotency-Key/i, /signing_secret/i, /Verify webhook signatures/i],
+  "api-reference/job-change-monitors/create": [/before retrying/i, /signing_secret/i, /Verify webhook signatures/i],
   "api-reference/job-change-monitors/list": [/unread event count/i, /read-only/i],
   "api-reference/job-change-monitors/get": [/latest 200 events/i, /removed_at/i],
   "api-reference/job-change-monitors/update": [/admission/i, /frequency/i, /pausing clears/i],

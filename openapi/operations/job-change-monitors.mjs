@@ -129,7 +129,6 @@ function errorResponses(statuses) {
     400: "The request body is not valid JSON.",
     402: "The workspace does not have enough credits for monitoring admission.",
     404: "The requested monitor, profile, or event does not exist in this workspace.",
-    409: "The Idempotency-Key was already used with a different request.",
     413: "The JSON request body exceeds the 512 KiB limit.",
     422: "A field is invalid, a cursor is malformed, or the monitor has no active profiles.",
     429: "The workspace has exceeded the 120 requests per minute monitor limit.",
@@ -164,15 +163,6 @@ function response(schema, description, example) {
   };
 }
 
-const idempotencyParameter = {
-  name: "Idempotency-Key",
-  in: "header",
-  required: true,
-  description: "A unique 8–200 character key for this create request. Reusing it with the same body returns the original monitor.",
-  schema: { type: "string", minLength: 8, maxLength: 200 },
-  example: "crm-champions-2026-09-11"
-};
-
 export const jobChangeMonitorOperations = [
   {
     method: "POST",
@@ -181,10 +171,9 @@ export const jobChangeMonitorOperations = [
       operationId: "createJobChangeMonitor",
       tags: [TAG],
       summary: "Create a job-change monitor",
-      description: "Creates an active monitor for 1–500 personal LinkedIn profiles. If webhook_url is set, the 202 response includes a signing_secret exactly once.",
+      description: "Creates a new active monitor for 1–500 personal LinkedIn profiles. If webhook_url is set, the 202 response includes a signing_secret exactly once. Each request creates a new monitor; inspect existing monitors before retrying an unknown response.",
       "x-airscale-rate-limit": "120 requests per minute per workspace.",
       "x-airscale-credit-cost": "Monitoring admission checks the workspace balance; the per-profile check price is configured for the workspace.",
-      parameters: [idempotencyParameter],
       requestBody: requestBody(createRequestSchema, {
         monitor: {
           summary: "Monitor with one synthetic profile",
@@ -211,9 +200,9 @@ export const jobChangeMonitorOperations = [
           monitor: monitorExample,
           profiles: [profileExample],
           signing_secret: "example-signing-secret",
-          signing_secret_warning: "Store this secret now. It is not returned on idempotent replays."
+          signing_secret_warning: "Store this secret now. It is not returned again."
         }),
-        ...errorResponses([400, 401, 402, 409, 413, 422, 429, 503])
+        ...errorResponses([400, 401, 402, 413, 422, 429, 503])
       }
     }
   },

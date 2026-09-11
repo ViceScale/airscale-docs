@@ -15,7 +15,7 @@ import { join } from "node:path";
 import { tmpdir } from "node:os";
 import { runCli, writeOpenApiAtomic } from "../scripts/build-openapi.mjs";
 
-const SOURCE_SHA = "d2efbd9a2ac627af1dc8c1c865dea20a3bdb70a8";
+const SOURCE_SHA = "84596e27f6a2042195d0705a6bcfa2bc31e81af5";
 const ACCOUNT_CONTACT_PATHS = new Set([
   "/v1/credits",
   "/v1/email",
