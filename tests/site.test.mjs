@@ -11,74 +11,55 @@ import {
 } from "./helpers/content-safety.mjs";
 
 const GROUPS = [
-  { group: "Start here", pages: ["api-reference/api-overview", "api-reference/authentication", "api-reference/rate-limits"] },
-  { group: "Search and discovery", pages: [
+  ["Start here", ["api-reference/api-overview", "api-reference/authentication", "api-reference/rate-limits"]],
+  ["Search and discovery", [
     "api-reference/find-people",
     "api-reference/find-people/count",
     "api-reference/find-companies",
     "api-reference/find-companies/filter-values",
     "api-reference/airsearch"
-  ] },
-  { group: "Post engagement", pages: [
+  ]],
+  ["Post engagement", [
     "api-reference/post-likers",
     "api-reference/post-commenters"
-  ] },
-  { group: "Contact data", pages: [
+  ]],
+  ["Contact data", [
     "api-reference/email-finder",
     "api-reference/email-finder-(bulk)",
     "api-reference/mobile-finder",
     "api-reference/personal-email",
     "api-reference/people-url-finder"
-  ] },
-  { group: "Profiles and reverse lookup", pages: [
+  ]],
+  ["Profiles and reverse lookup", [
     "api-reference/extract-people-profile",
     "api-reference/extract-company-profile",
     "api-reference/reverse-email",
     "api-reference/reverse-phone"
-  ] },
-  {
-    group: "Additional endpoints",
-    pages: [
-      {
-        group: "Miscellaneous",
-        pages: [
-          "api-reference/miscale-news/whatsapp-check",
-          "api-reference/miscale-news/meta-ads",
-          "api-reference/miscale-news/email-verifier"
-        ],
-        expanded: false
-      },
-      {
-        group: "Job change monitoring",
-        pages: [
-          "api-reference/job-change-monitors/create",
-          "api-reference/job-change-monitors/list",
-          "api-reference/job-change-monitors/get",
-          "api-reference/job-change-monitors/update",
-          "api-reference/job-change-monitors/delete",
-          "api-reference/job-change-monitors/profiles/add",
-          "api-reference/job-change-monitors/profiles/remove",
-          "api-reference/job-change-monitors/events",
-          "api-reference/job-change-monitors/events/read"
-        ],
-        expanded: false
-      }
-    ]
-  },
-  { group: "Account", pages: ["api-reference/credit-count"] }
+  ]],
+  ["Miscellaneous", [
+    "api-reference/miscale-news/whatsapp-check",
+    "api-reference/miscale-news/meta-ads",
+    "api-reference/miscale-news/email-verifier"
+  ], { expanded: false }],
+  ["Job change monitoring", [
+    "api-reference/job-change-monitors/create",
+    "api-reference/job-change-monitors/list",
+    "api-reference/job-change-monitors/get",
+    "api-reference/job-change-monitors/update",
+    "api-reference/job-change-monitors/delete",
+    "api-reference/job-change-monitors/profiles/add",
+    "api-reference/job-change-monitors/profiles/remove",
+    "api-reference/job-change-monitors/events",
+    "api-reference/job-change-monitors/events/read"
+  ], { expanded: false }],
+  ["Account", ["api-reference/credit-count"]]
 ];
 
-function navigablePagePaths(groups) {
-  return groups.flatMap(({ pages }) => pages.flatMap((page) => (
-    typeof page === "string" ? [page] : navigablePagePaths([page])
-  )));
-}
-
-const PAGE_PATHS = navigablePagePaths(GROUPS);
+const PAGE_PATHS = GROUPS.flatMap(([, pages]) => pages);
 const GUIDE_PATHS = ["api-reference/api-overview", "api-reference/authentication", "api-reference/rate-limits"];
 const EXPECTED_API_TAB = {
   tab: "API Reference",
-  groups: GROUPS
+  groups: GROUPS.map(([group, pages, options]) => ({ group, pages, ...(options ?? {}) }))
 };
 const CANONICAL_SYMBOL_PATH = "m41.368,46.100 2.600,7.900c.700,2.200,2.800,3.600,5,3.600,1.700,0,3.300-.800,4.300-2.200,1-1.400,1.200-3.200.700-4.800l-4.700-13.400-7.900,8.900Zm-26.800-7.200 9-26.600c.5-1.400,1.800-2.300,3.300-2.300s2.800.900,3.300,2.300l6.200,18.500,7.800-8.800-4.600-13.100c-1.900-5.400-7-8.900-12.600-8.900-5.700,0-10.700,3.600-12.600,8.900L.367,48.800c-.700,2.100-.400,4.300.900,6.100,1.300,1.800,3.300,2.800,5.500,2.800,1.900,0,3.700-.800,5-2.200l13.800-15.400,2.800,8.300c.200.700.700,1.300,1.200,1.800s1.200.800,1.900,1c.700.100,1.500.1,2.100-.1.700-.200,1.300-.600,1.800-1.200l21-24.300c.5-.600.900-1.400,1-2.400.200-.9.100-1.9-.1-2.600l-1.700-4.800c-.1-.4-.3-.7-.5-.8-.1-.1-.2-.2-.4-.2h-.4c-.2.1-.5.200-.8.600l-19.800,22.500-2.700-8.100c-.8-3.200-4.900-3.800-7-1.400l-9.9,10.700";
 function readPage(path) {
@@ -123,6 +104,11 @@ const APPROVED_DASHBOARD_SELECTORS = [
   DASHBOARD_OVERLAY_SELECTOR,
   `html.dark ${DASHBOARD_SELECTOR}`,
   `html.dark ${DASHBOARD_SELECTOR}:hover`
+];
+const APPROVED_COLLAPSIBLE_SELECTORS = [
+  '#sidebar button.sidebar-group-header[data-airscale-collapsible="true"]',
+  '#sidebar button.sidebar-group-header[data-airscale-collapsible="true"]::after',
+  '#sidebar button.sidebar-group-header[data-airscale-collapsible="true"][aria-expanded="true"]::after'
 ];
 
 function parseFlatCssRules(source) {
@@ -186,13 +172,17 @@ function assertRuleDeclarations(rule, expectedDeclarations) {
 
 function assertDashboardCssContract(source) {
   const rules = parseFlatCssRules(source);
+  const hasCollapsibleRules = APPROVED_COLLAPSIBLE_SELECTORS.some((selector) => source.includes(selector));
+  const approvedSelectors = hasCollapsibleRules
+    ? [...APPROVED_DASHBOARD_SELECTORS, ...APPROVED_COLLAPSIBLE_SELECTORS]
+    : APPROVED_DASHBOARD_SELECTORS;
   for (const rule of rules) {
-    assert.ok(APPROVED_DASHBOARD_SELECTORS.includes(rule.selector), `custom.css selector is not approved: ${rule.selector}`);
+    assert.ok(approvedSelectors.includes(rule.selector), `custom.css selector is not approved: ${rule.selector}`);
   }
-  for (const selector of APPROVED_DASHBOARD_SELECTORS) {
+  for (const selector of approvedSelectors) {
     assert.equal(rules.filter((rule) => rule.selector === selector).length, 1, `custom.css must contain exactly one rule for ${selector}`);
   }
-  assert.equal(rules.length, APPROVED_DASHBOARD_SELECTORS.length, "custom.css must contain exactly seven approved navbar rules");
+  assert.equal(rules.length, approvedSelectors.length, "custom.css must contain only the approved navbar and collapsible sidebar rules");
 
   const ruleFor = (selector) => rules.find((rule) => rule.selector === selector);
   const declaration = (property, value) => ({ property, value, important: true });
@@ -208,6 +198,28 @@ function assertDashboardCssContract(source) {
   assertRuleDeclarations(ruleFor(DASHBOARD_OVERLAY_SELECTOR), [background("inherit"), radius("10px")]);
   assertRuleDeclarations(ruleFor(`html.dark ${DASHBOARD_SELECTOR}`), [background("#FFFFFF"), border("#FFFFFF"), color("#111827")]);
   assertRuleDeclarations(ruleFor(`html.dark ${DASHBOARD_SELECTOR}:hover`), [background("#E5E7EB"), border("#E5E7EB")]);
+
+  if (!hasCollapsibleRules) return;
+
+  const plainDeclaration = (property, value) => ({ property, value, important: false });
+  assertRuleDeclarations(ruleFor(APPROVED_COLLAPSIBLE_SELECTORS[0]), [
+    plainDeclaration("appearance", "none"),
+    plainDeclaration("background", "transparent"),
+    plainDeclaration("border", "0"),
+    plainDeclaration("color", "inherit"),
+    plainDeclaration("cursor", "pointer"),
+    plainDeclaration("font", "inherit"),
+    plainDeclaration("text-align", "left"),
+    plainDeclaration("width", "100%")
+  ]);
+  assertRuleDeclarations(ruleFor(APPROVED_COLLAPSIBLE_SELECTORS[1]), [
+    plainDeclaration("content", '"›"'),
+    plainDeclaration("font-size", "1.25rem"),
+    plainDeclaration("line-height", "1"),
+    plainDeclaration("margin-left", "auto"),
+    plainDeclaration("transition", "transform 150ms ease")
+  ]);
+  assertRuleDeclarations(ruleFor(APPROVED_COLLAPSIBLE_SELECTORS[2]), [plainDeclaration("transform", "rotate(90deg)")]);
 }
 
 const PLANNED_DASHBOARD_CSS = `${NAVBAR_LOGO_SELECTOR} {
@@ -494,11 +506,26 @@ test("authorization bearer checks reject unsafe token formats", () => {
   }
 });
 
-test("navigation contains exactly the approved 32 pages with collapsed additional endpoint groups", () => {
+test("navigation contains exactly the approved 32 pages in eight groups", () => {
   const config = JSON.parse(readFileSync("docs.json", "utf8"));
   assert.deepEqual(config.navigation.tabs.find(({ tab }) => tab === "API Reference"), EXPECTED_API_TAB);
-  assert.equal(config.interaction?.drilldown, false);
   assert.deepEqual(mdxPagePaths(), [...PAGE_PATHS].sort());
+});
+
+test("Miscellaneous and Job change monitoring stay standalone and use the collapsible sidebar script", () => {
+  const config = JSON.parse(readFileSync("docs.json", "utf8"));
+  const apiGroups = config.navigation.tabs.find(({ tab }) => tab === "API Reference").groups;
+  assert.deepEqual(apiGroups.slice(-3).map(({ group, expanded }) => ({ group, expanded })), [
+    { group: "Miscellaneous", expanded: false },
+    { group: "Job change monitoring", expanded: false },
+    { group: "Account", expanded: undefined }
+  ]);
+  assert.equal(existsSync("custom.js"), true);
+  const script = readFileSync("custom.js", "utf8");
+  assert.match(script, /Miscellaneous/);
+  assert.match(script, /Job change monitoring/);
+  assert.match(script, /aria-expanded/);
+  assert.match(script, /MutationObserver/);
 });
 
 test("every public operation has one exact OpenAPI-backed wrapper", () => {

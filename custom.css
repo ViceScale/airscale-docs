@@ -33,3 +33,26 @@ html.dark #navbar a[href="https://app.airscale.io/dashboard"]:hover {
   background-color: #E5E7EB !important;
   border-color: #E5E7EB !important;
 }
+
+#sidebar button.sidebar-group-header[data-airscale-collapsible="true"] {
+  appearance: none;
+  background: transparent;
+  border: 0;
+  color: inherit;
+  cursor: pointer;
+  font: inherit;
+  text-align: left;
+  width: 100%;
+}
+
+#sidebar button.sidebar-group-header[data-airscale-collapsible="true"]::after {
+  content: "›";
+  font-size: 1.25rem;
+  line-height: 1;
+  margin-left: auto;
+  transition: transform 150ms ease;
+}
+
+#sidebar button.sidebar-group-header[data-airscale-collapsible="true"][aria-expanded="true"]::after {
+  transform: rotate(90deg);
+}
