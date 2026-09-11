@@ -1,0 +1,102 @@
+---
+title: "Meta Ads"
+description: "Check whether a domain has active Meta ads."
+canonical: "https://airscale.mintlify.app/api-reference/miscale-news/meta-ads"
+openapi: "/openapi.json POST /v1/meta-ads"
+---
+
+Check whether a company domain has active Meta ads. Airscale normalizes a bare host or an HTTP(S) URL before running the lookup.
+
+## Contract summary
+
+<Badge color="blue">POST</Badge> `/v1/meta-ads`
+
+| Property | Value |
+| --- | --- |
+| Authentication | Bearer Airscale API key |
+| Request body | Exactly one `domain` field |
+| Rate limit | 60 requests per minute per workspace |
+| Credit cost | 1 credit for a positive ad count; 0 credits for zero or non-billable results |
+| Execution | Synchronous |
+
+## Request
+
+The body must contain exactly one `domain` field. Use a bare hostname or an HTTP(S) URL. Paths are ignored after the host is normalized.
+
+```json
+{
+  "domain": "airscale.io"
+}
+```
+
+```bash cURL
+curl --request POST \
+  --url https://api.airscale.io/v1/meta-ads \
+  --header "Authorization: Bearer $AIRSCALE_API_KEY" \
+  --header "Content-Type: application/json" \
+  --data '{"domain":"airscale.io"}'
+```
+
+```python Python
+import os
+import requests
+
+response = requests.post(
+    "https://api.airscale.io/v1/meta-ads",
+    headers={"Authorization": f"Bearer {os.environ['AIRSCALE_API_KEY']}"},
+    json={"domain": "airscale.io"},
+    timeout=30,
+)
+response.raise_for_status()
+print(response.json())
+```
+
+```javascript Node.js
+const apiKey = process.env.AIRSCALE_API_KEY;
+const response = await fetch("https://api.airscale.io/v1/meta-ads", {
+  method: "POST",
+  headers: {
+    Authorization: `Bearer ${apiKey}`,
+    "Content-Type": "application/json",
+  },
+  body: JSON.stringify({ domain: "airscale.io" }),
+});
+
+if (!response.ok) throw new Error(`Meta Ads lookup failed: ${response.status}`);
+console.log(await response.json());
+```
+
+## Response
+
+A positive finite `number_of_ads` consumes one credit.
+
+```json
+{
+  "page_id": "meta-123",
+  "number_of_ads": 4,
+  "credits_consumed": 1
+}
+```
+
+A zero, missing, non-numeric, or non-positive ad count consumes no credit.
+
+```json
+{
+  "page_id": "meta-zero",
+  "number_of_ads": 0,
+  "credits_consumed": 0
+}
+```
+
+The endpoint does not support an idempotency key. A retry can run another provider lookup.
+
+## Errors
+
+| Status | Meaning | Action |
+| --- | --- | --- |
+| `400 Bad Request` | Invalid JSON, extra fields, unsupported URL, or unsafe domain. | Send exactly one public hostname or HTTP(S) URL in `domain`. |
+| `401 Unauthorized` | The API key is missing or invalid. | Send a valid workspace API key. |
+| `403 Forbidden` | The workspace does not have enough credits for a possible positive result. | Add credits before retrying. |
+| `429 Too Many Requests` | The workspace exceeded 60 requests in one minute. | Retry after the rate-limit window. |
+| `502 Bad Gateway` | The upstream Meta Ads lookup failed. | Retry with bounded backoff. |
+| `503 Service Unavailable` | Authentication, rate limiting, configuration, or settlement is unavailable. | Retry after the service recovers. |
