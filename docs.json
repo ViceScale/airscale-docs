@@ -191,6 +191,14 @@
             ]
           },
           {
+            "group": "Miscale News",
+            "pages": [
+              "api-reference/miscale-news/whatsapp-check",
+              "api-reference/miscale-news/meta-ads",
+              "api-reference/miscale-news/email-verifier"
+            ]
+          },
+          {
             "group": "Account",
             "pages": [
               "api-reference/credit-count"
