@@ -1707,6 +1707,25 @@ test("Post engagement operations model synchronous cursor pagination and enrichm
       maxLength: 8192,
       description: "An opaque cursor returned by the preceding page. Send it unchanged."
     });
+    assert.deepEqual(
+      operation["x-codeSamples"]?.map(({ label, lang }) => ({ label, lang })),
+      [
+        { label: "firstPage", lang: "bash" },
+        { label: "nextPage", lang: "bash" },
+        { label: "firstPage", lang: "node" },
+        { label: "nextPage", lang: "node" },
+        { label: "firstPage", lang: "python" },
+        { label: "nextPage", lang: "python" }
+      ],
+      "post engagement pages must author both pagination states for every configured Mint language"
+    );
+    const curlSamples = Object.fromEntries(
+      operation["x-codeSamples"]
+        .filter(({ lang }) => lang === "bash")
+        .map(({ label, source }) => [label, source])
+    );
+    assert.doesNotMatch(curlSamples.firstPage, /\"cursor\"/);
+    assert.match(curlSamples.nextPage, /\"cursor\": \"pje1\.synthetic_cursor\"/);
     assert.ok(operation.responses["200"]);
     const response = operation.responses["200"].content["application/json"];
     assert.equal(response.schema.type, "object");

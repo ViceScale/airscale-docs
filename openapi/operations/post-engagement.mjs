@@ -1,5 +1,6 @@
 const TAG = "Post engagement";
 const POST_URL = "https://www.linkedin.com/posts/example_activity-7376356221991178240";
+const CODE_SAMPLE_POST_URL = "https://example.com/linkedin-post-example";
 
 const errorDescriptions = {
   400: "The JSON body, LinkedIn post URL, or cursor is invalid.",
@@ -172,6 +173,77 @@ function requestExamples() {
   };
 }
 
+function postEngagementCodeSamples(path) {
+  const endpoint = `https://api.airscale.io${path}`;
+  const pages = [
+    ["firstPage", { post_url: CODE_SAMPLE_POST_URL, limit: 25 }],
+    ["nextPage", { post_url: CODE_SAMPLE_POST_URL, limit: 25, cursor: "pje1.synthetic_cursor" }]
+  ];
+  const samples = [];
+
+  for (const lang of ["bash", "node", "python"]) {
+    for (const [label, body] of pages) {
+      const bodyLiteral = JSON.stringify(body, null, 2);
+      if (lang === "bash") {
+        samples.push({
+          label,
+          lang,
+          source: [
+            "curl --request POST \\",
+            `  --url '${endpoint}' \\`,
+            '  --header "Authorization: Bearer $AIRSCALE_API_KEY" \\',
+            '  --header "Content-Type: application/json" \\',
+            `  --data '${bodyLiteral}'`
+          ].join("\n")
+        });
+        continue;
+      }
+
+      if (lang === "node") {
+        samples.push({
+          label,
+          lang,
+          source: [
+            `const response = await fetch("${endpoint}", {`,
+            "  method: \"POST\",",
+            "  headers: {",
+            "    Authorization: `Bearer ${process.env.AIRSCALE_API_KEY}`,",
+            "    \"Content-Type\": \"application/json\"",
+            "  },",
+            `  body: JSON.stringify(${bodyLiteral})`,
+            "});",
+            "",
+            "const data = await response.json();",
+            "console.log(data);"
+          ].join("\n")
+        });
+        continue;
+      }
+
+      samples.push({
+        label,
+        lang,
+        source: [
+          "import os",
+          "import requests",
+          "",
+          `response = requests.post("${endpoint}",`,
+          "  headers={",
+          '    "Authorization": f\'Bearer {os.environ["AIRSCALE_API_KEY"]}\',',
+          '    "Content-Type": "application/json"',
+          "  },",
+          `  json=${bodyLiteral}`,
+          ")",
+          "response.raise_for_status()",
+          "print(response.json())"
+        ].join("\n")
+      });
+    }
+  }
+
+  return samples;
+}
+
 function responseExample(engagementType) {
   const isLiker = engagementType === "LIKE";
   return {
@@ -211,6 +283,7 @@ function operation({ path, operationId, engagementType, summary, description }) 
       description,
       "x-airscale-rate-limit": "60 requests per minute per workspace.",
       "x-airscale-credit-cost": "1 credit reserved per returned engagement for profile enrichment; only successful enrichments are consumed; not_found and error outcomes are refunded.",
+      "x-codeSamples": postEngagementCodeSamples(path),
       parameters: [],
       requestBody: requestBody(
         postEngagementRequestSchema,
