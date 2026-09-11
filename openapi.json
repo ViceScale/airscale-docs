@@ -3919,6 +3919,38 @@
         "description": "Retrieves one synchronous, cursor-paginated page of people who liked a LinkedIn post and enriches each returned profile.",
         "x-airscale-rate-limit": "60 requests per minute per workspace.",
         "x-airscale-credit-cost": "1 credit reserved per returned engagement for profile enrichment; only successful enrichments are consumed; not_found and error outcomes are refunded.",
+        "x-codeSamples": [
+          {
+            "label": "firstPage",
+            "lang": "bash",
+            "source": "curl --request POST \\\n  --url 'https://api.airscale.io/v1/post-likers' \\\n  --header \"Authorization: Bearer $AIRSCALE_API_KEY\" \\\n  --header \"Content-Type: application/json\" \\\n  --data '{\n  \"post_url\": \"https://example.com/linkedin-post-example\",\n  \"limit\": 25\n}'"
+          },
+          {
+            "label": "nextPage",
+            "lang": "bash",
+            "source": "curl --request POST \\\n  --url 'https://api.airscale.io/v1/post-likers' \\\n  --header \"Authorization: Bearer $AIRSCALE_API_KEY\" \\\n  --header \"Content-Type: application/json\" \\\n  --data '{\n  \"post_url\": \"https://example.com/linkedin-post-example\",\n  \"limit\": 25,\n  \"cursor\": \"pje1.synthetic_cursor\"\n}'"
+          },
+          {
+            "label": "firstPage",
+            "lang": "node",
+            "source": "const response = await fetch(\"https://api.airscale.io/v1/post-likers\", {\n  method: \"POST\",\n  headers: {\n    Authorization: `Bearer ${process.env.AIRSCALE_API_KEY}`,\n    \"Content-Type\": \"application/json\"\n  },\n  body: JSON.stringify({\n  \"post_url\": \"https://example.com/linkedin-post-example\",\n  \"limit\": 25\n})\n});\n\nconst data = await response.json();\nconsole.log(data);"
+          },
+          {
+            "label": "nextPage",
+            "lang": "node",
+            "source": "const response = await fetch(\"https://api.airscale.io/v1/post-likers\", {\n  method: \"POST\",\n  headers: {\n    Authorization: `Bearer ${process.env.AIRSCALE_API_KEY}`,\n    \"Content-Type\": \"application/json\"\n  },\n  body: JSON.stringify({\n  \"post_url\": \"https://example.com/linkedin-post-example\",\n  \"limit\": 25,\n  \"cursor\": \"pje1.synthetic_cursor\"\n})\n});\n\nconst data = await response.json();\nconsole.log(data);"
+          },
+          {
+            "label": "firstPage",
+            "lang": "python",
+            "source": "import os\nimport requests\n\nresponse = requests.post(\"https://api.airscale.io/v1/post-likers\",\n  headers={\n    \"Authorization\": f'Bearer {os.environ[\"AIRSCALE_API_KEY\"]}',\n    \"Content-Type\": \"application/json\"\n  },\n  json={\n  \"post_url\": \"https://example.com/linkedin-post-example\",\n  \"limit\": 25\n}\n)\nresponse.raise_for_status()\nprint(response.json())"
+          },
+          {
+            "label": "nextPage",
+            "lang": "python",
+            "source": "import os\nimport requests\n\nresponse = requests.post(\"https://api.airscale.io/v1/post-likers\",\n  headers={\n    \"Authorization\": f'Bearer {os.environ[\"AIRSCALE_API_KEY\"]}',\n    \"Content-Type\": \"application/json\"\n  },\n  json={\n  \"post_url\": \"https://example.com/linkedin-post-example\",\n  \"limit\": 25,\n  \"cursor\": \"pje1.synthetic_cursor\"\n}\n)\nresponse.raise_for_status()\nprint(response.json())"
+          }
+        ],
         "parameters": [],
         "requestBody": {
           "required": true,
@@ -4309,6 +4341,38 @@
         "description": "Retrieves one synchronous, cursor-paginated page of people who commented on a LinkedIn post and enriches each returned profile.",
         "x-airscale-rate-limit": "60 requests per minute per workspace.",
         "x-airscale-credit-cost": "1 credit reserved per returned engagement for profile enrichment; only successful enrichments are consumed; not_found and error outcomes are refunded.",
+        "x-codeSamples": [
+          {
+            "label": "firstPage",
+            "lang": "bash",
+            "source": "curl --request POST \\\n  --url 'https://api.airscale.io/v1/post-commenters' \\\n  --header \"Authorization: Bearer $AIRSCALE_API_KEY\" \\\n  --header \"Content-Type: application/json\" \\\n  --data '{\n  \"post_url\": \"https://example.com/linkedin-post-example\",\n  \"limit\": 25\n}'"
+          },
+          {
+            "label": "nextPage",
+            "lang": "bash",
+            "source": "curl --request POST \\\n  --url 'https://api.airscale.io/v1/post-commenters' \\\n  --header \"Authorization: Bearer $AIRSCALE_API_KEY\" \\\n  --header \"Content-Type: application/json\" \\\n  --data '{\n  \"post_url\": \"https://example.com/linkedin-post-example\",\n  \"limit\": 25,\n  \"cursor\": \"pje1.synthetic_cursor\"\n}'"
+          },
+          {
+            "label": "firstPage",
+            "lang": "node",
+            "source": "const response = await fetch(\"https://api.airscale.io/v1/post-commenters\", {\n  method: \"POST\",\n  headers: {\n    Authorization: `Bearer ${process.env.AIRSCALE_API_KEY}`,\n    \"Content-Type\": \"application/json\"\n  },\n  body: JSON.stringify({\n  \"post_url\": \"https://example.com/linkedin-post-example\",\n  \"limit\": 25\n})\n});\n\nconst data = await response.json();\nconsole.log(data);"
+          },
+          {
+            "label": "nextPage",
+            "lang": "node",
+            "source": "const response = await fetch(\"https://api.airscale.io/v1/post-commenters\", {\n  method: \"POST\",\n  headers: {\n    Authorization: `Bearer ${process.env.AIRSCALE_API_KEY}`,\n    \"Content-Type\": \"application/json\"\n  },\n  body: JSON.stringify({\n  \"post_url\": \"https://example.com/linkedin-post-example\",\n  \"limit\": 25,\n  \"cursor\": \"pje1.synthetic_cursor\"\n})\n});\n\nconst data = await response.json();\nconsole.log(data);"
+          },
+          {
+            "label": "firstPage",
+            "lang": "python",
+            "source": "import os\nimport requests\n\nresponse = requests.post(\"https://api.airscale.io/v1/post-commenters\",\n  headers={\n    \"Authorization\": f'Bearer {os.environ[\"AIRSCALE_API_KEY\"]}',\n    \"Content-Type\": \"application/json\"\n  },\n  json={\n  \"post_url\": \"https://example.com/linkedin-post-example\",\n  \"limit\": 25\n}\n)\nresponse.raise_for_status()\nprint(response.json())"
+          },
+          {
+            "label": "nextPage",
+            "lang": "python",
+            "source": "import os\nimport requests\n\nresponse = requests.post(\"https://api.airscale.io/v1/post-commenters\",\n  headers={\n    \"Authorization\": f'Bearer {os.environ[\"AIRSCALE_API_KEY\"]}',\n    \"Content-Type\": \"application/json\"\n  },\n  json={\n  \"post_url\": \"https://example.com/linkedin-post-example\",\n  \"limit\": 25,\n  \"cursor\": \"pje1.synthetic_cursor\"\n}\n)\nresponse.raise_for_status()\nprint(response.json())"
+          }
+        ],
         "parameters": [],
         "requestBody": {
           "required": true,
