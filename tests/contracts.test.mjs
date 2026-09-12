@@ -134,6 +134,7 @@ const EXPECTED_CONTRACTS = deepFreeze({
       sourceFiles: ["workers/public-api/airsearch-worker.js", "workers/public-api/airsearch-worker.test.mjs"]
     },
     "post-engagement": {
+      sourceSha: "9a539d40c2d5786cd064ce1637f93d6e020ef317",
       endpoints: [
         { method: "POST", path: "/v1/post-likers" },
         { method: "POST", path: "/v1/post-commenters" }
@@ -252,5 +253,6 @@ test("operation catalog links each operation to matching source-page evidence", 
       `${operation.operationId} must match its source page endpoint`
     );
     assert.deepEqual(operation.sourceFiles, evidence.sourceFiles);
+    assert.equal(operation.sourceSha ?? catalog.sourceSha, evidence.sourceSha ?? pageContracts.sourceSha);
   }
 });

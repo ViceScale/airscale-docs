@@ -146,6 +146,14 @@ Identify and prepare your target LinkedIn post:
 
 **Pro tip:** you can navigate away from this page during extraction
 
+### Recovery and partial results
+
+Airschool saves fetched pages and import progress so an interrupted extraction can resume. If an account becomes unavailable, it can continue with another eligible account and deduplicate saved results. Profile retries reuse the same identity to avoid repeating settled charges. Temporary provider failures and rate limits can delay completion; persistent failures beyond the retry budget require support to resume the extraction.
+
+Check the final counts and any partial-result reason. Provider totals, comment events, and unique authors are different measurements, and a provider cutoff can return fewer results than LinkedIn displays. Recovery does not remove upstream access or pagination limits.
+
+For integrations, use the [Post likers API](/api-reference/post-likers) or [Post commenters API](/api-reference/post-commenters). Their per-page retry keys and cursor rules differ from this background workflow.
+
 ![Extract post likers/commenters — 3. Launch the extraction](/images/docs/66wC8gsh7AEcMAoLPDzP21Yfc.png)
 
 ## 4. Access your results
@@ -2799,20 +2807,50 @@ Description: Retrieve and enrich people who liked a LinkedIn post.
 Retrieve one synchronous page of people who liked a LinkedIn post, with public profile fields enriched for each returned engagement.
 
 <Note>
-Each returned engagement reserves one credit for profile enrichment. A successful enrichment consumes one credit; `not_found` and `error` outcomes remain in the page and are refunded, so they have zero net credit cost.
+The API reserves one credit for each requested slot (`limit`) before retrieving the page. Unused slots are refunded. Each successfully enriched profile consumes one credit. Definitive `not_found` and failed `error` outcomes remain in the page and are refunded, so they have zero net credit cost. An uncertain response can retain its reservation until the same page finishes; it does not prove a refund.
 </Note>
 
-Omit `cursor` on the first request. When `pagination.next_cursor` is not `null`, send that value unchanged with the same post URL and `limit` to fetch the next page. Cursors are bound to the workspace, post, engagement type, and page size, and expire within 15 minutes.
+## Pagination
 
-The provider selected for the first page is pinned into the cursor. If a later page returns `503` with `code: "provider_page_unavailable"`, retry the same cursor. The API retries that page against the pinned provider and does not silently switch providers or reorder the result set.
+Omit `cursor` on the first request. When `pagination.next_cursor` is not `null`, send it unchanged with the same post URL and `limit` to fetch the next page. The page size is 1–25 (default 25). The provider and continuation account remain pinned to the cursor. New cursors expire after 10 minutes and are bound to the workspace, post, engagement type, and page size.
 
-If a response is lost, retrying the request can run the page again and reserve credits again.
+Optional `retrieval` metadata contains `reported_total`, `returned_count`, `status`, and `stop_reason`. A `provider_exhausted` status means that provider has no further cursor; it does not guarantee that every LinkedIn engagement was accessible. Provider totals can change, and comment events are not the same count as unique authors. Public pagination does not promise every reply returned by the dashboard's background extraction.
 
-After `429 Too Many Requests`, wait and retry with bounded exponential backoff. A failed profile enrichment is refunded, and a failed provider page is not charged.
+## Safe retries
+
+Supply an optional UUID in the `Idempotency-Key` header. Save that key together with the endpoint and exact request body before sending the request. Reuse the same key with the identical `post_url`, `limit`, and `cursor` if the response is lost or processing is uncertain. Use a new key for the next page.
+
+The code examples read `AIRSCALE_PAGE_KEY` from your environment. Set it to a UUID once for each new page, and keep that value for every retry of that page. Replace the synthetic post URL and cursor with your own values.
+
+Omitting the header remains supported. However, an independent retry without the original key can reserve credits again. When a pending or uncertain response includes `idempotency_key`, retain and send that returned key even if your first request omitted the header.
+
+Completed results remain replayable for 24 hours after completion, including after the input cursor expires. Already-saved profile or billing work can also resume after cursor expiry. An expired cursor cannot start a new provider fetch. A reservation for unresolved work does not automatically become a refund after 24 hours.
+
+## Pending and error responses
+
+A `202` response with `status: "pending"` and `code: "page_pending"` means the bridge did not respond within 90 seconds. The outcome is unconfirmed; processing may still be running or may not have started. Wait for `Retry-After` (15 seconds for this response), then resend the identical page with the returned `idempotency_key`. The body also supplies `retry_after_ms`.
+
+| Response | Next action |
+| --- | --- |
+| `409 replay_in_progress` | Wait, then retry the identical page with the same key. |
+| `409 replay_request_mismatch` | Restore the original request fields for that key. Use a new key only for intentionally different work. |
+| `503 account_busy`, `rate_limited`, or `provider_unavailable` | Keep the page and key unchanged. Wait for the supplied delay and retry with bounded backoff. |
+| `503 provider_page_unavailable` | Retry the same cursor and key; continuation stays on its pinned provider. |
+| `503 account_restart_required` | Start again without a cursor and with a new key. Deduplicate results already received. |
+| Other `502` or `503` responses carrying `idempotency_key` | Preserve the original body and returned key. Retry with bounded backoff; do not assume that an uncertain profile or billing response was refunded. |
+| `429 Too Many Requests` | Wait and retry the same page and key with bounded exponential backoff. |
+
+If a cooldown outlasts an unfetched cursor, wait for the cooldown, then begin a fresh traversal without the cursor and with a new key. Deduplicate earlier results. A fresh traversal is new billable work. Saved work and completed replay results can still be recovered under the rules above.
+
+Airscale can choose another eligible account before a traversal starts. A continuation stays on its original account; it cannot silently switch accounts or reorder your results. Provider failures do not turn upstream access or pagination limits into a complete result set.
+
+## Billing recovery
+
+A failed provider discovery attempt is refunded before a new attempt is funded. Once a page has been saved, retries resume its profile enrichment or billing settlement without rediscovering the page or repeating successfully settled profile charges. Keep the same key throughout recovery.
 
 ## Next step
 
-Use [Post commenters](/api-reference/post-commenters) to retrieve people who commented on a LinkedIn post, or read the [post engagement workflow](/docs/likers-commenters) for the dashboard flow.
+Use [Post commenters](/api-reference/post-commenters) for the other engagement type, or read the [post engagement workflow](/docs/likers-commenters) for the dashboard flow.
 
 ---
 
@@ -2822,23 +2860,53 @@ Source: https://airscale.mintlify.app/api-reference/post-commenters.md
 
 Description: Retrieve and enrich people who commented on a LinkedIn post.
 
-Retrieve one synchronous page of people who commented on a LinkedIn post, including the comment text and public profile fields enriched for each returned engagement.
+Retrieve one synchronous page of people who commented on a LinkedIn post, with public profile fields enriched for each returned engagement.
 
 <Note>
-Each returned engagement reserves one credit for profile enrichment. A successful enrichment consumes one credit; `not_found` and `error` outcomes remain in the page and are refunded, so they have zero net credit cost.
+The API reserves one credit for each requested slot (`limit`) before retrieving the page. Unused slots are refunded. Each successfully enriched profile consumes one credit. Definitive `not_found` and failed `error` outcomes remain in the page and are refunded, so they have zero net credit cost. An uncertain response can retain its reservation until the same page finishes; it does not prove a refund.
 </Note>
 
-Omit `cursor` on the first request. When `pagination.next_cursor` is not `null`, send that value unchanged with the same post URL and `limit` to fetch the next page. Cursors are bound to the workspace, post, engagement type, and page size, and expire within 15 minutes.
+## Pagination
 
-The provider selected for the first page is pinned into the cursor. If a later page returns `503` with `code: "provider_page_unavailable"`, retry the same cursor. The API retries that page against the pinned provider and does not silently switch providers or reorder the result set.
+Omit `cursor` on the first request. When `pagination.next_cursor` is not `null`, send it unchanged with the same post URL and `limit` to fetch the next page. The page size is 1–25 (default 25). The provider and continuation account remain pinned to the cursor. New cursors expire after 10 minutes and are bound to the workspace, post, engagement type, and page size.
 
-If a response is lost, retrying the request can run the page again and reserve credits again.
+Optional `retrieval` metadata contains `reported_total`, `returned_count`, `status`, and `stop_reason`. A `provider_exhausted` status means that provider has no further cursor; it does not guarantee that every LinkedIn engagement was accessible. Provider totals can change, and comment events are not the same count as unique authors. Public pagination does not promise every reply returned by the dashboard's background extraction.
 
-After `429 Too Many Requests`, wait and retry with bounded exponential backoff. A failed profile enrichment is refunded, and a failed provider page is not charged.
+## Safe retries
+
+Supply an optional UUID in the `Idempotency-Key` header. Save that key together with the endpoint and exact request body before sending the request. Reuse the same key with the identical `post_url`, `limit`, and `cursor` if the response is lost or processing is uncertain. Use a new key for the next page.
+
+The code examples read `AIRSCALE_PAGE_KEY` from your environment. Set it to a UUID once for each new page, and keep that value for every retry of that page. Replace the synthetic post URL and cursor with your own values.
+
+Omitting the header remains supported. However, an independent retry without the original key can reserve credits again. When a pending or uncertain response includes `idempotency_key`, retain and send that returned key even if your first request omitted the header.
+
+Completed results remain replayable for 24 hours after completion, including after the input cursor expires. Already-saved profile or billing work can also resume after cursor expiry. An expired cursor cannot start a new provider fetch. A reservation for unresolved work does not automatically become a refund after 24 hours.
+
+## Pending and error responses
+
+A `202` response with `status: "pending"` and `code: "page_pending"` means the bridge did not respond within 90 seconds. The outcome is unconfirmed; processing may still be running or may not have started. Wait for `Retry-After` (15 seconds for this response), then resend the identical page with the returned `idempotency_key`. The body also supplies `retry_after_ms`.
+
+| Response | Next action |
+| --- | --- |
+| `409 replay_in_progress` | Wait, then retry the identical page with the same key. |
+| `409 replay_request_mismatch` | Restore the original request fields for that key. Use a new key only for intentionally different work. |
+| `503 account_busy`, `rate_limited`, or `provider_unavailable` | Keep the page and key unchanged. Wait for the supplied delay and retry with bounded backoff. |
+| `503 provider_page_unavailable` | Retry the same cursor and key; continuation stays on its pinned provider. |
+| `503 account_restart_required` | Start again without a cursor and with a new key. Deduplicate results already received. |
+| Other `502` or `503` responses carrying `idempotency_key` | Preserve the original body and returned key. Retry with bounded backoff; do not assume that an uncertain profile or billing response was refunded. |
+| `429 Too Many Requests` | Wait and retry the same page and key with bounded exponential backoff. |
+
+If a cooldown outlasts an unfetched cursor, wait for the cooldown, then begin a fresh traversal without the cursor and with a new key. Deduplicate earlier results. A fresh traversal is new billable work. Saved work and completed replay results can still be recovered under the rules above.
+
+Airscale can choose another eligible account before a traversal starts. A continuation stays on its original account; it cannot silently switch accounts or reorder your results. Provider failures do not turn upstream access or pagination limits into a complete result set.
+
+## Billing recovery
+
+A failed provider discovery attempt is refunded before a new attempt is funded. Once a page has been saved, retries resume its profile enrichment or billing settlement without rediscovering the page or repeating successfully settled profile charges. Keep the same key throughout recovery.
 
 ## Next step
 
-Use [Post likers](/api-reference/post-likers) to retrieve people who liked a LinkedIn post, or read the [post engagement workflow](/docs/likers-commenters) for the dashboard flow.
+Use [Post likers](/api-reference/post-likers) for the other engagement type, or read the [post engagement workflow](/docs/likers-commenters) for the dashboard flow.
 
 ---
 

@@ -12,6 +12,7 @@ const manifest = JSON.parse(readFileSync("inventory/airschool-documentation.json
 const config = JSON.parse(readFileSync("docs.json", "utf8"));
 const normalize = (value) => value.replace(/\s+/gu, "");
 const hash = (value) => createHash("sha256").update(value).digest("hex");
+const recoveryAddition = /### Recovery and partial results\n\n[\s\S]*?(?=!\[Extract post likers\/commenters — 3\.)/;
 const plainText = (node) => ["text", "code", "inlineCode"].includes(node.type)
   ? node.value : (node.children ?? []).map(plainText).join("");
 function collect(node, type) {
@@ -46,7 +47,9 @@ for (const page of manifest.pages) {
       canonical: `https://airscale.mintlify.app/${page.path}`
     });
     const body = match[2];
-    const tree = fromMarkdown(body, { extensions: [gfm()], mdastExtensions: [gfmFromMarkdown()] });
+    // The deployed recovery update extends this guide; preserve every captured source element.
+    const capturedBody = page.path === "docs/likers-commenters" ? body.replace(recoveryAddition, "") : body;
+    const tree = fromMarkdown(capturedBody, { extensions: [gfm()], mdastExtensions: [gfmFromMarkdown()] });
     assert.equal(hash(normalize(plainText(tree))), page.textSha256, "all source text must survive in order without duplicated breakpoint variants");
     assert.deepEqual(collect(tree, "heading").map((heading) => ({ level: heading.depth, text: plainText(heading).trim() })), page.headings.map((heading) => ({ ...heading, text: heading.text.trim() })));
     assert.deepEqual(collect(tree, "table").map((table) => table.children.map((row) => row.children.map((cell) => normalize(plainText(cell))))), page.tables.map((table) => table.map((row) => row.map(normalize))));
@@ -70,6 +73,20 @@ for (const page of manifest.pages) {
     assert.doesNotMatch(body, /<script\b|javascript:|data:text\/html|framer-text-module|ssr-variant/i);
   });
 }
+
+test("post engagement guide adds bounded recovery guidance and resolving API links", () => {
+  const source = readFileSync("docs/likers-commenters.mdx", "utf8");
+  const additions = source.match(new RegExp(recoveryAddition.source, "g"));
+  assert.equal(additions?.length, 1);
+  const addition = additions[0];
+  for (const text of ["saves fetched pages and import progress", "another eligible account", "deduplicate saved results", "avoid repeating settled charges", "persistent failures beyond the retry budget require support", "Recovery does not remove upstream access or pagination limits", "per-page retry keys and cursor rules differ"]) {
+    assert.ok(addition.includes(text), text);
+  }
+  const tree = fromMarkdown(addition);
+  const links = collect(tree, "link").map(({ url }) => url);
+  assert.deepEqual(links, ["/api-reference/post-likers", "/api-reference/post-commenters"]);
+  for (const link of links) assert.ok(existsSync(`${link.slice(1)}.mdx`));
+});
 
 test("every migrated image and video matches the downloaded source checksum", () => {
   assert.equal(new Set(manifest.assets.map(({ path }) => path)).size, manifest.assets.length);

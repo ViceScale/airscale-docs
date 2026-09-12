@@ -59,6 +59,14 @@ Identify and prepare your target LinkedIn post:
 
 **Pro tip:** you can navigate away from this page during extraction
 
+### Recovery and partial results
+
+Airschool saves fetched pages and import progress so an interrupted extraction can resume. If an account becomes unavailable, it can continue with another eligible account and deduplicate saved results. Profile retries reuse the same identity to avoid repeating settled charges. Temporary provider failures and rate limits can delay completion; persistent failures beyond the retry budget require support to resume the extraction.
+
+Check the final counts and any partial-result reason. Provider totals, comment events, and unique authors are different measurements, and a provider cutoff can return fewer results than LinkedIn displays. Recovery does not remove upstream access or pagination limits.
+
+For integrations, use the [Post likers API](/api-reference/post-likers) or [Post commenters API](/api-reference/post-commenters). Their per-page retry keys and cursor rules differ from this background workflow.
+
 ![Extract post likers/commenters — 3. Launch the extraction](/images/docs/66wC8gsh7AEcMAoLPDzP21Yfc.png)
 
 ## 4. Access your results
