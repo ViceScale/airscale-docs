@@ -266,11 +266,11 @@ function openingTags(source, name) {
   return source.match(new RegExp(`<${name}\\b[^>]*>`, "g")) ?? [];
 }
 
-test("brand configuration and assets match Airschool", () => {
+test("brand configuration and assets match Airscale", () => {
   const config = JSON.parse(readFileSync("docs.json", "utf8"));
   assert.equal(config.$schema, "https://mintlify.com/docs.json");
   assert.equal(config.theme, "mint");
-  assert.equal(config.name, "Airschool API");
+  assert.equal(config.name, "Airscale API");
   assert.deepEqual(config.colors, { primary: "#4079FF", light: "#4079FF", dark: "#6F9BFF" });
   assert.deepEqual(config.logo, { light: "/logo/light.svg", dark: "/logo/dark.svg", href: "https://airscale.io/" });
   assert.equal(config.favicon, "/favicon.svg");
@@ -392,12 +392,12 @@ for (const [mode, path, wordmarkFill] of [
   ["light", "logo/light.svg", "#111827"],
   ["dark", "logo/dark.svg", "#FFFFFF"]
 ]) {
-  test(`${mode} header logo uses the approved tiled Airschool lockup`, () => {
+  test(`${mode} header logo uses the approved tiled Airscale lockup`, () => {
     const source = readFileSync(path, "utf8");
     const svg = tagAttributes(openingTags(source, "svg")[0] ?? "");
     assert.equal(svg.viewBox, "0 0 157 38");
     assert.equal(svg.role, "img");
-    assert.equal(svg["aria-label"], "Airschool");
+    assert.equal(svg["aria-label"], "Airscale");
     const tile = openingTags(source, "rect").map(tagAttributes).find((attributes) => (
       attributes.x === "0" && attributes.y === "0" && attributes.width === "38" &&
       attributes.height === "38" && attributes.rx === "8" && attributes.fill === "#111827"
@@ -413,8 +413,8 @@ for (const [mode, path, wordmarkFill] of [
       `${path} must render the enlarged canonical mark optically centered inside the 38px tile`
     );
     assert.equal(canonicalMark.fill, "#FFFFFF");
-    const wordmarkTag = source.match(/<text\b[^>]*>\s*Airschool\s*<\/text>/)?.[0];
-    assert.ok(wordmarkTag, `${path} must contain the Airschool wordmark`);
+    const wordmarkTag = source.match(/<text\b[^>]*>\s*Airscale\s*<\/text>/)?.[0];
+    assert.ok(wordmarkTag, `${path} must contain the Airscale wordmark`);
     const wordmark = tagAttributes(wordmarkTag);
     assert.equal(wordmark.x, "48.5");
     assert.equal(wordmark.y, "25.125");
@@ -424,8 +424,9 @@ for (const [mode, path, wordmarkFill] of [
   });
 }
 
-test("favicon preserves the Airschool symbol and brand SVG safety checks reject unsafe source", () => {
+test("favicon preserves the Airscale symbol and brand SVG safety checks reject unsafe source", () => {
   const favicon = readFileSync("favicon.svg", "utf8");
+  assert.equal(tagAttributes(openingTags(favicon, "svg")[0] ?? "")["aria-label"], "Airscale");
   assert.ok(favicon.includes(CANONICAL_SYMBOL_PATH));
   assert.doesNotMatch(favicon, /<text\b/i);
   assertSafeSvgSource(favicon, "favicon.svg");

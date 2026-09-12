@@ -1,25 +1,30 @@
 {
   "source": {
     "repository": "ViceScale/airscale-code",
-    "revision": "7b41695af39dcdcc9aa737ec92611fd343226566",
-    "implementationRevision": "08cb8df029dd51c7bdcb22ec08dadd2cab41859d",
-    "method": "Command metadata captured from buildProgram() in cli/airscale/src/program.ts; behavior checked against the listed source files.",
+    "revision": "5d62f377e7e6607099b8b3b493bc9bae3182077e",
+    "implementationRevision": "5d62f377e7e6607099b8b3b493bc9bae3182077e",
+    "method": "Command and option metadata captured from buildProgram(). Conditional --output requirement verified against enrichFile() and regression tests; source hashes pin the reviewed 0.2.0 implementation.",
     "sha256": {
-      "cli/airscale/src/program.ts": "e1ad48d7d10a7ebbb0a904fc8222a350b9e6d450e25ebc836c88bc7631d86bb3",
+      "cli/airscale/src/program.ts": "fd025ad67862934c16591388a923331962cd1670b82143f1f8b07716a81398ea",
       "cli/airscale/src/search.ts": "d4c538097076e1f9cf3428411f4dce7c29ea45dbda4d2b215c64ec8b3568c824",
-      "cli/airscale/src/enrich.ts": "1f110be8a45f77596190da0c2b551054db60b1b0e14c9fda9575bfc27227d7ce",
+      "cli/airscale/src/enrich.ts": "b0712e29f21c07d7ccc3750e8d4438aa53da4b60b8844026666e5f4b5938d1e0",
       "cli/airscale/src/runtime.ts": "bf4ce6d3a0c965ba37e7f79238e08099b45a5fb5bdc37c471124b8f3aac0f35c",
       "cli/airscale/src/config.ts": "c99d43d1629ac5936f24d088b1eba756c9d7863da80a5152c184ad34991298ec",
-      "cli/airscale/src/credentials.ts": "45aad97ccffd81ddb3f5c38e5e23f6be0f83069680e6a9f4b0b41c29351875cf",
-      "cli/airscale/src/output.ts": "71461567224a18b55908aed666ddd0559d5ab02020e95dfcecf195707089a858",
+      "cli/airscale/src/credentials.ts": "b5ec5e95474c533b98ce098acfe78475805ffbd30999efb26fdcfdbfa191b0f2",
+      "cli/airscale/src/output.ts": "7e2d42477a3fcbaf12e7e253c808844e1f12e769c13216a92b7644522952c1a5",
       "cli/airscale/src/progress.ts": "d6a8c5e571d330a08a9ad598fc9773f0e0936fb0d611531556787fb286b58323",
-      "cli/airscale/src/errors.ts": "253d6c9647a3444e039024192572503d1d6b8b0bf2f2f0600ca0fba1257a91e9",
+      "cli/airscale/src/errors.ts": "4617a4abb9c5b31e52d96dd16d62fc140d2a71fa824d913c75da075bc2d8bc12",
       "cli/airscale/src/input.ts": "dbdc97a4cc39d7ad9706afcc91ea9d6d597582df8f683f72e763057ea3532e68",
-      "cli/airscale/src/download.ts": "188fef854407462461e6a3331e398125d2dbfd08bccb61407b2ed8128bcf2ee4"
+      "cli/airscale/src/download.ts": "188fef854407462461e6a3331e398125d2dbfd08bccb61407b2ed8128bcf2ee4",
+      "cli/airscale/src/help.ts": "357a84bc85ab7d8552b5eb84bccae8f575f2d9bdfc58190e512735700a94f907",
+      "cli/airscale/src/completion.ts": "69a952e856de8526da8114f9065fa12057037f32795e51d3e975954b49f60c3b",
+      "cli/airscale/src/main.ts": "75351dc73d7f8a82a3969b77c076d10d924bef02df7510bbabd92df0ad404029",
+      "cli/airscale/src/prompts.ts": "2f404abc9ff9ff9d2538c71ee6fa1d8bc6484320fea85a32688c7d8752658475",
+      "cli/airscale/package.json": "bc2bd5a02e8608422a4e4ef2ba39be7e0696c419fcc96dbebd46035ecf603d2c"
     }
   },
   "package": "@airscale/cli",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "node": ">=20.3.0",
   "globalOptions": [
     {
@@ -40,7 +45,10 @@
   ],
   "commands": [
     {
-      "command": "airscale auth set-key",
+      "command": "airscale auth login",
+      "aliases": [
+        "airscale auth set-key"
+      ],
       "arguments": [],
       "options": []
     },
@@ -52,6 +60,25 @@
     {
       "command": "airscale auth logout",
       "arguments": [],
+      "options": []
+    },
+    {
+      "command": "airscale setup",
+      "arguments": [],
+      "options": []
+    },
+    {
+      "command": "airscale completion",
+      "arguments": [
+        {
+          "name": "shell",
+          "required": true,
+          "choices": [
+            "bash",
+            "zsh"
+          ]
+        }
+      ],
       "options": []
     },
     {
@@ -191,11 +218,16 @@
         },
         {
           "flags": "--output <path>",
-          "required": true
+          "requiredUnless": [
+            "--dry-run"
+          ]
         },
         {
           "flags": "--field <field>",
-          "default": "work_email"
+          "default": "work_email",
+          "choices": [
+            "work_email"
+          ]
         },
         {
           "flags": "--format <format>",

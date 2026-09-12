@@ -1,6 +1,6 @@
-# Airschool API
+# Airscale API
 
-> Airschool product guides, integration workflows, MCP documentation, and public API reference.
+> Airscale product guides, integration workflows, MCP documentation, and public API reference.
 > Preview documentation is intentionally noindex. Use only the airscale.mintlify.app links in this file.
 
 ## Documentation — Build lists
@@ -131,8 +131,9 @@
 
 ## CLI — Getting started
 
-- [Airscale CLI](https://airscale.mintlify.app/cli/overview.md): Search people and companies, enrich work emails from CSV or JSONL, and follow runs from your terminal.
-- [Command reference](https://airscale.mintlify.app/cli/commands.md): Every Airscale CLI command, argument, and flag for authentication, search, file enrichment, credits, and runs.
+- [Airscale CLI](https://airscale.mintlify.app/cli/overview.md): Install the Airscale CLI, preview a contact file for free, connect a workspace, and run bounded searches and enrichment.
+- [Command reference](https://airscale.mintlify.app/cli/commands.md): Every Airscale CLI 0.2.0 command and flag for setup, authentication, completion, search, file enrichment, credits, and runs.
+- [Troubleshooting](https://airscale.mintlify.app/cli/troubleshooting.md): Fix Airscale CLI installation, authentication, CSV validation, credit confirmation, output, and resume problems.
 
 ## Use cases — Getting started
 
