@@ -85,7 +85,7 @@ const createRequestSchema = {
     name: { type: "string", minLength: 1, maxLength: 120 },
     frequency: { type: "string", enum: ["weekly", "every_30_days", "every_90_days"], default: "weekly" },
     webhook_url: { type: ["string", "null"], format: "uri", maxLength: 2048 },
-    profiles: { type: "array", minItems: 1, maxItems: 500, items: monitorProfileInput }
+    profiles: { type: "array", minItems: 1, maxItems: 10_000, items: monitorProfileInput }
   }
 };
 
@@ -94,7 +94,7 @@ const addProfilesRequestSchema = {
   additionalProperties: false,
   required: ["profiles"],
   properties: {
-    profiles: { type: "array", minItems: 1, maxItems: 500, items: monitorProfileInput }
+    profiles: { type: "array", minItems: 1, maxItems: 10_000, items: monitorProfileInput }
   }
 };
 
@@ -129,8 +129,8 @@ function errorResponses(statuses) {
     400: "The request body is not valid JSON.",
     402: "The workspace does not have enough credits for monitoring admission.",
     404: "The requested monitor, profile, or event does not exist in this workspace.",
-    413: "The JSON request body exceeds the 512 KiB limit.",
-    422: "A field is invalid, a cursor is malformed, or the monitor has no active profiles.",
+    413: "The JSON request body exceeds the 8 MiB (8,388,608 bytes) limit.",
+    422: "A field is invalid, a cursor is malformed, the monitor has no active profiles, or the request would exceed 10,000 active profiles in one monitor.",
     429: "The workspace has exceeded the 120 requests per minute monitor limit.",
     500: "The monitor request could not be completed because of an unexpected server error.",
     503: "Job change monitoring is temporarily unavailable or not enabled."
@@ -171,9 +171,9 @@ export const jobChangeMonitorOperations = [
       operationId: "createJobChangeMonitor",
       tags: [TAG],
       summary: "Create a job-change monitor",
-      description: "Creates a new active monitor for 1–500 personal LinkedIn profiles. If webhook_url is set, the 202 response includes a signing_secret exactly once. Each request creates a new monitor; inspect existing monitors before retrying an unknown response.",
+      description: "Creates a new active monitor for 1–10,000 personal LinkedIn profiles with one monitor ID, frequency, and optional webhook. Scans run asynchronously and large scans can take time. The first successful profile check establishes a baseline without emitting an event. If webhook_url is set, the 202 response includes a signing_secret exactly once. Each request creates a new monitor; inspect existing monitors before retrying an unknown response.",
       "x-airscale-rate-limit": "120 requests per minute per workspace.",
-      "x-airscale-credit-cost": "Monitoring admission checks the workspace balance; the per-profile check price is configured for the workspace.",
+      "x-airscale-credit-cost": "0.1 credit per profile per check. Monitoring admission checks the workspace balance; budget 1,000 credits for a check of 10,000 profiles.",
       requestBody: requestBody(createRequestSchema, {
         monitor: {
           summary: "Monitor with one synthetic profile",
@@ -184,7 +184,7 @@ export const jobChangeMonitorOperations = [
             profiles: [{ linkedin_url: "https://www.linkedin.com/in/example-person", external_id: "crm-contact-123" }]
           }
         }
-      }, "Choose a check frequency and provide at least one personal LinkedIn profile."),
+      }, "Choose a check frequency and provide 1–10,000 personal LinkedIn profiles in a JSON body of at most 8 MiB (8,388,608 bytes). For larger payloads, create with fewer profiles and add the remainder to the same monitor in smaller requests."),
       responses: {
         202: response({
           type: "object",
@@ -196,7 +196,7 @@ export const jobChangeMonitorOperations = [
             signing_secret: { type: ["string", "null"] },
             signing_secret_warning: { type: ["string", "null"] }
           }
-        }, "The monitor was accepted and scheduled.", {
+        }, "The monitor was accepted and scheduled. Scans run asynchronously; acceptance does not mean the scan has completed.", {
           monitor: monitorExample,
           profiles: [profileExample],
           signing_secret: "example-signing-secret",
@@ -305,15 +305,16 @@ export const jobChangeMonitorOperations = [
       operationId: "addJobChangeMonitorProfiles",
       tags: [TAG],
       summary: "Add profiles to a monitor",
-      description: "Adds personal LinkedIn profiles to an existing monitor. An already-active URL is ignored; adding it after removal creates a new baseline.",
+      description: "Adds 1–10,000 personal LinkedIn profiles per request to an existing monitor, up to 10,000 active profiles in total. The monitor keeps the same ID, frequency, and webhook. An already-active URL is ignored; adding it after removal creates a new baseline. Checks run asynchronously and the first successful profile check establishes a baseline without emitting an event.",
       "x-airscale-rate-limit": "120 requests per minute per workspace.",
+      "x-airscale-credit-cost": "0.1 credit per profile per check. Monitoring admission checks the workspace balance for the resulting active profile count.",
       parameters: [MONITOR_ID],
       requestBody: requestBody(addProfilesRequestSchema, {
         profiles: {
           summary: "Add one synthetic profile",
           value: { profiles: [{ linkedin_url: "https://www.linkedin.com/in/example-person", external_id: "crm-contact-456" }] }
         }
-      }, "Provide one to 500 personal LinkedIn profiles."),
+      }, "Provide 1–10,000 personal LinkedIn profiles in a JSON body of at most 8 MiB (8,388,608 bytes), without exceeding 10,000 active profiles in the monitor. Split larger payloads into smaller requests to the same monitor."),
       responses: {
         201: response({
           type: "object",
@@ -322,7 +323,7 @@ export const jobChangeMonitorOperations = [
           properties: {
             profiles: { type: "array", items: profileResponse },
             added_profile_count: { type: "integer", minimum: 0 },
-            active_profile_count: { type: "integer", minimum: 0, maximum: 500 }
+            active_profile_count: { type: "integer", minimum: 0, maximum: 10_000 }
           }
         }, "The profiles accepted for the monitor.", {
           profiles: [profileExample],

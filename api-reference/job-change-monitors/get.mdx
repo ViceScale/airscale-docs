@@ -13,6 +13,8 @@ Use the profile `status` and `removed_at` fields to distinguish an active profil
 
 The monitor object reports `next_check_at` and `last_successful_check_at` as ISO 8601 timestamps. A paused monitor has no next check scheduled.
 
+A monitor can contain up to 10,000 active profiles under the same schedule and webhook. Scans run asynchronously and large scans can take time. Creating a monitor returns `202 Accepted` before its scan completes; use the profile statuses and monitor timestamps to follow its progress. A profile's first successful check establishes its baseline without emitting a job-change event.
+
 ## Next step
 
 Use [List job-change events](/api-reference/job-change-monitors/events) when you need cursor pagination beyond the latest 200 events.
