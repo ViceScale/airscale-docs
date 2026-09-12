@@ -206,7 +206,6 @@ function assertDashboardCssContract(source) {
     plainDeclaration("appearance", "none"),
     plainDeclaration("background", "transparent"),
     plainDeclaration("border", "0"),
-    plainDeclaration("color", "inherit"),
     plainDeclaration("cursor", "pointer"),
     plainDeclaration("font", "inherit"),
     plainDeclaration("text-align", "left"),
