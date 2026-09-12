@@ -16,7 +16,7 @@ import { join } from "node:path";
 import { tmpdir } from "node:os";
 import { runCli, writeOpenApiAtomic } from "../scripts/build-openapi.mjs";
 
-const SOURCE_SHA = "bac9174c3a074f5ec5dc14575162cc680da4a25e";
+const SOURCE_SHA = "1de19e1b70a052a4b8d9c2075021a7e5e7a94d51";
 const ACCOUNT_CONTACT_PATHS = new Set([
   "/v1/credits",
   "/v1/email",
@@ -127,6 +127,38 @@ function runtimeFilterValuesQuery({ q, query }) {
 function requestValidator(schema) {
   return schemaValidator(schema);
 }
+
+test("job-change monitor schemas accept 10,000 profiles and reject requests above the per-request limit", () => {
+  const spec = buildSpec();
+  const profiles = Array.from({ length: 10_000 }, (_, index) => ({
+    linkedin_url: `https://www.linkedin.com/in/example-person-${index}`,
+    external_id: `crm-contact-${index}`
+  }));
+
+  for (const [path, extra] of [
+    ["/v1/job-change-monitors", { name: "CRM champions" }],
+    ["/v1/job-change-monitors/{monitor_id}/profiles", {}]
+  ]) {
+    const operation = spec.paths[path].post;
+    const validate = requestValidator(requestSchema(operation));
+    assert.equal(validate({ ...extra, profiles }), true, JSON.stringify(validate.errors));
+    assert.equal(validate({ ...extra, profiles: [...profiles, profiles[0]] }), false);
+    assert.ok(validate.errors.some(({ keyword }) => keyword === "maxItems"));
+    assert.equal(validate({ ...extra, profiles: [] }), false);
+    assert.match(operation.requestBody.description, /8 MiB \(8,388,608 bytes\)/);
+    assert.match(operation.responses["413"].description, /8 MiB \(8,388,608 bytes\)/);
+    assert.match(operation.description, /asynchronously/);
+  }
+
+  const create = spec.paths["/v1/job-change-monitors"].post;
+  assert.ok(create.responses["202"]);
+  assert.deepEqual(create.responses["202"].content["application/json"].schema.required, [
+    "monitor", "profiles", "signing_secret", "signing_secret_warning"
+  ]);
+  assert.deepEqual(requestSchema(create).properties.frequency.enum, ["weekly", "every_30_days", "every_90_days"]);
+  assert.equal(spec.components.schemas.JobChangeMonitor.properties.active_profile_count.maximum, 10_000);
+  assert.equal(spec.paths["/v1/job-change-monitors/{monitor_id}/profiles"].post.responses["201"].content["application/json"].schema.properties.active_profile_count.maximum, 10_000);
+});
 
 function errorStatuses(operation) {
   return Object.keys(operation.responses).filter((status) => !["200", "201", "202"].includes(status));
