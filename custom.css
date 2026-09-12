@@ -39,7 +39,6 @@ html.dark #navbar a[href="https://app.airscale.io/dashboard"]:hover {
   background: transparent;
   border: 0;
   cursor: pointer;
-  font: inherit;
   text-align: left;
   width: 100%;
 }
