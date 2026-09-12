@@ -1,0 +1,271 @@
+{
+  "source": {
+    "repository": "ViceScale/airscale-code",
+    "revision": "7b41695af39dcdcc9aa737ec92611fd343226566",
+    "implementationRevision": "08cb8df029dd51c7bdcb22ec08dadd2cab41859d",
+    "method": "Command metadata captured from buildProgram() in cli/airscale/src/program.ts; behavior checked against the listed source files.",
+    "sha256": {
+      "cli/airscale/src/program.ts": "e1ad48d7d10a7ebbb0a904fc8222a350b9e6d450e25ebc836c88bc7631d86bb3",
+      "cli/airscale/src/search.ts": "d4c538097076e1f9cf3428411f4dce7c29ea45dbda4d2b215c64ec8b3568c824",
+      "cli/airscale/src/enrich.ts": "1f110be8a45f77596190da0c2b551054db60b1b0e14c9fda9575bfc27227d7ce",
+      "cli/airscale/src/runtime.ts": "bf4ce6d3a0c965ba37e7f79238e08099b45a5fb5bdc37c471124b8f3aac0f35c",
+      "cli/airscale/src/config.ts": "c99d43d1629ac5936f24d088b1eba756c9d7863da80a5152c184ad34991298ec",
+      "cli/airscale/src/credentials.ts": "45aad97ccffd81ddb3f5c38e5e23f6be0f83069680e6a9f4b0b41c29351875cf",
+      "cli/airscale/src/output.ts": "71461567224a18b55908aed666ddd0559d5ab02020e95dfcecf195707089a858",
+      "cli/airscale/src/progress.ts": "d6a8c5e571d330a08a9ad598fc9773f0e0936fb0d611531556787fb286b58323",
+      "cli/airscale/src/errors.ts": "253d6c9647a3444e039024192572503d1d6b8b0bf2f2f0600ca0fba1257a91e9",
+      "cli/airscale/src/input.ts": "dbdc97a4cc39d7ad9706afcc91ea9d6d597582df8f683f72e763057ea3532e68",
+      "cli/airscale/src/download.ts": "188fef854407462461e6a3331e398125d2dbfd08bccb61407b2ed8128bcf2ee4"
+    }
+  },
+  "package": "@airscale/cli",
+  "version": "0.1.0",
+  "node": ">=20.3.0",
+  "globalOptions": [
+    {
+      "flags": "-V, --version"
+    },
+    {
+      "flags": "--json"
+    },
+    {
+      "flags": "--base-url <url>"
+    },
+    {
+      "flags": "--quiet"
+    },
+    {
+      "flags": "-h, --help"
+    }
+  ],
+  "commands": [
+    {
+      "command": "airscale auth set-key",
+      "arguments": [],
+      "options": []
+    },
+    {
+      "command": "airscale auth status",
+      "arguments": [],
+      "options": []
+    },
+    {
+      "command": "airscale auth logout",
+      "arguments": [],
+      "options": []
+    },
+    {
+      "command": "airscale credits",
+      "arguments": [],
+      "options": [
+        {
+          "flags": "--output <path>"
+        },
+        {
+          "flags": "--format <format>",
+          "choices": [
+            "json",
+            "jsonl",
+            "csv",
+            "table"
+          ]
+        },
+        {
+          "flags": "--jsonl"
+        }
+      ]
+    },
+    {
+      "command": "airscale people search",
+      "arguments": [],
+      "options": [
+        {
+          "flags": "--output <path>"
+        },
+        {
+          "flags": "--format <format>",
+          "choices": [
+            "json",
+            "jsonl",
+            "csv",
+            "table"
+          ]
+        },
+        {
+          "flags": "--jsonl"
+        },
+        {
+          "flags": "--confirm-credit-spend"
+        },
+        {
+          "flags": "--max-credits <credits>"
+        },
+        {
+          "flags": "--request <path>"
+        },
+        {
+          "flags": "--size <size>"
+        },
+        {
+          "flags": "--cursor <cursor>"
+        },
+        {
+          "flags": "--all"
+        },
+        {
+          "flags": "--limit <rows>"
+        },
+        {
+          "flags": "--title <value>"
+        },
+        {
+          "flags": "--company-domain <domain>"
+        },
+        {
+          "flags": "--location <value>"
+        }
+      ]
+    },
+    {
+      "command": "airscale companies search",
+      "arguments": [],
+      "options": [
+        {
+          "flags": "--output <path>"
+        },
+        {
+          "flags": "--format <format>",
+          "choices": [
+            "json",
+            "jsonl",
+            "csv",
+            "table"
+          ]
+        },
+        {
+          "flags": "--jsonl"
+        },
+        {
+          "flags": "--confirm-credit-spend"
+        },
+        {
+          "flags": "--max-credits <credits>"
+        },
+        {
+          "flags": "--request <path>"
+        },
+        {
+          "flags": "--size <size>"
+        },
+        {
+          "flags": "--cursor <cursor>"
+        },
+        {
+          "flags": "--all"
+        },
+        {
+          "flags": "--limit <rows>"
+        },
+        {
+          "flags": "--country <value>"
+        },
+        {
+          "flags": "--industry <value>"
+        }
+      ]
+    },
+    {
+      "command": "airscale enrich file",
+      "arguments": [
+        {
+          "name": "input",
+          "required": true
+        }
+      ],
+      "options": [
+        {
+          "flags": "--confirm-credit-spend"
+        },
+        {
+          "flags": "--max-credits <credits>"
+        },
+        {
+          "flags": "--output <path>",
+          "required": true
+        },
+        {
+          "flags": "--field <field>",
+          "default": "work_email"
+        },
+        {
+          "flags": "--format <format>",
+          "choices": [
+            "csv",
+            "jsonl"
+          ]
+        },
+        {
+          "flags": "--dry-run"
+        },
+        {
+          "flags": "--resume"
+        },
+        {
+          "flags": "--state-file <path>"
+        }
+      ]
+    },
+    {
+      "command": "airscale runs status",
+      "arguments": [
+        {
+          "name": "id",
+          "required": true
+        }
+      ],
+      "options": [
+        {
+          "flags": "--output <path>"
+        },
+        {
+          "flags": "--format <format>",
+          "choices": [
+            "json",
+            "jsonl",
+            "csv",
+            "table"
+          ]
+        },
+        {
+          "flags": "--jsonl"
+        }
+      ]
+    },
+    {
+      "command": "airscale runs wait",
+      "arguments": [
+        {
+          "name": "id",
+          "required": true
+        }
+      ],
+      "options": [
+        {
+          "flags": "--output <path>"
+        },
+        {
+          "flags": "--format <format>",
+          "choices": [
+            "json",
+            "jsonl",
+            "csv",
+            "table"
+          ]
+        },
+        {
+          "flags": "--jsonl"
+        }
+      ]
+    }
+  ]
+}

@@ -129,6 +129,11 @@
 - [Connect Airschool MCP to Claude](https://airscale.mintlify.app/mcp/connect-airscale-mcp-to-claude.md): Connect Claude clients to Airschool with hosted OAuth or a protected Claude Code authorization header.
 - [Airschool MCP Server](https://airscale.mintlify.app/mcp/airscale-mcp-server.md): Connect Airschool to your AI assistant and prospect without leaving the chat.
 
+## CLI — Getting started
+
+- [Airscale CLI](https://airscale.mintlify.app/cli/overview.md): Search people and companies, enrich work emails from CSV or JSONL, and follow runs from your terminal.
+- [Command reference](https://airscale.mintlify.app/cli/commands.md): Every Airscale CLI command, argument, and flag for authentication, search, file enrichment, credits, and runs.
+
 ## Use cases — Getting started
 
 - [Quick beginner guide](https://airscale.mintlify.app/usecases/quick-beginner-guide.md): This quick beginner tutorial shows you how to navigate the Airschool platform and start using its key features

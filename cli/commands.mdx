@@ -1,0 +1,286 @@
+---
+title: "Command reference"
+description: "Every Airscale CLI command, argument, and flag for authentication, search, file enrichment, credits, and runs."
+canonical: "https://airscale.mintlify.app/cli/commands"
+---
+
+This reference covers `@airscale/cli` **0.1.0**. Start with [Airscale CLI](/cli/overview) for installation and authentication.
+
+## Global flags and help
+
+| Flag | Description |
+| --- | --- |
+| `--json` | Write JSON to stdout. For `enrich file`, applies to the summary, not the completed file. |
+| `--base-url <url>` | Override the API URL and `AIRSCALE_API_BASE_URL`. Default: `https://api.airscale.io/v1`. |
+| `--quiet` | Hide progress and informational messages. Errors and result output remain visible. |
+| `-V, --version` | Show the CLI version. |
+| `-h, --help` | Show help for the current command. |
+
+Use `airscale help [command]` for a top-level command or append `--help` to any nested command. Groups such as `auth`, `people`, `companies`, `enrich`, and `runs` organize the actions below.
+
+```bash
+airscale --version
+airscale help people
+airscale people search --help
+airscale enrich file --help
+```
+
+### Output flags
+
+These flags are available on `credits`, `people search`, `companies search`, `runs status`, and `runs wait`.
+
+| Flag | Description |
+| --- | --- |
+| `--output <path>` | Write to a file. `-` selects the normal output stream: stderr for tables, stdout for other formats. |
+| `--format <format>` | One of `json`, `jsonl`, `csv`, or `table`. Defaults to a table in an interactive terminal, JSON otherwise or when writing to a file. |
+| `--jsonl` | Emit one JSON object per line. Search output contains result records. |
+
+The global `--json` flag wins over `--jsonl`, which wins over `--format`. JSON search output preserves the response envelope; CSV and JSONL omit that envelope. Select the format explicitly when writing a `.csv` or `.jsonl` search file: the filename does not select its format.
+
+### Credit flags
+
+These flags are available on both search commands and `enrich file`.
+
+| Flag | Description |
+| --- | --- |
+| `--confirm-credit-spend` | Confirm the maximum credit exposure. Required to start fresh paid work in non-interactive mode; otherwise the CLI asks in the terminal. |
+| `--max-credits <credits>` | Positive integer ceiling for the maximum exposure. Reject the command if the estimate exceeds it. Does not replace spend confirmation. |
+
+Credit checks are free. Search costs 0.1 credit per returned result. File enrichment previews a maximum of 2 credits per row. These commands check available credits before starting fresh paid work.
+
+## Authentication
+
+### `airscale auth set-key`
+
+Store an API key through a hidden terminal prompt. Takes no arguments or command-specific flags. The prompt requires an interactive terminal; configure `AIRSCALE_API_KEY` through your CI secret manager for scripts.
+
+```bash
+airscale auth set-key
+```
+
+The optional system keychain is used when available, otherwise the CLI writes a restricted local credential file. `AIRSCALE_API_KEY` overrides the stored key. There is no API-key command-line flag.
+
+### `airscale auth status`
+
+Check configured authentication and API connectivity with a free credits request. Takes no arguments or command-specific flags; use global `--json` for machine-readable status.
+
+```bash
+airscale auth status --json
+```
+
+A successful status includes `configured`, `connected`, `source`, `fingerprint`, and `base_url`. Missing credentials produce `configured: false`, `connected: false`, and `source: "none"`, then exit `3`. Invalid credentials also exit `3`. The full API key is never displayed.
+
+### `airscale auth logout`
+
+Remove locally saved credentials. Takes no arguments or command-specific flags.
+
+```bash
+airscale auth logout
+```
+
+This does not revoke the API key. If `AIRSCALE_API_KEY` is set, it remains active until removed from the environment.
+
+## Credits
+
+### `airscale credits`
+
+Show the authenticated workspace's remaining credits. This request is free. Supports all [output flags](#output-flags).
+
+```bash
+airscale credits --json
+airscale credits --format csv --output credits.csv
+```
+
+## Search
+
+### Shared search flags
+
+Both searches support the [output flags](#output-flags), [credit flags](#credit-flags), and these pagination and request options:
+
+| Flag | Description |
+| --- | --- |
+| `--request <path>` | Read an advanced public API request from a JSON file. Cannot be combined with convenience filters. |
+| `--size <size>` | Page size, from `1` to `100`. Defaults to `100` for people and `50` for companies; a company cursor carries its own page size. |
+| `--cursor <cursor>` | Continue a previous search. Overrides the request file's cursor. |
+| `--all` | Follow continuation cursors until exhausted or the row limit is reached. |
+| `--limit <rows>` | Maximum returned rows, from `1` to `10000`. With `--all`, defaults to `10000`. Without `--all`, limits a single page. |
+
+`--size` also overrides a request file's size. Without `--all`, the maximum exposure is the smaller of the page size and `--limit`. With `--all`, it is `--limit` (or 10,000) multiplied by 0.1 credits.
+
+People page sizes shrink to the remaining row budget. Company cursors require a full page: the CLI stops before another page would exceed `--limit` and preserves its continuation cursor. A supplied company cursor must have a recognizable page size that fits the approved request. To continue later, keep the filters unchanged and pass the returned `next_cursor`.
+
+Paid search requests are not automatically retried. If a response is lost or ambiguous, inspect API request logs before repeating the search.
+
+### `airscale people search`
+
+Search for people with common filters or an advanced [Find People request](/api-reference/find-people).
+
+| Flag | Description |
+| --- | --- |
+| `--title <value>` | Job title. Repeat to include multiple titles. |
+| `--company-domain <domain>` | Company domain. Repeat to include multiple domains. |
+| `--location <value>` | Location. Repeat to include multiple locations. |
+
+Each convenience filter maps to an `include` list in the API query. Also supports every [shared search flag](#shared-search-flags).
+
+```bash
+airscale people search \
+  --title CTO --title "VP Engineering" \
+  --company-domain example.com --location France \
+  --size 20 --max-credits 2 --confirm-credit-spend --json
+```
+
+For advanced filters, save a JSON object with the public request schema:
+
+```json people-query.json
+{
+  "query": {
+    "JobTitle": { "include": ["CTO"], "exclude": ["Assistant"] },
+    "currentCompany.headcount": { ">=": 20, "<=": 200 }
+  },
+  "size": 25
+}
+```
+
+```bash
+airscale people search --request people-query.json \
+  --max-credits 3 --confirm-credit-spend --jsonl --output people.jsonl
+```
+
+This example's maximum exposure is 2.5 credits, within the integer ceiling of 3. Unknown top-level request keys and filter names are rejected before the search.
+
+### `airscale companies search`
+
+Search for companies with common filters or an advanced [Find Companies request](/api-reference/find-companies). At least one real filter is required.
+
+| Flag | Description |
+| --- | --- |
+| `--country <value>` | Country. Repeat to include multiple countries. |
+| `--industry <value>` | Industry. Repeat to include multiple industries. |
+
+Also supports every [shared search flag](#shared-search-flags).
+
+```bash
+airscale companies search \
+  --country France --country Germany --industry Software \
+  --size 50 --all --limit 200 \
+  --max-credits 20 --confirm-credit-spend \
+  --format csv --output companies.csv
+```
+
+Advanced requests use the public `filters` object. See [company filter values](/api-reference/find-companies/filter-values) for supported values.
+
+```json company-query.json
+{
+  "filters": {
+    "country": ["France"],
+    "industry": ["Software"]
+  },
+  "size": 20
+}
+```
+
+```bash
+airscale companies search --request company-query.json \
+  --max-credits 2 --confirm-credit-spend --json
+```
+
+## File enrichment
+
+### `airscale enrich file <input>`
+
+Enrich a CSV or JSONL file with professional work emails. The CLI uploads the validated rows, starts one durable run, waits for completion, and writes the verified result file.
+
+| Argument or flag | Description |
+| --- | --- |
+| `<input>` | A `.csv` or `.jsonl` path, or `-` to read stdin and detect the format. Maximum 10,000 records. |
+| `--output <path>` | Required completed output file. Must differ from the input and cannot be `-`. |
+| `--field <field>` | Defaults to `work_email`, the only supported field. |
+| `--format <format>` | Completed file format: `csv` or `jsonl`. Defaults to JSONL for a `.jsonl` output filename, CSV otherwise. |
+| `--dry-run` | Validate every row and preview maximum exposure locally, without credentials, HTTP requests, or credit spend. |
+| `--resume` | Continue the saved run with the same input, output, field, format, and API URL. With no saved state, prepares a fresh run. |
+| `--state-file <path>` | Override the default `<output>.airscale-state.json`. Must differ from the input and output paths. |
+
+Also supports the [credit flags](#credit-flags). Use global `--json` for the summary; it does not change the completed file format. `--jsonl` is not an enrichment flag.
+
+#### Input columns
+
+Each row needs either:
+
+- `linkedin_profile_url`; or
+- `first_name` and `last_name`, with `domain` or `company_name`.
+
+```csv contacts.csv
+first_name,last_name,domain
+Jordan,Example,example.com
+Taylor,Example,example.org
+```
+
+CSV headers are trimmed, lowercased, and spaces or hyphens become underscores for identity matching. Original columns and values remain in the output. CSV quoting, embedded newlines, UTF-8 BOMs, and Unicode are supported. JSONL records must be objects.
+
+Invalid identities, duplicate normalized CSV headers, malformed CSV, and duplicate `custom_id` values stop the command before HTTP. Row-level identity and JSONL validation errors are reported together. Missing IDs are assigned in row order as `airscale-row-1`, `airscale-row-2`, and so on.
+
+#### Preview and start
+
+```bash
+airscale enrich file contacts.csv \
+  --field work_email --output contacts-enriched.csv \
+  --max-credits 4 --dry-run --json
+```
+
+After reviewing the preview:
+
+```bash
+airscale enrich file contacts.csv \
+  --field work_email --output contacts-enriched.csv \
+  --max-credits 4 --confirm-credit-spend --resume --json
+```
+
+For stdin and JSONL output:
+
+```bash
+cat contacts.csv | airscale enrich file - \
+  --output contacts-enriched.jsonl --format jsonl \
+  --max-credits 4 --confirm-credit-spend --resume --json
+```
+
+To resume stdin, supply the exact same input bytes again.
+
+#### Output and recovery
+
+Results add `custom_id`, `work_email`, `email_status`, and `status` when returned. Existing input fields are preserved; collisions receive an `airscale_` prefix and, if needed, `_2`, `_3`, and so on. An input `work_email` column therefore stays intact while its result is written to `airscale_work_email`.
+
+The CLI verifies completed metadata, format, row count, and custom-ID order before committing the output atomically. An existing output with different content is preserved.
+
+Keep the state file until the run is fully reconciled. It records the input hash, output path, field, format, API URL, batch ID, run ID, and idempotency key, without API credentials. `--resume` refuses mismatched inputs and continues the same batch and run after a lost upload or start response. It never creates a replacement batch automatically.
+
+Ctrl-C aborts local requests and polling, removes temporary downloads, retains state, and exits `130`. It does not cancel server work. Resume with the original command to retrieve the result. An unknown start handoff is reported for inspection and is not automatically replayed.
+
+Locks protect both the output and state paths. If a crash leaves a reported `.airscale-lock` file, inspect its PID and remove the lock only after that process has stopped, then resume. A completed matching output can be resumed safely.
+
+## Runs
+
+Run IDs start with `exp_`. Both commands perform free reads and support all [output flags](#output-flags).
+
+### `airscale runs status <id>`
+
+Fetch the current status of a durable enrichment run once. `<id>` is required; there are no other command-specific flags.
+
+```bash
+airscale runs status exp_example --json
+```
+
+The command reports a failed run as status data. Use `runs wait` if a failed run should produce a failing exit code.
+
+### `airscale runs wait <id>`
+
+Poll until the run completes or fails. `<id>` is required; there are no other command-specific flags. A failed run exits `5`.
+
+```bash
+airscale runs wait exp_example --json
+airscale runs wait exp_example --quiet --output run.json
+```
+
+Polling follows the server's recommended interval, bounded to 2–60 seconds. Transient status-read failures use bounded retries; `429` respects `Retry-After`, including waits longer than 60 seconds. Ctrl-C stops local waiting and exits `130`.
+
+Run commands return status metadata. To retrieve the completed enrichment file, run `enrich file` again with `--resume` and the original input and output paths.

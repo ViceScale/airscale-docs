@@ -25,8 +25,8 @@ test("Use cases mirrors all eight live sidebar routes in the three source groups
   const paths = manifest.navigation.flatMap(({ pages }) => pages);
   assert.equal(paths.length, 8);
   assert.equal(new Set(paths).size, 8);
-  assert.deepEqual(config.navigation.tabs.map(({ tab }) => tab), ["Documentation", "API Reference", "MCP & Agents", "Use cases"]);
-  assert.deepEqual(config.navigation.tabs[3], { tab: "Use cases", groups: manifest.navigation });
+  assert.deepEqual(config.navigation.tabs.map(({ tab }) => tab), ["Documentation", "API Reference", "MCP & Agents", "CLI", "Use cases"]);
+  assert.deepEqual(config.navigation.tabs.find(({ tab }) => tab === "Use cases"), { tab: "Use cases", groups: manifest.navigation });
   assert.deepEqual(manifest.pages.map(({ path }) => path), paths);
   assert.deepEqual(readdirSync("usecases").filter((name) => name.endsWith(".mdx")).sort(), paths.map((path) => `${path.slice(9)}.mdx`).sort());
 });
