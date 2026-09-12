@@ -1,12 +1,10 @@
 ---
 title: "Airscale CLI"
-description: "Search people and companies, enrich work emails from CSV or JSONL, and follow runs from your terminal."
+description: "Install the Airscale CLI, preview a contact file for free, connect a workspace, and run bounded searches and enrichment."
 canonical: "https://airscale.mintlify.app/cli/overview"
 ---
 
-`airscale` brings people search, company search, work-email enrichment, and credit checks to your terminal. Use it interactively or in scripts, with JSON, JSONL, CSV, and table output.
-
-File enrichment saves its progress so you can resume an interrupted run and retrieve the completed file.
+`airscale` lets you search for people and companies, enrich work emails from CSV or JSONL, check credits, and follow durable runs from a terminal.
 
 ## Install
 
@@ -28,73 +26,63 @@ Requires **Node.js 20.3 or newer**.
   </Tab>
 </Tabs>
 
-## Authenticate
+## Preview a file for free
 
-Create a workspace API key in [Settings → API key](https://app.airscale.io/dashboard), then save it through the hidden terminal prompt:
-
-```bash
-airscale auth set-key
-airscale auth status --json
-airscale credits --json
-```
-
-`auth status` makes a free credit check to verify connectivity. It displays the credential source and a short fingerprint, without printing the key.
-
-For CI, configure `AIRSCALE_API_KEY` through your secret manager. It takes precedence over saved credentials. API keys cannot be passed as command-line arguments.
-
-To remove your saved credential:
-
-```bash
-airscale auth logout
-```
-
-Logout removes the locally stored key. It does not revoke the key or unset `AIRSCALE_API_KEY`.
-
-## Quick examples
-
-### Search for people
-
-Find up to 20 people for a maximum of 2 credits:
-
-```bash
-airscale people search \
-  --title CTO --title "VP Engineering" \
-  --company-domain example.com --location France \
-  --size 20 --max-credits 2 --confirm-credit-spend --json
-```
-
-### Export a company search
-
-Follow pages up to 200 companies and save the results as CSV:
-
-```bash
-airscale companies search \
-  --country France --industry Software \
-  --size 50 --all --limit 200 \
-  --max-credits 20 --confirm-credit-spend \
-  --format csv --output companies.csv
-```
-
-Searches cost **0.1 credit per returned result**. Before sending a paid search, the CLI checks the maximum row budget and available credits. An interactive terminal asks for confirmation; scripts require `--confirm-credit-spend`. Add `--max-credits` to enforce a positive-integer credit ceiling.
-
-### Preview and enrich a file
-
-Start with a CSV or JSONL file containing a LinkedIn profile URL, or a first name, last name, and company domain or name. For example:
+Create `contacts.csv` with two fictional contacts and reserved example domains:
 
 ```csv contacts.csv
 first_name,last_name,domain
-Jordan,Example,example.com
-Taylor,Example,example.org
+Avery,Stone,northstar.example
+Morgan,Lee,solstice.example
 ```
 
-Validate the file and preview the maximum of **2 credits per row** without authentication, network requests, or credit spend:
+Validate both rows and calculate the maximum exposure locally:
 
 ```bash
 airscale enrich file contacts.csv \
-  --output contacts-enriched.csv --max-credits 4 --dry-run --json
+  --dry-run --json --quiet
 ```
 
-After reviewing the preview, start the work-email enrichment:
+This dry run needs no `--output` or confirmation. It runs without credentials, HTTP requests, or credit spend. With `--json --quiet`, stdout contains only:
+
+```json
+{
+  "rows": 2,
+  "valid_rows": 2,
+  "estimated_max_credits": 4,
+  "field": "work_email",
+  "format": "csv",
+  "output": null,
+  "dry_run": true
+}
+```
+
+## Connect your workspace
+
+Create a workspace key in the [Airscale dashboard](https://app.airscale.io/dashboard), under **Settings → API key**, then enter it through the hidden prompt:
+
+```bash
+airscale auth login
+airscale auth status --json
+```
+
+`auth login` stores the key locally and shows `airscale auth status` as the next step. The status command makes a free `/credits` request to verify the key and connectivity. It displays the credential source and a short fingerprint without printing the key.
+
+For a guided first-time flow, run:
+
+```bash
+airscale setup
+```
+
+`setup` points you to **Settings → API key**, checks for an existing credential, and uses the hidden prompt only when none exists. It finishes with the same free credit check. The command is interactive; scripts should configure `AIRSCALE_API_KEY` through a secret manager.
+
+API keys cannot be passed as command-line arguments. `AIRSCALE_API_KEY` takes precedence over a saved credential.
+
+## Enrich the sample
+
+Replace the fictional rows with contacts you are authorized to enrich, then run the free preview again. Review any validation errors and the updated estimate before starting paid work.
+
+For a validated two-row file, provide a real output path and approve a maximum of 4 credits:
 
 ```bash
 airscale enrich file contacts.csv \
@@ -102,30 +90,48 @@ airscale enrich file contacts.csv \
   --confirm-credit-spend --resume --json
 ```
 
-Run the same command again after an interruption. `--resume` reuses the saved batch and run; the input, output path, field, format, and API URL must match. The default state file is `contacts-enriched.csv.airscale-state.json`.
+Fresh paid execution requires `--output`. `--resume` saves credential-free state so the same command can continue an interrupted run without starting a replacement batch. Keep the input, output path, field, format, and API URL unchanged when resuming.
 
-### Follow a run
+## More bounded examples
 
-Use the `exp_…` run ID from your enrichment output or saved state:
+Find up to five people with a maximum exposure of 0.5 credit:
+
+```bash
+airscale people search \
+  --title CTO --company-domain northstar.example \
+  --size 5 --max-credits 0.5 \
+  --confirm-credit-spend --json
+```
+
+Export up to 20 companies as CSV:
+
+```bash
+airscale companies search \
+  --country France --industry Software \
+  --size 20 --limit 20 --max-credits 2 \
+  --confirm-credit-spend --format csv --output companies.csv
+```
+
+Searches cost **0.1 credit per returned result**. Before paid work starts, the CLI checks the maximum row budget and available credits. Interactive terminals can confirm at the prompt; scripts must pass `--confirm-credit-spend`.
+
+Use the `exp_…` run ID from enrichment output or saved state for free status reads:
 
 ```bash
 airscale runs status exp_example --json
 airscale runs wait exp_example --json
 ```
 
-These commands are free status reads. To download the completed enrichment file, rerun `enrich file` with `--resume`.
+To download a completed enrichment file, rerun `enrich file` with `--resume`.
 
-See the [command reference](/cli/commands) for every command, flag, input rule, and pagination behavior.
+See the [command reference](/cli/commands) for every command, flag, input rule, and pagination behavior. See [Troubleshooting](/cli/troubleshooting) for installation, authentication, CSV, confirmation, and resume errors.
 
 ## Output and exit codes
 
-Interactive results default to a compact table on **stderr**. Pipes and file output default to JSON. Progress and errors also go to stderr; `--quiet` hides progress.
+All results, including interactive tables and `--output -`, go to stdout. Progress and errors go to stderr, so result pipelines stay clean. `--quiet` hides progress and informational messages, but never hides errors.
 
-For `credits`, search, and run commands, choose `--json`, `--jsonl`, or `--format json|jsonl|csv|table`. `--output path` writes a file; `--output -` uses the selected format's normal stream. When flags are combined, `--json` takes precedence over `--jsonl`, then `--format`.
+For `credits`, search, and run commands, choose `--json`, `--jsonl`, or `--format json|jsonl|csv|table`. A real `--output path` writes a file. When format flags are combined, `--json` takes precedence over `--jsonl`, then `--format`.
 
-Search JSON includes the response envelope and continuation cursor. CSV and JSONL contain the result records. Use JSON when you need pagination metadata.
-
-`enrich file` requires a real output path and supports CSV or JSONL for the completed file. Add `--json` for its separate summary on stdout.
+Search JSON includes the response envelope and continuation cursor. CSV and JSONL contain result records. Use JSON when you need pagination metadata.
 
 | Exit code | Meaning |
 | --- | --- |
@@ -140,11 +146,11 @@ Search JSON includes the response envelope and continuation cursor. CSV and JSON
 
 | Setting | Configuration | Precedence or default |
 | --- | --- | --- |
-| API key | `AIRSCALE_API_KEY` or `airscale auth set-key` | Environment variable before saved credentials. |
+| API key | `AIRSCALE_API_KEY` or `airscale auth login` | Environment variable before saved credentials. `auth set-key` remains an alias. |
 | API URL | `--base-url` or `AIRSCALE_API_BASE_URL` | Flag, then environment variable, then `https://api.airscale.io/v1`. |
 | Credential file directory | `XDG_CONFIG_HOME` | `$XDG_CONFIG_HOME/airscale`, otherwise `~/.config/airscale`. |
 
-Saved credentials use the optional system keychain when available, under service `airscale` and account `default`. Otherwise they are stored in `config.json` inside the credential directory, with file permissions `0600` and directory permissions `0700`. If the keychain cannot save the key, unlock it and retry.
+Saved credentials use the optional system keychain when available, under service `airscale` and account `default`. Otherwise they are stored in `config.json` inside the credential directory, with file permissions `0600` and directory permissions `0700`.
 
 API URLs must use HTTPS, except for HTTP on loopback addresses such as `http://127.0.0.1:8787/v1`. URLs containing credentials, query parameters, or fragments are rejected.
 

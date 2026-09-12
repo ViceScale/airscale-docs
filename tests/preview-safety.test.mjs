@@ -54,14 +54,15 @@ test("publication policy is preview-only and forbids live-domain mutations", () 
   });
 });
 
-test("docs configuration identifies the complete knowledge base and keeps the preview noindex", () => {
+test("docs configuration identifies the Airscale knowledge base and keeps the preview noindex", () => {
+  assert.equal(config.name, "Airscale API");
   assert.equal(
     config.description,
-    "Airschool product guides, integration workflows, MCP documentation, and public API reference."
+    "Airscale product guides, integration workflows, MCP documentation, and public API reference."
   );
   assert.equal(config.seo.indexing, "navigable");
   assert.equal(config.seo.metatags.robots, policy.previewRobots);
-  assert.equal(config.search.prompt, "Search Airschool documentation...");
+  assert.equal(config.search.prompt, "Search Airscale documentation...");
 });
 
 test("foundation config does not declare live-domain redirects", () => {

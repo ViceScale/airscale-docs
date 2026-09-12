@@ -1,0 +1,173 @@
+---
+title: "Troubleshooting"
+description: "Fix Airscale CLI installation, authentication, CSV validation, credit confirmation, output, and resume problems."
+canonical: "https://airscale.mintlify.app/cli/troubleshooting"
+---
+
+Start with the exact error on stderr. Result data stays on stdout, so redirecting stdout does not hide diagnostics.
+
+## Node.js or npm is missing
+
+The CLI requires **Node.js 20.3 or newer** and ships through npm.
+
+```bash
+node --version
+npm --version
+```
+
+Install or upgrade Node.js with your normal package manager, then retry:
+
+```bash
+npx @airscale/cli --help
+```
+
+If `npx` can run the CLI, the package and Node.js version are usable even when a global `airscale` command is unavailable.
+
+## `airscale: command not found`
+
+First confirm that the package is installed globally:
+
+```bash
+npm install --global @airscale/cli
+npm prefix --global
+```
+
+The npm global executable directory must be on `PATH`. Restart the shell after changing its startup file, or keep using `npx @airscale/cli` without a global install.
+
+## Missing API key
+
+The message `No Airscale API key configured.` means neither `AIRSCALE_API_KEY` nor a saved credential is available.
+
+In an interactive terminal, store a key through the hidden prompt:
+
+```bash
+airscale auth login
+airscale auth status --json
+```
+
+Create the key in the [Airscale dashboard](https://app.airscale.io/dashboard), under **Settings → API key**. For CI, set `AIRSCALE_API_KEY` through the platform's secret manager. Do not put a key in a command argument, repository, log, or shell history.
+
+## Invalid API key
+
+An invalid API key normally produces exit code `3` after a `401` response. `AIRSCALE_API_KEY` takes precedence over a saved credential. Check whether the environment variable exists without printing its value:
+
+```bash
+if [ -n "${AIRSCALE_API_KEY+x}" ]; then
+  printf 'AIRSCALE_API_KEY is set\n'
+else
+  printf 'AIRSCALE_API_KEY is unset\n'
+fi
+```
+
+This prints only whether the variable is set or unset. If it is set, update or unset that environment value. If it is unset, run `airscale auth login` to replace the saved credential. Then retry:
+
+```bash
+airscale auth status --json
+```
+
+When `auth status` succeeds, its output reports the credential source and a short fingerprint. On a `401`, it exits before emitting that status object. Rotate the dashboard key when it was exposed; logging out only removes the local saved credential.
+
+## Invalid CSV or JSONL
+
+Validate locally without authentication, output, or credit spend:
+
+```bash
+airscale enrich file contacts.csv --dry-run --json --quiet
+```
+
+For CSV, check that:
+
+- headers are unique after trimming, lowercasing, and converting spaces or hyphens to underscores;
+- quoting is balanced;
+- every row has `linkedin_profile_url`, or `first_name` and `last_name` with `domain` or `company_name`;
+- explicit `custom_id` values are unique.
+
+JSONL must contain one JSON object per line and follows the same identity and `custom_id` rules. The CLI reports row-level identity and JSONL errors together before making an HTTP request.
+
+## Credit confirmation or budget failure
+
+Fresh paid work needs explicit confirmation when stdin is not an interactive terminal:
+
+```bash
+airscale people search \
+  --title CTO --company-domain northstar.example \
+  --size 5 --max-credits 0.5 \
+  --confirm-credit-spend --json
+```
+
+`--max-credits` accepts a plain positive decimal up to `9,007,199,254,740,991`. Scientific notation, `Infinity`, hexadecimal, and signed values are rejected. The flag caps exposure but does not confirm spend. If the estimate exceeds the cap, reduce `--size` or `--limit`, refine the input, or deliberately raise the cap. If available credits are too low, no paid request starts.
+
+File enrichment also requires a real output path for paid execution:
+
+```bash
+airscale enrich file contacts.csv \
+  --output contacts-enriched.csv --max-credits 4 \
+  --confirm-credit-spend --resume --json
+```
+
+## Resume an interrupted enrichment
+
+Ctrl-C stops local upload, polling, or download work and exits `130`; it does not cancel the server run. Run the original command again with `--resume`:
+
+```bash
+airscale enrich file contacts.csv \
+  --output contacts-enriched.csv --max-credits 4 \
+  --confirm-credit-spend --resume --json
+```
+
+The input bytes, output path, field, format, and API URL must match the saved state. Keep the `*.airscale-state.json` file until completion. If the CLI reports a stale `.airscale-lock`, inspect the recorded PID and remove the lock only after that process has stopped.
+
+An unknown start handoff is preserved for inspection and is not replayed automatically. Use the saved `exp_…` identifier for a free read:
+
+```bash
+airscale runs status exp_example --json
+airscale runs wait exp_example --json
+```
+
+## Use guided setup
+
+`airscale setup` is an opt-in onboarding command for an interactive terminal:
+
+```bash
+airscale setup
+```
+
+It guides you to the dashboard and **Settings → API key**, checks whether a credential exists, prompts only when one is missing, and finishes with a free `/credits` check. It does not accept non-interactive input; in that case it exits before reading credentials or making an HTTP request.
+
+## Enable shell completion
+
+Shell completion is opt in. Inspect the generated script first:
+
+```bash
+airscale completion zsh
+airscale completion bash
+```
+
+The command prints script text to stdout only. It does not edit your profile or activate anything. To enable zsh completion for the current shell session:
+
+```zsh
+autoload -Uz compinit
+compinit
+source <(airscale completion zsh)
+```
+
+For the current bash session:
+
+```shell
+source <(airscale completion bash)
+```
+
+For persistent completion, save the reviewed output in the completion directory managed by your shell or package manager, then load it from your own shell configuration.
+
+## A result pipeline is empty
+
+Version 0.2.0 writes tables, JSON, JSONL, CSV, and `--output -` to stdout. Progress and errors remain on stderr.
+
+```bash
+airscale credits --format table
+airscale credits --json --output -
+```
+
+Scripts written for 0.1.0 may have read interactive tables from stderr. Update those scripts to read stdout. Add `--quiet` when progress messages are unwanted; errors remain visible.
+
+If the issue persists, capture the command shape, CLI version, exit code, and redacted stderr. Never include the API key or a full credential value.

@@ -1,6 +1,6 @@
-# Airschool API full documentation
+# Airscale API full documentation
 
-> Airschool product guides, integration workflows, MCP documentation, and public API reference.
+> Airscale product guides, integration workflows, MCP documentation, and public API reference.
 > This is the full public, navigable preview corpus. It remains intentionally noindex for traditional search engines.
 
 ## Scrape a Sales Navigator search
@@ -4122,11 +4122,9 @@ Start once. While status is `queued` or `running`, poll status for the same expo
 
 Source: https://airscale.mintlify.app/cli/overview.md
 
-Description: Search people and companies, enrich work emails from CSV or JSONL, and follow runs from your terminal.
+Description: Install the Airscale CLI, preview a contact file for free, connect a workspace, and run bounded searches and enrichment.
 
-`airscale` brings people search, company search, work-email enrichment, and credit checks to your terminal. Use it interactively or in scripts, with JSON, JSONL, CSV, and table output.
-
-File enrichment saves its progress so you can resume an interrupted run and retrieve the completed file.
+`airscale` lets you search for people and companies, enrich work emails from CSV or JSONL, check credits, and follow durable runs from a terminal.
 
 ## Install
 
@@ -4148,73 +4146,63 @@ Requires **Node.js 20.3 or newer**.
   </Tab>
 </Tabs>
 
-## Authenticate
+## Preview a file for free
 
-Create a workspace API key in [Settings → API key](https://app.airscale.io/dashboard), then save it through the hidden terminal prompt:
-
-```bash
-airscale auth set-key
-airscale auth status --json
-airscale credits --json
-```
-
-`auth status` makes a free credit check to verify connectivity. It displays the credential source and a short fingerprint, without printing the key.
-
-For CI, configure `AIRSCALE_API_KEY` through your secret manager. It takes precedence over saved credentials. API keys cannot be passed as command-line arguments.
-
-To remove your saved credential:
-
-```bash
-airscale auth logout
-```
-
-Logout removes the locally stored key. It does not revoke the key or unset `AIRSCALE_API_KEY`.
-
-## Quick examples
-
-### Search for people
-
-Find up to 20 people for a maximum of 2 credits:
-
-```bash
-airscale people search \
-  --title CTO --title "VP Engineering" \
-  --company-domain example.com --location France \
-  --size 20 --max-credits 2 --confirm-credit-spend --json
-```
-
-### Export a company search
-
-Follow pages up to 200 companies and save the results as CSV:
-
-```bash
-airscale companies search \
-  --country France --industry Software \
-  --size 50 --all --limit 200 \
-  --max-credits 20 --confirm-credit-spend \
-  --format csv --output companies.csv
-```
-
-Searches cost **0.1 credit per returned result**. Before sending a paid search, the CLI checks the maximum row budget and available credits. An interactive terminal asks for confirmation; scripts require `--confirm-credit-spend`. Add `--max-credits` to enforce a positive-integer credit ceiling.
-
-### Preview and enrich a file
-
-Start with a CSV or JSONL file containing a LinkedIn profile URL, or a first name, last name, and company domain or name. For example:
+Create `contacts.csv` with two fictional contacts and reserved example domains:
 
 ```csv contacts.csv
 first_name,last_name,domain
-Jordan,Example,example.com
-Taylor,Example,example.org
+Avery,Stone,northstar.example
+Morgan,Lee,solstice.example
 ```
 
-Validate the file and preview the maximum of **2 credits per row** without authentication, network requests, or credit spend:
+Validate both rows and calculate the maximum exposure locally:
 
 ```bash
 airscale enrich file contacts.csv \
-  --output contacts-enriched.csv --max-credits 4 --dry-run --json
+  --dry-run --json --quiet
 ```
 
-After reviewing the preview, start the work-email enrichment:
+This dry run needs no `--output` or confirmation. It runs without credentials, HTTP requests, or credit spend. With `--json --quiet`, stdout contains only:
+
+```json
+{
+  "rows": 2,
+  "valid_rows": 2,
+  "estimated_max_credits": 4,
+  "field": "work_email",
+  "format": "csv",
+  "output": null,
+  "dry_run": true
+}
+```
+
+## Connect your workspace
+
+Create a workspace key in the [Airscale dashboard](https://app.airscale.io/dashboard), under **Settings → API key**, then enter it through the hidden prompt:
+
+```bash
+airscale auth login
+airscale auth status --json
+```
+
+`auth login` stores the key locally and shows `airscale auth status` as the next step. The status command makes a free `/credits` request to verify the key and connectivity. It displays the credential source and a short fingerprint without printing the key.
+
+For a guided first-time flow, run:
+
+```bash
+airscale setup
+```
+
+`setup` points you to **Settings → API key**, checks for an existing credential, and uses the hidden prompt only when none exists. It finishes with the same free credit check. The command is interactive; scripts should configure `AIRSCALE_API_KEY` through a secret manager.
+
+API keys cannot be passed as command-line arguments. `AIRSCALE_API_KEY` takes precedence over a saved credential.
+
+## Enrich the sample
+
+Replace the fictional rows with contacts you are authorized to enrich, then run the free preview again. Review any validation errors and the updated estimate before starting paid work.
+
+For a validated two-row file, provide a real output path and approve a maximum of 4 credits:
 
 ```bash
 airscale enrich file contacts.csv \
@@ -4222,30 +4210,48 @@ airscale enrich file contacts.csv \
   --confirm-credit-spend --resume --json
 ```
 
-Run the same command again after an interruption. `--resume` reuses the saved batch and run; the input, output path, field, format, and API URL must match. The default state file is `contacts-enriched.csv.airscale-state.json`.
+Fresh paid execution requires `--output`. `--resume` saves credential-free state so the same command can continue an interrupted run without starting a replacement batch. Keep the input, output path, field, format, and API URL unchanged when resuming.
 
-### Follow a run
+## More bounded examples
 
-Use the `exp_…` run ID from your enrichment output or saved state:
+Find up to five people with a maximum exposure of 0.5 credit:
+
+```bash
+airscale people search \
+  --title CTO --company-domain northstar.example \
+  --size 5 --max-credits 0.5 \
+  --confirm-credit-spend --json
+```
+
+Export up to 20 companies as CSV:
+
+```bash
+airscale companies search \
+  --country France --industry Software \
+  --size 20 --limit 20 --max-credits 2 \
+  --confirm-credit-spend --format csv --output companies.csv
+```
+
+Searches cost **0.1 credit per returned result**. Before paid work starts, the CLI checks the maximum row budget and available credits. Interactive terminals can confirm at the prompt; scripts must pass `--confirm-credit-spend`.
+
+Use the `exp_…` run ID from enrichment output or saved state for free status reads:
 
 ```bash
 airscale runs status exp_example --json
 airscale runs wait exp_example --json
 ```
 
-These commands are free status reads. To download the completed enrichment file, rerun `enrich file` with `--resume`.
+To download a completed enrichment file, rerun `enrich file` with `--resume`.
 
-See the [command reference](/cli/commands) for every command, flag, input rule, and pagination behavior.
+See the [command reference](/cli/commands) for every command, flag, input rule, and pagination behavior. See [Troubleshooting](/cli/troubleshooting) for installation, authentication, CSV, confirmation, and resume errors.
 
 ## Output and exit codes
 
-Interactive results default to a compact table on **stderr**. Pipes and file output default to JSON. Progress and errors also go to stderr; `--quiet` hides progress.
+All results, including interactive tables and `--output -`, go to stdout. Progress and errors go to stderr, so result pipelines stay clean. `--quiet` hides progress and informational messages, but never hides errors.
 
-For `credits`, search, and run commands, choose `--json`, `--jsonl`, or `--format json|jsonl|csv|table`. `--output path` writes a file; `--output -` uses the selected format's normal stream. When flags are combined, `--json` takes precedence over `--jsonl`, then `--format`.
+For `credits`, search, and run commands, choose `--json`, `--jsonl`, or `--format json|jsonl|csv|table`. A real `--output path` writes a file. When format flags are combined, `--json` takes precedence over `--jsonl`, then `--format`.
 
-Search JSON includes the response envelope and continuation cursor. CSV and JSONL contain the result records. Use JSON when you need pagination metadata.
-
-`enrich file` requires a real output path and supports CSV or JSONL for the completed file. Add `--json` for its separate summary on stdout.
+Search JSON includes the response envelope and continuation cursor. CSV and JSONL contain result records. Use JSON when you need pagination metadata.
 
 | Exit code | Meaning |
 | --- | --- |
@@ -4260,11 +4266,11 @@ Search JSON includes the response envelope and continuation cursor. CSV and JSON
 
 | Setting | Configuration | Precedence or default |
 | --- | --- | --- |
-| API key | `AIRSCALE_API_KEY` or `airscale auth set-key` | Environment variable before saved credentials. |
+| API key | `AIRSCALE_API_KEY` or `airscale auth login` | Environment variable before saved credentials. `auth set-key` remains an alias. |
 | API URL | `--base-url` or `AIRSCALE_API_BASE_URL` | Flag, then environment variable, then `https://api.airscale.io/v1`. |
 | Credential file directory | `XDG_CONFIG_HOME` | `$XDG_CONFIG_HOME/airscale`, otherwise `~/.config/airscale`. |
 
-Saved credentials use the optional system keychain when available, under service `airscale` and account `default`. Otherwise they are stored in `config.json` inside the credential directory, with file permissions `0600` and directory permissions `0700`. If the keychain cannot save the key, unlock it and retry.
+Saved credentials use the optional system keychain when available, under service `airscale` and account `default`. Otherwise they are stored in `config.json` inside the credential directory, with file permissions `0600` and directory permissions `0700`.
 
 API URLs must use HTTPS, except for HTTP on loopback addresses such as `http://127.0.0.1:8787/v1`. URLs containing credentials, query parameters, or fragments are rejected.
 
@@ -4278,25 +4284,26 @@ airscale --base-url http://127.0.0.1:8787/v1 auth status --json
 
 Source: https://airscale.mintlify.app/cli/commands.md
 
-Description: Every Airscale CLI command, argument, and flag for authentication, search, file enrichment, credits, and runs.
+Description: Every Airscale CLI 0.2.0 command and flag for setup, authentication, completion, search, file enrichment, credits, and runs.
 
-This reference covers `@airscale/cli` **0.1.0**. Start with [Airscale CLI](/cli/overview) for installation and authentication.
+This reference covers `@airscale/cli` **0.2.0**. Start with [Airscale CLI](/cli/overview) for the free first-run workflow.
 
 ## Global flags and help
 
 | Flag | Description |
 | --- | --- |
-| `--json` | Write JSON to stdout. For `enrich file`, applies to the summary, not the completed file. |
-| `--base-url <url>` | Override the API URL and `AIRSCALE_API_BASE_URL`. Default: `https://api.airscale.io/v1`. |
+| `--json` | Write JSON to stdout. For `enrich file`, this applies to the summary, not the completed file. |
+| `--base-url <url>` | Override `AIRSCALE_API_BASE_URL`. Default: `https://api.airscale.io/v1`. |
 | `--quiet` | Hide progress and informational messages. Errors and result output remain visible. |
 | `-V, --version` | Show the CLI version. |
 | `-h, --help` | Show help for the current command. |
 
-Use `airscale help [command]` for a top-level command or append `--help` to any nested command. Groups such as `auth`, `people`, `companies`, `enrich`, and `runs` organize the actions below.
+Use `airscale help [command]` for a top-level group or append `--help` to any nested command.
 
 ```bash
 airscale --version
-airscale help people
+airscale help auth
+airscale setup --help
 airscale people search --help
 airscale enrich file --help
 ```
@@ -4307,11 +4314,13 @@ These flags are available on `credits`, `people search`, `companies search`, `ru
 
 | Flag | Description |
 | --- | --- |
-| `--output <path>` | Write to a file. `-` selects the normal output stream: stderr for tables, stdout for other formats. |
-| `--format <format>` | One of `json`, `jsonl`, `csv`, or `table`. Defaults to a table in an interactive terminal, JSON otherwise or when writing to a file. |
+| `--output <path>` | Write to a file. `--output -` writes the selected result format to stdout. |
+| `--format <format>` | One of `json`, `jsonl`, `csv`, or `table`. Defaults to a table in an interactive terminal and JSON otherwise or when writing a file. |
 | `--jsonl` | Emit one JSON object per line. Search output contains result records. |
 
-The global `--json` flag wins over `--jsonl`, which wins over `--format`. JSON search output preserves the response envelope; CSV and JSONL omit that envelope. Select the format explicitly when writing a `.csv` or `.jsonl` search file: the filename does not select its format.
+All result formats go to stdout when no file path is selected, including tables. Progress and errors go to stderr. The global `--json` flag wins over `--jsonl`, which wins over `--format`.
+
+JSON search output preserves the response envelope and continuation cursor. CSV and JSONL contain result records. Select the format explicitly when writing a `.csv` or `.jsonl` search file; the filename does not select its format.
 
 ### Credit flags
 
@@ -4320,25 +4329,31 @@ These flags are available on both search commands and `enrich file`.
 | Flag | Description |
 | --- | --- |
 | `--confirm-credit-spend` | Confirm the maximum credit exposure. Required to start fresh paid work in non-interactive mode; otherwise the CLI asks in the terminal. |
-| `--max-credits <credits>` | Positive integer ceiling for the maximum exposure. Reject the command if the estimate exceeds it. Does not replace spend confirmation. |
+| `--max-credits <credits>` | Plain positive decimal that caps maximum exposure, such as `0.5` or `4`, up to `9,007,199,254,740,991`. Scientific notation, `Infinity`, hexadecimal, and signed values are rejected. This does not replace spend confirmation. |
 
-Credit checks are free. Search costs 0.1 credit per returned result. File enrichment previews a maximum of 2 credits per row. These commands check available credits before starting fresh paid work.
+Credit checks are free. Search costs 0.1 credit per returned result. File enrichment previews a maximum of 2 credits per row. Row counts, page sizes, and limits remain positive integers.
 
 ## Authentication
 
-### `airscale auth set-key`
+### `airscale auth login`
 
-Store an API key through a hidden terminal prompt. Takes no arguments or command-specific flags. The prompt requires an interactive terminal; configure `AIRSCALE_API_KEY` through your CI secret manager for scripts.
+Store a workspace API key through a hidden terminal prompt. It takes no arguments or command-specific flags and requires an interactive terminal.
+
+```bash
+airscale auth login
+```
+
+After saving the key, the CLI shows `airscale auth status` as the next step. The optional system keychain is used when available; otherwise the CLI writes a restricted local credential file. `AIRSCALE_API_KEY` overrides the saved key. There is no API-key command-line flag.
+
+`airscale auth set-key` remains an alias for compatibility:
 
 ```bash
 airscale auth set-key
 ```
 
-The optional system keychain is used when available, otherwise the CLI writes a restricted local credential file. `AIRSCALE_API_KEY` overrides the stored key. There is no API-key command-line flag.
-
 ### `airscale auth status`
 
-Check configured authentication and API connectivity with a free credits request. Takes no arguments or command-specific flags; use global `--json` for machine-readable status.
+Check configured authentication and API connectivity with a free `/credits` request. It takes no arguments or command-specific flags; use global `--json` for machine-readable status.
 
 ```bash
 airscale auth status --json
@@ -4348,7 +4363,7 @@ A successful status includes `configured`, `connected`, `source`, `fingerprint`,
 
 ### `airscale auth logout`
 
-Remove locally saved credentials. Takes no arguments or command-specific flags.
+Remove locally saved credentials. It takes no arguments or command-specific flags.
 
 ```bash
 airscale auth logout
@@ -4356,11 +4371,38 @@ airscale auth logout
 
 This does not revoke the API key. If `AIRSCALE_API_KEY` is set, it remains active until removed from the environment.
 
+## Guided setup
+
+### `airscale setup`
+
+Guide an interactive user through authentication and a free connectivity check.
+
+```bash
+airscale setup
+```
+
+The command points to the [Airscale dashboard](https://app.airscale.io/dashboard) and tells the user to choose **Settings → API key**, then checks whether a credential is already configured. If one exists, it skips the key prompt. If none exists, it accepts the key through a hidden prompt. It finishes by checking `/credits`, which does not spend credits.
+
+In a non-interactive environment, `setup` fails before it reads any credential or makes an HTTP request. For CI, set `AIRSCALE_API_KEY` through a secret manager and run `airscale auth status --json` when a free connectivity check is needed.
+
+## Shell completion
+
+### `airscale completion <shell>`
+
+Print a completion script for `bash` or `zsh`.
+
+```bash
+airscale completion bash
+airscale completion zsh
+```
+
+The command writes the shell script only to stdout. It does not edit a shell profile, create files, or enable completion automatically. Review the output, then explicitly source it or save it in the completion directory used by your shell. See [Troubleshooting](/cli/troubleshooting#enable-shell-completion) for opt-in examples.
+
 ## Credits
 
 ### `airscale credits`
 
-Show the authenticated workspace's remaining credits. This request is free. Supports all [output flags](#output-flags).
+Show the authenticated workspace's remaining credits. This request is free and supports all [output flags](#output-flags).
 
 ```bash
 airscale credits --json
@@ -4371,25 +4413,25 @@ airscale credits --format csv --output credits.csv
 
 ### Shared search flags
 
-Both searches support the [output flags](#output-flags), [credit flags](#credit-flags), and these pagination and request options:
+Both searches support the [output flags](#output-flags), [credit flags](#credit-flags), and these request and pagination flags:
 
 | Flag | Description |
 | --- | --- |
 | `--request <path>` | Read an advanced public API request from a JSON file. Cannot be combined with convenience filters. |
-| `--size <size>` | Page size, from `1` to `100`. Defaults to `100` for people and `50` for companies; a company cursor carries its own page size. |
+| `--size <size>` | Integer page size from `1` to `100`. Defaults to `100` for people and `50` for companies; a company cursor carries its own page size. |
 | `--cursor <cursor>` | Continue a previous search. Overrides the request file's cursor. |
 | `--all` | Follow continuation cursors until exhausted or the row limit is reached. |
-| `--limit <rows>` | Maximum returned rows, from `1` to `10000`. With `--all`, defaults to `10000`. Without `--all`, limits a single page. |
+| `--limit <rows>` | Integer maximum from `1` to `10000`. With `--all`, defaults to `10000`. Without `--all`, limits one page. |
 
-`--size` also overrides a request file's size. Without `--all`, the maximum exposure is the smaller of the page size and `--limit`. With `--all`, it is `--limit` (or 10,000) multiplied by 0.1 credits.
+`--size` also overrides a request file's size. Without `--all`, maximum exposure is the smaller of the page size and `--limit`. With `--all`, it is `--limit` (or 10,000) multiplied by 0.1 credits.
 
-People page sizes shrink to the remaining row budget. Company cursors require a full page: the CLI stops before another page would exceed `--limit` and preserves its continuation cursor. A supplied company cursor must have a recognizable page size that fits the approved request. To continue later, keep the filters unchanged and pass the returned `next_cursor`.
+People page sizes shrink to the remaining row budget. Company cursors require a full page: the CLI stops before another page would exceed `--limit` and preserves its continuation cursor. Keep the filters unchanged when continuing with `next_cursor`.
 
 Paid search requests are not automatically retried. If a response is lost or ambiguous, inspect API request logs before repeating the search.
 
 ### `airscale people search`
 
-Search for people with common filters or an advanced [Find People request](/api-reference/find-people).
+Search for people with convenience filters or an advanced [Find People request](/api-reference/find-people).
 
 | Flag | Description |
 | --- | --- |
@@ -4397,13 +4439,13 @@ Search for people with common filters or an advanced [Find People request](/api-
 | `--company-domain <domain>` | Company domain. Repeat to include multiple domains. |
 | `--location <value>` | Location. Repeat to include multiple locations. |
 
-Each convenience filter maps to an `include` list in the API query. Also supports every [shared search flag](#shared-search-flags).
+Also supports every [shared search flag](#shared-search-flags).
 
 ```bash
 airscale people search \
-  --title CTO --title "VP Engineering" \
-  --company-domain example.com --location France \
-  --size 20 --max-credits 2 --confirm-credit-spend --json
+  --title CTO --company-domain northstar.example \
+  --size 5 --max-credits 0.5 \
+  --confirm-credit-spend --json
 ```
 
 For advanced filters, save a JSON object with the public request schema:
@@ -4420,14 +4462,15 @@ For advanced filters, save a JSON object with the public request schema:
 
 ```bash
 airscale people search --request people-query.json \
-  --max-credits 3 --confirm-credit-spend --jsonl --output people.jsonl
+  --max-credits 2.5 --confirm-credit-spend \
+  --jsonl --output people.jsonl
 ```
 
-This example's maximum exposure is 2.5 credits, within the integer ceiling of 3. Unknown top-level request keys and filter names are rejected before the search.
+Unknown top-level request keys and filter names are rejected before the search.
 
 ### `airscale companies search`
 
-Search for companies with common filters or an advanced [Find Companies request](/api-reference/find-companies). At least one real filter is required.
+Search for companies with convenience filters or an advanced [Find Companies request](/api-reference/find-companies). At least one real filter is required.
 
 | Flag | Description |
 | --- | --- |
@@ -4465,19 +4508,19 @@ airscale companies search --request company-query.json \
 
 ### `airscale enrich file <input>`
 
-Enrich a CSV or JSONL file with professional work emails. The CLI uploads the validated rows, starts one durable run, waits for completion, and writes the verified result file.
+Validate a CSV or JSONL file locally, or enrich it with professional work emails through one durable run.
 
 | Argument or flag | Description |
 | --- | --- |
 | `<input>` | A `.csv` or `.jsonl` path, or `-` to read stdin and detect the format. Maximum 10,000 records. |
-| `--output <path>` | Required completed output file. Must differ from the input and cannot be `-`. |
+| `--output <path>` | Required for paid execution and optional with `--dry-run`. Must differ from the input and cannot be `-`. A dry run never writes the output. |
 | `--field <field>` | Defaults to `work_email`, the only supported field. |
-| `--format <format>` | Completed file format: `csv` or `jsonl`. Defaults to JSONL for a `.jsonl` output filename, CSV otherwise. |
+| `--format <format>` | Completed-file format: `csv` or `jsonl`. Inferred from an explicit `.jsonl` output path; otherwise defaults to CSV. |
 | `--dry-run` | Validate every row and preview maximum exposure locally, without credentials, HTTP requests, or credit spend. |
-| `--resume` | Continue the saved run with the same input, output, field, format, and API URL. With no saved state, prepares a fresh run. |
+| `--resume` | Continue the saved run with the same input, output, field, format, and API URL. With no saved state, prepares fresh paid work. |
 | `--state-file <path>` | Override the default `<output>.airscale-state.json`. Must differ from the input and output paths. |
 
-Also supports the [credit flags](#credit-flags). Use global `--json` for the summary; it does not change the completed file format. `--jsonl` is not an enrichment flag.
+Also supports the [credit flags](#credit-flags). Global `--json` formats the summary; it does not change the completed-file format. `--jsonl` is not an enrichment flag.
 
 #### Input columns
 
@@ -4488,28 +4531,39 @@ Each row needs either:
 
 ```csv contacts.csv
 first_name,last_name,domain
-Jordan,Example,example.com
-Taylor,Example,example.org
+Avery,Stone,northstar.example
+Morgan,Lee,solstice.example
 ```
 
-CSV headers are trimmed, lowercased, and spaces or hyphens become underscores for identity matching. Original columns and values remain in the output. CSV quoting, embedded newlines, UTF-8 BOMs, and Unicode are supported. JSONL records must be objects.
+CSV headers are trimmed, lowercased, and normalized so spaces or hyphens become underscores for identity matching. Original columns and values remain in the output. CSV quoting, embedded newlines, UTF-8 BOMs, and Unicode are supported. JSONL records must be objects.
 
-Invalid identities, duplicate normalized CSV headers, malformed CSV, and duplicate `custom_id` values stop the command before HTTP. Row-level identity and JSONL validation errors are reported together. Missing IDs are assigned in row order as `airscale-row-1`, `airscale-row-2`, and so on.
+Invalid identities, duplicate normalized headers, invalid CSV, malformed JSONL, and duplicate `custom_id` values stop the command before HTTP. Row-level identity and JSONL validation errors are reported together. Missing IDs become `airscale-row-1`, `airscale-row-2`, and so on.
 
-#### Preview and start
+#### Preview
+
+No output path is needed for a local preview:
+
+```bash
+airscale enrich file contacts.csv --dry-run --json --quiet
+```
+
+The summary reports `output: null` and defaults `format` to `csv` when `--output` and `--format` are absent. An explicit output remains allowed during a dry run and can infer the format:
 
 ```bash
 airscale enrich file contacts.csv \
-  --field work_email --output contacts-enriched.csv \
-  --max-credits 4 --dry-run --json
+  --output preview-shape.jsonl --dry-run --json
 ```
 
-After reviewing the preview:
+The output path is included in the summary, but no completed file or state file is written.
+
+#### Start or resume paid work
+
+Fresh paid execution requires an explicit output path, credit confirmation, and a budget in these examples:
 
 ```bash
 airscale enrich file contacts.csv \
-  --field work_email --output contacts-enriched.csv \
-  --max-credits 4 --confirm-credit-spend --resume --json
+  --output contacts-enriched.csv --max-credits 4 \
+  --confirm-credit-spend --resume --json
 ```
 
 For stdin and JSONL output:
@@ -4524,15 +4578,15 @@ To resume stdin, supply the exact same input bytes again.
 
 #### Output and recovery
 
-Results add `custom_id`, `work_email`, `email_status`, and `status` when returned. Existing input fields are preserved; collisions receive an `airscale_` prefix and, if needed, `_2`, `_3`, and so on. An input `work_email` column therefore stays intact while its result is written to `airscale_work_email`.
+Results add `custom_id`, `work_email`, `email_status`, and `status` when returned. Existing input fields are preserved; collisions receive an `airscale_` prefix and then a numeric suffix when needed.
 
 The CLI verifies completed metadata, format, row count, and custom-ID order before committing the output atomically. An existing output with different content is preserved.
 
-Keep the state file until the run is fully reconciled. It records the input hash, output path, field, format, API URL, batch ID, run ID, and idempotency key, without API credentials. `--resume` refuses mismatched inputs and continues the same batch and run after a lost upload or start response. It never creates a replacement batch automatically.
+Keep the state file until the run is fully reconciled. It records the input hash, output path, field, format, API URL, batch ID, run ID, and idempotency key without API credentials. `--resume` refuses mismatched inputs and continues the same batch and run after a lost upload or start response. It never creates a replacement batch automatically.
 
-Ctrl-C aborts local requests and polling, removes temporary downloads, retains state, and exits `130`. It does not cancel server work. Resume with the original command to retrieve the result. An unknown start handoff is reported for inspection and is not automatically replayed.
+Ctrl-C aborts local requests and polling, removes temporary downloads, retains state, and exits `130`. It does not cancel server work. Resume with the original command to retrieve the result. An unknown start handoff is reported for inspection and is not replayed automatically.
 
-Locks protect both the output and state paths. If a crash leaves a reported `.airscale-lock` file, inspect its PID and remove the lock only after that process has stopped, then resume. A completed matching output can be resumed safely.
+Locks protect both output and state paths. If a crash leaves a reported `.airscale-lock` file, inspect its PID and remove the lock only after that process has stopped, then resume.
 
 ## Runs
 
@@ -4540,26 +4594,227 @@ Run IDs start with `exp_`. Both commands perform free reads and support all [out
 
 ### `airscale runs status <id>`
 
-Fetch the current status of a durable enrichment run once. `<id>` is required; there are no other command-specific flags.
+Fetch the current status of a durable enrichment run once.
 
 ```bash
 airscale runs status exp_example --json
 ```
 
-The command reports a failed run as status data. Use `runs wait` if a failed run should produce a failing exit code.
+A failed run is returned as status data. Use `runs wait` when a failed run should produce a failing exit code.
 
 ### `airscale runs wait <id>`
 
-Poll until the run completes or fails. `<id>` is required; there are no other command-specific flags. A failed run exits `5`.
+Poll until a run completes or fails. A failed run exits `5`.
 
 ```bash
 airscale runs wait exp_example --json
 airscale runs wait exp_example --quiet --output run.json
 ```
 
-Polling follows the server's recommended interval, bounded to 2–60 seconds. Transient status-read failures use bounded retries; `429` respects `Retry-After`, including waits longer than 60 seconds. Ctrl-C stops local waiting and exits `130`.
+Polling follows the server's `poll_after_seconds` hint, waits at least one second, caps the delay at 30 seconds, and adds jitter. Transient `429` and `5xx` responses retry with bounded backoff. Other `4xx` responses fail immediately.
 
-Run commands return status metadata. To retrieve the completed enrichment file, run `enrich file` again with `--resume` and the original input and output paths.
+## 0.1.0 to 0.2.0 compatibility
+
+- `airscale auth login` is the canonical key-storage command. Existing `airscale auth set-key` calls continue to work as an alias.
+- Version 0.1.0 wrote an interactive table result to stderr. Version 0.2.0 writes every result format, including tables and `--output -`, to stdout. Progress and errors remain on stderr.
+- `enrich file --dry-run` no longer needs `--output`. Supplying one remains valid. Fresh paid execution still requires a real output path.
+- `--max-credits` now accepts a plain positive decimal budget, including values such as `0.5`, up to `9,007,199,254,740,991`. Scientific notation and `Infinity` are rejected. Count flags such as `--size` and `--limit` still require integers.
+- `setup` and `completion` are opt-in commands. They do not change existing scripts unless invoked.
+
+## Environment and exit codes
+
+| Setting | Precedence or default |
+| --- | --- |
+| `AIRSCALE_API_KEY` | Overrides a saved credential. Use a CI secret manager. |
+| `AIRSCALE_API_BASE_URL` | Overridden by `--base-url`; otherwise defaults to `https://api.airscale.io/v1`. |
+| `XDG_CONFIG_HOME` | Stores local configuration under `$XDG_CONFIG_HOME/airscale`; otherwise `~/.config/airscale`. |
+
+API URLs must use HTTPS, except HTTP loopback URLs. URLs containing credentials, query parameters, or fragments are rejected.
+
+| Exit code | Meaning |
+| --- | --- |
+| `0` | Success. |
+| `2` | Invalid command, option, input, state, or file access. |
+| `3` | Missing or invalid authentication or configuration. |
+| `4` | Credit ceiling, insufficient credits, confirmation, or admission failure. |
+| `5` | API or durable-run failure. |
+| `130` | Interrupted with Ctrl-C; enrichment state is retained. |
+
+---
+
+## Troubleshooting
+
+Source: https://airscale.mintlify.app/cli/troubleshooting.md
+
+Description: Fix Airscale CLI installation, authentication, CSV validation, credit confirmation, output, and resume problems.
+
+Start with the exact error on stderr. Result data stays on stdout, so redirecting stdout does not hide diagnostics.
+
+## Node.js or npm is missing
+
+The CLI requires **Node.js 20.3 or newer** and ships through npm.
+
+```bash
+node --version
+npm --version
+```
+
+Install or upgrade Node.js with your normal package manager, then retry:
+
+```bash
+npx @airscale/cli --help
+```
+
+If `npx` can run the CLI, the package and Node.js version are usable even when a global `airscale` command is unavailable.
+
+## `airscale: command not found`
+
+First confirm that the package is installed globally:
+
+```bash
+npm install --global @airscale/cli
+npm prefix --global
+```
+
+The npm global executable directory must be on `PATH`. Restart the shell after changing its startup file, or keep using `npx @airscale/cli` without a global install.
+
+## Missing API key
+
+The message `No Airscale API key configured.` means neither `AIRSCALE_API_KEY` nor a saved credential is available.
+
+In an interactive terminal, store a key through the hidden prompt:
+
+```bash
+airscale auth login
+airscale auth status --json
+```
+
+Create the key in the [Airscale dashboard](https://app.airscale.io/dashboard), under **Settings → API key**. For CI, set `AIRSCALE_API_KEY` through the platform's secret manager. Do not put a key in a command argument, repository, log, or shell history.
+
+## Invalid API key
+
+An invalid API key normally produces exit code `3` after a `401` response. `AIRSCALE_API_KEY` takes precedence over a saved credential. Check whether the environment variable exists without printing its value:
+
+```bash
+if [ -n "${AIRSCALE_API_KEY+x}" ]; then
+  printf 'AIRSCALE_API_KEY is set\n'
+else
+  printf 'AIRSCALE_API_KEY is unset\n'
+fi
+```
+
+This prints only whether the variable is set or unset. If it is set, update or unset that environment value. If it is unset, run `airscale auth login` to replace the saved credential. Then retry:
+
+```bash
+airscale auth status --json
+```
+
+When `auth status` succeeds, its output reports the credential source and a short fingerprint. On a `401`, it exits before emitting that status object. Rotate the dashboard key when it was exposed; logging out only removes the local saved credential.
+
+## Invalid CSV or JSONL
+
+Validate locally without authentication, output, or credit spend:
+
+```bash
+airscale enrich file contacts.csv --dry-run --json --quiet
+```
+
+For CSV, check that:
+
+- headers are unique after trimming, lowercasing, and converting spaces or hyphens to underscores;
+- quoting is balanced;
+- every row has `linkedin_profile_url`, or `first_name` and `last_name` with `domain` or `company_name`;
+- explicit `custom_id` values are unique.
+
+JSONL must contain one JSON object per line and follows the same identity and `custom_id` rules. The CLI reports row-level identity and JSONL errors together before making an HTTP request.
+
+## Credit confirmation or budget failure
+
+Fresh paid work needs explicit confirmation when stdin is not an interactive terminal:
+
+```bash
+airscale people search \
+  --title CTO --company-domain northstar.example \
+  --size 5 --max-credits 0.5 \
+  --confirm-credit-spend --json
+```
+
+`--max-credits` accepts a plain positive decimal up to `9,007,199,254,740,991`. Scientific notation, `Infinity`, hexadecimal, and signed values are rejected. The flag caps exposure but does not confirm spend. If the estimate exceeds the cap, reduce `--size` or `--limit`, refine the input, or deliberately raise the cap. If available credits are too low, no paid request starts.
+
+File enrichment also requires a real output path for paid execution:
+
+```bash
+airscale enrich file contacts.csv \
+  --output contacts-enriched.csv --max-credits 4 \
+  --confirm-credit-spend --resume --json
+```
+
+## Resume an interrupted enrichment
+
+Ctrl-C stops local upload, polling, or download work and exits `130`; it does not cancel the server run. Run the original command again with `--resume`:
+
+```bash
+airscale enrich file contacts.csv \
+  --output contacts-enriched.csv --max-credits 4 \
+  --confirm-credit-spend --resume --json
+```
+
+The input bytes, output path, field, format, and API URL must match the saved state. Keep the `*.airscale-state.json` file until completion. If the CLI reports a stale `.airscale-lock`, inspect the recorded PID and remove the lock only after that process has stopped.
+
+An unknown start handoff is preserved for inspection and is not replayed automatically. Use the saved `exp_…` identifier for a free read:
+
+```bash
+airscale runs status exp_example --json
+airscale runs wait exp_example --json
+```
+
+## Use guided setup
+
+`airscale setup` is an opt-in onboarding command for an interactive terminal:
+
+```bash
+airscale setup
+```
+
+It guides you to the dashboard and **Settings → API key**, checks whether a credential exists, prompts only when one is missing, and finishes with a free `/credits` check. It does not accept non-interactive input; in that case it exits before reading credentials or making an HTTP request.
+
+## Enable shell completion
+
+Shell completion is opt in. Inspect the generated script first:
+
+```bash
+airscale completion zsh
+airscale completion bash
+```
+
+The command prints script text to stdout only. It does not edit your profile or activate anything. To enable zsh completion for the current shell session:
+
+```zsh
+autoload -Uz compinit
+compinit
+source <(airscale completion zsh)
+```
+
+For the current bash session:
+
+```shell
+source <(airscale completion bash)
+```
+
+For persistent completion, save the reviewed output in the completion directory managed by your shell or package manager, then load it from your own shell configuration.
+
+## A result pipeline is empty
+
+Version 0.2.0 writes tables, JSON, JSONL, CSV, and `--output -` to stdout. Progress and errors remain on stderr.
+
+```bash
+airscale credits --format table
+airscale credits --json --output -
+```
+
+Scripts written for 0.1.0 may have read interactive tables from stderr. Update those scripts to read stdout. Add `--quiet` when progress messages are unwanted; errors remain visible.
+
+If the issue persists, capture the command shape, CLI version, exit code, and redacted stderr. Never include the API key or a full credential value.
 
 ---
 
