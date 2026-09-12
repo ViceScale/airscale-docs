@@ -244,6 +244,18 @@
         ]
       },
       {
+        "tab": "CLI",
+        "groups": [
+          {
+            "group": "Getting started",
+            "pages": [
+              "cli/overview",
+              "cli/commands"
+            ]
+          }
+        ]
+      },
+      {
         "tab": "Use cases",
         "groups": [
           {

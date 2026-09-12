@@ -25,7 +25,7 @@ test("Documentation mirrors all 48 live sidebar routes in the five source groups
   const paths = manifest.navigation.flatMap(({ pages }) => pages);
   assert.equal(paths.length, 48);
   assert.equal(new Set(paths).size, 48);
-  assert.deepEqual(config.navigation.tabs.map(({ tab }) => tab), ["Documentation", "API Reference", "MCP & Agents", "Use cases"]);
+  assert.deepEqual(config.navigation.tabs.map(({ tab }) => tab), ["Documentation", "API Reference", "MCP & Agents", "CLI", "Use cases"]);
   assert.deepEqual(config.navigation.tabs[0], { tab: "Documentation", groups: manifest.navigation });
   assert.deepEqual(manifest.pages.map(({ path }) => path), paths);
   assert.deepEqual(readdirSync("docs").filter((name) => name.endsWith(".mdx")).sort(), paths.map((path) => `${path.slice(5)}.mdx`).sort());

@@ -103,7 +103,7 @@ export function hasApprovedBearerCredentialSource(source) {
 
 function documentationLinkTargets(source) {
   const targets = [];
-  const routePattern = String.raw`\/(?:mcp|api-reference)\/(?:[^()\s?#]+|\([^()\s?#]*\))+`;
+  const routePattern = String.raw`\/(?:mcp|api-reference|cli)\/(?:[^()\s?#]+|\([^()\s?#]*\))+`;
   const markdownRoute = new RegExp(`\\[[^\\]]*\\]\\((${routePattern})(?:\\?[^#)\\s]*)?(?:#([^\\s)]+))?\\)`, "g");
   for (const match of source.matchAll(markdownRoute)) {
     targets.push({ href: match[0], route: match[1], fragment: match[2] ?? null });
