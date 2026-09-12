@@ -1719,10 +1719,21 @@ test("Post engagement operations model synchronous cursor pagination and enrichm
     assert.equal(operation["x-airscale-rate-limit"], "60 requests per minute per workspace.");
     assert.equal(
       operation["x-airscale-credit-cost"],
-      "1 credit reserved per returned engagement for profile enrichment; only successful enrichments are consumed; not_found and error outcomes are refunded."
+      "1 credit reserved upfront per requested slot (limit); unused slots and definitive not_found/error outcomes are refunded; only successful profile enrichments are consumed."
     );
-    assert.deepEqual(operation.parameters, []);
-    assert.doesNotMatch(JSON.stringify(operation), /Idempotency-Key/i);
+    assert.equal(operation["x-airscale-source-sha"], "9a539d40c2d5786cd064ce1637f93d6e020ef317");
+    assert.equal(operation.parameters.length, 1);
+    assert.equal(operation.parameters[0].name, "Idempotency-Key");
+    assert.equal(operation.parameters[0].in, "header");
+    assert.equal(operation.parameters[0].required, false);
+    assert.equal(operation.parameters[0].schema.format, "uuid");
+    assert.ok(operation.responses["202"]);
+    assert.ok(operation.responses["409"]);
+    const pending = operation.responses["202"].content["application/json"];
+    assert.equal(pending.examples.pending.value.code, "page_pending");
+    assert.equal(pending.examples.pending.value.retry_after_ms, 15000);
+    assert.equal(pending.schema.properties.idempotency_key.format, "uuid");
+    assert.ok(operation.responses["202"].headers["Retry-After"]);
     const request = requestSchema(operation);
     assert.deepEqual(request.required, ["post_url"]);
     assert.equal(request.additionalProperties, false);
@@ -1758,13 +1769,23 @@ test("Post engagement operations model synchronous cursor pagination and enrichm
     );
     assert.doesNotMatch(curlSamples.firstPage, /\"cursor\"/);
     assert.match(curlSamples.nextPage, /\"cursor\": \"pje1\.synthetic_cursor\"/);
+    for (const sample of operation["x-codeSamples"]) {
+      assert.match(sample.source, /Idempotency-Key/);
+      assert.match(sample.source, /AIRSCALE_PAGE_KEY/);
+      assert.doesNotMatch(sample.source, /randomUUID|uuidgen|uuid4/, "retry examples must not silently rotate the key");
+    }
     assert.ok(operation.responses["200"]);
     const response = operation.responses["200"].content["application/json"];
     assert.equal(response.schema.type, "object");
     assert.deepEqual(response.schema.required, ["items", "pagination", "billing"]);
-    assert.deepEqual(response.schema.properties.provider.enum, ["b2benrichment", "rapidapi", "unipile"]);
+    assert.deepEqual(response.schema.properties.provider.enum, ["b2benrichment", "rapidapi", "rapidapi_pnd", "unipile"]);
+    assert.deepEqual(response.schema.properties.retrieval.required, ["reported_total", "returned_count", "status", "stop_reason"]);
+    assert.equal(response.schema.required.includes("retrieval"), false);
+    assert.deepEqual(response.schema.properties.retrieval.properties.stop_reason.enum, ["page_limit", "provider_exhausted", "request_budget"]);
     assert.deepEqual(response.schema.properties.pagination.required, ["next_cursor", "has_more"]);
     assert.deepEqual(response.schema.properties.billing.required, ["credits_consumed", "credits_refunded", "outcomes"]);
+    assert.equal(response.examples.page.value.billing.credits_refunded, 24);
+    assert.match(response.schema.properties.pagination.properties.next_cursor.description, /does not prove complete/);
     assert.deepEqual(response.examples.page.value.items[0], {
       profile_status: "success",
       linkedin_url: "https://www.linkedin.com/in/example-person-000000",

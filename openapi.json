@@ -3917,41 +3917,53 @@
         ],
         "summary": "List LinkedIn post likers",
         "description": "Retrieves one synchronous, cursor-paginated page of people who liked a LinkedIn post and enriches each returned profile.",
+        "x-airscale-source-sha": "9a539d40c2d5786cd064ce1637f93d6e020ef317",
         "x-airscale-rate-limit": "60 requests per minute per workspace.",
-        "x-airscale-credit-cost": "1 credit reserved per returned engagement for profile enrichment; only successful enrichments are consumed; not_found and error outcomes are refunded.",
+        "x-airscale-credit-cost": "1 credit reserved upfront per requested slot (limit); unused slots and definitive not_found/error outcomes are refunded; only successful profile enrichments are consumed.",
         "x-codeSamples": [
           {
             "label": "firstPage",
             "lang": "bash",
-            "source": "curl --request POST \\\n  --url 'https://api.airscale.io/v1/post-likers' \\\n  --header \"Authorization: Bearer $AIRSCALE_API_KEY\" \\\n  --header \"Content-Type: application/json\" \\\n  --data '{\n  \"post_url\": \"https://example.com/linkedin-post-example\",\n  \"limit\": 25\n}'"
+            "source": "curl --request POST \\\n  --url 'https://api.airscale.io/v1/post-likers' \\\n  --header \"Authorization: Bearer $AIRSCALE_API_KEY\" \\\n  --header \"Content-Type: application/json\" \\\n  --header \"Idempotency-Key: ${AIRSCALE_PAGE_KEY:?Set a UUID for this page and retain it for retries}\" \\\n  --data '{\n  \"post_url\": \"https://example.com/linkedin-post-example\",\n  \"limit\": 25\n}'"
           },
           {
             "label": "nextPage",
             "lang": "bash",
-            "source": "curl --request POST \\\n  --url 'https://api.airscale.io/v1/post-likers' \\\n  --header \"Authorization: Bearer $AIRSCALE_API_KEY\" \\\n  --header \"Content-Type: application/json\" \\\n  --data '{\n  \"post_url\": \"https://example.com/linkedin-post-example\",\n  \"limit\": 25,\n  \"cursor\": \"pje1.synthetic_cursor\"\n}'"
+            "source": "curl --request POST \\\n  --url 'https://api.airscale.io/v1/post-likers' \\\n  --header \"Authorization: Bearer $AIRSCALE_API_KEY\" \\\n  --header \"Content-Type: application/json\" \\\n  --header \"Idempotency-Key: ${AIRSCALE_PAGE_KEY:?Set a UUID for this page and retain it for retries}\" \\\n  --data '{\n  \"post_url\": \"https://example.com/linkedin-post-example\",\n  \"limit\": 25,\n  \"cursor\": \"pje1.synthetic_cursor\"\n}'"
           },
           {
             "label": "firstPage",
             "lang": "node",
-            "source": "const response = await fetch(\"https://api.airscale.io/v1/post-likers\", {\n  method: \"POST\",\n  headers: {\n    Authorization: `Bearer ${process.env.AIRSCALE_API_KEY}`,\n    \"Content-Type\": \"application/json\"\n  },\n  body: JSON.stringify({\n  \"post_url\": \"https://example.com/linkedin-post-example\",\n  \"limit\": 25\n})\n});\n\nconst data = await response.json();\nconsole.log(data);"
+            "source": "const response = await fetch(\"https://api.airscale.io/v1/post-likers\", {\n  method: \"POST\",\n  headers: {\n    Authorization: `Bearer ${process.env.AIRSCALE_API_KEY}`,\n    \"Content-Type\": \"application/json\",\n    \"Idempotency-Key\": process.env.AIRSCALE_PAGE_KEY\n  },\n  body: JSON.stringify({\n  \"post_url\": \"https://example.com/linkedin-post-example\",\n  \"limit\": 25\n})\n});\n\nconst data = await response.json();\nconsole.log(data);"
           },
           {
             "label": "nextPage",
             "lang": "node",
-            "source": "const response = await fetch(\"https://api.airscale.io/v1/post-likers\", {\n  method: \"POST\",\n  headers: {\n    Authorization: `Bearer ${process.env.AIRSCALE_API_KEY}`,\n    \"Content-Type\": \"application/json\"\n  },\n  body: JSON.stringify({\n  \"post_url\": \"https://example.com/linkedin-post-example\",\n  \"limit\": 25,\n  \"cursor\": \"pje1.synthetic_cursor\"\n})\n});\n\nconst data = await response.json();\nconsole.log(data);"
+            "source": "const response = await fetch(\"https://api.airscale.io/v1/post-likers\", {\n  method: \"POST\",\n  headers: {\n    Authorization: `Bearer ${process.env.AIRSCALE_API_KEY}`,\n    \"Content-Type\": \"application/json\",\n    \"Idempotency-Key\": process.env.AIRSCALE_PAGE_KEY\n  },\n  body: JSON.stringify({\n  \"post_url\": \"https://example.com/linkedin-post-example\",\n  \"limit\": 25,\n  \"cursor\": \"pje1.synthetic_cursor\"\n})\n});\n\nconst data = await response.json();\nconsole.log(data);"
           },
           {
             "label": "firstPage",
             "lang": "python",
-            "source": "import os\nimport requests\n\nresponse = requests.post(\"https://api.airscale.io/v1/post-likers\",\n  headers={\n    \"Authorization\": f'Bearer {os.environ[\"AIRSCALE_API_KEY\"]}',\n    \"Content-Type\": \"application/json\"\n  },\n  json={\n  \"post_url\": \"https://example.com/linkedin-post-example\",\n  \"limit\": 25\n}\n)\nresponse.raise_for_status()\nprint(response.json())"
+            "source": "import os\nimport requests\n\nresponse = requests.post(\"https://api.airscale.io/v1/post-likers\",\n  headers={\n    \"Authorization\": f'Bearer {os.environ[\"AIRSCALE_API_KEY\"]}',\n    \"Content-Type\": \"application/json\",\n    \"Idempotency-Key\": os.environ[\"AIRSCALE_PAGE_KEY\"]\n  },\n  json={\n  \"post_url\": \"https://example.com/linkedin-post-example\",\n  \"limit\": 25\n}\n)\nprint(response.json())  # Retain any returned retry key before handling errors.\nresponse.raise_for_status()"
           },
           {
             "label": "nextPage",
             "lang": "python",
-            "source": "import os\nimport requests\n\nresponse = requests.post(\"https://api.airscale.io/v1/post-likers\",\n  headers={\n    \"Authorization\": f'Bearer {os.environ[\"AIRSCALE_API_KEY\"]}',\n    \"Content-Type\": \"application/json\"\n  },\n  json={\n  \"post_url\": \"https://example.com/linkedin-post-example\",\n  \"limit\": 25,\n  \"cursor\": \"pje1.synthetic_cursor\"\n}\n)\nresponse.raise_for_status()\nprint(response.json())"
+            "source": "import os\nimport requests\n\nresponse = requests.post(\"https://api.airscale.io/v1/post-likers\",\n  headers={\n    \"Authorization\": f'Bearer {os.environ[\"AIRSCALE_API_KEY\"]}',\n    \"Content-Type\": \"application/json\",\n    \"Idempotency-Key\": os.environ[\"AIRSCALE_PAGE_KEY\"]\n  },\n  json={\n  \"post_url\": \"https://example.com/linkedin-post-example\",\n  \"limit\": 25,\n  \"cursor\": \"pje1.synthetic_cursor\"\n}\n)\nprint(response.json())  # Retain any returned retry key before handling errors.\nresponse.raise_for_status()"
           }
         ],
-        "parameters": [],
+        "parameters": [
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "description": "Create a UUID for this page and reuse it with the identical endpoint, post_url, limit and cursor on every retry. Use a new key for the next page. Completed results are replayable for 24 hours after completion. Omitting the header is supported, but an independent retry without the original key can reserve credits again."
+          }
+        ],
         "requestBody": {
           "required": true,
           "description": "Provide a LinkedIn post URL, an optional page size from 1 to 25, and the opaque cursor when continuing pagination. The JSON body must not exceed 128 KiB.",
@@ -4149,7 +4161,7 @@
                             "string",
                             "null"
                           ],
-                          "description": "Opaque cursor for the next page, or null when the result is complete."
+                          "description": "Opaque cursor for the next page, or null when the provider returns no continuation cursor. This does not prove complete LinkedIn coverage."
                         },
                         "has_more": {
                           "type": "boolean"
@@ -4161,9 +4173,49 @@
                       "enum": [
                         "b2benrichment",
                         "rapidapi",
+                        "rapidapi_pnd",
                         "unipile"
                       ],
                       "description": "The provider selected for this page. Treat this value as informational."
+                    },
+                    "retrieval": {
+                      "type": "object",
+                      "required": [
+                        "reported_total",
+                        "returned_count",
+                        "status",
+                        "stop_reason"
+                      ],
+                      "additionalProperties": false,
+                      "description": "Optional retrieval evidence. Exhausting a provider cursor does not prove all LinkedIn engagements were accessible.",
+                      "properties": {
+                        "reported_total": {
+                          "type": [
+                            "integer",
+                            "null"
+                          ],
+                          "minimum": 0
+                        },
+                        "returned_count": {
+                          "type": "integer",
+                          "minimum": 0
+                        },
+                        "status": {
+                          "type": "string",
+                          "enum": [
+                            "more_available",
+                            "provider_exhausted"
+                          ]
+                        },
+                        "stop_reason": {
+                          "type": "string",
+                          "enum": [
+                            "page_limit",
+                            "provider_exhausted",
+                            "request_budget"
+                          ]
+                        }
+                      }
                     },
                     "billing": {
                       "type": "object",
@@ -4242,7 +4294,7 @@
                       },
                       "billing": {
                         "credits_consumed": 1,
-                        "credits_refunded": 0,
+                        "credits_refunded": 24,
                         "outcomes": {
                           "success": 1,
                           "not_found": 0,
@@ -4255,12 +4307,100 @@
               }
             }
           },
+          "202": {
+            "description": "The bridge did not respond within 90 seconds. Its outcome is unconfirmed; retry the identical page with the returned key after Retry-After. This is not a completed result or a guarantee that processing started.",
+            "headers": {
+              "Retry-After": {
+                "description": "Wait this many seconds before retrying (15 for page_pending).",
+                "schema": {
+                  "type": "string"
+                },
+                "example": "15"
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "status",
+                    "code",
+                    "idempotency_key",
+                    "retry_after_ms",
+                    "message"
+                  ],
+                  "properties": {
+                    "status": {
+                      "type": "string",
+                      "enum": [
+                        "pending"
+                      ]
+                    },
+                    "code": {
+                      "type": "string",
+                      "enum": [
+                        "page_pending"
+                      ]
+                    },
+                    "idempotency_key": {
+                      "type": "string",
+                      "format": "uuid"
+                    },
+                    "retry_after_ms": {
+                      "type": "integer",
+                      "minimum": 0
+                    },
+                    "message": {
+                      "type": "string"
+                    }
+                  }
+                },
+                "examples": {
+                  "pending": {
+                    "summary": "Unconfirmed page outcome",
+                    "value": {
+                      "status": "pending",
+                      "code": "page_pending",
+                      "idempotency_key": "00000000-0000-4000-8000-000000000001",
+                      "retry_after_ms": 15000,
+                      "message": "Retry the identical page with this Idempotency-Key to retrieve its result."
+                    }
+                  }
+                }
+              }
+            }
+          },
           "400": {
             "description": "The JSON body, LinkedIn post URL, or cursor is invalid.",
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/Error"
+                  "type": "object",
+                  "required": [
+                    "error"
+                  ],
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    },
+                    "code": {
+                      "type": "string",
+                      "description": "Use the documented code to distinguish waiting, invalid reuse, and account restart."
+                    },
+                    "idempotency_key": {
+                      "type": "string",
+                      "format": "uuid",
+                      "description": "Retain this key and the original request body for safe recovery."
+                    },
+                    "retry_after_ms": {
+                      "type": "integer",
+                      "minimum": 0
+                    }
+                  }
                 }
               }
             }
@@ -4273,7 +4413,65 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/Error"
+                  "type": "object",
+                  "required": [
+                    "error"
+                  ],
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    },
+                    "code": {
+                      "type": "string",
+                      "description": "Use the documented code to distinguish waiting, invalid reuse, and account restart."
+                    },
+                    "idempotency_key": {
+                      "type": "string",
+                      "format": "uuid",
+                      "description": "Retain this key and the original request body for safe recovery."
+                    },
+                    "retry_after_ms": {
+                      "type": "integer",
+                      "minimum": 0
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "replay_in_progress: wait and retry the identical page with the same key. replay_request_mismatch: the key was already used with different request fields.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "error"
+                  ],
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    },
+                    "code": {
+                      "type": "string",
+                      "description": "Use the documented code to distinguish waiting, invalid reuse, and account restart."
+                    },
+                    "idempotency_key": {
+                      "type": "string",
+                      "format": "uuid",
+                      "description": "Retain this key and the original request body for safe recovery."
+                    },
+                    "retry_after_ms": {
+                      "type": "integer",
+                      "minimum": 0
+                    }
+                  }
                 }
               }
             }
@@ -4283,7 +4481,31 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/Error"
+                  "type": "object",
+                  "required": [
+                    "error"
+                  ],
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    },
+                    "code": {
+                      "type": "string",
+                      "description": "Use the documented code to distinguish waiting, invalid reuse, and account restart."
+                    },
+                    "idempotency_key": {
+                      "type": "string",
+                      "format": "uuid",
+                      "description": "Retain this key and the original request body for safe recovery."
+                    },
+                    "retry_after_ms": {
+                      "type": "integer",
+                      "minimum": 0
+                    }
+                  }
                 }
               }
             }
@@ -4293,7 +4515,31 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/Error"
+                  "type": "object",
+                  "required": [
+                    "error"
+                  ],
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    },
+                    "code": {
+                      "type": "string",
+                      "description": "Use the documented code to distinguish waiting, invalid reuse, and account restart."
+                    },
+                    "idempotency_key": {
+                      "type": "string",
+                      "format": "uuid",
+                      "description": "Retain this key and the original request body for safe recovery."
+                    },
+                    "retry_after_ms": {
+                      "type": "integer",
+                      "minimum": 0
+                    }
+                  }
                 }
               }
             }
@@ -4303,7 +4549,31 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/Error"
+                  "type": "object",
+                  "required": [
+                    "error"
+                  ],
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    },
+                    "code": {
+                      "type": "string",
+                      "description": "Use the documented code to distinguish waiting, invalid reuse, and account restart."
+                    },
+                    "idempotency_key": {
+                      "type": "string",
+                      "format": "uuid",
+                      "description": "Retain this key and the original request body for safe recovery."
+                    },
+                    "retry_after_ms": {
+                      "type": "integer",
+                      "minimum": 0
+                    }
+                  }
                 }
               }
             }
@@ -4313,7 +4583,31 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/Error"
+                  "type": "object",
+                  "required": [
+                    "error"
+                  ],
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    },
+                    "code": {
+                      "type": "string",
+                      "description": "Use the documented code to distinguish waiting, invalid reuse, and account restart."
+                    },
+                    "idempotency_key": {
+                      "type": "string",
+                      "format": "uuid",
+                      "description": "Retain this key and the original request body for safe recovery."
+                    },
+                    "retry_after_ms": {
+                      "type": "integer",
+                      "minimum": 0
+                    }
+                  }
                 }
               }
             }
@@ -4323,7 +4617,31 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/Error"
+                  "type": "object",
+                  "required": [
+                    "error"
+                  ],
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    },
+                    "code": {
+                      "type": "string",
+                      "description": "Use the documented code to distinguish waiting, invalid reuse, and account restart."
+                    },
+                    "idempotency_key": {
+                      "type": "string",
+                      "format": "uuid",
+                      "description": "Retain this key and the original request body for safe recovery."
+                    },
+                    "retry_after_ms": {
+                      "type": "integer",
+                      "minimum": 0
+                    }
+                  }
                 }
               }
             }
@@ -4339,41 +4657,53 @@
         ],
         "summary": "List LinkedIn post commenters",
         "description": "Retrieves one synchronous, cursor-paginated page of people who commented on a LinkedIn post and enriches each returned profile.",
+        "x-airscale-source-sha": "9a539d40c2d5786cd064ce1637f93d6e020ef317",
         "x-airscale-rate-limit": "60 requests per minute per workspace.",
-        "x-airscale-credit-cost": "1 credit reserved per returned engagement for profile enrichment; only successful enrichments are consumed; not_found and error outcomes are refunded.",
+        "x-airscale-credit-cost": "1 credit reserved upfront per requested slot (limit); unused slots and definitive not_found/error outcomes are refunded; only successful profile enrichments are consumed.",
         "x-codeSamples": [
           {
             "label": "firstPage",
             "lang": "bash",
-            "source": "curl --request POST \\\n  --url 'https://api.airscale.io/v1/post-commenters' \\\n  --header \"Authorization: Bearer $AIRSCALE_API_KEY\" \\\n  --header \"Content-Type: application/json\" \\\n  --data '{\n  \"post_url\": \"https://example.com/linkedin-post-example\",\n  \"limit\": 25\n}'"
+            "source": "curl --request POST \\\n  --url 'https://api.airscale.io/v1/post-commenters' \\\n  --header \"Authorization: Bearer $AIRSCALE_API_KEY\" \\\n  --header \"Content-Type: application/json\" \\\n  --header \"Idempotency-Key: ${AIRSCALE_PAGE_KEY:?Set a UUID for this page and retain it for retries}\" \\\n  --data '{\n  \"post_url\": \"https://example.com/linkedin-post-example\",\n  \"limit\": 25\n}'"
           },
           {
             "label": "nextPage",
             "lang": "bash",
-            "source": "curl --request POST \\\n  --url 'https://api.airscale.io/v1/post-commenters' \\\n  --header \"Authorization: Bearer $AIRSCALE_API_KEY\" \\\n  --header \"Content-Type: application/json\" \\\n  --data '{\n  \"post_url\": \"https://example.com/linkedin-post-example\",\n  \"limit\": 25,\n  \"cursor\": \"pje1.synthetic_cursor\"\n}'"
+            "source": "curl --request POST \\\n  --url 'https://api.airscale.io/v1/post-commenters' \\\n  --header \"Authorization: Bearer $AIRSCALE_API_KEY\" \\\n  --header \"Content-Type: application/json\" \\\n  --header \"Idempotency-Key: ${AIRSCALE_PAGE_KEY:?Set a UUID for this page and retain it for retries}\" \\\n  --data '{\n  \"post_url\": \"https://example.com/linkedin-post-example\",\n  \"limit\": 25,\n  \"cursor\": \"pje1.synthetic_cursor\"\n}'"
           },
           {
             "label": "firstPage",
             "lang": "node",
-            "source": "const response = await fetch(\"https://api.airscale.io/v1/post-commenters\", {\n  method: \"POST\",\n  headers: {\n    Authorization: `Bearer ${process.env.AIRSCALE_API_KEY}`,\n    \"Content-Type\": \"application/json\"\n  },\n  body: JSON.stringify({\n  \"post_url\": \"https://example.com/linkedin-post-example\",\n  \"limit\": 25\n})\n});\n\nconst data = await response.json();\nconsole.log(data);"
+            "source": "const response = await fetch(\"https://api.airscale.io/v1/post-commenters\", {\n  method: \"POST\",\n  headers: {\n    Authorization: `Bearer ${process.env.AIRSCALE_API_KEY}`,\n    \"Content-Type\": \"application/json\",\n    \"Idempotency-Key\": process.env.AIRSCALE_PAGE_KEY\n  },\n  body: JSON.stringify({\n  \"post_url\": \"https://example.com/linkedin-post-example\",\n  \"limit\": 25\n})\n});\n\nconst data = await response.json();\nconsole.log(data);"
           },
           {
             "label": "nextPage",
             "lang": "node",
-            "source": "const response = await fetch(\"https://api.airscale.io/v1/post-commenters\", {\n  method: \"POST\",\n  headers: {\n    Authorization: `Bearer ${process.env.AIRSCALE_API_KEY}`,\n    \"Content-Type\": \"application/json\"\n  },\n  body: JSON.stringify({\n  \"post_url\": \"https://example.com/linkedin-post-example\",\n  \"limit\": 25,\n  \"cursor\": \"pje1.synthetic_cursor\"\n})\n});\n\nconst data = await response.json();\nconsole.log(data);"
+            "source": "const response = await fetch(\"https://api.airscale.io/v1/post-commenters\", {\n  method: \"POST\",\n  headers: {\n    Authorization: `Bearer ${process.env.AIRSCALE_API_KEY}`,\n    \"Content-Type\": \"application/json\",\n    \"Idempotency-Key\": process.env.AIRSCALE_PAGE_KEY\n  },\n  body: JSON.stringify({\n  \"post_url\": \"https://example.com/linkedin-post-example\",\n  \"limit\": 25,\n  \"cursor\": \"pje1.synthetic_cursor\"\n})\n});\n\nconst data = await response.json();\nconsole.log(data);"
           },
           {
             "label": "firstPage",
             "lang": "python",
-            "source": "import os\nimport requests\n\nresponse = requests.post(\"https://api.airscale.io/v1/post-commenters\",\n  headers={\n    \"Authorization\": f'Bearer {os.environ[\"AIRSCALE_API_KEY\"]}',\n    \"Content-Type\": \"application/json\"\n  },\n  json={\n  \"post_url\": \"https://example.com/linkedin-post-example\",\n  \"limit\": 25\n}\n)\nresponse.raise_for_status()\nprint(response.json())"
+            "source": "import os\nimport requests\n\nresponse = requests.post(\"https://api.airscale.io/v1/post-commenters\",\n  headers={\n    \"Authorization\": f'Bearer {os.environ[\"AIRSCALE_API_KEY\"]}',\n    \"Content-Type\": \"application/json\",\n    \"Idempotency-Key\": os.environ[\"AIRSCALE_PAGE_KEY\"]\n  },\n  json={\n  \"post_url\": \"https://example.com/linkedin-post-example\",\n  \"limit\": 25\n}\n)\nprint(response.json())  # Retain any returned retry key before handling errors.\nresponse.raise_for_status()"
           },
           {
             "label": "nextPage",
             "lang": "python",
-            "source": "import os\nimport requests\n\nresponse = requests.post(\"https://api.airscale.io/v1/post-commenters\",\n  headers={\n    \"Authorization\": f'Bearer {os.environ[\"AIRSCALE_API_KEY\"]}',\n    \"Content-Type\": \"application/json\"\n  },\n  json={\n  \"post_url\": \"https://example.com/linkedin-post-example\",\n  \"limit\": 25,\n  \"cursor\": \"pje1.synthetic_cursor\"\n}\n)\nresponse.raise_for_status()\nprint(response.json())"
+            "source": "import os\nimport requests\n\nresponse = requests.post(\"https://api.airscale.io/v1/post-commenters\",\n  headers={\n    \"Authorization\": f'Bearer {os.environ[\"AIRSCALE_API_KEY\"]}',\n    \"Content-Type\": \"application/json\",\n    \"Idempotency-Key\": os.environ[\"AIRSCALE_PAGE_KEY\"]\n  },\n  json={\n  \"post_url\": \"https://example.com/linkedin-post-example\",\n  \"limit\": 25,\n  \"cursor\": \"pje1.synthetic_cursor\"\n}\n)\nprint(response.json())  # Retain any returned retry key before handling errors.\nresponse.raise_for_status()"
           }
         ],
-        "parameters": [],
+        "parameters": [
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "description": "Create a UUID for this page and reuse it with the identical endpoint, post_url, limit and cursor on every retry. Use a new key for the next page. Completed results are replayable for 24 hours after completion. Omitting the header is supported, but an independent retry without the original key can reserve credits again."
+          }
+        ],
         "requestBody": {
           "required": true,
           "description": "Provide a LinkedIn post URL, an optional page size from 1 to 25, and the opaque cursor when continuing pagination. The JSON body must not exceed 128 KiB.",
@@ -4571,7 +4901,7 @@
                             "string",
                             "null"
                           ],
-                          "description": "Opaque cursor for the next page, or null when the result is complete."
+                          "description": "Opaque cursor for the next page, or null when the provider returns no continuation cursor. This does not prove complete LinkedIn coverage."
                         },
                         "has_more": {
                           "type": "boolean"
@@ -4583,9 +4913,49 @@
                       "enum": [
                         "b2benrichment",
                         "rapidapi",
+                        "rapidapi_pnd",
                         "unipile"
                       ],
                       "description": "The provider selected for this page. Treat this value as informational."
+                    },
+                    "retrieval": {
+                      "type": "object",
+                      "required": [
+                        "reported_total",
+                        "returned_count",
+                        "status",
+                        "stop_reason"
+                      ],
+                      "additionalProperties": false,
+                      "description": "Optional retrieval evidence. Exhausting a provider cursor does not prove all LinkedIn engagements were accessible.",
+                      "properties": {
+                        "reported_total": {
+                          "type": [
+                            "integer",
+                            "null"
+                          ],
+                          "minimum": 0
+                        },
+                        "returned_count": {
+                          "type": "integer",
+                          "minimum": 0
+                        },
+                        "status": {
+                          "type": "string",
+                          "enum": [
+                            "more_available",
+                            "provider_exhausted"
+                          ]
+                        },
+                        "stop_reason": {
+                          "type": "string",
+                          "enum": [
+                            "page_limit",
+                            "provider_exhausted",
+                            "request_budget"
+                          ]
+                        }
+                      }
                     },
                     "billing": {
                       "type": "object",
@@ -4664,7 +5034,7 @@
                       },
                       "billing": {
                         "credits_consumed": 1,
-                        "credits_refunded": 0,
+                        "credits_refunded": 24,
                         "outcomes": {
                           "success": 1,
                           "not_found": 0,
@@ -4677,12 +5047,100 @@
               }
             }
           },
+          "202": {
+            "description": "The bridge did not respond within 90 seconds. Its outcome is unconfirmed; retry the identical page with the returned key after Retry-After. This is not a completed result or a guarantee that processing started.",
+            "headers": {
+              "Retry-After": {
+                "description": "Wait this many seconds before retrying (15 for page_pending).",
+                "schema": {
+                  "type": "string"
+                },
+                "example": "15"
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "status",
+                    "code",
+                    "idempotency_key",
+                    "retry_after_ms",
+                    "message"
+                  ],
+                  "properties": {
+                    "status": {
+                      "type": "string",
+                      "enum": [
+                        "pending"
+                      ]
+                    },
+                    "code": {
+                      "type": "string",
+                      "enum": [
+                        "page_pending"
+                      ]
+                    },
+                    "idempotency_key": {
+                      "type": "string",
+                      "format": "uuid"
+                    },
+                    "retry_after_ms": {
+                      "type": "integer",
+                      "minimum": 0
+                    },
+                    "message": {
+                      "type": "string"
+                    }
+                  }
+                },
+                "examples": {
+                  "pending": {
+                    "summary": "Unconfirmed page outcome",
+                    "value": {
+                      "status": "pending",
+                      "code": "page_pending",
+                      "idempotency_key": "00000000-0000-4000-8000-000000000001",
+                      "retry_after_ms": 15000,
+                      "message": "Retry the identical page with this Idempotency-Key to retrieve its result."
+                    }
+                  }
+                }
+              }
+            }
+          },
           "400": {
             "description": "The JSON body, LinkedIn post URL, or cursor is invalid.",
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/Error"
+                  "type": "object",
+                  "required": [
+                    "error"
+                  ],
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    },
+                    "code": {
+                      "type": "string",
+                      "description": "Use the documented code to distinguish waiting, invalid reuse, and account restart."
+                    },
+                    "idempotency_key": {
+                      "type": "string",
+                      "format": "uuid",
+                      "description": "Retain this key and the original request body for safe recovery."
+                    },
+                    "retry_after_ms": {
+                      "type": "integer",
+                      "minimum": 0
+                    }
+                  }
                 }
               }
             }
@@ -4695,7 +5153,65 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/Error"
+                  "type": "object",
+                  "required": [
+                    "error"
+                  ],
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    },
+                    "code": {
+                      "type": "string",
+                      "description": "Use the documented code to distinguish waiting, invalid reuse, and account restart."
+                    },
+                    "idempotency_key": {
+                      "type": "string",
+                      "format": "uuid",
+                      "description": "Retain this key and the original request body for safe recovery."
+                    },
+                    "retry_after_ms": {
+                      "type": "integer",
+                      "minimum": 0
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "replay_in_progress: wait and retry the identical page with the same key. replay_request_mismatch: the key was already used with different request fields.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "error"
+                  ],
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    },
+                    "code": {
+                      "type": "string",
+                      "description": "Use the documented code to distinguish waiting, invalid reuse, and account restart."
+                    },
+                    "idempotency_key": {
+                      "type": "string",
+                      "format": "uuid",
+                      "description": "Retain this key and the original request body for safe recovery."
+                    },
+                    "retry_after_ms": {
+                      "type": "integer",
+                      "minimum": 0
+                    }
+                  }
                 }
               }
             }
@@ -4705,7 +5221,31 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/Error"
+                  "type": "object",
+                  "required": [
+                    "error"
+                  ],
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    },
+                    "code": {
+                      "type": "string",
+                      "description": "Use the documented code to distinguish waiting, invalid reuse, and account restart."
+                    },
+                    "idempotency_key": {
+                      "type": "string",
+                      "format": "uuid",
+                      "description": "Retain this key and the original request body for safe recovery."
+                    },
+                    "retry_after_ms": {
+                      "type": "integer",
+                      "minimum": 0
+                    }
+                  }
                 }
               }
             }
@@ -4715,7 +5255,31 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/Error"
+                  "type": "object",
+                  "required": [
+                    "error"
+                  ],
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    },
+                    "code": {
+                      "type": "string",
+                      "description": "Use the documented code to distinguish waiting, invalid reuse, and account restart."
+                    },
+                    "idempotency_key": {
+                      "type": "string",
+                      "format": "uuid",
+                      "description": "Retain this key and the original request body for safe recovery."
+                    },
+                    "retry_after_ms": {
+                      "type": "integer",
+                      "minimum": 0
+                    }
+                  }
                 }
               }
             }
@@ -4725,7 +5289,31 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/Error"
+                  "type": "object",
+                  "required": [
+                    "error"
+                  ],
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    },
+                    "code": {
+                      "type": "string",
+                      "description": "Use the documented code to distinguish waiting, invalid reuse, and account restart."
+                    },
+                    "idempotency_key": {
+                      "type": "string",
+                      "format": "uuid",
+                      "description": "Retain this key and the original request body for safe recovery."
+                    },
+                    "retry_after_ms": {
+                      "type": "integer",
+                      "minimum": 0
+                    }
+                  }
                 }
               }
             }
@@ -4735,7 +5323,31 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/Error"
+                  "type": "object",
+                  "required": [
+                    "error"
+                  ],
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    },
+                    "code": {
+                      "type": "string",
+                      "description": "Use the documented code to distinguish waiting, invalid reuse, and account restart."
+                    },
+                    "idempotency_key": {
+                      "type": "string",
+                      "format": "uuid",
+                      "description": "Retain this key and the original request body for safe recovery."
+                    },
+                    "retry_after_ms": {
+                      "type": "integer",
+                      "minimum": 0
+                    }
+                  }
                 }
               }
             }
@@ -4745,7 +5357,31 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/Error"
+                  "type": "object",
+                  "required": [
+                    "error"
+                  ],
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    },
+                    "code": {
+                      "type": "string",
+                      "description": "Use the documented code to distinguish waiting, invalid reuse, and account restart."
+                    },
+                    "idempotency_key": {
+                      "type": "string",
+                      "format": "uuid",
+                      "description": "Retain this key and the original request body for safe recovery."
+                    },
+                    "retry_after_ms": {
+                      "type": "integer",
+                      "minimum": 0
+                    }
+                  }
                 }
               }
             }

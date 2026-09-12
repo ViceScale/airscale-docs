@@ -5,6 +5,7 @@ const CODE_SAMPLE_POST_URL = "https://example.com/linkedin-post-example";
 const errorDescriptions = {
   400: "The JSON body, LinkedIn post URL, or cursor is invalid.",
   402: "The workspace does not have enough credits to reserve profile enrichment for this page.",
+  409: "replay_in_progress: wait and retry the identical page with the same key. replay_request_mismatch: the key was already used with different request fields.",
   413: "The JSON request body exceeds the 128 KiB limit.",
   429: "The workspace has exceeded the 60 requests per minute post-engagement limit.",
   500: "The request could not be completed because of an unexpected server error.",
@@ -17,7 +18,17 @@ function jsonError(description) {
     description,
     content: {
       "application/json": {
-        schema: { $ref: "#/components/schemas/Error" }
+        schema: {
+          type: "object",
+          required: ["error"],
+          properties: {
+            error: { type: "string" },
+            message: { type: "string" },
+            code: { type: "string", description: "Use the documented code to distinguish waiting, invalid reuse, and account restart." },
+            idempotency_key: { type: "string", format: "uuid", description: "Retain this key and the original request body for safe recovery." },
+            retry_after_ms: { type: "integer", minimum: 0 }
+          }
+        }
       }
     }
   };
@@ -128,15 +139,27 @@ const postEngagementResponseSchema = {
       properties: {
         next_cursor: {
           type: ["string", "null"],
-          description: "Opaque cursor for the next page, or null when the result is complete."
+          description: "Opaque cursor for the next page, or null when the provider returns no continuation cursor. This does not prove complete LinkedIn coverage."
         },
         has_more: { type: "boolean" }
       }
     },
     provider: {
       type: "string",
-      enum: ["b2benrichment", "rapidapi", "unipile"],
+      enum: ["b2benrichment", "rapidapi", "rapidapi_pnd", "unipile"],
       description: "The provider selected for this page. Treat this value as informational."
+    },
+    retrieval: {
+      type: "object",
+      required: ["reported_total", "returned_count", "status", "stop_reason"],
+      additionalProperties: false,
+      description: "Optional retrieval evidence. Exhausting a provider cursor does not prove all LinkedIn engagements were accessible.",
+      properties: {
+        reported_total: { type: ["integer", "null"], minimum: 0 },
+        returned_count: { type: "integer", minimum: 0 },
+        status: { type: "string", enum: ["more_available", "provider_exhausted"] },
+        stop_reason: { type: "string", enum: ["page_limit", "provider_exhausted", "request_budget"] }
+      }
     },
     billing: {
       type: "object",
@@ -193,6 +216,7 @@ function postEngagementCodeSamples(path) {
             `  --url '${endpoint}' \\`,
             '  --header "Authorization: Bearer $AIRSCALE_API_KEY" \\',
             '  --header "Content-Type: application/json" \\',
+            '  --header "Idempotency-Key: ${AIRSCALE_PAGE_KEY:?Set a UUID for this page and retain it for retries}" \\',
             `  --data '${bodyLiteral}'`
           ].join("\n")
         });
@@ -208,7 +232,8 @@ function postEngagementCodeSamples(path) {
             "  method: \"POST\",",
             "  headers: {",
             "    Authorization: `Bearer ${process.env.AIRSCALE_API_KEY}`,",
-            "    \"Content-Type\": \"application/json\"",
+            "    \"Content-Type\": \"application/json\",",
+            "    \"Idempotency-Key\": process.env.AIRSCALE_PAGE_KEY",
             "  },",
             `  body: JSON.stringify(${bodyLiteral})`,
             "});",
@@ -230,12 +255,13 @@ function postEngagementCodeSamples(path) {
           `response = requests.post("${endpoint}",`,
           "  headers={",
           '    "Authorization": f\'Bearer {os.environ["AIRSCALE_API_KEY"]}\',',
-          '    "Content-Type": "application/json"',
+          '    "Content-Type": "application/json",',
+          '    "Idempotency-Key": os.environ["AIRSCALE_PAGE_KEY"]',
           "  },",
           `  json=${bodyLiteral}`,
           ")",
-          "response.raise_for_status()",
-          "print(response.json())"
+          "print(response.json())  # Retain any returned retry key before handling errors.",
+          "response.raise_for_status()"
         ].join("\n")
       });
     }
@@ -266,7 +292,7 @@ function responseExample(engagementType) {
     pagination: { next_cursor: "pje1.synthetic_cursor", has_more: true },
     billing: {
       credits_consumed: 1,
-      credits_refunded: 0,
+      credits_refunded: 24,
       outcomes: { success: 1, not_found: 0, error: 0 }
     }
   };
@@ -281,10 +307,15 @@ function operation({ path, operationId, engagementType, summary, description }) 
       tags: [TAG],
       summary,
       description,
+      "x-airscale-source-sha": "9a539d40c2d5786cd064ce1637f93d6e020ef317",
       "x-airscale-rate-limit": "60 requests per minute per workspace.",
-      "x-airscale-credit-cost": "1 credit reserved per returned engagement for profile enrichment; only successful enrichments are consumed; not_found and error outcomes are refunded.",
+      "x-airscale-credit-cost": "1 credit reserved upfront per requested slot (limit); unused slots and definitive not_found/error outcomes are refunded; only successful profile enrichments are consumed.",
       "x-codeSamples": postEngagementCodeSamples(path),
-      parameters: [],
+      parameters: [{
+        name: "Idempotency-Key", in: "header", required: false,
+        schema: { type: "string", format: "uuid" },
+        description: "Create a UUID for this page and reuse it with the identical endpoint, post_url, limit and cursor on every retry. Use a new key for the next page. Completed results are replayable for 24 hours after completion. Omitting the header is supported, but an independent retry without the original key can reserve credits again."
+      }],
       requestBody: requestBody(
         postEngagementRequestSchema,
         requestExamples(),
@@ -305,7 +336,28 @@ function operation({ path, operationId, engagementType, summary, description }) 
             }
           }
         },
-        ...errorResponses([400, 401, 402, 413, 429, 500, 502, 503])
+        202: {
+          description: "The bridge did not respond within 90 seconds. Its outcome is unconfirmed; retry the identical page with the returned key after Retry-After. This is not a completed result or a guarantee that processing started.",
+          headers: { "Retry-After": { description: "Wait this many seconds before retrying (15 for page_pending).", schema: { type: "string" }, example: "15" } },
+          content: { "application/json": {
+            schema: {
+              type: "object", additionalProperties: false,
+              required: ["status", "code", "idempotency_key", "retry_after_ms", "message"],
+              properties: {
+                status: { type: "string", enum: ["pending"] },
+                code: { type: "string", enum: ["page_pending"] },
+                idempotency_key: { type: "string", format: "uuid" },
+                retry_after_ms: { type: "integer", minimum: 0 },
+                message: { type: "string" }
+              }
+            },
+            examples: { pending: { summary: "Unconfirmed page outcome", value: {
+              status: "pending", code: "page_pending", idempotency_key: "00000000-0000-4000-8000-000000000001",
+              retry_after_ms: 15000, message: "Retry the identical page with this Idempotency-Key to retrieve its result."
+            } } }
+          } }
+        },
+        ...errorResponses([400, 401, 402, 409, 413, 429, 500, 502, 503])
       }
     }
   };
