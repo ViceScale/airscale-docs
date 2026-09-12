@@ -108,12 +108,12 @@
 
 ## API Reference — Job change monitoring
 
-- [Create a job-change monitor](https://airscale.mintlify.app/api-reference/job-change-monitors/create.md): Start monitoring personal LinkedIn profiles for employer changes.
+- [Create a job-change monitor](https://airscale.mintlify.app/api-reference/job-change-monitors/create.md): Monitor up to 10,000 personal LinkedIn profiles for employer changes with one schedule and webhook.
 - [List job-change monitors](https://airscale.mintlify.app/api-reference/job-change-monitors/list.md): List the monitors and unread-event counts in a workspace.
 - [Get a job-change monitor](https://airscale.mintlify.app/api-reference/job-change-monitors/get.md): Retrieve one monitor, its profiles, and its latest events.
 - [Update a job-change monitor](https://airscale.mintlify.app/api-reference/job-change-monitors/update.md): Change a monitor's name or frequency, or pause and resume checks.
 - [Delete a job-change monitor](https://airscale.mintlify.app/api-reference/job-change-monitors/delete.md): Permanently remove a monitor and its stored monitoring data.
-- [Add profiles to a job-change monitor](https://airscale.mintlify.app/api-reference/job-change-monitors/profiles/add.md): Add personal LinkedIn profiles while preserving existing baselines.
+- [Add profiles to a job-change monitor](https://airscale.mintlify.app/api-reference/job-change-monitors/profiles/add.md): Add up to 10,000 personal LinkedIn profiles per request while preserving existing baselines.
 - [Remove a profile from a job-change monitor](https://airscale.mintlify.app/api-reference/job-change-monitors/profiles/remove.md): Stop checking one profile while preserving its event history.
 - [List job-change events](https://airscale.mintlify.app/api-reference/job-change-monitors/events.md): Read cursor-paginated employer-change events for a monitor.
 - [Mark a job-change event as read](https://airscale.mintlify.app/api-reference/job-change-monitors/events/read.md): Acknowledge one job-change event after processing it.

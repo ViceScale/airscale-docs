@@ -1,6 +1,6 @@
 {
   "sourceRepository": "ViceScale/airscale-code",
-  "sourceSha": "bac9174c3a074f5ec5dc14575162cc680da4a25e",
+  "sourceSha": "1de19e1b70a052a4b8d9c2075021a7e5e7a94d51",
   "operations": [
     {
       "method": "POST",
@@ -180,7 +180,19 @@
       "page": "api-reference/job-change-monitors/create",
       "tag": "Job change monitoring",
       "sourcePage": "job-change-monitors",
-      "sourceFiles": ["workers/public-api/job-change-monitors.js", "workers/public-api/job-change-monitors.test.mjs", "api/src/routes/publicJobChangeMonitors.ts", "api/src/routes/publicJobChangeMonitors.test.ts"]
+      "sourceFiles": [
+        "workers/public-api/job-change-monitors.js",
+        "workers/public-api/job-change-monitors.test.mjs",
+        "api/src/routes/publicJobChangeMonitors.ts",
+        "api/src/routes/publicJobChangeMonitors.test.ts",
+        "api/src/lib/jobChangeMonitorLimits.ts",
+        "api/src/lib/jobChangePublicApi.ts",
+        "api/src/lib/jobChangePublicApi.test.ts",
+        "api/src/lib/jobChangeMonitoring.ts",
+        "api/src/lib/jobChangeMonitoring.test.ts",
+        "api/src/trigger/job-change-monitor.ts",
+        "api/src/trigger/job-change-monitor.batches.test.ts"
+      ]
     },
     {
       "method": "GET",
@@ -189,7 +201,19 @@
       "page": "api-reference/job-change-monitors/list",
       "tag": "Job change monitoring",
       "sourcePage": "job-change-monitors",
-      "sourceFiles": ["workers/public-api/job-change-monitors.js", "workers/public-api/job-change-monitors.test.mjs", "api/src/routes/publicJobChangeMonitors.ts", "api/src/routes/publicJobChangeMonitors.test.ts"]
+      "sourceFiles": [
+        "workers/public-api/job-change-monitors.js",
+        "workers/public-api/job-change-monitors.test.mjs",
+        "api/src/routes/publicJobChangeMonitors.ts",
+        "api/src/routes/publicJobChangeMonitors.test.ts",
+        "api/src/lib/jobChangeMonitorLimits.ts",
+        "api/src/lib/jobChangePublicApi.ts",
+        "api/src/lib/jobChangePublicApi.test.ts",
+        "api/src/lib/jobChangeMonitoring.ts",
+        "api/src/lib/jobChangeMonitoring.test.ts",
+        "api/src/trigger/job-change-monitor.ts",
+        "api/src/trigger/job-change-monitor.batches.test.ts"
+      ]
     },
     {
       "method": "GET",
@@ -198,7 +222,19 @@
       "page": "api-reference/job-change-monitors/get",
       "tag": "Job change monitoring",
       "sourcePage": "job-change-monitors",
-      "sourceFiles": ["workers/public-api/job-change-monitors.js", "workers/public-api/job-change-monitors.test.mjs", "api/src/routes/publicJobChangeMonitors.ts", "api/src/routes/publicJobChangeMonitors.test.ts"]
+      "sourceFiles": [
+        "workers/public-api/job-change-monitors.js",
+        "workers/public-api/job-change-monitors.test.mjs",
+        "api/src/routes/publicJobChangeMonitors.ts",
+        "api/src/routes/publicJobChangeMonitors.test.ts",
+        "api/src/lib/jobChangeMonitorLimits.ts",
+        "api/src/lib/jobChangePublicApi.ts",
+        "api/src/lib/jobChangePublicApi.test.ts",
+        "api/src/lib/jobChangeMonitoring.ts",
+        "api/src/lib/jobChangeMonitoring.test.ts",
+        "api/src/trigger/job-change-monitor.ts",
+        "api/src/trigger/job-change-monitor.batches.test.ts"
+      ]
     },
     {
       "method": "PATCH",
@@ -207,7 +243,19 @@
       "page": "api-reference/job-change-monitors/update",
       "tag": "Job change monitoring",
       "sourcePage": "job-change-monitors",
-      "sourceFiles": ["workers/public-api/job-change-monitors.js", "workers/public-api/job-change-monitors.test.mjs", "api/src/routes/publicJobChangeMonitors.ts", "api/src/routes/publicJobChangeMonitors.test.ts"]
+      "sourceFiles": [
+        "workers/public-api/job-change-monitors.js",
+        "workers/public-api/job-change-monitors.test.mjs",
+        "api/src/routes/publicJobChangeMonitors.ts",
+        "api/src/routes/publicJobChangeMonitors.test.ts",
+        "api/src/lib/jobChangeMonitorLimits.ts",
+        "api/src/lib/jobChangePublicApi.ts",
+        "api/src/lib/jobChangePublicApi.test.ts",
+        "api/src/lib/jobChangeMonitoring.ts",
+        "api/src/lib/jobChangeMonitoring.test.ts",
+        "api/src/trigger/job-change-monitor.ts",
+        "api/src/trigger/job-change-monitor.batches.test.ts"
+      ]
     },
     {
       "method": "DELETE",
@@ -216,7 +264,19 @@
       "page": "api-reference/job-change-monitors/delete",
       "tag": "Job change monitoring",
       "sourcePage": "job-change-monitors",
-      "sourceFiles": ["workers/public-api/job-change-monitors.js", "workers/public-api/job-change-monitors.test.mjs", "api/src/routes/publicJobChangeMonitors.ts", "api/src/routes/publicJobChangeMonitors.test.ts"]
+      "sourceFiles": [
+        "workers/public-api/job-change-monitors.js",
+        "workers/public-api/job-change-monitors.test.mjs",
+        "api/src/routes/publicJobChangeMonitors.ts",
+        "api/src/routes/publicJobChangeMonitors.test.ts",
+        "api/src/lib/jobChangeMonitorLimits.ts",
+        "api/src/lib/jobChangePublicApi.ts",
+        "api/src/lib/jobChangePublicApi.test.ts",
+        "api/src/lib/jobChangeMonitoring.ts",
+        "api/src/lib/jobChangeMonitoring.test.ts",
+        "api/src/trigger/job-change-monitor.ts",
+        "api/src/trigger/job-change-monitor.batches.test.ts"
+      ]
     },
     {
       "method": "POST",
@@ -225,7 +285,19 @@
       "page": "api-reference/job-change-monitors/profiles/add",
       "tag": "Job change monitoring",
       "sourcePage": "job-change-monitors",
-      "sourceFiles": ["workers/public-api/job-change-monitors.js", "workers/public-api/job-change-monitors.test.mjs", "api/src/routes/publicJobChangeMonitors.ts", "api/src/routes/publicJobChangeMonitors.test.ts"]
+      "sourceFiles": [
+        "workers/public-api/job-change-monitors.js",
+        "workers/public-api/job-change-monitors.test.mjs",
+        "api/src/routes/publicJobChangeMonitors.ts",
+        "api/src/routes/publicJobChangeMonitors.test.ts",
+        "api/src/lib/jobChangeMonitorLimits.ts",
+        "api/src/lib/jobChangePublicApi.ts",
+        "api/src/lib/jobChangePublicApi.test.ts",
+        "api/src/lib/jobChangeMonitoring.ts",
+        "api/src/lib/jobChangeMonitoring.test.ts",
+        "api/src/trigger/job-change-monitor.ts",
+        "api/src/trigger/job-change-monitor.batches.test.ts"
+      ]
     },
     {
       "method": "DELETE",
@@ -234,7 +306,19 @@
       "page": "api-reference/job-change-monitors/profiles/remove",
       "tag": "Job change monitoring",
       "sourcePage": "job-change-monitors",
-      "sourceFiles": ["workers/public-api/job-change-monitors.js", "workers/public-api/job-change-monitors.test.mjs", "api/src/routes/publicJobChangeMonitors.ts", "api/src/routes/publicJobChangeMonitors.test.ts"]
+      "sourceFiles": [
+        "workers/public-api/job-change-monitors.js",
+        "workers/public-api/job-change-monitors.test.mjs",
+        "api/src/routes/publicJobChangeMonitors.ts",
+        "api/src/routes/publicJobChangeMonitors.test.ts",
+        "api/src/lib/jobChangeMonitorLimits.ts",
+        "api/src/lib/jobChangePublicApi.ts",
+        "api/src/lib/jobChangePublicApi.test.ts",
+        "api/src/lib/jobChangeMonitoring.ts",
+        "api/src/lib/jobChangeMonitoring.test.ts",
+        "api/src/trigger/job-change-monitor.ts",
+        "api/src/trigger/job-change-monitor.batches.test.ts"
+      ]
     },
     {
       "method": "GET",
@@ -243,7 +327,19 @@
       "page": "api-reference/job-change-monitors/events",
       "tag": "Job change monitoring",
       "sourcePage": "job-change-monitors",
-      "sourceFiles": ["workers/public-api/job-change-monitors.js", "workers/public-api/job-change-monitors.test.mjs", "api/src/routes/publicJobChangeMonitors.ts", "api/src/routes/publicJobChangeMonitors.test.ts"]
+      "sourceFiles": [
+        "workers/public-api/job-change-monitors.js",
+        "workers/public-api/job-change-monitors.test.mjs",
+        "api/src/routes/publicJobChangeMonitors.ts",
+        "api/src/routes/publicJobChangeMonitors.test.ts",
+        "api/src/lib/jobChangeMonitorLimits.ts",
+        "api/src/lib/jobChangePublicApi.ts",
+        "api/src/lib/jobChangePublicApi.test.ts",
+        "api/src/lib/jobChangeMonitoring.ts",
+        "api/src/lib/jobChangeMonitoring.test.ts",
+        "api/src/trigger/job-change-monitor.ts",
+        "api/src/trigger/job-change-monitor.batches.test.ts"
+      ]
     },
     {
       "method": "POST",
@@ -252,7 +348,19 @@
       "page": "api-reference/job-change-monitors/events/read",
       "tag": "Job change monitoring",
       "sourcePage": "job-change-monitors",
-      "sourceFiles": ["workers/public-api/job-change-monitors.js", "workers/public-api/job-change-monitors.test.mjs", "api/src/routes/publicJobChangeMonitors.ts", "api/src/routes/publicJobChangeMonitors.test.ts"]
+      "sourceFiles": [
+        "workers/public-api/job-change-monitors.js",
+        "workers/public-api/job-change-monitors.test.mjs",
+        "api/src/routes/publicJobChangeMonitors.ts",
+        "api/src/routes/publicJobChangeMonitors.test.ts",
+        "api/src/lib/jobChangeMonitorLimits.ts",
+        "api/src/lib/jobChangePublicApi.ts",
+        "api/src/lib/jobChangePublicApi.test.ts",
+        "api/src/lib/jobChangeMonitoring.ts",
+        "api/src/lib/jobChangeMonitoring.test.ts",
+        "api/src/trigger/job-change-monitor.ts",
+        "api/src/trigger/job-change-monitor.batches.test.ts"
+      ]
     }
   ]
 }

@@ -5,7 +5,7 @@ export const baseSpec = {
     version: "2026-09-11",
     description: "Search, enrich, resolve public business data, and monitor job changes with Airschool.",
     "x-airscale-source-repository": "ViceScale/airscale-code",
-    "x-airscale-source-sha": "bac9174c3a074f5ec5dc14575162cc680da4a25e"
+    "x-airscale-source-sha": "1de19e1b70a052a4b8d9c2075021a7e5e7a94d51"
   },
   servers: [{ url: "https://api.airscale.io", description: "Production" }],
   tags: [
@@ -213,7 +213,7 @@ export const baseSpec = {
           updated_at: { type: "string", format: "date-time" },
           webhook_url: { type: ["string", "null"], format: "uri" },
           webhook_configured: { type: "boolean" },
-          active_profile_count: { type: "integer", minimum: 0, maximum: 500 },
+          active_profile_count: { type: "integer", minimum: 0, maximum: 10_000 },
           unread_event_count: { type: "integer", minimum: 0 }
         }
       },

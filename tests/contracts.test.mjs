@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import test from "node:test";
 
-const EXPECTED_SOURCE_SHA = "bac9174c3a074f5ec5dc14575162cc680da4a25e";
+const EXPECTED_SOURCE_SHA = "1de19e1b70a052a4b8d9c2075021a7e5e7a94d51";
 const EXPECTED_OPERATIONS = [
   ["POST", "/v1/credits", "getCredits", "api-reference/credit-count", "Account"],
   ["POST", "/v1/email", "findProfessionalEmail", "api-reference/email-finder", "Contact data"],
@@ -161,7 +161,19 @@ const EXPECTED_CONTRACTS = deepFreeze({
         { method: "GET", path: "/v1/job-change-monitors/{monitor_id}/events" },
         { method: "POST", path: "/v1/job-change-monitors/{monitor_id}/events/{event_id}/read" }
       ],
-      sourceFiles: ["workers/public-api/job-change-monitors.js", "workers/public-api/job-change-monitors.test.mjs", "api/src/routes/publicJobChangeMonitors.ts", "api/src/routes/publicJobChangeMonitors.test.ts"]
+      sourceFiles: [
+        "workers/public-api/job-change-monitors.js",
+        "workers/public-api/job-change-monitors.test.mjs",
+        "api/src/routes/publicJobChangeMonitors.ts",
+        "api/src/routes/publicJobChangeMonitors.test.ts",
+        "api/src/lib/jobChangeMonitorLimits.ts",
+        "api/src/lib/jobChangePublicApi.ts",
+        "api/src/lib/jobChangePublicApi.test.ts",
+        "api/src/lib/jobChangeMonitoring.ts",
+        "api/src/lib/jobChangeMonitoring.test.ts",
+        "api/src/trigger/job-change-monitor.ts",
+        "api/src/trigger/job-change-monitor.batches.test.ts"
+      ]
     }
 });
 
