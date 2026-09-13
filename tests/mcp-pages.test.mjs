@@ -13,6 +13,12 @@ const API_REFERENCE_TAB = {
   tab: "API Reference",
   groups: [
     {
+      group: "Account",
+      pages: [
+        "api-reference/credit-count"
+      ]
+    },
+    {
       group: "Start here",
       pages: [
         "api-reference/api-overview",
@@ -24,17 +30,9 @@ const API_REFERENCE_TAB = {
       group: "Search and discovery",
       pages: [
         "api-reference/find-people",
-        "api-reference/find-people/count",
         "api-reference/find-companies",
         "api-reference/find-companies/filter-values",
         "api-reference/airsearch"
-      ]
-    },
-    {
-      group: "Post engagement",
-      pages: [
-        "api-reference/post-likers",
-        "api-reference/post-commenters"
       ]
     },
     {
@@ -57,11 +55,10 @@ const API_REFERENCE_TAB = {
       ]
     },
     {
-      group: "Miscellaneous",
+      group: "Post engagement",
       pages: [
-        "api-reference/miscale-news/whatsapp-check",
-        "api-reference/miscale-news/meta-ads",
-        "api-reference/miscale-news/email-verifier"
+        "api-reference/post-likers",
+        "api-reference/post-commenters"
       ],
       expanded: false
     },
@@ -81,8 +78,13 @@ const API_REFERENCE_TAB = {
       expanded: false
     },
     {
-      group: "Account",
-      pages: ["api-reference/credit-count"]
+      group: "Miscellaneous",
+      pages: [
+        "api-reference/miscale-news/whatsapp-check",
+        "api-reference/miscale-news/meta-ads",
+        "api-reference/miscale-news/email-verifier"
+      ],
+      expanded: false
     }
   ]
 };

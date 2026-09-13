@@ -8,13 +8,39 @@ openapi: "/openapi.json POST /v1/find-people"
 Search for people using person, role, current-company, and past-experience filters, then page through the matching lead records.
 
 <Note>
-The Search and [Count people](/api-reference/find-people/count) operations share a limit of 6 requests per second per workspace. Search costs 0.1 credits per returned lead; empty result pages are not charged. Count accepts the same `query` for free.
+The Search and [Count people](#count-matching-people) operations share a limit of 6 requests per second per workspace. Search costs 0.1 credits per returned lead; empty result pages are not charged. Count accepts the same `query` for free.
 </Note>
 
 Search returns at most 100 leads per request. When `next_cursor` is not `null`, send it unchanged as `cursor` with the same `query`. Do not derive or edit cursor contents.
 
 After a `429`, wait for the next second and retry with bounded exponential backoff. A failed search or credit-service attempt does not return charged leads.
 
+## Count matching people
+
+Use `POST https://api.airscale.io/v1/find-people/count` to estimate this audience before retrieving leads. Send the same `query` object and Bearer authorization as Find people, with `Content-Type: application/json`. Omit `size` and `cursor`: Count has no pagination fields.
+
+Count is free. It neither reserves nor debits credits and returns only `total`, the number of matching people. It shares the search rate limit above; after a `429`, retry with bounded backoff.
+
+<Accordion title="Count request and response">
+
+```json Count request
+{
+  "query": {
+    "jobTitle": {
+      "include": ["Founder"]
+    }
+  }
+}
+```
+
+```json Count response
+{
+  "total": 1250
+}
+```
+
+</Accordion>
+
 ## Next step
 
-Use [Count people](/api-reference/find-people/count) to estimate the audience for free, [Find companies](/api-reference/find-companies) to discover organizations, or [Rate limits](/api-reference/rate-limits) before adding concurrency.
+Use the same `query` to retrieve the counted audience, [Find companies](/api-reference/find-companies) to discover organizations, or [Rate limits](/api-reference/rate-limits) before adding concurrency.

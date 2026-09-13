@@ -3060,7 +3060,7 @@ test("Mintlify prebuild classification is not treated as hosted publication proo
 
 test("agent renderers escape compact-index metadata and reject unsafe or incomplete navigation input", () => {
   const inputs = agentFixtureInputs();
-  const firstPath = inputs.docsConfig.navigation.tabs.find(({ tab }) => tab === "API Reference").groups[0].pages[0];
+  const firstPath = "api-reference/api-overview";
   inputs.pageSources[firstPath] = inputs.pageSources[firstPath]
     .replace('title: "API Overview"', 'title: "API [Overview]"')
     .replace(
@@ -3381,11 +3381,11 @@ test("a later agent writer recovers crashes at every multi-output install and cl
 test("agent generation rejects a navigable page below a symlinked directory", async () => {
   await inTemporaryDirectory(async (directory) => {
     writeAgentFixture(directory);
-    const pageDirectory = join(directory, "api-reference/find-people");
+    const pageDirectory = join(directory, "api-reference/find-companies");
     const outsideDirectory = mkdtempSync(join(tmpdir(), "airscale-agent-outside-"));
     try {
-      const outsidePage = join(outsideDirectory, "count.mdx");
-      writeFileSync(outsidePage, readFileSync(join(pageDirectory, "count.mdx"), "utf8"));
+      const outsidePage = join(outsideDirectory, "filter-values.mdx");
+      writeFileSync(outsidePage, readFileSync(join(pageDirectory, "filter-values.mdx"), "utf8"));
       rmSync(pageDirectory, { recursive: true, force: true });
       symlinkSync(outsideDirectory, pageDirectory);
 

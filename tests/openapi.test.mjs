@@ -198,7 +198,8 @@ function assertExamplePrivacy(exampleValues) {
   function inspect(value) {
     if (!value || typeof value !== "object") return;
     for (const [key, child] of Object.entries(value)) {
-      if (privateIdentityFields.has(key) && child !== null) {
+      const isPublicPlaceholder = (key === "provider" || key === "verifier") && child === `<${key}>`;
+      if (privateIdentityFields.has(key) && child !== null && !isPublicPlaceholder) {
         assert.fail(`non-null ${key} example field`);
       }
       inspect(child);
@@ -517,7 +518,12 @@ test("Contact Email operation accepts profile or complete name identification", 
   ]);
   assert.deepEqual(operation.responses["200"].content["application/json"].examples.success.value, {
     status: "success",
-    email: "example.person@example.org"
+    email: "example.person@example.org",
+    email_status: "valid",
+    provider: "<provider>",
+    verifier: "<verifier>",
+    catch_all: "no",
+    linkedin_profile_url: "https://www.linkedin.com/in/example-person-000000"
   });
   assert.deepEqual(operation.responses["200"].content["application/json"].examples.notFound.value, {
     status: "not_found",

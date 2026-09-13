@@ -299,8 +299,9 @@ function assertSafeExampleValue(value, label, key = "") {
   if (value && typeof value === "object") {
     for (const [childKey, child] of Object.entries(value)) {
       assert.ok(
-        !PRIVATE_IDENTITY_FIELDS.has(childKey.toLowerCase()) || child === null,
-        `${label}.${childKey}: private provider identity fields must be null`
+        !PRIVATE_IDENTITY_FIELDS.has(childKey.toLowerCase()) || child === null
+          || (["provider", "verifier"].includes(childKey) && child === `<${childKey}>`),
+        `${label}.${childKey}: provider identities must be null or exact public-field placeholders`
       );
       assertSafeExampleValue(child, `${label}.${childKey}`, childKey);
     }
