@@ -2523,6 +2523,26 @@ Description: Move or copy data from one column to another to reorganize or updat
 
 ---
 
+## Credit count
+
+Source: https://airscale.mintlify.app/api-reference/credit-count.md
+
+Description: Check the remaining credit balance for your Airschool workspace.
+
+Read the remaining credit balance for the workspace associated with your API key before starting paid enrichment work.
+
+<Note>
+Send no request body. Checking the balance is free and does not debit Airschool credits.
+</Note>
+
+An invalid or missing key returns `401 Unauthorized`. Confirm the current key in the Airschool dashboard and update your server-side secret; rotate it only if it was exposed.
+
+## Next step
+
+Use your authenticated client to [find people](/api-reference/find-people), or review [Authentication](/api-reference/authentication) before sending requests.
+
+---
+
 ## API Overview
 
 Source: https://airscale.mintlify.app/api-reference/api-overview.md
@@ -2685,44 +2705,42 @@ Description: Search people using person, role, and company filters.
 Search for people using person, role, current-company, and past-experience filters, then page through the matching lead records.
 
 <Note>
-The Search and [Count people](/api-reference/find-people/count) operations share a limit of 6 requests per second per workspace. Search costs 0.1 credits per returned lead; empty result pages are not charged. Count accepts the same `query` for free.
+The Search and [Count people](#count-matching-people) operations share a limit of 6 requests per second per workspace. Search costs 0.1 credits per returned lead; empty result pages are not charged. Count accepts the same `query` for free.
 </Note>
 
 Search returns at most 100 leads per request. When `next_cursor` is not `null`, send it unchanged as `cursor` with the same `query`. Do not derive or edit cursor contents.
 
 After a `429`, wait for the next second and retry with bounded exponential backoff. A failed search or credit-service attempt does not return charged leads.
 
-## Next step
+## Count matching people
 
-Use [Count people](/api-reference/find-people/count) to estimate the audience for free, [Find companies](/api-reference/find-companies) to discover organizations, or [Rate limits](/api-reference/rate-limits) before adding concurrency.
+Use `POST https://api.airscale.io/v1/find-people/count` to estimate this audience before retrieving leads. Send the same `query` object and Bearer authorization as Find people, with `Content-Type: application/json`. Omit `size` and `cursor`: Count has no pagination fields.
 
----
+Count is free. It neither reserves nor debits credits and returns only `total`, the number of matching people. It shares the search rate limit above; after a `429`, retry with bounded backoff.
 
-## Count people
+<Accordion title="Count request and response">
 
-Source: https://airscale.mintlify.app/api-reference/find-people/count.md
+```json Count request
+{
+  "query": {
+    "jobTitle": {
+      "include": ["Founder"]
+    }
+  }
+}
+```
 
-Description: Count people matching person, role, and company filters.
+```json Count response
+{
+  "total": 1250
+}
+```
 
-Estimate an audience before retrieving any lead records. Count accepts the same person, role, current-company, and past-experience filters as [Find people](/api-reference/find-people).
-
-<Note>
-Count is free. It neither reserves nor debits Airschool credits, and its response contains only the matching total.
-</Note>
-
-## Reuse a search audience
-
-Send the same `query` object you plan to use for Find people. Count has no pagination fields because it returns no lead page; keep `size` and `cursor` on the search request instead.
-
-The Count and Find people operations share a limit of 6 requests per second per workspace. After a `429 Too Many Requests` response, wait for the next second and retry with bounded exponential backoff.
-
-<Info>
-This preview renders non-executing examples. It does not send a request or ask for an API key.
-</Info>
+</Accordion>
 
 ## Next step
 
-Use [Find people](/api-reference/find-people) with the same `query` when you are ready to retrieve the matching records.
+Use the same `query` to retrieve the counted audience, [Find companies](/api-reference/find-companies) to discover organizations, or [Rate limits](/api-reference/rate-limits) before adding concurrency.
 
 ---
 
@@ -2798,118 +2816,6 @@ Use [Find companies](/api-reference/find-companies) when the research target sho
 
 ---
 
-## Post likers
-
-Source: https://airscale.mintlify.app/api-reference/post-likers.md
-
-Description: Retrieve and enrich people who liked a LinkedIn post.
-
-Retrieve one synchronous page of people who liked a LinkedIn post, with public profile fields enriched for each returned engagement.
-
-<Note>
-The API reserves one credit for each requested slot (`limit`) before retrieving the page. Unused slots are refunded. Each successfully enriched profile consumes one credit. Definitive `not_found` and failed `error` outcomes remain in the page and are refunded, so they have zero net credit cost. An uncertain response can retain its reservation until the same page finishes; it does not prove a refund.
-</Note>
-
-## Pagination
-
-Omit `cursor` on the first request. When `pagination.next_cursor` is not `null`, send it unchanged with the same post URL and `limit` to fetch the next page. The page size is 1–25 (default 25). The provider and continuation account remain pinned to the cursor. New cursors expire after 10 minutes and are bound to the workspace, post, engagement type, and page size.
-
-Optional `retrieval` metadata contains `reported_total`, `returned_count`, `status`, and `stop_reason`. A `provider_exhausted` status means that provider has no further cursor; it does not guarantee that every LinkedIn engagement was accessible. Provider totals can change, and comment events are not the same count as unique authors. Public pagination does not promise every reply returned by the dashboard's background extraction.
-
-## Safe retries
-
-Supply an optional UUID in the `Idempotency-Key` header. Save that key together with the endpoint and exact request body before sending the request. Reuse the same key with the identical `post_url`, `limit`, and `cursor` if the response is lost or processing is uncertain. Use a new key for the next page.
-
-The code examples read `AIRSCALE_PAGE_KEY` from your environment. Set it to a UUID once for each new page, and keep that value for every retry of that page. Replace the synthetic post URL and cursor with your own values.
-
-Omitting the header remains supported. However, an independent retry without the original key can reserve credits again. When a pending or uncertain response includes `idempotency_key`, retain and send that returned key even if your first request omitted the header.
-
-Completed results remain replayable for 24 hours after completion, including after the input cursor expires. Already-saved profile or billing work can also resume after cursor expiry. An expired cursor cannot start a new provider fetch. A reservation for unresolved work does not automatically become a refund after 24 hours.
-
-## Pending and error responses
-
-A `202` response with `status: "pending"` and `code: "page_pending"` means the bridge did not respond within 90 seconds. The outcome is unconfirmed; processing may still be running or may not have started. Wait for `Retry-After` (15 seconds for this response), then resend the identical page with the returned `idempotency_key`. The body also supplies `retry_after_ms`.
-
-| Response | Next action |
-| --- | --- |
-| `409 replay_in_progress` | Wait, then retry the identical page with the same key. |
-| `409 replay_request_mismatch` | Restore the original request fields for that key. Use a new key only for intentionally different work. |
-| `503 account_busy`, `rate_limited`, or `provider_unavailable` | Keep the page and key unchanged. Wait for the supplied delay and retry with bounded backoff. |
-| `503 provider_page_unavailable` | Retry the same cursor and key; continuation stays on its pinned provider. |
-| `503 account_restart_required` | Start again without a cursor and with a new key. Deduplicate results already received. |
-| Other `502` or `503` responses carrying `idempotency_key` | Preserve the original body and returned key. Retry with bounded backoff; do not assume that an uncertain profile or billing response was refunded. |
-| `429 Too Many Requests` | Wait and retry the same page and key with bounded exponential backoff. |
-
-If a cooldown outlasts an unfetched cursor, wait for the cooldown, then begin a fresh traversal without the cursor and with a new key. Deduplicate earlier results. A fresh traversal is new billable work. Saved work and completed replay results can still be recovered under the rules above.
-
-Airscale can choose another eligible account before a traversal starts. A continuation stays on its original account; it cannot silently switch accounts or reorder your results. Provider failures do not turn upstream access or pagination limits into a complete result set.
-
-## Billing recovery
-
-A failed provider discovery attempt is refunded before a new attempt is funded. Once a page has been saved, retries resume its profile enrichment or billing settlement without rediscovering the page or repeating successfully settled profile charges. Keep the same key throughout recovery.
-
-## Next step
-
-Use [Post commenters](/api-reference/post-commenters) for the other engagement type, or read the [post engagement workflow](/docs/likers-commenters) for the dashboard flow.
-
----
-
-## Post commenters
-
-Source: https://airscale.mintlify.app/api-reference/post-commenters.md
-
-Description: Retrieve and enrich people who commented on a LinkedIn post.
-
-Retrieve one synchronous page of people who commented on a LinkedIn post, with public profile fields enriched for each returned engagement.
-
-<Note>
-The API reserves one credit for each requested slot (`limit`) before retrieving the page. Unused slots are refunded. Each successfully enriched profile consumes one credit. Definitive `not_found` and failed `error` outcomes remain in the page and are refunded, so they have zero net credit cost. An uncertain response can retain its reservation until the same page finishes; it does not prove a refund.
-</Note>
-
-## Pagination
-
-Omit `cursor` on the first request. When `pagination.next_cursor` is not `null`, send it unchanged with the same post URL and `limit` to fetch the next page. The page size is 1–25 (default 25). The provider and continuation account remain pinned to the cursor. New cursors expire after 10 minutes and are bound to the workspace, post, engagement type, and page size.
-
-Optional `retrieval` metadata contains `reported_total`, `returned_count`, `status`, and `stop_reason`. A `provider_exhausted` status means that provider has no further cursor; it does not guarantee that every LinkedIn engagement was accessible. Provider totals can change, and comment events are not the same count as unique authors. Public pagination does not promise every reply returned by the dashboard's background extraction.
-
-## Safe retries
-
-Supply an optional UUID in the `Idempotency-Key` header. Save that key together with the endpoint and exact request body before sending the request. Reuse the same key with the identical `post_url`, `limit`, and `cursor` if the response is lost or processing is uncertain. Use a new key for the next page.
-
-The code examples read `AIRSCALE_PAGE_KEY` from your environment. Set it to a UUID once for each new page, and keep that value for every retry of that page. Replace the synthetic post URL and cursor with your own values.
-
-Omitting the header remains supported. However, an independent retry without the original key can reserve credits again. When a pending or uncertain response includes `idempotency_key`, retain and send that returned key even if your first request omitted the header.
-
-Completed results remain replayable for 24 hours after completion, including after the input cursor expires. Already-saved profile or billing work can also resume after cursor expiry. An expired cursor cannot start a new provider fetch. A reservation for unresolved work does not automatically become a refund after 24 hours.
-
-## Pending and error responses
-
-A `202` response with `status: "pending"` and `code: "page_pending"` means the bridge did not respond within 90 seconds. The outcome is unconfirmed; processing may still be running or may not have started. Wait for `Retry-After` (15 seconds for this response), then resend the identical page with the returned `idempotency_key`. The body also supplies `retry_after_ms`.
-
-| Response | Next action |
-| --- | --- |
-| `409 replay_in_progress` | Wait, then retry the identical page with the same key. |
-| `409 replay_request_mismatch` | Restore the original request fields for that key. Use a new key only for intentionally different work. |
-| `503 account_busy`, `rate_limited`, or `provider_unavailable` | Keep the page and key unchanged. Wait for the supplied delay and retry with bounded backoff. |
-| `503 provider_page_unavailable` | Retry the same cursor and key; continuation stays on its pinned provider. |
-| `503 account_restart_required` | Start again without a cursor and with a new key. Deduplicate results already received. |
-| Other `502` or `503` responses carrying `idempotency_key` | Preserve the original body and returned key. Retry with bounded backoff; do not assume that an uncertain profile or billing response was refunded. |
-| `429 Too Many Requests` | Wait and retry the same page and key with bounded exponential backoff. |
-
-If a cooldown outlasts an unfetched cursor, wait for the cooldown, then begin a fresh traversal without the cursor and with a new key. Deduplicate earlier results. A fresh traversal is new billable work. Saved work and completed replay results can still be recovered under the rules above.
-
-Airscale can choose another eligible account before a traversal starts. A continuation stays on its original account; it cannot silently switch accounts or reorder your results. Provider failures do not turn upstream access or pagination limits into a complete result set.
-
-## Billing recovery
-
-A failed provider discovery attempt is refunded before a new attempt is funded. Once a page has been saved, retries resume its profile enrichment or billing settlement without rediscovering the page or repeating successfully settled profile charges. Keep the same key throughout recovery.
-
-## Next step
-
-Use [Post likers](/api-reference/post-likers) for the other engagement type, or read the [post engagement workflow](/docs/likers-commenters) for the dashboard flow.
-
----
-
 ## Email finder
 
 Source: https://airscale.mintlify.app/api-reference/email-finder.md
@@ -2923,6 +2829,8 @@ The limit is 3,000 requests per minute per workspace. A successful result costs 
 </Note>
 
 At least one complete identification form is required. You may send both forms when you have them.
+
+The success example includes all documented response fields. `provider` and `verifier` use placeholder labels; optional fields may be absent from a result.
 
 <Warning>
 Use bounded backoff after a transient `502` or `503`. A `503` can mean a successful result could not be settled by the credit service; retry the same input only after the service recovers.
@@ -3115,6 +3023,323 @@ Wait for the credit service to recover before retrying a settlement failure with
 ## Next step
 
 Use [People profile](/api-reference/extract-people-profile) when you already have a professional profile URL and want the structured profile directly.
+
+---
+
+## Post likers
+
+Source: https://airscale.mintlify.app/api-reference/post-likers.md
+
+Description: Retrieve and enrich people who liked a LinkedIn post.
+
+Retrieve one synchronous page of people who liked a LinkedIn post, with public profile fields enriched for each returned engagement.
+
+<Note>
+The API reserves one credit for each requested slot (`limit`) before retrieving the page. Unused slots are refunded. Each successfully enriched profile consumes one credit. Definitive `not_found` and failed `error` outcomes remain in the page and are refunded, so they have zero net credit cost. An uncertain response can retain its reservation until the same page finishes; it does not prove a refund.
+</Note>
+
+## Pagination
+
+Omit `cursor` on the first request. When `pagination.next_cursor` is not `null`, send it unchanged with the same post URL and `limit` to fetch the next page. The page size is 1–25 (default 25). The provider and continuation account remain pinned to the cursor. New cursors expire after 10 minutes and are bound to the workspace, post, engagement type, and page size.
+
+Optional `retrieval` metadata contains `reported_total`, `returned_count`, `status`, and `stop_reason`. A `provider_exhausted` status means that provider has no further cursor; it does not guarantee that every LinkedIn engagement was accessible. Provider totals can change, and comment events are not the same count as unique authors. Public pagination does not promise every reply returned by the dashboard's background extraction.
+
+## Safe retries
+
+Supply an optional UUID in the `Idempotency-Key` header. Save that key together with the endpoint and exact request body before sending the request. Reuse the same key with the identical `post_url`, `limit`, and `cursor` if the response is lost or processing is uncertain. Use a new key for the next page.
+
+The code examples read `AIRSCALE_PAGE_KEY` from your environment. Set it to a UUID once for each new page, and keep that value for every retry of that page. Replace the synthetic post URL and cursor with your own values.
+
+Omitting the header remains supported. However, an independent retry without the original key can reserve credits again. When a pending or uncertain response includes `idempotency_key`, retain and send that returned key even if your first request omitted the header.
+
+Completed results remain replayable for 24 hours after completion, including after the input cursor expires. Already-saved profile or billing work can also resume after cursor expiry. An expired cursor cannot start a new provider fetch. A reservation for unresolved work does not automatically become a refund after 24 hours.
+
+## Pending and error responses
+
+A `202` response with `status: "pending"` and `code: "page_pending"` means the bridge did not respond within 90 seconds. The outcome is unconfirmed; processing may still be running or may not have started. Wait for `Retry-After` (15 seconds for this response), then resend the identical page with the returned `idempotency_key`. The body also supplies `retry_after_ms`.
+
+| Response | Next action |
+| --- | --- |
+| `409 replay_in_progress` | Wait, then retry the identical page with the same key. |
+| `409 replay_request_mismatch` | Restore the original request fields for that key. Use a new key only for intentionally different work. |
+| `503 account_busy`, `rate_limited`, or `provider_unavailable` | Keep the page and key unchanged. Wait for the supplied delay and retry with bounded backoff. |
+| `503 provider_page_unavailable` | Retry the same cursor and key; continuation stays on its pinned provider. |
+| `503 account_restart_required` | Start again without a cursor and with a new key. Deduplicate results already received. |
+| Other `502` or `503` responses carrying `idempotency_key` | Preserve the original body and returned key. Retry with bounded backoff; do not assume that an uncertain profile or billing response was refunded. |
+| `429 Too Many Requests` | Wait and retry the same page and key with bounded exponential backoff. |
+
+If a cooldown outlasts an unfetched cursor, wait for the cooldown, then begin a fresh traversal without the cursor and with a new key. Deduplicate earlier results. A fresh traversal is new billable work. Saved work and completed replay results can still be recovered under the rules above.
+
+Airscale can choose another eligible account before a traversal starts. A continuation stays on its original account; it cannot silently switch accounts or reorder your results. Provider failures do not turn upstream access or pagination limits into a complete result set.
+
+## Billing recovery
+
+A failed provider discovery attempt is refunded before a new attempt is funded. Once a page has been saved, retries resume its profile enrichment or billing settlement without rediscovering the page or repeating successfully settled profile charges. Keep the same key throughout recovery.
+
+## Next step
+
+Use [Post commenters](/api-reference/post-commenters) for the other engagement type, or read the [post engagement workflow](/docs/likers-commenters) for the dashboard flow.
+
+---
+
+## Post commenters
+
+Source: https://airscale.mintlify.app/api-reference/post-commenters.md
+
+Description: Retrieve and enrich people who commented on a LinkedIn post.
+
+Retrieve one synchronous page of people who commented on a LinkedIn post, with public profile fields enriched for each returned engagement.
+
+<Note>
+The API reserves one credit for each requested slot (`limit`) before retrieving the page. Unused slots are refunded. Each successfully enriched profile consumes one credit. Definitive `not_found` and failed `error` outcomes remain in the page and are refunded, so they have zero net credit cost. An uncertain response can retain its reservation until the same page finishes; it does not prove a refund.
+</Note>
+
+## Pagination
+
+Omit `cursor` on the first request. When `pagination.next_cursor` is not `null`, send it unchanged with the same post URL and `limit` to fetch the next page. The page size is 1–25 (default 25). The provider and continuation account remain pinned to the cursor. New cursors expire after 10 minutes and are bound to the workspace, post, engagement type, and page size.
+
+Optional `retrieval` metadata contains `reported_total`, `returned_count`, `status`, and `stop_reason`. A `provider_exhausted` status means that provider has no further cursor; it does not guarantee that every LinkedIn engagement was accessible. Provider totals can change, and comment events are not the same count as unique authors. Public pagination does not promise every reply returned by the dashboard's background extraction.
+
+## Safe retries
+
+Supply an optional UUID in the `Idempotency-Key` header. Save that key together with the endpoint and exact request body before sending the request. Reuse the same key with the identical `post_url`, `limit`, and `cursor` if the response is lost or processing is uncertain. Use a new key for the next page.
+
+The code examples read `AIRSCALE_PAGE_KEY` from your environment. Set it to a UUID once for each new page, and keep that value for every retry of that page. Replace the synthetic post URL and cursor with your own values.
+
+Omitting the header remains supported. However, an independent retry without the original key can reserve credits again. When a pending or uncertain response includes `idempotency_key`, retain and send that returned key even if your first request omitted the header.
+
+Completed results remain replayable for 24 hours after completion, including after the input cursor expires. Already-saved profile or billing work can also resume after cursor expiry. An expired cursor cannot start a new provider fetch. A reservation for unresolved work does not automatically become a refund after 24 hours.
+
+## Pending and error responses
+
+A `202` response with `status: "pending"` and `code: "page_pending"` means the bridge did not respond within 90 seconds. The outcome is unconfirmed; processing may still be running or may not have started. Wait for `Retry-After` (15 seconds for this response), then resend the identical page with the returned `idempotency_key`. The body also supplies `retry_after_ms`.
+
+| Response | Next action |
+| --- | --- |
+| `409 replay_in_progress` | Wait, then retry the identical page with the same key. |
+| `409 replay_request_mismatch` | Restore the original request fields for that key. Use a new key only for intentionally different work. |
+| `503 account_busy`, `rate_limited`, or `provider_unavailable` | Keep the page and key unchanged. Wait for the supplied delay and retry with bounded backoff. |
+| `503 provider_page_unavailable` | Retry the same cursor and key; continuation stays on its pinned provider. |
+| `503 account_restart_required` | Start again without a cursor and with a new key. Deduplicate results already received. |
+| Other `502` or `503` responses carrying `idempotency_key` | Preserve the original body and returned key. Retry with bounded backoff; do not assume that an uncertain profile or billing response was refunded. |
+| `429 Too Many Requests` | Wait and retry the same page and key with bounded exponential backoff. |
+
+If a cooldown outlasts an unfetched cursor, wait for the cooldown, then begin a fresh traversal without the cursor and with a new key. Deduplicate earlier results. A fresh traversal is new billable work. Saved work and completed replay results can still be recovered under the rules above.
+
+Airscale can choose another eligible account before a traversal starts. A continuation stays on its original account; it cannot silently switch accounts or reorder your results. Provider failures do not turn upstream access or pagination limits into a complete result set.
+
+## Billing recovery
+
+A failed provider discovery attempt is refunded before a new attempt is funded. Once a page has been saved, retries resume its profile enrichment or billing settlement without rediscovering the page or repeating successfully settled profile charges. Keep the same key throughout recovery.
+
+## Next step
+
+Use [Post likers](/api-reference/post-likers) for the other engagement type, or read the [post engagement workflow](/docs/likers-commenters) for the dashboard flow.
+
+---
+
+## Create a job-change monitor
+
+Source: https://airscale.mintlify.app/api-reference/job-change-monitors/create.md
+
+Description: Monitor up to 10,000 personal LinkedIn profiles for employer changes with one schedule and webhook.
+
+Create an active monitor for one to 10,000 personal LinkedIn profiles with [Bearer authentication](/api-reference/authentication). All profiles belong to one monitor ID, with one frequency and optional webhook. Each successful request creates a new monitor. If a network failure leaves the result unknown, list or retrieve monitors before retrying so you do not create an unintended duplicate.
+
+<Note>
+The `frequency` can be `weekly`, `every_30_days`, or `every_90_days`. If you provide `webhook_url`, store the returned `signing_secret` immediately; it is returned only on the first successful create response.
+</Note>
+
+Airschool canonicalizes LinkedIn URLs and preserves each profile's optional `external_id` in later events. Monitoring admission checks the workspace's configured provider, capacity, and credit balance before accepting the monitor.
+
+## Monitor 10,000 profiles
+
+1. Prepare a JSON request with `name`, your chosen `frequency`, an optional `webhook_url`, and a `profiles` array containing 10,000 personal LinkedIn URLs. Each entry can include an `external_id` from your CRM.
+2. Send it to `POST /v1/job-change-monitors`. The `202 Accepted` response contains `monitor`, `profiles`, `signing_secret`, and `signing_secret_warning`. Save `monitor.id` and, if a webhook is configured, the one-time `signing_secret`.
+3. Use that same ID with [Get a monitor](/api-reference/job-change-monitors/get) to inspect profile statuses and the monitor's check timestamps. Scans run asynchronously and a large scan can take time; `202` confirms acceptance, not scan completion.
+4. Keep the same monitor ID, schedule, and webhook for the whole set. After a profile's first successful check establishes its baseline, later employer changes appear in [List job-change events](/api-reference/job-change-monitors/events) and are sent to the configured webhook. Establishing the first baseline does not emit a job-change event.
+
+Monitoring costs **0.1 credit per profile per check**. Budget 1,000 credits for a check of 10,000 profiles. The available frequencies remain weekly, every 30 days, and every 90 days.
+
+## Request size and profile limits
+
+One monitor supports at most **10,000 active profiles**. Create and [Add profiles](/api-reference/job-change-monitors/profiles/add) each accept up to **10,000 profile entries per request**, while the monitor's resulting active count must stay within 10,000.
+
+The complete JSON request body must be at most **8 MiB (8,388,608 bytes)** in UTF-8. A larger body returns `413`. Long URLs, `external_id` values, and JSON formatting all count toward this limit. If your payload is too large, create the monitor with a smaller set, then add the remaining profiles in smaller requests to the same `monitor.id`. You still use one monitor, schedule, and webhook for the full set.
+
+## Verify webhook signatures
+
+Airscale sends `job_change.detected` as a JSON `POST` to `webhook_url`. The request includes `X-Airscale-Event-Id`, `X-Airscale-Timestamp`, and `X-Airscale-Signature: sha256=<hex>`. Compute HMAC-SHA256 with the one-time `signing_secret` over `<timestamp>.<raw request body>`, compare it in constant time, and reject timestamps older than five minutes. Return a 2xx response only after durable handling. Retries keep the same event ID and are deduplicated by Airscale internally.
+
+## Next step
+
+Use [List job-change monitors](/api-reference/job-change-monitors/list) to confirm the monitor's status and next check time.
+
+---
+
+## List job-change monitors
+
+Source: https://airscale.mintlify.app/api-reference/job-change-monitors/list.md
+
+Description: List the monitors and unread-event counts in a workspace.
+
+List every job-change monitor in the authenticated workspace. Each monitor includes its current status, schedule, active profile count, and unread event count.
+
+<Info>
+This operation is read-only and does not change schedules or consume monitoring credits.
+</Info>
+
+Use the monitor `id` returned here with the detail, update, profile, and event operations. A paused monitor remains in the list so you can resume it later.
+
+## Next step
+
+Open [Get a monitor](/api-reference/job-change-monitors/get) for its profiles and latest events.
+
+---
+
+## Get a job-change monitor
+
+Source: https://airscale.mintlify.app/api-reference/job-change-monitors/get.md
+
+Description: Retrieve one monitor, its profiles, and its latest events.
+
+Retrieve one monitor by `monitor_id`. The response contains all profiles, including soft-removed profiles, and up to the latest 200 events ordered newest first.
+
+<Note>
+Use the profile `status` and `removed_at` fields to distinguish an active profile from one removed from future checks. Historical events remain available after a profile is removed.
+</Note>
+
+The monitor object reports `next_check_at` and `last_successful_check_at` as ISO 8601 timestamps. A paused monitor has no next check scheduled.
+
+A monitor can contain up to 10,000 active profiles under the same schedule and webhook. Scans run asynchronously and large scans can take time. Creating a monitor returns `202 Accepted` before its scan completes; use the profile statuses and monitor timestamps to follow its progress. A profile's first successful check establishes its baseline without emitting a job-change event.
+
+## Next step
+
+Use [List job-change events](/api-reference/job-change-monitors/events) when you need cursor pagination beyond the latest 200 events.
+
+---
+
+## Update a job-change monitor
+
+Source: https://airscale.mintlify.app/api-reference/job-change-monitors/update.md
+
+Description: Change a monitor's name or frequency, or pause and resume checks.
+
+Update one or more monitor fields with `PATCH`. Send a new `name`, a supported `frequency`, an `action` of `pause`, or an `action` of `resume`.
+
+<Warning>
+Resuming requires at least one active profile and reruns monitoring admission. Changing the frequency updates the next check when the monitor is resumed; pausing clears the scheduled check.
+</Warning>
+
+The response returns the complete updated monitor, including its active profile and unread event counts.
+
+## Next step
+
+Use [Add profiles](/api-reference/job-change-monitors/profiles/add) before resuming a monitor with no active profiles.
+
+---
+
+## Delete a job-change monitor
+
+Source: https://airscale.mintlify.app/api-reference/job-change-monitors/delete.md
+
+Description: Permanently remove a monitor and its stored monitoring data.
+
+Delete a monitor by `monitor_id`. This permanently removes the monitor, its profile baselines, and its events from the workspace.
+
+<Warning>
+Deletion cannot be undone. Remove individual profiles instead when you need to stop checking a contact while retaining its event history.
+</Warning>
+
+The operation returns `{ "ok": true }` after the monitor and its cascaded data are deleted.
+
+## Next step
+
+Use [List job-change monitors](/api-reference/job-change-monitors/list) to verify the monitor no longer appears.
+
+---
+
+## Add profiles to a job-change monitor
+
+Source: https://airscale.mintlify.app/api-reference/job-change-monitors/profiles/add.md
+
+Description: Add up to 10,000 personal LinkedIn profiles per request while preserving existing baselines.
+
+Add one to 10,000 personal LinkedIn profiles per request to an existing monitor. Airschool ignores a URL that is already active and reports how many profiles were actually added. All profiles keep the existing monitor ID, frequency, and webhook.
+
+<Note>
+Adding a URL after it was removed creates a new profile and a new baseline. The previous profile's events remain associated with its original profile ID.
+</Note>
+
+The response includes the newly created profile records, `added_profile_count`, and the monitor's resulting `active_profile_count`. The 10,000-profile limit applies to the monitor's active profiles after adding new URLs. For example, a monitor with 9,000 active profiles can accept 1,000 more distinct active profiles.
+
+The complete JSON request body must fit within **8 MiB (8,388,608 bytes)** in UTF-8; larger bodies return `413`. Split a larger payload into smaller add requests to the same monitor, keeping its total at or below 10,000 active profiles.
+
+Checks run asynchronously and a large scan can take time. A new profile's first successful check establishes its baseline without emitting a job-change event. Monitoring costs **0.1 credit per profile per check**, using the monitor's weekly, every-30-days, or every-90-days schedule.
+
+## Next step
+
+Use [Get a monitor](/api-reference/job-change-monitors/get) to inspect each profile's baseline and scan status.
+
+---
+
+## Remove a profile from a job-change monitor
+
+Source: https://airscale.mintlify.app/api-reference/job-change-monitors/profiles/remove.md
+
+Description: Stop checking one profile while preserving its event history.
+
+Soft-remove one profile with its `monitor_id` and `profile_id`. The profile no longer participates in future checks, but its record and event history remain available.
+
+<Info>
+To monitor the same LinkedIn URL again, call [Add profiles](/api-reference/job-change-monitors/profiles/add). Airschool creates a new profile ID and baseline instead of reusing the removed history.
+</Info>
+
+The returned profile has `status: "removed"` and a `removed_at` timestamp. Removing a profile does not pause the monitor or affect its other active profiles.
+
+## Next step
+
+Use [List job-change events](/api-reference/job-change-monitors/events) to review the retained history.
+
+---
+
+## List job-change events
+
+Source: https://airscale.mintlify.app/api-reference/job-change-monitors/events.md
+
+Description: Read cursor-paginated employer-change events for a monitor.
+
+List job-change events for one monitor, newest first. Set `limit` from 1 to 100; when `next_cursor` is not `null`, send that value unchanged as `cursor` on the next request.
+
+<Note>
+An event is created when a checked profile's employer identity changes. The event includes your `external_id` when one was supplied for the profile.
+</Note>
+
+Events include the previous and new employer identities, detection time, and `read_at`. This endpoint is also the durable fallback when webhook delivery is delayed or unavailable.
+
+## Next step
+
+Use [Mark an event as read](/api-reference/job-change-monitors/events/read) after your application has processed an event.
+
+---
+
+## Mark a job-change event as read
+
+Source: https://airscale.mintlify.app/api-reference/job-change-monitors/events/read.md
+
+Description: Acknowledge one job-change event after processing it.
+
+Mark one event as read after your integration has handled it. The response returns the event with its `read_at` timestamp, and the monitor's unread count decreases.
+
+<Info>
+Treat the event ID as the durable acknowledgement key. Webhook retries use the same event ID, so processing it idempotently prevents duplicate downstream work.
+</Info>
+
+Reading an event does not delete it. You can still retrieve it through [List job-change events](/api-reference/job-change-monitors/events) or the monitor detail response.
+
+## Next step
+
+Review [Create a job-change monitor](/api-reference/job-change-monitors/create) for webhook setup and one-time signing-secret handling.
 
 ---
 
@@ -3457,231 +3682,6 @@ If the initial provider request returns a non-2xx response, Airscale refunds the
 | `500 Internal Server Error` | Email verifier provider configuration is unavailable. | Retry after configuration is restored. |
 | `502 Bad Gateway` | The provider could not be reached. | Retry with bounded backoff. |
 | `503 Service Unavailable` | Authentication, credit settlement, or provider recovery is unavailable. | Retry after the service recovers. |
-
----
-
-## Create a job-change monitor
-
-Source: https://airscale.mintlify.app/api-reference/job-change-monitors/create.md
-
-Description: Monitor up to 10,000 personal LinkedIn profiles for employer changes with one schedule and webhook.
-
-Create an active monitor for one to 10,000 personal LinkedIn profiles with [Bearer authentication](/api-reference/authentication). All profiles belong to one monitor ID, with one frequency and optional webhook. Each successful request creates a new monitor. If a network failure leaves the result unknown, list or retrieve monitors before retrying so you do not create an unintended duplicate.
-
-<Note>
-The `frequency` can be `weekly`, `every_30_days`, or `every_90_days`. If you provide `webhook_url`, store the returned `signing_secret` immediately; it is returned only on the first successful create response.
-</Note>
-
-Airschool canonicalizes LinkedIn URLs and preserves each profile's optional `external_id` in later events. Monitoring admission checks the workspace's configured provider, capacity, and credit balance before accepting the monitor.
-
-## Monitor 10,000 profiles
-
-1. Prepare a JSON request with `name`, your chosen `frequency`, an optional `webhook_url`, and a `profiles` array containing 10,000 personal LinkedIn URLs. Each entry can include an `external_id` from your CRM.
-2. Send it to `POST /v1/job-change-monitors`. The `202 Accepted` response contains `monitor`, `profiles`, `signing_secret`, and `signing_secret_warning`. Save `monitor.id` and, if a webhook is configured, the one-time `signing_secret`.
-3. Use that same ID with [Get a monitor](/api-reference/job-change-monitors/get) to inspect profile statuses and the monitor's check timestamps. Scans run asynchronously and a large scan can take time; `202` confirms acceptance, not scan completion.
-4. Keep the same monitor ID, schedule, and webhook for the whole set. After a profile's first successful check establishes its baseline, later employer changes appear in [List job-change events](/api-reference/job-change-monitors/events) and are sent to the configured webhook. Establishing the first baseline does not emit a job-change event.
-
-Monitoring costs **0.1 credit per profile per check**. Budget 1,000 credits for a check of 10,000 profiles. The available frequencies remain weekly, every 30 days, and every 90 days.
-
-## Request size and profile limits
-
-One monitor supports at most **10,000 active profiles**. Create and [Add profiles](/api-reference/job-change-monitors/profiles/add) each accept up to **10,000 profile entries per request**, while the monitor's resulting active count must stay within 10,000.
-
-The complete JSON request body must be at most **8 MiB (8,388,608 bytes)** in UTF-8. A larger body returns `413`. Long URLs, `external_id` values, and JSON formatting all count toward this limit. If your payload is too large, create the monitor with a smaller set, then add the remaining profiles in smaller requests to the same `monitor.id`. You still use one monitor, schedule, and webhook for the full set.
-
-## Verify webhook signatures
-
-Airscale sends `job_change.detected` as a JSON `POST` to `webhook_url`. The request includes `X-Airscale-Event-Id`, `X-Airscale-Timestamp`, and `X-Airscale-Signature: sha256=<hex>`. Compute HMAC-SHA256 with the one-time `signing_secret` over `<timestamp>.<raw request body>`, compare it in constant time, and reject timestamps older than five minutes. Return a 2xx response only after durable handling. Retries keep the same event ID and are deduplicated by Airscale internally.
-
-## Next step
-
-Use [List job-change monitors](/api-reference/job-change-monitors/list) to confirm the monitor's status and next check time.
-
----
-
-## List job-change monitors
-
-Source: https://airscale.mintlify.app/api-reference/job-change-monitors/list.md
-
-Description: List the monitors and unread-event counts in a workspace.
-
-List every job-change monitor in the authenticated workspace. Each monitor includes its current status, schedule, active profile count, and unread event count.
-
-<Info>
-This operation is read-only and does not change schedules or consume monitoring credits.
-</Info>
-
-Use the monitor `id` returned here with the detail, update, profile, and event operations. A paused monitor remains in the list so you can resume it later.
-
-## Next step
-
-Open [Get a monitor](/api-reference/job-change-monitors/get) for its profiles and latest events.
-
----
-
-## Get a job-change monitor
-
-Source: https://airscale.mintlify.app/api-reference/job-change-monitors/get.md
-
-Description: Retrieve one monitor, its profiles, and its latest events.
-
-Retrieve one monitor by `monitor_id`. The response contains all profiles, including soft-removed profiles, and up to the latest 200 events ordered newest first.
-
-<Note>
-Use the profile `status` and `removed_at` fields to distinguish an active profile from one removed from future checks. Historical events remain available after a profile is removed.
-</Note>
-
-The monitor object reports `next_check_at` and `last_successful_check_at` as ISO 8601 timestamps. A paused monitor has no next check scheduled.
-
-A monitor can contain up to 10,000 active profiles under the same schedule and webhook. Scans run asynchronously and large scans can take time. Creating a monitor returns `202 Accepted` before its scan completes; use the profile statuses and monitor timestamps to follow its progress. A profile's first successful check establishes its baseline without emitting a job-change event.
-
-## Next step
-
-Use [List job-change events](/api-reference/job-change-monitors/events) when you need cursor pagination beyond the latest 200 events.
-
----
-
-## Update a job-change monitor
-
-Source: https://airscale.mintlify.app/api-reference/job-change-monitors/update.md
-
-Description: Change a monitor's name or frequency, or pause and resume checks.
-
-Update one or more monitor fields with `PATCH`. Send a new `name`, a supported `frequency`, an `action` of `pause`, or an `action` of `resume`.
-
-<Warning>
-Resuming requires at least one active profile and reruns monitoring admission. Changing the frequency updates the next check when the monitor is resumed; pausing clears the scheduled check.
-</Warning>
-
-The response returns the complete updated monitor, including its active profile and unread event counts.
-
-## Next step
-
-Use [Add profiles](/api-reference/job-change-monitors/profiles/add) before resuming a monitor with no active profiles.
-
----
-
-## Delete a job-change monitor
-
-Source: https://airscale.mintlify.app/api-reference/job-change-monitors/delete.md
-
-Description: Permanently remove a monitor and its stored monitoring data.
-
-Delete a monitor by `monitor_id`. This permanently removes the monitor, its profile baselines, and its events from the workspace.
-
-<Warning>
-Deletion cannot be undone. Remove individual profiles instead when you need to stop checking a contact while retaining its event history.
-</Warning>
-
-The operation returns `{ "ok": true }` after the monitor and its cascaded data are deleted.
-
-## Next step
-
-Use [List job-change monitors](/api-reference/job-change-monitors/list) to verify the monitor no longer appears.
-
----
-
-## Add profiles to a job-change monitor
-
-Source: https://airscale.mintlify.app/api-reference/job-change-monitors/profiles/add.md
-
-Description: Add up to 10,000 personal LinkedIn profiles per request while preserving existing baselines.
-
-Add one to 10,000 personal LinkedIn profiles per request to an existing monitor. Airschool ignores a URL that is already active and reports how many profiles were actually added. All profiles keep the existing monitor ID, frequency, and webhook.
-
-<Note>
-Adding a URL after it was removed creates a new profile and a new baseline. The previous profile's events remain associated with its original profile ID.
-</Note>
-
-The response includes the newly created profile records, `added_profile_count`, and the monitor's resulting `active_profile_count`. The 10,000-profile limit applies to the monitor's active profiles after adding new URLs. For example, a monitor with 9,000 active profiles can accept 1,000 more distinct active profiles.
-
-The complete JSON request body must fit within **8 MiB (8,388,608 bytes)** in UTF-8; larger bodies return `413`. Split a larger payload into smaller add requests to the same monitor, keeping its total at or below 10,000 active profiles.
-
-Checks run asynchronously and a large scan can take time. A new profile's first successful check establishes its baseline without emitting a job-change event. Monitoring costs **0.1 credit per profile per check**, using the monitor's weekly, every-30-days, or every-90-days schedule.
-
-## Next step
-
-Use [Get a monitor](/api-reference/job-change-monitors/get) to inspect each profile's baseline and scan status.
-
----
-
-## Remove a profile from a job-change monitor
-
-Source: https://airscale.mintlify.app/api-reference/job-change-monitors/profiles/remove.md
-
-Description: Stop checking one profile while preserving its event history.
-
-Soft-remove one profile with its `monitor_id` and `profile_id`. The profile no longer participates in future checks, but its record and event history remain available.
-
-<Info>
-To monitor the same LinkedIn URL again, call [Add profiles](/api-reference/job-change-monitors/profiles/add). Airschool creates a new profile ID and baseline instead of reusing the removed history.
-</Info>
-
-The returned profile has `status: "removed"` and a `removed_at` timestamp. Removing a profile does not pause the monitor or affect its other active profiles.
-
-## Next step
-
-Use [List job-change events](/api-reference/job-change-monitors/events) to review the retained history.
-
----
-
-## List job-change events
-
-Source: https://airscale.mintlify.app/api-reference/job-change-monitors/events.md
-
-Description: Read cursor-paginated employer-change events for a monitor.
-
-List job-change events for one monitor, newest first. Set `limit` from 1 to 100; when `next_cursor` is not `null`, send that value unchanged as `cursor` on the next request.
-
-<Note>
-An event is created when a checked profile's employer identity changes. The event includes your `external_id` when one was supplied for the profile.
-</Note>
-
-Events include the previous and new employer identities, detection time, and `read_at`. This endpoint is also the durable fallback when webhook delivery is delayed or unavailable.
-
-## Next step
-
-Use [Mark an event as read](/api-reference/job-change-monitors/events/read) after your application has processed an event.
-
----
-
-## Mark a job-change event as read
-
-Source: https://airscale.mintlify.app/api-reference/job-change-monitors/events/read.md
-
-Description: Acknowledge one job-change event after processing it.
-
-Mark one event as read after your integration has handled it. The response returns the event with its `read_at` timestamp, and the monitor's unread count decreases.
-
-<Info>
-Treat the event ID as the durable acknowledgement key. Webhook retries use the same event ID, so processing it idempotently prevents duplicate downstream work.
-</Info>
-
-Reading an event does not delete it. You can still retrieve it through [List job-change events](/api-reference/job-change-monitors/events) or the monitor detail response.
-
-## Next step
-
-Review [Create a job-change monitor](/api-reference/job-change-monitors/create) for webhook setup and one-time signing-secret handling.
-
----
-
-## Credit count
-
-Source: https://airscale.mintlify.app/api-reference/credit-count.md
-
-Description: Check the remaining credit balance for your Airschool workspace.
-
-Read the remaining credit balance for the workspace associated with your API key before starting paid enrichment work.
-
-<Note>
-Send no request body. Checking the balance is free and does not debit Airschool credits.
-</Note>
-
-An invalid or missing key returns `401 Unauthorized`. Confirm the current key in the Airschool dashboard and update your server-side secret; rotate it only if it was exposed.
-
-## Next step
-
-Use your authenticated client to [find people](/api-reference/find-people), or review [Authentication](/api-reference/authentication) before sending requests.
 
 ---
 

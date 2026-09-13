@@ -66,6 +66,10 @@
 - [Filter tables](https://airscale.mintlify.app/docs/filer-tables.md): Apply filters to your tables to quickly find and analyze the data that matters most
 - [Transfer column content](https://airscale.mintlify.app/docs/transfer-content.md): Move or copy data from one column to another to reorganize or update your records efficiently
 
+## API Reference — Account
+
+- [Credit count](https://airscale.mintlify.app/api-reference/credit-count.md): Check the remaining credit balance for your Airschool workspace.
+
 ## API Reference — Start here
 
 - [API Overview](https://airscale.mintlify.app/api-reference/api-overview.md): Authenticate with Airschool and make your first API request.
@@ -75,15 +79,9 @@
 ## API Reference — Search and discovery
 
 - [Find people](https://airscale.mintlify.app/api-reference/find-people.md): Search people using person, role, and company filters.
-- [Count people](https://airscale.mintlify.app/api-reference/find-people/count.md): Count people matching person, role, and company filters.
 - [Find companies](https://airscale.mintlify.app/api-reference/find-companies.md): Search companies using firmographic, location, event, intent, and technology filters.
 - [Company filter values](https://airscale.mintlify.app/api-reference/find-companies/filter-values.md): Search supported values for Find Companies filters.
 - [Airsearch](https://airscale.mintlify.app/api-reference/airsearch.md): Research the web and return structured answers with Airsearch.
-
-## API Reference — Post engagement
-
-- [Post likers](https://airscale.mintlify.app/api-reference/post-likers.md): Retrieve and enrich people who liked a LinkedIn post.
-- [Post commenters](https://airscale.mintlify.app/api-reference/post-commenters.md): Retrieve and enrich people who commented on a LinkedIn post.
 
 ## API Reference — Contact data
 
@@ -100,11 +98,10 @@
 - [Reverse email](https://airscale.mintlify.app/api-reference/reverse-email.md): Find a person profile from an email address.
 - [Reverse phone](https://airscale.mintlify.app/api-reference/reverse-phone.md): Find a person profile from a phone number.
 
-## API Reference — Miscellaneous
+## API Reference — Post engagement
 
-- [WhatsApp check](https://airscale.mintlify.app/api-reference/miscale-news/whatsapp-check.md): Check whether a phone number is registered on WhatsApp and reconcile uncertain operations.
-- [Meta Ads](https://airscale.mintlify.app/api-reference/miscale-news/meta-ads.md): Check whether a domain has active Meta ads.
-- [Email verifier](https://airscale.mintlify.app/api-reference/miscale-news/email-verifier.md): Verify the deliverability of one email address.
+- [Post likers](https://airscale.mintlify.app/api-reference/post-likers.md): Retrieve and enrich people who liked a LinkedIn post.
+- [Post commenters](https://airscale.mintlify.app/api-reference/post-commenters.md): Retrieve and enrich people who commented on a LinkedIn post.
 
 ## API Reference — Job change monitoring
 
@@ -118,9 +115,11 @@
 - [List job-change events](https://airscale.mintlify.app/api-reference/job-change-monitors/events.md): Read cursor-paginated employer-change events for a monitor.
 - [Mark a job-change event as read](https://airscale.mintlify.app/api-reference/job-change-monitors/events/read.md): Acknowledge one job-change event after processing it.
 
-## API Reference — Account
+## API Reference — Miscellaneous
 
-- [Credit count](https://airscale.mintlify.app/api-reference/credit-count.md): Check the remaining credit balance for your Airschool workspace.
+- [WhatsApp check](https://airscale.mintlify.app/api-reference/miscale-news/whatsapp-check.md): Check whether a phone number is registered on WhatsApp and reconcile uncertain operations.
+- [Meta Ads](https://airscale.mintlify.app/api-reference/miscale-news/meta-ads.md): Check whether a domain has active Meta ads.
+- [Email verifier](https://airscale.mintlify.app/api-reference/miscale-news/email-verifier.md): Verify the deliverability of one email address.
 
 ## MCP & Agents — Getting started
 

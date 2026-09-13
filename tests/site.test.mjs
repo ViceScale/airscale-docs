@@ -11,17 +11,13 @@ import {
 } from "./helpers/content-safety.mjs";
 
 const GROUPS = [
+  ["Account", ["api-reference/credit-count"]],
   ["Start here", ["api-reference/api-overview", "api-reference/authentication", "api-reference/rate-limits"]],
   ["Search and discovery", [
     "api-reference/find-people",
-    "api-reference/find-people/count",
     "api-reference/find-companies",
     "api-reference/find-companies/filter-values",
     "api-reference/airsearch"
-  ]],
-  ["Post engagement", [
-    "api-reference/post-likers",
-    "api-reference/post-commenters"
   ]],
   ["Contact data", [
     "api-reference/email-finder",
@@ -36,11 +32,7 @@ const GROUPS = [
     "api-reference/reverse-email",
     "api-reference/reverse-phone"
   ]],
-  ["Miscellaneous", [
-    "api-reference/miscale-news/whatsapp-check",
-    "api-reference/miscale-news/meta-ads",
-    "api-reference/miscale-news/email-verifier"
-  ], { expanded: false }],
+  ["Post engagement", ["api-reference/post-likers", "api-reference/post-commenters"], { expanded: false }],
   ["Job change monitoring", [
     "api-reference/job-change-monitors/create",
     "api-reference/job-change-monitors/list",
@@ -52,10 +44,11 @@ const GROUPS = [
     "api-reference/job-change-monitors/events",
     "api-reference/job-change-monitors/events/read"
   ], { expanded: false }],
-  ["Account", ["api-reference/credit-count"]]
+  ["Miscellaneous", ["api-reference/miscale-news/whatsapp-check", "api-reference/miscale-news/meta-ads", "api-reference/miscale-news/email-verifier"], { expanded: false }]
 ];
 
-const PAGE_PATHS = GROUPS.flatMap(([, pages]) => pages);
+// Keep the legacy Count URL covered even though it is no longer in navigation.
+const PAGE_PATHS = [...GROUPS.flatMap(([, pages]) => pages), "api-reference/find-people/count"];
 const GUIDE_PATHS = ["api-reference/api-overview", "api-reference/authentication", "api-reference/rate-limits"];
 const EXPECTED_API_TAB = {
   tab: "API Reference",
@@ -505,22 +498,23 @@ test("authorization bearer checks reject unsafe token formats", () => {
   }
 });
 
-test("navigation contains exactly the approved 32 pages in eight groups", () => {
+test("navigation follows the approved groups and retains the hidden Count page", () => {
   const config = JSON.parse(readFileSync("docs.json", "utf8"));
   assert.deepEqual(config.navigation.tabs.find(({ tab }) => tab === "API Reference"), EXPECTED_API_TAB);
   assert.deepEqual(mdxPagePaths(), [...PAGE_PATHS].sort());
 });
 
-test("Miscellaneous and Job change monitoring stay standalone and use the collapsible sidebar script", () => {
+test("Post engagement, Job change monitoring and Miscellaneous use the collapsible sidebar script", () => {
   const config = JSON.parse(readFileSync("docs.json", "utf8"));
   const apiGroups = config.navigation.tabs.find(({ tab }) => tab === "API Reference").groups;
   assert.deepEqual(apiGroups.slice(-3).map(({ group, expanded }) => ({ group, expanded })), [
-    { group: "Miscellaneous", expanded: false },
+    { group: "Post engagement", expanded: false },
     { group: "Job change monitoring", expanded: false },
-    { group: "Account", expanded: undefined }
+    { group: "Miscellaneous", expanded: false }
   ]);
   assert.equal(existsSync("custom.js"), true);
   const script = readFileSync("custom.js", "utf8");
+  assert.match(script, /Post engagement/);
   assert.match(script, /Miscellaneous/);
   assert.match(script, /Job change monitoring/);
   assert.match(script, /aria-expanded/);
@@ -544,7 +538,7 @@ test("every public operation has one exact OpenAPI-backed wrapper", () => {
     assert.equal(frontmatter.openapi, expectedBinding, `${page} must bind its catalog operation`);
     assert.doesNotMatch(body, /<Badge\b[^>]*>\s*(?:GET|POST|PATCH|DELETE)\s*<\/Badge>/i);
     assert.doesNotMatch(body, /^## (?:Request|Response|Errors|Examples)$/m);
-    assert.doesNotMatch(body, /<CodeGroup>|^```/m);
+    if (page !== "api-reference/find-people") assert.doesNotMatch(body, /<CodeGroup>|^```/m);
     assert.match(body, /^## Next step$/m, `${page} must retain next-step guidance`);
     assert.ok(body.split(/\n\s*\n/)[0].trim(), `${page} must retain a purpose statement`);
   }

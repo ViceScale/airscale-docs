@@ -230,7 +230,12 @@
                     "summary": "Email found",
                     "value": {
                       "status": "success",
-                      "email": "example.person@example.org"
+                      "email": "example.person@example.org",
+                      "email_status": "valid",
+                      "provider": "<provider>",
+                      "verifier": "<verifier>",
+                      "catch_all": "no",
+                      "linkedin_profile_url": "https://www.linkedin.com/in/example-person-000000"
                     }
                   },
                   "notFound": {

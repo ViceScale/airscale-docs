@@ -82,7 +82,15 @@ const emailResultContent = {
     examples: {
       success: {
         summary: "Email found",
-        value: { status: "success", email: "example.person@example.org" }
+        value: {
+          status: "success",
+          email: "example.person@example.org",
+          email_status: "valid",
+          provider: "<provider>",
+          verifier: "<verifier>",
+          catch_all: "no",
+          linkedin_profile_url: PROFILE_EXAMPLE
+        }
       },
       notFound: {
         summary: "No email found",

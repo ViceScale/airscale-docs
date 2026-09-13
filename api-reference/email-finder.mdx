@@ -13,6 +13,8 @@ The limit is 3,000 requests per minute per workspace. A successful result costs 
 
 At least one complete identification form is required. You may send both forms when you have them.
 
+The success example includes all documented response fields. `provider` and `verifier` use placeholder labels; optional fields may be absent from a result.
+
 <Warning>
 Use bounded backoff after a transient `502` or `503`. A `503` can mean a successful result could not be settled by the credit service; retry the same input only after the service recovers.
 </Warning>

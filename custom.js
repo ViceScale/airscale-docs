@@ -1,5 +1,5 @@
 (() => {
-  const collapsibleTitles = new Set(["Miscellaneous", "Job change monitoring"]);
+  const collapsibleTitles = new Set(["Post engagement", "Miscellaneous", "Job change monitoring"]);
 
   function makeCollapsible(header) {
     if (!(header instanceof HTMLElement) || header.dataset.airscaleCollapsible === "true") return;
