@@ -1,10 +1,10 @@
 # Bug: Email finder response example omits documented fields
 
 Date reported: 2026-09-13
-Status: fixed locally
+Status: fixed
 Area: documentation UI
 Related issue: User screenshot and API navigation request
-Related PR: Pending
+Related PR: https://github.com/ViceScale/airscale-docs/pull/29
 Related tests: tests/api-reference-presentation.test.mjs; tests/openapi-examples.test.mjs; tests/openapi.test.mjs; tests/site.test.mjs
 
 ## User Report
