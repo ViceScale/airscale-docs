@@ -30,7 +30,7 @@ On https://airscale.mintlify.app/api-reference/email-finder, inspect the success
 
 `tests/api-reference-presentation.test.mjs` failed on all three requested behaviors before the fix and passed afterward. It compares example keys to the actual success schema, validates its values, checks sidebar priority, and validates inline Count examples against the count operation. Existing safety checks continue rejecting real provider identities and arbitrary non-null labels; only exact public-field placeholders are allowed.
 
-Manual browser smoke: load Email finder at desktop width and compare schema/example fields; load Find people, expand Count request and response to view both examples, and open/close Post engagement. Confirm Account is first, Miscellaneous last, Count absent from the sidebar, the legacy Count URL still loads, and no document overflow at a 390px mobile viewport.
+Manual browser smoke: load Email finder at desktop width and compare schema/example fields; load Find people, expand Count request and response to view both examples, and open/close Post engagement. Confirm Start here is first and Account immediately follows it, Miscellaneous last, Count absent from the sidebar, the legacy Count URL still loads, and no document overflow at a 390px mobile viewport.
 
 ## Verification
 
@@ -46,3 +46,7 @@ Manual browser smoke: load Email finder at desktop width and compare schema/exam
 ## Watch Later
 
 Mintlify top-level collapsible groups use the site's existing DOM adapter; retain browser smoke coverage when upgrading Mintlify. Optional response fields need example coverage even when JSON Schema permits omission. Keep the inline Count samples validated against OpenAPI when changing its contract.
+
+## Follow-up navigation correction
+
+The user clarified that Account belongs directly below the getting-started section (`Start here`). The two groups were reordered, the generated indexes were rebuilt, and the existing navigation assertions now enforce `Start here`, then `Account`. The focused presentation/site/MCP-page suite passed all 43 tests, and generated-index validation passed.

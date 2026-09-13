@@ -2523,26 +2523,6 @@ Description: Move or copy data from one column to another to reorganize or updat
 
 ---
 
-## Credit count
-
-Source: https://airscale.mintlify.app/api-reference/credit-count.md
-
-Description: Check the remaining credit balance for your Airschool workspace.
-
-Read the remaining credit balance for the workspace associated with your API key before starting paid enrichment work.
-
-<Note>
-Send no request body. Checking the balance is free and does not debit Airschool credits.
-</Note>
-
-An invalid or missing key returns `401 Unauthorized`. Confirm the current key in the Airschool dashboard and update your server-side secret; rotate it only if it was exposed.
-
-## Next step
-
-Use your authenticated client to [find people](/api-reference/find-people), or review [Authentication](/api-reference/authentication) before sending requests.
-
----
-
 ## API Overview
 
 Source: https://airscale.mintlify.app/api-reference/api-overview.md
@@ -2693,6 +2673,26 @@ Review the request limit on the endpoint page before setting concurrency:
     Airsearch limits and request contract.
   </Card>
 </CardGroup>
+
+---
+
+## Credit count
+
+Source: https://airscale.mintlify.app/api-reference/credit-count.md
+
+Description: Check the remaining credit balance for your Airschool workspace.
+
+Read the remaining credit balance for the workspace associated with your API key before starting paid enrichment work.
+
+<Note>
+Send no request body. Checking the balance is free and does not debit Airschool credits.
+</Note>
+
+An invalid or missing key returns `401 Unauthorized`. Confirm the current key in the Airschool dashboard and update your server-side secret; rotate it only if it was exposed.
+
+## Next step
+
+Use your authenticated client to [find people](/api-reference/find-people), or review [Authentication](/api-reference/authentication) before sending requests.
 
 ---
 

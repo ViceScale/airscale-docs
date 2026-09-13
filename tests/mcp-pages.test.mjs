@@ -13,17 +13,17 @@ const API_REFERENCE_TAB = {
   tab: "API Reference",
   groups: [
     {
-      group: "Account",
-      pages: [
-        "api-reference/credit-count"
-      ]
-    },
-    {
       group: "Start here",
       pages: [
         "api-reference/api-overview",
         "api-reference/authentication",
         "api-reference/rate-limits"
+      ]
+    },
+    {
+      group: "Account",
+      pages: [
+        "api-reference/credit-count"
       ]
     },
     {

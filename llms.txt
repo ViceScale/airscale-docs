@@ -66,15 +66,15 @@
 - [Filter tables](https://airscale.mintlify.app/docs/filer-tables.md): Apply filters to your tables to quickly find and analyze the data that matters most
 - [Transfer column content](https://airscale.mintlify.app/docs/transfer-content.md): Move or copy data from one column to another to reorganize or update your records efficiently
 
-## API Reference — Account
-
-- [Credit count](https://airscale.mintlify.app/api-reference/credit-count.md): Check the remaining credit balance for your Airschool workspace.
-
 ## API Reference — Start here
 
 - [API Overview](https://airscale.mintlify.app/api-reference/api-overview.md): Authenticate with Airschool and make your first API request.
 - [Authentication](https://airscale.mintlify.app/api-reference/authentication.md): Create, send, protect, and rotate an Airschool API key.
 - [Rate limits](https://airscale.mintlify.app/api-reference/rate-limits.md): Understand endpoint-specific request limits and 429 responses.
+
+## API Reference — Account
+
+- [Credit count](https://airscale.mintlify.app/api-reference/credit-count.md): Check the remaining credit balance for your Airschool workspace.
 
 ## API Reference — Search and discovery
 

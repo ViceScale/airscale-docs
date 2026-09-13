@@ -22,7 +22,7 @@ test("Email finder success example covers every documented success field", () =>
 test("API sidebar follows task priority and keeps count within Find people", () => {
   const config = JSON.parse(readFileSync("docs.json", "utf8"));
   const groups = config.navigation.tabs.find(({ tab }) => tab === "API Reference").groups;
-  assert.equal(groups[0].group, "Account");
+  assert.deepEqual(groups.slice(0, 2).map(({ group }) => group), ["Start here", "Account"]);
   assert.equal(groups.at(-1).group, "Miscellaneous");
   const profilesIndex = groups.findIndex(({ group }) => group === "Profiles and reverse lookup");
   assert.equal(groups[profilesIndex + 1].group, "Post engagement");

@@ -11,8 +11,8 @@ import {
 } from "./helpers/content-safety.mjs";
 
 const GROUPS = [
-  ["Account", ["api-reference/credit-count"]],
   ["Start here", ["api-reference/api-overview", "api-reference/authentication", "api-reference/rate-limits"]],
+  ["Account", ["api-reference/credit-count"]],
   ["Search and discovery", [
     "api-reference/find-people",
     "api-reference/find-companies",
