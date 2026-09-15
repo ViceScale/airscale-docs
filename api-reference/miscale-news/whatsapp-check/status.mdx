@@ -1,0 +1,20 @@
+---
+title: "WhatsApp check status"
+description: "Reconcile a WhatsApp check using its operation ID."
+canonical: "https://airscale.mintlify.app/api-reference/miscale-news/whatsapp-check/status"
+openapi: "/openapi.json GET /v1/whatsapp-check/operations/{operation_id}"
+---
+
+Read a WhatsApp check in the authenticated workspace using the returned `operation_id`. This read-only lookup has no request body and does not start another check or charge additional credits. There is no endpoint-specific GET throttle.
+
+## Reading the result
+
+- HTTP `200` with `status: "completed"`, `whatsapp`, and `credits_consumed: 1` confirms a definitive result. The phone number is not returned.
+- HTTP `202` with `status: "pending"` or `"unknown"` means the outcome is not yet confirmed. Poll with bounded backoff; do not infer a yes/no result or final charge.
+- HTTP `200` with `status: "unavailable"` or `"rejected"` reports a terminal operation state without a WhatsApp result or credit amount.
+- A completed state without result fields does not confirm a definitive result.
+- HTTP `404` means the operation was not found in this workspace.
+
+## Next step
+
+Return to [WhatsApp checker](/api-reference/miscale-news/whatsapp-check). Keep the original idempotency key when reconciling the same logical check.

@@ -44,7 +44,7 @@ const GROUPS = [
     "api-reference/job-change-monitors/events",
     "api-reference/job-change-monitors/events/read"
   ], { expanded: false }],
-  ["Miscellaneous", ["api-reference/miscale-news/whatsapp-check", "api-reference/miscale-news/meta-ads", "api-reference/miscale-news/email-verifier"], { expanded: false }]
+  ["Miscellaneous", ["api-reference/miscale-news/whatsapp-check", "api-reference/miscale-news/whatsapp-check/status", "api-reference/miscale-news/meta-ads", "api-reference/miscale-news/email-verifier"], { expanded: false }]
 ];
 
 // Keep the legacy Count URL covered even though it is no longer in navigation.
@@ -533,7 +533,7 @@ test("every public operation has one exact OpenAPI-backed wrapper", () => {
     const { body, frontmatter } = readPage(page);
     if (!frontmatter.openapi) continue;
     const expectedBinding = expectedBindings.get(page);
-    if (!expectedBinding) continue;
+    assert.ok(expectedBinding, `${page} must appear in the operation catalog`);
     actualBindings.set(page, frontmatter.openapi);
     assert.equal(frontmatter.openapi, expectedBinding, `${page} must bind its catalog operation`);
     assert.doesNotMatch(body, /<Badge\b[^>]*>\s*(?:GET|POST|PATCH|DELETE)\s*<\/Badge>/i);
@@ -543,9 +543,9 @@ test("every public operation has one exact OpenAPI-backed wrapper", () => {
     assert.ok(body.split(/\n\s*\n/)[0].trim(), `${page} must retain a purpose statement`);
   }
 
-  assert.equal(expectedBindings.size, 26);
-  assert.equal(new Set(expectedBindings.values()).size, 26);
-  assert.equal(actualBindings.size, 26);
+  assert.equal(expectedBindings.size, 30);
+  assert.equal(new Set(expectedBindings.values()).size, 30);
+  assert.equal(actualBindings.size, 30);
   assert.deepEqual(actualBindings, expectedBindings);
 });
 
@@ -565,7 +565,7 @@ test("every wrapper binding resolves to its cataloged generated OpenAPI operatio
     resolved.push(`${method} ${path}`);
   }
 
-  assert.equal(new Set(resolved).size, 26);
+  assert.equal(new Set(resolved).size, 30);
   assert.deepEqual(resolved.sort(), catalog.operations.map(({ method, path }) => `${method} ${path}`).sort());
 });
 
@@ -614,6 +614,10 @@ test("guide pages teach authentication, safe retries, and a first request", () =
 });
 
 const DURABLE_OPERATION_GUIDANCE = {
+  "api-reference/miscale-news/whatsapp-check": [/60 requests per minute/, /1 credit/, /Idempotency-Key/, /202/],
+  "api-reference/miscale-news/whatsapp-check/status": [/read-only/, /bounded backoff/, /unavailable/, /rejected/],
+  "api-reference/miscale-news/meta-ads": [/60 requests per minute/, /1 credit/, /504/, /idempotency/],
+  "api-reference/miscale-news/email-verifier": [/0.5 credits/, /45 seconds/, /body/, /refund/],
   "api-reference/credit-count": [/no request body/i, /does not debit Airschool credits/i],
   "api-reference/email-finder": [/3,000 requests per minute/i, /2 credits/i, /`not_found` is not charged/i, /bounded backoff/i],
   "api-reference/email-finder-(bulk)": [
@@ -654,7 +658,7 @@ const DURABLE_OPERATION_GUIDANCE = {
 };
 
 test("operation wrappers retain durable rate, credit, retry, and asynchronous guidance", () => {
-  assert.equal(Object.keys(DURABLE_OPERATION_GUIDANCE).length, 26);
+  assert.equal(Object.keys(DURABLE_OPERATION_GUIDANCE).length, 30);
   for (const [page, patterns] of Object.entries(DURABLE_OPERATION_GUIDANCE)) {
     const { body } = readPage(page);
     for (const pattern of patterns) assert.match(body, pattern, `${page} must retain ${pattern}`);

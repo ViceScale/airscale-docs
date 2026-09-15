@@ -12,6 +12,7 @@ const rawDocument = JSON.parse(readFileSync("openapi.json", "utf8"));
 const document = await SwaggerParser.dereference(structuredClone(rawDocument));
 
 const BODYLESS_OPERATIONS = new Set([
+  "GET /v1/whatsapp-check/operations/{operation_id}",
   "GET /v1/find-companies/filter-values",
   "POST /v1/credits",
   "GET /v1/job-change-monitors",
@@ -393,7 +394,7 @@ function assertCodeSampleShapes(operation, label) {
 test("all public operation examples validate against their dereferenced schemas", (t) => {
   assertAuthoredExampleShapes(rawDocument);
   const operations = operationsFrom(document);
-  assert.equal(operations.length, 26, "expected exactly 26 public operations");
+  assert.equal(operations.length, 30, "expected exactly 30 public operations");
 
   const exampleValues = [];
   const seenSchemas = new Set();

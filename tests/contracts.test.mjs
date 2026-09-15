@@ -29,7 +29,11 @@ const EXPECTED_OPERATIONS = [
   ["POST", "/v1/job-change-monitors/{monitor_id}/profiles", "addJobChangeMonitorProfiles", "api-reference/job-change-monitors/profiles/add", "Job change monitoring"],
   ["DELETE", "/v1/job-change-monitors/{monitor_id}/profiles/{profile_id}", "removeJobChangeMonitorProfile", "api-reference/job-change-monitors/profiles/remove", "Job change monitoring"],
   ["GET", "/v1/job-change-monitors/{monitor_id}/events", "listJobChangeMonitorEvents", "api-reference/job-change-monitors/events", "Job change monitoring"],
-  ["POST", "/v1/job-change-monitors/{monitor_id}/events/{event_id}/read", "markJobChangeEventRead", "api-reference/job-change-monitors/events/read", "Job change monitoring"]
+  ["POST", "/v1/job-change-monitors/{monitor_id}/events/{event_id}/read", "markJobChangeEventRead", "api-reference/job-change-monitors/events/read", "Job change monitoring"],
+  ["POST", "/v1/whatsapp-check", "checkWhatsapp", "api-reference/miscale-news/whatsapp-check", "Miscellaneous"],
+  ["GET", "/v1/whatsapp-check/operations/{operation_id}", "getWhatsappCheckOperation", "api-reference/miscale-news/whatsapp-check/status", "Miscellaneous"],
+  ["POST", "/v1/meta-ads", "lookupMetaAds", "api-reference/miscale-news/meta-ads", "Miscellaneous"],
+  ["POST", "/v1/email-verifier", "verifyEmail", "api-reference/miscale-news/email-verifier", "Miscellaneous"]
 ];
 const EXPECTED_PAGES = [
   "api-overview",
@@ -49,7 +53,7 @@ const EXPECTED_PAGES = [
   "find-companies",
   "airsearch",
   "post-engagement",
-  "job-change-monitors"
+  "job-change-monitors", "whatsapp-check", "meta-ads", "email-verifier"
 ];
 
 function deepFreeze(value) {
@@ -176,7 +180,51 @@ const EXPECTED_CONTRACTS = deepFreeze({
         "api/src/trigger/job-change-monitor.ts",
         "api/src/trigger/job-change-monitor.batches.test.ts"
       ]
-    }
+    },
+  "whatsapp-check": {
+    "sourceSha": "282e64878898b4f7082e6ce00b740d76aca787f1",
+    "endpoints": [
+      {
+        "method": "POST",
+        "path": "/v1/whatsapp-check"
+      },
+      {
+        "method": "GET",
+        "path": "/v1/whatsapp-check/operations/{operation_id}"
+      }
+    ],
+    "sourceFiles": [
+      "workers/public-api/whatsapp-checker.js",
+      "workers/public-api/whatsapp-checker.test.mjs",
+      "workers/public-api/whatsapp-provider-waterfall.js"
+    ]
+  },
+  "meta-ads": {
+    "sourceSha": "282e64878898b4f7082e6ce00b740d76aca787f1",
+    "endpoints": [
+      {
+        "method": "POST",
+        "path": "/v1/meta-ads"
+      }
+    ],
+    "sourceFiles": [
+      "workers/public-api/meta-ads-checker.js",
+      "workers/public-api/meta-ads-checker.test.mjs"
+    ]
+  },
+  "email-verifier": {
+    "sourceSha": "282e64878898b4f7082e6ce00b740d76aca787f1",
+    "endpoints": [
+      {
+        "method": "POST",
+        "path": "/v1/email-verifier"
+      }
+    ],
+    "sourceFiles": [
+      "workers/public-api/email-verifier.js",
+      "workers/public-api/email-verifier.test.mjs"
+    ]
+  }
 });
 
 function isRepositoryRelativePath(path) {
@@ -233,14 +281,14 @@ test("operation catalog preserves the approved operation order and routing metad
   const catalog = JSON.parse(readFileSync("contracts/public-api-operations.json", "utf8"));
   assert.equal(catalog.sourceRepository, "ViceScale/airscale-code");
   assert.equal(catalog.sourceSha, EXPECTED_SOURCE_SHA);
-  assert.equal(catalog.operations.length, 26);
+  assert.equal(catalog.operations.length, 30);
   assert.deepEqual(
     catalog.operations.map(({ method, path, operationId, page, tag }) => [method, path, operationId, page, tag]),
     EXPECTED_OPERATIONS
   );
-  assert.equal(new Set(catalog.operations.map(({ method, path }) => `${method} ${path}`)).size, 26);
-  assert.equal(new Set(catalog.operations.map(({ operationId }) => operationId)).size, 26);
-  assert.equal(new Set(catalog.operations.map(({ page }) => page)).size, 26);
+  assert.equal(new Set(catalog.operations.map(({ method, path }) => `${method} ${path}`)).size, 30);
+  assert.equal(new Set(catalog.operations.map(({ operationId }) => operationId)).size, 30);
+  assert.equal(new Set(catalog.operations.map(({ page }) => page)).size, 30);
 });
 
 test("operation catalog links each operation to matching source-page evidence", () => {

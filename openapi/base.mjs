@@ -14,7 +14,8 @@ export const baseSpec = {
     { name: "Profiles and reverse lookup", description: "Extract profiles or resolve a person from known contact data." },
     { name: "Post engagement", description: "Retrieve and enrich people who liked or commented on LinkedIn posts." },
     { name: "Job change monitoring", description: "Track LinkedIn profiles and receive job-change events." },
-    { name: "Account", description: "Inspect workspace account state." }
+    { name: "Account", description: "Inspect workspace account state." },
+    { name: "Miscellaneous", description: "Check WhatsApp availability, Meta ads, and email deliverability." }
   ],
   security: [{ bearerAuth: [] }],
   paths: {},
