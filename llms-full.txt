@@ -2888,6 +2888,12 @@ Submit a LinkedIn person profile URL and return a mobile phone number when one i
 The limit is 3,000 requests per minute per workspace. A successful result costs 40 credits; `not_found` is not charged.
 </Note>
 
+## Phone numbers in the response
+
+- `phone_numbers` is the primary phone number as a single string.
+- `all_phone_numbers` is an array of normalized international phone numbers, with duplicates removed and the primary number first. It can contain just the primary number when no additional numbers are available.
+- A `not_found` result returns `phone_numbers: null` and `all_phone_numbers: []`.
+
 Use bounded backoff for transient failures. If a successful result could not be settled by the credit service, retry the same input only after the service recovers.
 
 ## Next step

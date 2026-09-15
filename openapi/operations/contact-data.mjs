@@ -221,9 +221,10 @@ export const contactDataOperations = [
     path: "/v1/phone",
     operation: {
       operationId: "findMobilePhone",
+      "x-airscale-source-sha": "9bc50ab50731f1793c4ed794776b2fee821d67ca",
       tags: ["Contact data"],
       summary: "Find a mobile phone number",
-      description: "Finds a mobile phone number for a recognized person profile.",
+      description: "Finds a primary mobile phone number and all available normalized phone numbers for a recognized person profile.",
       "x-airscale-rate-limit": "3,000 requests per minute per workspace.",
       "x-airscale-credit-cost": "40 credits only when the response has status success; not_found is not charged.",
       requestBody: requestBody(
@@ -240,12 +241,19 @@ export const contactDataOperations = [
                 oneOf: [
                   {
                     type: "object",
-                    required: ["status", "linkedin_profile_url", "phone_numbers", "provider"],
+                    required: ["status", "linkedin_profile_url", "phone_numbers", "all_phone_numbers", "provider"],
                     additionalProperties: true,
                     properties: {
                       status: { type: "string", const: "success" },
                       linkedin_profile_url: { $ref: "#/components/schemas/LinkedInPersonUrl" },
-                      phone_numbers: { type: "string" },
+                      phone_numbers: { type: "string", description: "The primary phone number, returned as a single string." },
+                      all_phone_numbers: {
+                        type: "array",
+                        minItems: 1,
+                        uniqueItems: true,
+                        items: { type: "string", pattern: "^\\+[1-9]\\d{6,14}$" },
+                        description: "All available normalized phone numbers, with duplicates removed and the primary number first. May contain only the primary number."
+                      },
                       provider: {
                         type: ["string", "null"],
                         description: "A public source label when one is available."
@@ -254,12 +262,18 @@ export const contactDataOperations = [
                   },
                   {
                     type: "object",
-                    required: ["status", "linkedin_profile_url", "phone_numbers", "provider"],
+                    required: ["status", "linkedin_profile_url", "phone_numbers", "all_phone_numbers", "provider"],
                     additionalProperties: true,
                     properties: {
                       status: { type: "string", const: "not_found" },
                       linkedin_profile_url: { $ref: "#/components/schemas/LinkedInPersonUrl" },
                       phone_numbers: { type: "null" },
+                      all_phone_numbers: {
+                        type: "array",
+                        maxItems: 0,
+                        items: { type: "string" },
+                        description: "An empty array when no phone number is found."
+                      },
                       provider: { type: ["string", "null"] }
                     }
                   }
@@ -267,11 +281,12 @@ export const contactDataOperations = [
               },
               examples: {
                 success: {
-                  summary: "Mobile phone found",
+                  summary: "Primary and additional mobile phones found",
                   value: {
                     status: "success",
                     linkedin_profile_url: PROFILE_EXAMPLE,
                     phone_numbers: "+12025550147",
+                    all_phone_numbers: ["+12025550147", "+12025550148"],
                     provider: null
                   }
                 },
@@ -281,6 +296,7 @@ export const contactDataOperations = [
                     status: "not_found",
                     linkedin_profile_url: PROFILE_EXAMPLE,
                     phone_numbers: null,
+                    all_phone_numbers: [],
                     provider: null
                   }
                 }

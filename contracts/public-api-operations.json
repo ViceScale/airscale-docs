@@ -33,10 +33,11 @@
       "method": "POST",
       "path": "/v1/phone",
       "operationId": "findMobilePhone",
+      "sourceSha": "9bc50ab50731f1793c4ed794776b2fee821d67ca",
       "page": "api-reference/mobile-finder",
       "tag": "Contact data",
       "sourcePage": "mobile-finder",
-      "sourceFiles": ["workers/public-api/v2-waterfall-mobile.js", "workers/public-api/v2-waterfall-mobile.test.mjs"]
+      "sourceFiles": ["workers/public-api/v2-waterfall-mobile.js", "workers/public-api/v2-waterfall-mobile.test.mjs", "workers/public-api/v2-waterfall-mobile.multiple-phones.test.mjs", "workers/public-api/mobile-phone-values.js"]
     },
     {
       "method": "POST",
