@@ -81,6 +81,7 @@ const API_REFERENCE_TAB = {
       group: "Miscellaneous",
       pages: [
         "api-reference/miscale-news/whatsapp-check",
+        "api-reference/miscale-news/whatsapp-check/status",
         "api-reference/miscale-news/meta-ads",
         "api-reference/miscale-news/email-verifier"
       ],

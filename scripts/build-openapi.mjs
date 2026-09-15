@@ -9,6 +9,8 @@ import { searchDiscoveryOperations } from "../openapi/operations/search-discover
 import { postEngagementOperations } from "../openapi/operations/post-engagement.mjs";
 import { jobChangeMonitorOperations } from "../openapi/operations/job-change-monitors.mjs";
 
+import { miscellaneousOperations } from "../openapi/operations/miscellaneous.mjs";
+
 const defaultCatalog = JSON.parse(readFileSync(new URL("../contracts/public-api-operations.json", import.meta.url), "utf8"));
 const defaultOperationModules = [
   accountOperations,
@@ -16,7 +18,8 @@ const defaultOperationModules = [
   profileLookupOperations,
   searchDiscoveryOperations,
   postEngagementOperations,
-  jobChangeMonitorOperations
+  jobChangeMonitorOperations,
+  miscellaneousOperations
 ];
 const defaultOutputPath = fileURLToPath(new URL("../openapi.json", import.meta.url));
 const defaultFileIO = { closeSync, existsSync, fsyncSync, openSync, readFileSync, renameSync, unlinkSync, writeFileSync };

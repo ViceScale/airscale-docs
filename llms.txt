@@ -117,8 +117,9 @@
 
 ## API Reference — Miscellaneous
 
-- [WhatsApp check](https://airscale.mintlify.app/api-reference/miscale-news/whatsapp-check.md): Check whether a phone number is registered on WhatsApp and reconcile uncertain operations.
-- [Meta Ads](https://airscale.mintlify.app/api-reference/miscale-news/meta-ads.md): Check whether a domain has active Meta ads.
+- [WhatsApp checker](https://airscale.mintlify.app/api-reference/miscale-news/whatsapp-check.md): Check whether one phone number is available on WhatsApp.
+- [WhatsApp check status](https://airscale.mintlify.app/api-reference/miscale-news/whatsapp-check/status.md): Reconcile a WhatsApp check using its operation ID.
+- [Meta Ads](https://airscale.mintlify.app/api-reference/miscale-news/meta-ads.md): Look up Meta ads for a company domain.
 - [Email verifier](https://airscale.mintlify.app/api-reference/miscale-news/email-verifier.md): Verify the deliverability of one email address.
 
 ## MCP & Agents — Getting started

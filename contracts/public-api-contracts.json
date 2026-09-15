@@ -116,6 +116,50 @@
         "api/src/trigger/job-change-monitor.ts",
         "api/src/trigger/job-change-monitor.batches.test.ts"
       ]
+    },
+    "whatsapp-check": {
+      "sourceSha": "282e64878898b4f7082e6ce00b740d76aca787f1",
+      "endpoints": [
+        {
+          "method": "POST",
+          "path": "/v1/whatsapp-check"
+        },
+        {
+          "method": "GET",
+          "path": "/v1/whatsapp-check/operations/{operation_id}"
+        }
+      ],
+      "sourceFiles": [
+        "workers/public-api/whatsapp-checker.js",
+        "workers/public-api/whatsapp-checker.test.mjs",
+        "workers/public-api/whatsapp-provider-waterfall.js"
+      ]
+    },
+    "meta-ads": {
+      "sourceSha": "282e64878898b4f7082e6ce00b740d76aca787f1",
+      "endpoints": [
+        {
+          "method": "POST",
+          "path": "/v1/meta-ads"
+        }
+      ],
+      "sourceFiles": [
+        "workers/public-api/meta-ads-checker.js",
+        "workers/public-api/meta-ads-checker.test.mjs"
+      ]
+    },
+    "email-verifier": {
+      "sourceSha": "282e64878898b4f7082e6ce00b740d76aca787f1",
+      "endpoints": [
+        {
+          "method": "POST",
+          "path": "/v1/email-verifier"
+        }
+      ],
+      "sourceFiles": [
+        "workers/public-api/email-verifier.js",
+        "workers/public-api/email-verifier.test.mjs"
+      ]
     }
   }
 }
