@@ -1,8 +1,9 @@
 # Bug: Mobile finder response schema omitted additional phone numbers
 
 Date reported: 2026-09-15
-Status: fixed locally; publication pending
+Status: implementation verified; publication tracked in related PR
 Area: API documentation
+Related PR: https://github.com/ViceScale/airscale-docs/pull/32
 Related tests: `tests/openapi.test.mjs`, `tests/contracts.test.mjs`, upstream `workers/public-api/v2-waterfall-mobile.multiple-phones.test.mjs`
 
 ## User Report
@@ -37,7 +38,7 @@ Two focused Mobile schema tests failed before the correction and passed afterwar
 - `npm run validate`: 330/330 tests passed; generated artifacts matched; Mintlify build validation passed.
 - Independent review found no blocking issues and independently passed all 53 focused contract/schema tests.
 - Structural comparison: `/v1/phone` is the only changed OpenAPI path.
-- Hosted publication verification: pending.
+- Post-merge deployment and hosted verification receipts are recorded in the related PR, after Mintlify publishes this commit.
 
 ## Watch Later
 
