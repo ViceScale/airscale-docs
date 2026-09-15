@@ -624,25 +624,52 @@ test("Contact Mobile operation requires a profile and models success and miss en
   });
   assert.equal(successContent.schema.oneOf.length, 2);
   assert.deepEqual(successContent.schema.oneOf.map(({ required }) => required), [
-    ["status", "linkedin_profile_url", "phone_numbers", "provider"],
-    ["status", "linkedin_profile_url", "phone_numbers", "provider"]
+    ["status", "linkedin_profile_url", "phone_numbers", "all_phone_numbers", "provider"],
+    ["status", "linkedin_profile_url", "phone_numbers", "all_phone_numbers", "provider"]
   ]);
   assert.equal(Object.hasOwn(successContent.examples.success.value, "provider"), true);
   assert.deepEqual(successContent.examples.success.value, {
     status: "success",
     linkedin_profile_url: "https://www.linkedin.com/in/example-person-000000",
     phone_numbers: "+12025550147",
+    all_phone_numbers: ["+12025550147", "+12025550148"],
     provider: null
   });
   assert.deepEqual(successContent.examples.notFound.value, {
     status: "not_found",
     linkedin_profile_url: "https://www.linkedin.com/in/example-person-000000",
     phone_numbers: null,
+    all_phone_numbers: [],
     provider: null
   });
   assert.deepEqual(errorStatuses(operation), ["400", "401", "403", "413", "429", "500", "502", "503"]);
   assertUnauthorizedReference(operation);
   assertJsonErrors(operation, errorStatuses(operation));
+});
+
+test("Mobile responses model normalized candidate arrays without changing the primary scalar", () => {
+  const content = accountContactSpec().paths["/v1/phone"].post.responses["200"].content["application/json"];
+  const validate = schemaValidator(content.schema);
+  const success = content.examples.success.value;
+  const miss = content.examples.notFound.value;
+  assert.ok(content.schema.oneOf.every(({ properties }) => properties.all_phone_numbers?.type === "array"));
+  assert.equal(validate(success), true, JSON.stringify(validate.errors));
+  assert.equal(typeof success.phone_numbers, "string");
+  assert.deepEqual(success.all_phone_numbers, ["+12025550147", "+12025550148"]);
+  assert.equal(validate({ ...success, all_phone_numbers: [success.phone_numbers] }), true);
+  assert.equal(validate(miss), true, JSON.stringify(validate.errors));
+  assert.deepEqual(miss.all_phone_numbers, []);
+  for (const value of [null, success.phone_numbers, [], [123], ["not-a-phone"], [success.phone_numbers, success.phone_numbers]]) {
+    assert.equal(validate({ ...success, all_phone_numbers: value }), false, JSON.stringify(value));
+  }
+  assert.equal(validate({ ...success, phone_numbers: [success.phone_numbers] }), false);
+  assert.equal(validate({ ...miss, all_phone_numbers: [success.phone_numbers] }), false);
+  const { all_phone_numbers, ...withoutCandidates } = success;
+  assert.equal(validate(withoutCandidates), false);
+  const page = readFileSync("api-reference/mobile-finder.mdx", "utf8");
+  assert.match(page, /`phone_numbers`.*primary.*string/);
+  assert.match(page, /`all_phone_numbers`.*primary number first/);
+  assert.match(page, /`not_found`.*`phone_numbers: null`.*`all_phone_numbers: \[\]`/);
 });
 
 test("Contact Personal Email operation accepts boolean or string verification", () => {

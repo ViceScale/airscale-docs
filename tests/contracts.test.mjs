@@ -88,8 +88,9 @@ const EXPECTED_CONTRACTS = deepFreeze({
     sourceFiles: ["workers/public-api/v2-waterfall-email-bulk.js", "workers/public-api/v2-waterfall-email-bulk.test.mjs"]
   },
   "mobile-finder": {
+    sourceSha: "9bc50ab50731f1793c4ed794776b2fee821d67ca",
     endpoints: [{ method: "POST", path: "/v1/phone" }],
-    sourceFiles: ["workers/public-api/v2-waterfall-mobile.js", "workers/public-api/v2-waterfall-mobile.test.mjs"]
+    sourceFiles: ["workers/public-api/v2-waterfall-mobile.js", "workers/public-api/v2-waterfall-mobile.test.mjs", "workers/public-api/v2-waterfall-mobile.multiple-phones.test.mjs", "workers/public-api/mobile-phone-values.js"]
   },
   "personal-email": {
     endpoints: [{ method: "POST", path: "/v1/personal-email" }],
