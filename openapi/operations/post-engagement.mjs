@@ -7,7 +7,7 @@ const errorDescriptions = {
   402: "The workspace does not have enough credits to reserve profile enrichment for this page.",
   409: "replay_in_progress: wait and retry the identical page with the same key. replay_request_mismatch: the key was already used with different request fields.",
   413: "The JSON request body exceeds the 128 KiB limit.",
-  429: "The workspace has exceeded the 60 requests per minute post-engagement limit.",
+  429: "The workspace has exceeded the 180 requests per minute limit shared by post-likers and post-commenters. Wait until the next minute boundary, then retry the identical page with the same idempotency key using bounded backoff.",
   500: "The request could not be completed because of an unexpected server error.",
   502: "The post-engagement bridge could not be reached or returned an invalid response.",
   503: "A provider, profile-enrichment, pagination, or credit-settlement dependency is temporarily unavailable."
@@ -307,8 +307,8 @@ function operation({ path, operationId, engagementType, summary, description }) 
       tags: [TAG],
       summary,
       description,
-      "x-airscale-source-sha": "9a539d40c2d5786cd064ce1637f93d6e020ef317",
-      "x-airscale-rate-limit": "60 requests per minute per workspace.",
+      "x-airscale-source-sha": "4a60fa48ae0f7b3f50f77516fdf80dc9d998e457",
+      "x-airscale-rate-limit": "180 requests per fixed minute per workspace, shared by post-likers and post-commenters; pagination requests and retries count.",
       "x-airscale-credit-cost": "1 credit reserved upfront per requested slot (limit); unused slots and definitive not_found/error outcomes are refunded; only successful profile enrichments are consumed.",
       "x-codeSamples": postEngagementCodeSamples(path),
       parameters: [{

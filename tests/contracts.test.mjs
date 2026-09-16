@@ -139,7 +139,7 @@ const EXPECTED_CONTRACTS = deepFreeze({
       sourceFiles: ["workers/public-api/airsearch-worker.js", "workers/public-api/airsearch-worker.test.mjs"]
     },
     "post-engagement": {
-      sourceSha: "9a539d40c2d5786cd064ce1637f93d6e020ef317",
+      sourceSha: "4a60fa48ae0f7b3f50f77516fdf80dc9d998e457",
       endpoints: [
         { method: "POST", path: "/v1/post-likers" },
         { method: "POST", path: "/v1/post-commenters" }
