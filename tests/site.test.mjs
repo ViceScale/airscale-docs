@@ -674,3 +674,15 @@ test("post engagement pages explain safe retries, expiry and account restart bou
     assert.doesNotMatch(body, /If a response is lost, retrying the request can run the page again and reserve credits again\./);
   }
 });
+
+test("post engagement pages document the shared 180-request fixed-minute limit", () => {
+  for (const page of ["api-reference/post-likers", "api-reference/post-commenters"]) {
+    const { body } = readPage(page);
+    assert.match(body, /180 requests per minute per workspace/);
+    assert.match(body, /shared.*Post likers.*Post commenters/i);
+    assert.match(body, /Pagination requests and retries.*count/i);
+    assert.match(body, /next minute boundary/i);
+    assert.match(body, /429/);
+    assert.doesNotMatch(body, /60 requests per minute/);
+  }
+});

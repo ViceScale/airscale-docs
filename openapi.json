@@ -3953,8 +3953,8 @@
         ],
         "summary": "List LinkedIn post likers",
         "description": "Retrieves one synchronous, cursor-paginated page of people who liked a LinkedIn post and enriches each returned profile.",
-        "x-airscale-source-sha": "9a539d40c2d5786cd064ce1637f93d6e020ef317",
-        "x-airscale-rate-limit": "60 requests per minute per workspace.",
+        "x-airscale-source-sha": "4a60fa48ae0f7b3f50f77516fdf80dc9d998e457",
+        "x-airscale-rate-limit": "180 requests per fixed minute per workspace, shared by post-likers and post-commenters; pagination requests and retries count.",
         "x-airscale-credit-cost": "1 credit reserved upfront per requested slot (limit); unused slots and definitive not_found/error outcomes are refunded; only successful profile enrichments are consumed.",
         "x-codeSamples": [
           {
@@ -4547,7 +4547,7 @@
             }
           },
           "429": {
-            "description": "The workspace has exceeded the 60 requests per minute post-engagement limit.",
+            "description": "The workspace has exceeded the 180 requests per minute limit shared by post-likers and post-commenters. Wait until the next minute boundary, then retry the identical page with the same idempotency key using bounded backoff.",
             "content": {
               "application/json": {
                 "schema": {
@@ -4693,8 +4693,8 @@
         ],
         "summary": "List LinkedIn post commenters",
         "description": "Retrieves one synchronous, cursor-paginated page of people who commented on a LinkedIn post and enriches each returned profile.",
-        "x-airscale-source-sha": "9a539d40c2d5786cd064ce1637f93d6e020ef317",
-        "x-airscale-rate-limit": "60 requests per minute per workspace.",
+        "x-airscale-source-sha": "4a60fa48ae0f7b3f50f77516fdf80dc9d998e457",
+        "x-airscale-rate-limit": "180 requests per fixed minute per workspace, shared by post-likers and post-commenters; pagination requests and retries count.",
         "x-airscale-credit-cost": "1 credit reserved upfront per requested slot (limit); unused slots and definitive not_found/error outcomes are refunded; only successful profile enrichments are consumed.",
         "x-codeSamples": [
           {
@@ -5287,7 +5287,7 @@
             }
           },
           "429": {
-            "description": "The workspace has exceeded the 60 requests per minute post-engagement limit.",
+            "description": "The workspace has exceeded the 180 requests per minute limit shared by post-likers and post-commenters. Wait until the next minute boundary, then retry the identical page with the same idempotency key using bounded backoff.",
             "content": {
               "application/json": {
                 "schema": {

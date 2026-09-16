@@ -1750,12 +1750,13 @@ test("Post engagement operations model synchronous cursor pagination and enrichm
     assert.equal(entry.method, "POST");
     assert.match(entry.path, /^\/v1\/post-(?:likers|commenters)$/);
     assert.equal(operation.tags[0], "Post engagement");
-    assert.equal(operation["x-airscale-rate-limit"], "60 requests per minute per workspace.");
+    assert.equal(operation["x-airscale-rate-limit"], "180 requests per fixed minute per workspace, shared by post-likers and post-commenters; pagination requests and retries count.");
+    assert.match(operation.responses["429"].description, /180 requests per minute.*shared/i);
     assert.equal(
       operation["x-airscale-credit-cost"],
       "1 credit reserved upfront per requested slot (limit); unused slots and definitive not_found/error outcomes are refunded; only successful profile enrichments are consumed."
     );
-    assert.equal(operation["x-airscale-source-sha"], "9a539d40c2d5786cd064ce1637f93d6e020ef317");
+    assert.equal(operation["x-airscale-source-sha"], "4a60fa48ae0f7b3f50f77516fdf80dc9d998e457");
     assert.equal(operation.parameters.length, 1);
     assert.equal(operation.parameters[0].name, "Idempotency-Key");
     assert.equal(operation.parameters[0].in, "header");

@@ -3044,6 +3044,12 @@ Retrieve one synchronous page of people who liked a LinkedIn post, with public p
 The API reserves one credit for each requested slot (`limit`) before retrieving the page. Unused slots are refunded. Each successfully enriched profile consumes one credit. Definitive `not_found` and failed `error` outcomes remain in the page and are refunded, so they have zero net credit cost. An uncertain response can retain its reservation until the same page finishes; it does not prove a refund.
 </Note>
 
+## Rate limit
+
+The limit is **180 requests per minute per workspace**, shared by Post likers and [Post commenters](/api-reference/post-commenters), including different API keys for the same workspace. Pagination requests and retries each count toward this limit.
+
+The counter uses a fixed minute window and resets at the next minute boundary. Requests above the limit receive HTTP `429` before provider or billing work. Wait until the next minute, then retry the identical page with the same `Idempotency-Key` using bounded backoff. This is a request limit, not a guarantee of enrichment throughput; the maximum page size remains 25.
+
 ## Pagination
 
 Omit `cursor` on the first request. When `pagination.next_cursor` is not `null`, send it unchanged with the same post URL and `limit` to fetch the next page. The page size is 1–25 (default 25). The provider and continuation account remain pinned to the cursor. New cursors expire after 10 minutes and are bound to the workspace, post, engagement type, and page size.
@@ -3099,6 +3105,12 @@ Retrieve one synchronous page of people who commented on a LinkedIn post, with p
 <Note>
 The API reserves one credit for each requested slot (`limit`) before retrieving the page. Unused slots are refunded. Each successfully enriched profile consumes one credit. Definitive `not_found` and failed `error` outcomes remain in the page and are refunded, so they have zero net credit cost. An uncertain response can retain its reservation until the same page finishes; it does not prove a refund.
 </Note>
+
+## Rate limit
+
+The limit is **180 requests per minute per workspace**, shared by [Post likers](/api-reference/post-likers) and Post commenters, including different API keys for the same workspace. Pagination requests and retries each count toward this limit.
+
+The counter uses a fixed minute window and resets at the next minute boundary. Requests above the limit receive HTTP `429` before provider or billing work. Wait until the next minute, then retry the identical page with the same `Idempotency-Key` using bounded backoff. This is a request limit, not a guarantee of enrichment throughput; the maximum page size remains 25.
 
 ## Pagination
 
