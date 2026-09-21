@@ -82,7 +82,7 @@
       "page": "api-reference/domain-to-linkedin",
       "tag": "Profiles and reverse lookup",
       "sourcePage": "domain-to-linkedin",
-      "sourceSha": "64aaeee126a13deed907fcf7b63eafc0d8ddd79a",
+      "sourceSha": "0d545223df2661055e0ae1ec811984418b49cc95",
       "sourceFiles": [
         "workers/public-api/domain-linkedin-worker.js",
         "workers/public-api/domain-linkedin-providers.js",
