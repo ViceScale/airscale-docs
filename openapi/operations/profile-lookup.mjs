@@ -312,3 +312,61 @@ export const profileLookupOperations = [
     }
   }
 ];
+
+profileLookupOperations.push({
+  method: "POST",
+  path: "/v1/domain-to-linkedin",
+  operation: {
+    operationId: "findCompanyLinkedinUrl",
+    tags: [TAG],
+    summary: "Find a LinkedIn company URL from a domain",
+    description: "Accepts only a company domain and returns only its LinkedIn company URL. Requires a current coded workspace API key; legacy Bubble-only keys are unsupported. The lookup deadline is 120 seconds; allow 130 seconds in the client. Billing runs asynchronously and never delays or changes the lookup result, including when credits are insufficient. Authentication and result storage must be available.",
+    "x-airscale-rate-limit": "60 requests per minute per workspace.",
+    "x-airscale-credit-cost": "0.5 credits on success, billed asynchronously. No-result and failed lookups cost zero. Pending charges retry later, including after a top-up.",
+    parameters: [{
+      name: "Idempotency-Key",
+      in: "header",
+      required: false,
+      description: "Use the same key for transport retries of the same domain. Stored responses replay for seven days without another lookup or charge. In-flight duplicates return 409 with Retry-After: 2. Reusing a key with a different domain or after expiry returns 409. A new key starts a new operation. Without a key every request is a new operation.",
+      schema: { type: "string", minLength: 1, maxLength: 200, pattern: "^[!-~]+$" },
+      example: "company-lookup-001"
+    }],
+    requestBody: requestBody(
+      {
+        type: "object",
+        required: ["domain"],
+        additionalProperties: false,
+        properties: { domain: { type: "string", minLength: 1, description: "A company hostname without scheme, path, port, or credentials. Case and a leading www. are normalized." } }
+      },
+      { domain: { summary: "Company domain", value: { domain: "example.org" } } },
+      "Exactly one domain field. Maximum JSON body size: 4 KiB."
+    ),
+    responses: {
+      200: {
+        description: "A canonical LinkedIn company URL. Creates one asynchronous 0.5-credit charge.",
+        content: {
+          "application/json": {
+            schema: {
+              type: "object",
+              required: ["linkedin_company_url"],
+              additionalProperties: false,
+              properties: { linkedin_company_url: { type: "string", format: "uri", pattern: "^https://www\\.linkedin\\.com/company/[^/?#]+$" } }
+            },
+            examples: { success: { summary: "Illustrative company match", value: { linkedin_company_url: "https://www.linkedin.com/company/example-company-000000" } } }
+          }
+        }
+      },
+      400: jsonError("Invalid JSON, domain, extra body fields, or Idempotency-Key."),
+      401: { $ref: "#/components/responses/Unauthorized" },
+      404: jsonError("No matching LinkedIn company URL found. Not charged."),
+      409: {
+        ...jsonError("Operation in progress, key reused for a different domain, or expired key. Retry in-flight operations with the same key; use a new key for conflicts or expiry."),
+        headers: { "Retry-After": { description: "Present for an in-flight duplicate: retry after 2 seconds.", schema: { type: "string" }, example: "2" } }
+      },
+      413: jsonError("JSON request body exceeds 4 KiB."),
+      429: jsonError("60 requests per minute per workspace exceeded. Retry with bounded backoff."),
+      503: jsonError("Authentication, result storage, or lookup temporarily unavailable."),
+      504: jsonError("Lookup deadline exhausted. Not charged.")
+    }
+  }
+});

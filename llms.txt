@@ -95,6 +95,7 @@
 
 - [People profile](https://airscale.mintlify.app/api-reference/extract-people-profile.md): Extract a structured person profile from a professional profile URL.
 - [Company profile](https://airscale.mintlify.app/api-reference/extract-company-profile.md): Extract a structured company profile from a company profile URL.
+- [Domain to LinkedIn](https://airscale.mintlify.app/api-reference/domain-to-linkedin.md): Find a LinkedIn company URL from a company domain.
 - [Reverse email](https://airscale.mintlify.app/api-reference/reverse-email.md): Find a person profile from an email address.
 - [Reverse phone](https://airscale.mintlify.app/api-reference/reverse-phone.md): Find a person profile from a phone number.
 

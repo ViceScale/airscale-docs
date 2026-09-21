@@ -50,6 +50,7 @@ const API_REFERENCE_TAB = {
       pages: [
         "api-reference/extract-people-profile",
         "api-reference/extract-company-profile",
+        "api-reference/domain-to-linkedin",
         "api-reference/reverse-email",
         "api-reference/reverse-phone"
       ]

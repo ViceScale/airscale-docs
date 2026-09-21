@@ -77,6 +77,21 @@
     },
     {
       "method": "POST",
+      "path": "/v1/domain-to-linkedin",
+      "operationId": "findCompanyLinkedinUrl",
+      "page": "api-reference/domain-to-linkedin",
+      "tag": "Profiles and reverse lookup",
+      "sourcePage": "domain-to-linkedin",
+      "sourceSha": "64aaeee126a13deed907fcf7b63eafc0d8ddd79a",
+      "sourceFiles": [
+        "workers/public-api/domain-linkedin-worker.js",
+        "workers/public-api/domain-linkedin-providers.js",
+        "workers/public-api/domain-linkedin-operation.js",
+        "workers/public-api/domain-linkedin-worker.test.mjs"
+      ]
+    },
+    {
+      "method": "POST",
       "path": "/v1/reverse-email",
       "operationId": "reverseEmailLookup",
       "page": "api-reference/reverse-email",
