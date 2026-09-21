@@ -321,7 +321,7 @@ profileLookupOperations.push({
     tags: [TAG],
     summary: "Find a LinkedIn company URL from a domain",
     description: "Accepts only a company domain and returns only its LinkedIn company URL. Requires a current coded workspace API key; legacy Bubble-only keys are unsupported. The lookup deadline is 120 seconds; allow 130 seconds in the client. Billing runs asynchronously and never delays or changes the lookup result, including when credits are insufficient. Authentication and result storage must be available.",
-    "x-airscale-rate-limit": "60 requests per minute per workspace.",
+    "x-airscale-rate-limit": "180 requests per minute per workspace.",
     "x-airscale-credit-cost": "0.5 credits on success, billed asynchronously. No-result and failed lookups cost zero. Pending charges retry later, including after a top-up.",
     parameters: [{
       name: "Idempotency-Key",
@@ -364,7 +364,7 @@ profileLookupOperations.push({
         headers: { "Retry-After": { description: "Present for an in-flight duplicate: retry after 2 seconds.", schema: { type: "string" }, example: "2" } }
       },
       413: jsonError("JSON request body exceeds 4 KiB."),
-      429: jsonError("60 requests per minute per workspace exceeded. Retry with bounded backoff."),
+      429: jsonError("180 requests per minute per workspace exceeded. Retry with bounded backoff."),
       503: jsonError("Authentication, result storage, or lookup temporarily unavailable."),
       504: jsonError("Lookup deadline exhausted. Not charged.")
     }

@@ -115,7 +115,7 @@ const EXPECTED_CONTRACTS = deepFreeze({
     sourceFiles: ["workers/public-api/v2-profile.js", "workers/public-api/v2-profile.url-normalization.test.mjs"]
   },
   "domain-to-linkedin": {
-    "sourceSha": "64aaeee126a13deed907fcf7b63eafc0d8ddd79a",
+    "sourceSha": "0d545223df2661055e0ae1ec811984418b49cc95",
     "endpoints": [
       {
         "method": "POST",
