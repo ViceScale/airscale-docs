@@ -29,6 +29,7 @@ const GROUPS = [
   ["Profiles and reverse lookup", [
     "api-reference/extract-people-profile",
     "api-reference/extract-company-profile",
+    "api-reference/domain-to-linkedin",
     "api-reference/reverse-email",
     "api-reference/reverse-phone"
   ]],
@@ -543,9 +544,9 @@ test("every public operation has one exact OpenAPI-backed wrapper", () => {
     assert.ok(body.split(/\n\s*\n/)[0].trim(), `${page} must retain a purpose statement`);
   }
 
-  assert.equal(expectedBindings.size, 30);
-  assert.equal(new Set(expectedBindings.values()).size, 30);
-  assert.equal(actualBindings.size, 30);
+  assert.equal(expectedBindings.size, 31);
+  assert.equal(new Set(expectedBindings.values()).size, 31);
+  assert.equal(actualBindings.size, 31);
   assert.deepEqual(actualBindings, expectedBindings);
 });
 
@@ -565,7 +566,7 @@ test("every wrapper binding resolves to its cataloged generated OpenAPI operatio
     resolved.push(`${method} ${path}`);
   }
 
-  assert.equal(new Set(resolved).size, 30);
+  assert.equal(new Set(resolved).size, 31);
   assert.deepEqual(resolved.sort(), catalog.operations.map(({ method, path }) => `${method} ${path}`).sort());
 });
 
@@ -637,6 +638,7 @@ const DURABLE_OPERATION_GUIDANCE = {
   "api-reference/people-url-finder": [/6 requests per second/i, /0\.5 credits/i, /`not_found` is not charged/i, /bounded exponential backoff/i],
   "api-reference/extract-people-profile": [/submitted URL/i, /response schema/i, /credit cost/i, /`p1`.*`p2`.*`p3`/i, /3,000 requests per minute/i],
   "api-reference/extract-company-profile": [/submitted URL/i, /response schema/i, /credit cost/i, /`p1`.*`p2`.*`p3`/i, /3,000 requests per minute/i],
+  "api-reference/domain-to-linkedin": [/0\.5 credits/i, /asynchronously/i, /60 requests per minute/i, /120-second deadline/i, /Idempotency-Key/i, /seven days/i],
   "api-reference/reverse-email": [/25 requests per second/i, /2 credits/i, /JSON string `"not found"`/i, /not charged/i, /bounded backoff/i],
   "api-reference/reverse-phone": [/2,000 requests per minute/i, /10 credits/i, /true miss.*exhausted or failed/i, /one bounded-backoff retry/i, /normalized number/i],
   "api-reference/find-people": [/6 requests per second/i, /0\.1 credits per returned lead/i, /empty result pages are not charged/i, /send it unchanged as `cursor`/i, /Count people/i],
@@ -658,7 +660,7 @@ const DURABLE_OPERATION_GUIDANCE = {
 };
 
 test("operation wrappers retain durable rate, credit, retry, and asynchronous guidance", () => {
-  assert.equal(Object.keys(DURABLE_OPERATION_GUIDANCE).length, 30);
+  assert.equal(Object.keys(DURABLE_OPERATION_GUIDANCE).length, 31);
   for (const [page, patterns] of Object.entries(DURABLE_OPERATION_GUIDANCE)) {
     const { body } = readPage(page);
     for (const pattern of patterns) assert.match(body, pattern, `${page} must retain ${pattern}`);

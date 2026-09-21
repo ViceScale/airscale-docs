@@ -2990,6 +2990,40 @@ Use [People profile](/api-reference/extract-people-profile) for the person-focus
 
 ---
 
+## Domain to LinkedIn
+
+Source: https://airscale.mintlify.app/api-reference/domain-to-linkedin.md
+
+Description: Find a LinkedIn company URL from a company domain.
+
+Submit one company domain and receive its LinkedIn company URL. The response contains only `linkedin_company_url`.
+
+<Note>
+A successful lookup costs **0.5 credits**, billed asynchronously. No-result and failed lookups cost zero. Billing delays, outages, and insufficient credits do not block the result; an outstanding charge is retried later. The limit is **60 requests per minute per workspace**.
+</Note>
+
+Use a current workspace API key from [Settings → API key](/api-reference/authentication). Legacy Bubble-only API keys are not supported by this endpoint.
+
+## Domain input
+
+Send only `domain`: a hostname such as `example.org`, without a scheme, path, or port. Uppercase and a leading `www.` are normalized. Extra body fields are rejected; the body limit is 4 KiB.
+
+## Timeouts and retries
+
+The lookup has a **120-second deadline**. Allow **130 seconds** in your client. Sources are tried sequentially until a valid company URL is found. Personal profile and school URLs are not returned.
+
+Reuse the same `Idempotency-Key` for transport retries of the same domain. Keys are scoped to your workspace and this endpoint; responses replay for seven days without another lookup or charge. Without a key, every request is a new operation.
+
+An in-flight duplicate returns `409` with `Retry-After: 2`; wait and retry with the same key. A key reused for a different domain, or an expired key, also returns `409` and needs a new key. After a completed transient failure, use a new key to start a fresh lookup. New operations can incur a new charge if successful.
+
+Errors contain an `error` field. Billing errors never replace the lookup response. Authentication and result storage must still be available for the request to succeed.
+
+## Next step
+
+Use [Extract company profile](/api-reference/extract-company-profile) to retrieve company details from the returned LinkedIn URL. That is a separate request with its own credit cost.
+
+---
+
 ## Reverse email
 
 Source: https://airscale.mintlify.app/api-reference/reverse-email.md
