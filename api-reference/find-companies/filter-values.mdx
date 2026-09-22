@@ -21,6 +21,45 @@ The operation shares a limit of 6 requests per second per workspace with Find co
 This preview renders non-executing examples. It does not send a request or ask for an API key.
 </Info>
 
+## Discovery examples
+
+These examples only discover filter values; the endpoint is free. Set `AIRSCALE_API_KEY` in your server environment before running a command.
+
+```bash Region suggestions
+curl --get 'https://api.airscale.io/v1/find-companies/filter-values' \
+  -H "Authorization: Bearer $AIRSCALE_API_KEY" \
+  --data-urlencode 'filter=region' \
+  --data-urlencode 'q=california' \
+  --data-urlencode 'country=US'
+```
+
+```bash City suggestions
+curl --get 'https://api.airscale.io/v1/find-companies/filter-values' \
+  -H "Authorization: Bearer $AIRSCALE_API_KEY" \
+  --data-urlencode 'filter=city' \
+  --data-urlencode 'q=san' \
+  --data-urlencode 'country=US' \
+  --data-urlencode 'region=us-ca'
+```
+
+```bash Technology suggestions
+curl --get 'https://api.airscale.io/v1/find-companies/filter-values' \
+  -H "Authorization: Bearer $AIRSCALE_API_KEY" \
+  --data-urlencode 'filter=techStack' \
+  --data-urlencode 'q=hubspot'
+```
+
+```bash Industry suggestions
+curl --get 'https://api.airscale.io/v1/find-companies/filter-values' \
+  -H "Authorization: Bearer $AIRSCALE_API_KEY" \
+  --data-urlencode 'filter=industry' \
+  --data-urlencode 'q=software'
+```
+
+Each result has a display `label` and a request `value`. Copy `value` into the corresponding search filter. For locations, preserve the returned country/region context instead of assembling a city value from its display label. Search accepts recognized pipe-form and comma-form city values; autocomplete supplies the value to reuse.
+
+`q` or its `query` alias must contain 2–120 characters after trimming. `q` takes precedence even when blank. The optional `limit` defaults to 20; integer values are clamped to 1–100, while non-numeric or non-integer values use the default.
+
 ## Next step
 
 Copy the returned `value` into the matching filter on [Find companies](/api-reference/find-companies).

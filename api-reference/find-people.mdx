@@ -41,6 +41,31 @@ Count is free. It neither reserves nor debits credits and returns only `total`, 
 
 </Accordion>
 
+## Combining past-experience filters
+
+All past-experience filters apply to the same prior role. For example, combining `pastJobTitle.include: ["Engineer"]` with `pastCompanyName.include: ["Example Company"]` finds people who worked as an engineer at that company. It does not match someone who was an engineer at another company and held a different role at Example Company.
+
+`pastCompany.location` accepts country names and ISO alpha-2 country codes, just like `location` and `currentCompany.location`.
+
+## Lead fields
+
+`leads` contains public person records. The following fields are common, not a guarantee that every field is present or non-null. Preserve additional public fields your integration needs and tolerate missing values.
+
+| Field | Meaning |
+| --- | --- |
+| `firstname`, `lastname` | Person's first and last names. |
+| `headline`, `description` | Profile headline and description. |
+| `profileUrl` | LinkedIn person profile URL. |
+| `jobTitle` | Current role title. |
+| `jobStartDate` | Current-role start date, for example `03-2024`. |
+| `address` | Person location. |
+| `companyName` | Current employer name. |
+| `companyUrl`, `companyWebsite` | Employer LinkedIn URL and website. |
+| `companySize` | Available company headcount. |
+| `companyIndustry`, `companyAddress` | Employer industry and location. |
+
+Use `next_cursor` from the response envelope for pagination. Do not construct a cursor from a lead's fields.
+
 ## Next step
 
 Use the same `query` to retrieve the counted audience, [Find companies](/api-reference/find-companies) to discover organizations, or [Rate limits](/api-reference/rate-limits) before adding concurrency.

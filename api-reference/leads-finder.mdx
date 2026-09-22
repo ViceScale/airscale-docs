@@ -1,0 +1,60 @@
+---
+title: "Leads Finder"
+description: "Search people with Leads Finder filters and page-based pagination."
+canonical: "https://airscale.mintlify.app/api-reference/leads-finder"
+openapi: "/openapi.json POST /v1/leads-finder"
+---
+
+Search for people using person and company filters. This operation uses a `filters` object and zero-based `page` pagination. [Find people](/api-reference/find-people) uses a different `query` model and cursor pagination; their request bodies are not interchangeable.
+
+<Note>
+The limit is 5 requests per second per workspace, shared with the [preview alias](/api-reference/leads-finder/preview). Both routes cost 0.1 credits per returned lead; empty pages cost zero credits. At least 0.1 credits must be available before searching; credit admission can reserve up to `size × 0.1` credits before the request runs. The preview alias is not a free count operation.
+</Note>
+
+## Choose filters
+
+At least one non-empty filter other than `searchMode` is required. Include only the criteria you need. The OpenAPI request schema below lists the supported fields.
+
+| Criteria | Fields |
+| --- | --- |
+| Job titles | `job`, `jobExclude` |
+| Companies | `company`, `companyUrl` |
+| Person locations | `peopleLocation`, `peopleLocationExclude` |
+| Seniority and functions | `seniority`, `seniorityExclude`, `jobFunction`, `jobFunctionExclude` |
+| Tenure and experience | `yearsCurrentRole`, `yearsCurrentCompany`, `yearsWorkExperience`, `duration` |
+| Skills, languages, certifications | `skills`, `language`, `certification`, and their `Exclude` fields |
+| Profile text and badges | `profileKeywords`, `profileKeywordsExclude`, `profileBadge` |
+| Company industry, headquarters, type | `industry`, `hq`, `type`, and their `Exclude` fields |
+| Company size, revenue, founding year | `size`, `revenue`, `founded` |
+| Company text | `companyKeywords`, `companyKeywordsExclude` |
+| Funding | `funding`, `fundingAmount`, `fundingDateMonths` |
+| Department metrics | `department`, `growth` |
+
+Use strings or arrays for `job`, `jobExclude`, `company`, `companyUrl`, person locations, and job functions. Other text filters accept strings; separate multiple values with newlines. Each job-function include/exclude input allows at most 300 non-empty values. `searchMode` supports `SMART`, `WORD`, and `STRICT`, defaulting to `SMART`.
+
+Textual tenure examples include `1 to 2 years`, `Less than 1 year`, and `More than 10 years`. Structured `duration` accepts `latestCompany`, `currentCompany`, `previousCompany`, `latestJob`, `currentJob`, `previousJob`, and `total`. Each contains `min`, `max`, or both, with non-negative integer `year` and/or `month` values; months must be 0–11 and the minimum must not exceed the maximum. Structured bounds override the corresponding textual tenure field.
+
+```json Structured tenure example
+{
+  "filters": {
+    "job": ["Founder"],
+    "duration": {
+      "currentCompany": { "min": { "year": 1 }, "max": { "year": 3 } }
+    }
+  },
+  "page": 0,
+  "size": 25
+}
+```
+
+## Read results and paginate
+
+The response contains `rows`, `total`, `page`, and `size`. Rows are public lead records whose fields depend on available data. `total` can be `null` when a reliable count is unavailable or company/title correlation removes rows.
+
+`size` defaults to 50 and accepts 1–100. Start at `page: 0` and increment the page while keeping the same filters and size. This operation does not return `next_cursor`. When company and title filters are combined, returned rows are checked for a matching title at the identified company; a page can contain fewer rows after that check, and a short page alone does not establish exhaustion.
+
+After `429`, retry in a later second with bounded exponential backoff. For `503`, wait for the authentication or credit service to recover. Correct invalid filters before retrying `400` responses. Requests larger than 256 KiB return `413`.
+
+## Next step
+
+Use [Find people](/api-reference/find-people) if you need its person/current-company/past-experience filter model and free count operation. Existing Leads Finder integrations can continue using their documented route and request model.

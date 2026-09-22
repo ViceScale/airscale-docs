@@ -2148,7 +2148,7 @@
                         ]
                       },
                       "pastJobTitle": {
-                        "description": "Matches a title in a previous position.",
+                        "description": "Matches a title in a previous position. All past-experience filters must match the same prior role.",
                         "allOf": [
                           {
                             "$ref": "#/components/schemas/IncludeExcludeFilter"
@@ -2156,7 +2156,7 @@
                         ]
                       },
                       "pastCompanyName": {
-                        "description": "Matches a previous company name.",
+                        "description": "Matches a previous company name. All past-experience filters must match the same prior role.",
                         "allOf": [
                           {
                             "$ref": "#/components/schemas/IncludeExcludeFilter"
@@ -2606,7 +2606,7 @@
                         ]
                       },
                       "pastJobTitle": {
-                        "description": "Matches a title in a previous position.",
+                        "description": "Matches a title in a previous position. All past-experience filters must match the same prior role.",
                         "allOf": [
                           {
                             "$ref": "#/components/schemas/IncludeExcludeFilter"
@@ -2614,7 +2614,7 @@
                         ]
                       },
                       "pastCompanyName": {
-                        "description": "Matches a previous company name.",
+                        "description": "Matches a previous company name. All past-experience filters must match the same prior role.",
                         "allOf": [
                           {
                             "$ref": "#/components/schemas/IncludeExcludeFilter"
@@ -7972,6 +7972,1716 @@
               },
               "*/*": {
                 "schema": {}
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/leads-finder": {
+      "post": {
+        "operationId": "searchLeadsFinder",
+        "tags": [
+          "Search and discovery"
+        ],
+        "summary": "Search Leads Finder",
+        "description": "Search with Leads Finder filters and zero-based page pagination. The preview alias has the same contract and is charged; it is not a free count operation. This filter model is different from Find people's query model.",
+        "x-airscale-rate-limit": "5 requests per second per workspace, shared by both Leads Finder routes.",
+        "x-airscale-credit-cost": "0.1 credits per returned lead. The preview alias has the same cost. At least 0.1 credits are required to start.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "filters"
+                ],
+                "additionalProperties": false,
+                "properties": {
+                  "filters": {
+                    "type": "object",
+                    "minProperties": 1,
+                    "additionalProperties": false,
+                    "description": "At least one non-empty filter other than searchMode is required. Use only the documented fields; some malformed legacy values are ignored by the runtime rather than rejected.",
+                    "properties": {
+                      "job": {
+                        "oneOf": [
+                          {
+                            "type": "string"
+                          },
+                          {
+                            "type": "array",
+                            "items": {
+                              "type": "string"
+                            }
+                          }
+                        ],
+                        "description": "One value or multiple values."
+                      },
+                      "jobExclude": {
+                        "oneOf": [
+                          {
+                            "type": "string"
+                          },
+                          {
+                            "type": "array",
+                            "items": {
+                              "type": "string"
+                            }
+                          }
+                        ],
+                        "description": "One value or multiple values."
+                      },
+                      "company": {
+                        "oneOf": [
+                          {
+                            "type": "string"
+                          },
+                          {
+                            "type": "array",
+                            "items": {
+                              "type": "string"
+                            }
+                          }
+                        ],
+                        "description": "Company names, domains, or LinkedIn organization URLs. Invalid LinkedIn company URLs are rejected."
+                      },
+                      "companyUrl": {
+                        "oneOf": [
+                          {
+                            "type": "string"
+                          },
+                          {
+                            "type": "array",
+                            "items": {
+                              "type": "string"
+                            }
+                          }
+                        ],
+                        "description": "Company names, domains, or LinkedIn organization URLs. Invalid LinkedIn company URLs are rejected."
+                      },
+                      "peopleLocation": {
+                        "oneOf": [
+                          {
+                            "type": "string"
+                          },
+                          {
+                            "type": "array",
+                            "items": {
+                              "type": "string"
+                            }
+                          }
+                        ],
+                        "description": "One value or multiple values."
+                      },
+                      "peopleLocationExclude": {
+                        "oneOf": [
+                          {
+                            "type": "string"
+                          },
+                          {
+                            "type": "array",
+                            "items": {
+                              "type": "string"
+                            }
+                          }
+                        ],
+                        "description": "One value or multiple values."
+                      },
+                      "jobFunction": {
+                        "oneOf": [
+                          {
+                            "type": "string"
+                          },
+                          {
+                            "type": "array",
+                            "items": {
+                              "type": "string"
+                            }
+                          }
+                        ],
+                        "description": "Job functions; at most 300 non-empty values after splitting."
+                      },
+                      "jobFunctionExclude": {
+                        "oneOf": [
+                          {
+                            "type": "string"
+                          },
+                          {
+                            "type": "array",
+                            "items": {
+                              "type": "string"
+                            }
+                          }
+                        ],
+                        "description": "Job functions; at most 300 non-empty values after splitting."
+                      },
+                      "seniority": {
+                        "type": "string",
+                        "description": "Seniority values, separated by newlines."
+                      },
+                      "seniorityExclude": {
+                        "type": "string",
+                        "description": "Seniority values to exclude."
+                      },
+                      "yearsCurrentRole": {
+                        "type": "string",
+                        "description": "Current-role tenure, for example 1 to 2 years."
+                      },
+                      "yearsCurrentCompany": {
+                        "type": "string",
+                        "description": "Current-company tenure, for example 3 to 5 years."
+                      },
+                      "yearsWorkExperience": {
+                        "type": "string",
+                        "description": "Total experience, for example More than 10 years."
+                      },
+                      "skills": {
+                        "type": "string",
+                        "description": "Skills to include."
+                      },
+                      "skillsExclude": {
+                        "type": "string",
+                        "description": "Skills to exclude."
+                      },
+                      "language": {
+                        "type": "string",
+                        "description": "Languages to include."
+                      },
+                      "languageExclude": {
+                        "type": "string",
+                        "description": "Languages to exclude."
+                      },
+                      "certification": {
+                        "type": "string",
+                        "description": "Certifications to include."
+                      },
+                      "certificationExclude": {
+                        "type": "string",
+                        "description": "Certifications to exclude."
+                      },
+                      "profileKeywords": {
+                        "type": "string",
+                        "description": "Profile keywords to include."
+                      },
+                      "profileKeywordsExclude": {
+                        "type": "string",
+                        "description": "Profile keywords to exclude."
+                      },
+                      "profileBadge": {
+                        "type": "string",
+                        "description": "Profile badge values."
+                      },
+                      "industry": {
+                        "type": "string",
+                        "description": "Company industries to include."
+                      },
+                      "industryExclude": {
+                        "type": "string",
+                        "description": "Company industries to exclude."
+                      },
+                      "size": {
+                        "type": "string",
+                        "description": "Company headcount range, for example 11-50."
+                      },
+                      "hq": {
+                        "type": "string",
+                        "description": "Company headquarters locations to include."
+                      },
+                      "hqExclude": {
+                        "type": "string",
+                        "description": "Headquarters locations to exclude."
+                      },
+                      "type": {
+                        "type": "string",
+                        "description": "Company types, for example PRIVATELY_HELD."
+                      },
+                      "typeExclude": {
+                        "type": "string",
+                        "description": "Company types to exclude."
+                      },
+                      "revenue": {
+                        "type": "string",
+                        "description": "Company revenue range, for example 1000000-10000000."
+                      },
+                      "companyKeywords": {
+                        "type": "string",
+                        "description": "Company keywords to include."
+                      },
+                      "companyKeywordsExclude": {
+                        "type": "string",
+                        "description": "Company keywords to exclude."
+                      },
+                      "founded": {
+                        "type": "string",
+                        "description": "Founding-year range, for example 2015-2022."
+                      },
+                      "funding": {
+                        "type": "string",
+                        "description": "Funding rounds, for example SEED or SERIES_A."
+                      },
+                      "fundingAmount": {
+                        "type": "string",
+                        "description": "Last funding amount range, for example 1000000-5000000."
+                      },
+                      "fundingDateMonths": {
+                        "type": "string",
+                        "description": "Funding lookback in months, for example 12."
+                      },
+                      "department": {
+                        "type": "string",
+                        "description": "Department and headcount range on separate lines, for example sales followed by 10-100."
+                      },
+                      "growth": {
+                        "type": "string",
+                        "description": "Department, growth range, and period on separate lines, for example sales, 20-80, and 3 months."
+                      },
+                      "duration": {
+                        "type": "object",
+                        "additionalProperties": false,
+                        "description": "Structured tenure bounds override the matching textual tenure field. Use non-negative integer years and months from 0 through 11.",
+                        "properties": {
+                          "latestCompany": {
+                            "type": "object",
+                            "minProperties": 1,
+                            "additionalProperties": false,
+                            "description": "When both bounds are present, min must not exceed max in total months.",
+                            "properties": {
+                              "min": {
+                                "type": "object",
+                                "minProperties": 1,
+                                "additionalProperties": false,
+                                "properties": {
+                                  "year": {
+                                    "type": "integer",
+                                    "minimum": 0
+                                  },
+                                  "month": {
+                                    "type": "integer",
+                                    "minimum": 0,
+                                    "maximum": 11
+                                  }
+                                }
+                              },
+                              "max": {
+                                "type": "object",
+                                "minProperties": 1,
+                                "additionalProperties": false,
+                                "properties": {
+                                  "year": {
+                                    "type": "integer",
+                                    "minimum": 0
+                                  },
+                                  "month": {
+                                    "type": "integer",
+                                    "minimum": 0,
+                                    "maximum": 11
+                                  }
+                                }
+                              }
+                            }
+                          },
+                          "currentCompany": {
+                            "type": "object",
+                            "minProperties": 1,
+                            "additionalProperties": false,
+                            "description": "When both bounds are present, min must not exceed max in total months.",
+                            "properties": {
+                              "min": {
+                                "type": "object",
+                                "minProperties": 1,
+                                "additionalProperties": false,
+                                "properties": {
+                                  "year": {
+                                    "type": "integer",
+                                    "minimum": 0
+                                  },
+                                  "month": {
+                                    "type": "integer",
+                                    "minimum": 0,
+                                    "maximum": 11
+                                  }
+                                }
+                              },
+                              "max": {
+                                "type": "object",
+                                "minProperties": 1,
+                                "additionalProperties": false,
+                                "properties": {
+                                  "year": {
+                                    "type": "integer",
+                                    "minimum": 0
+                                  },
+                                  "month": {
+                                    "type": "integer",
+                                    "minimum": 0,
+                                    "maximum": 11
+                                  }
+                                }
+                              }
+                            }
+                          },
+                          "previousCompany": {
+                            "type": "object",
+                            "minProperties": 1,
+                            "additionalProperties": false,
+                            "description": "When both bounds are present, min must not exceed max in total months.",
+                            "properties": {
+                              "min": {
+                                "type": "object",
+                                "minProperties": 1,
+                                "additionalProperties": false,
+                                "properties": {
+                                  "year": {
+                                    "type": "integer",
+                                    "minimum": 0
+                                  },
+                                  "month": {
+                                    "type": "integer",
+                                    "minimum": 0,
+                                    "maximum": 11
+                                  }
+                                }
+                              },
+                              "max": {
+                                "type": "object",
+                                "minProperties": 1,
+                                "additionalProperties": false,
+                                "properties": {
+                                  "year": {
+                                    "type": "integer",
+                                    "minimum": 0
+                                  },
+                                  "month": {
+                                    "type": "integer",
+                                    "minimum": 0,
+                                    "maximum": 11
+                                  }
+                                }
+                              }
+                            }
+                          },
+                          "latestJob": {
+                            "type": "object",
+                            "minProperties": 1,
+                            "additionalProperties": false,
+                            "description": "When both bounds are present, min must not exceed max in total months.",
+                            "properties": {
+                              "min": {
+                                "type": "object",
+                                "minProperties": 1,
+                                "additionalProperties": false,
+                                "properties": {
+                                  "year": {
+                                    "type": "integer",
+                                    "minimum": 0
+                                  },
+                                  "month": {
+                                    "type": "integer",
+                                    "minimum": 0,
+                                    "maximum": 11
+                                  }
+                                }
+                              },
+                              "max": {
+                                "type": "object",
+                                "minProperties": 1,
+                                "additionalProperties": false,
+                                "properties": {
+                                  "year": {
+                                    "type": "integer",
+                                    "minimum": 0
+                                  },
+                                  "month": {
+                                    "type": "integer",
+                                    "minimum": 0,
+                                    "maximum": 11
+                                  }
+                                }
+                              }
+                            }
+                          },
+                          "currentJob": {
+                            "type": "object",
+                            "minProperties": 1,
+                            "additionalProperties": false,
+                            "description": "When both bounds are present, min must not exceed max in total months.",
+                            "properties": {
+                              "min": {
+                                "type": "object",
+                                "minProperties": 1,
+                                "additionalProperties": false,
+                                "properties": {
+                                  "year": {
+                                    "type": "integer",
+                                    "minimum": 0
+                                  },
+                                  "month": {
+                                    "type": "integer",
+                                    "minimum": 0,
+                                    "maximum": 11
+                                  }
+                                }
+                              },
+                              "max": {
+                                "type": "object",
+                                "minProperties": 1,
+                                "additionalProperties": false,
+                                "properties": {
+                                  "year": {
+                                    "type": "integer",
+                                    "minimum": 0
+                                  },
+                                  "month": {
+                                    "type": "integer",
+                                    "minimum": 0,
+                                    "maximum": 11
+                                  }
+                                }
+                              }
+                            }
+                          },
+                          "previousJob": {
+                            "type": "object",
+                            "minProperties": 1,
+                            "additionalProperties": false,
+                            "description": "When both bounds are present, min must not exceed max in total months.",
+                            "properties": {
+                              "min": {
+                                "type": "object",
+                                "minProperties": 1,
+                                "additionalProperties": false,
+                                "properties": {
+                                  "year": {
+                                    "type": "integer",
+                                    "minimum": 0
+                                  },
+                                  "month": {
+                                    "type": "integer",
+                                    "minimum": 0,
+                                    "maximum": 11
+                                  }
+                                }
+                              },
+                              "max": {
+                                "type": "object",
+                                "minProperties": 1,
+                                "additionalProperties": false,
+                                "properties": {
+                                  "year": {
+                                    "type": "integer",
+                                    "minimum": 0
+                                  },
+                                  "month": {
+                                    "type": "integer",
+                                    "minimum": 0,
+                                    "maximum": 11
+                                  }
+                                }
+                              }
+                            }
+                          },
+                          "total": {
+                            "type": "object",
+                            "minProperties": 1,
+                            "additionalProperties": false,
+                            "description": "When both bounds are present, min must not exceed max in total months.",
+                            "properties": {
+                              "min": {
+                                "type": "object",
+                                "minProperties": 1,
+                                "additionalProperties": false,
+                                "properties": {
+                                  "year": {
+                                    "type": "integer",
+                                    "minimum": 0
+                                  },
+                                  "month": {
+                                    "type": "integer",
+                                    "minimum": 0,
+                                    "maximum": 11
+                                  }
+                                }
+                              },
+                              "max": {
+                                "type": "object",
+                                "minProperties": 1,
+                                "additionalProperties": false,
+                                "properties": {
+                                  "year": {
+                                    "type": "integer",
+                                    "minimum": 0
+                                  },
+                                  "month": {
+                                    "type": "integer",
+                                    "minimum": 0,
+                                    "maximum": 11
+                                  }
+                                }
+                              }
+                            }
+                          }
+                        }
+                      },
+                      "searchMode": {
+                        "type": "string",
+                        "enum": [
+                          "SMART",
+                          "WORD",
+                          "STRICT"
+                        ],
+                        "default": "SMART",
+                        "description": "Matching mode. Runtime falls back to SMART for an unrecognized value; use an explicit supported mode."
+                      }
+                    }
+                  },
+                  "page": {
+                    "oneOf": [
+                      {
+                        "type": "integer",
+                        "minimum": 0
+                      },
+                      {
+                        "type": "string",
+                        "pattern": "^(?:0|[1-9][0-9]*)$"
+                      }
+                    ],
+                    "default": 0
+                  },
+                  "size": {
+                    "oneOf": [
+                      {
+                        "type": "integer",
+                        "minimum": 1,
+                        "maximum": 100
+                      },
+                      {
+                        "type": "string",
+                        "pattern": "^(?:[1-9]|[1-9][0-9]|100)$"
+                      }
+                    ],
+                    "default": 50
+                  }
+                }
+              },
+              "examples": {
+                "example": {
+                  "value": {
+                    "filters": {
+                      "job": [
+                        "Founder"
+                      ],
+                      "company": "example.com",
+                      "peopleLocation": [
+                        "United States"
+                      ],
+                      "searchMode": "SMART"
+                    },
+                    "page": 0,
+                    "size": 25
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "A page of public lead records. No cursor is returned.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "rows",
+                    "total",
+                    "page",
+                    "size"
+                  ],
+                  "properties": {
+                    "rows": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/FlexibleResult"
+                      }
+                    },
+                    "total": {
+                      "type": [
+                        "number",
+                        "null"
+                      ],
+                      "description": "May be null when a reliable total is unavailable or company/title correlation removes rows."
+                    },
+                    "page": {
+                      "type": "integer"
+                    },
+                    "size": {
+                      "type": "integer"
+                    }
+                  }
+                },
+                "examples": {
+                  "example": {
+                    "value": {
+                      "rows": [
+                        {
+                          "firstname": "Example",
+                          "lastname": "Person",
+                          "profileUrl": "https://www.linkedin.com/in/example-person-000000"
+                        }
+                      ],
+                      "total": 1,
+                      "page": 0,
+                      "size": 25
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "description": "Insufficient credits or access.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Unknown path or method.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "Request body exceeds 256 KiB.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Workspace rate limit exceeded.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Service configuration error.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "502": {
+            "description": "Upstream service failed.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Authentication or credit service temporarily unavailable.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/leads-finder/preview": {
+      "post": {
+        "operationId": "previewLeadsFinder",
+        "tags": [
+          "Search and discovery"
+        ],
+        "summary": "Search Leads Finder using the preview alias",
+        "description": "Search with Leads Finder filters and zero-based page pagination. The preview alias has the same contract and is charged; it is not a free count operation. This filter model is different from Find people's query model.",
+        "x-airscale-rate-limit": "5 requests per second per workspace, shared by both Leads Finder routes.",
+        "x-airscale-credit-cost": "0.1 credits per returned lead. The preview alias has the same cost. At least 0.1 credits are required to start.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "filters"
+                ],
+                "additionalProperties": false,
+                "properties": {
+                  "filters": {
+                    "type": "object",
+                    "minProperties": 1,
+                    "additionalProperties": false,
+                    "description": "At least one non-empty filter other than searchMode is required. Use only the documented fields; some malformed legacy values are ignored by the runtime rather than rejected.",
+                    "properties": {
+                      "job": {
+                        "oneOf": [
+                          {
+                            "type": "string"
+                          },
+                          {
+                            "type": "array",
+                            "items": {
+                              "type": "string"
+                            }
+                          }
+                        ],
+                        "description": "One value or multiple values."
+                      },
+                      "jobExclude": {
+                        "oneOf": [
+                          {
+                            "type": "string"
+                          },
+                          {
+                            "type": "array",
+                            "items": {
+                              "type": "string"
+                            }
+                          }
+                        ],
+                        "description": "One value or multiple values."
+                      },
+                      "company": {
+                        "oneOf": [
+                          {
+                            "type": "string"
+                          },
+                          {
+                            "type": "array",
+                            "items": {
+                              "type": "string"
+                            }
+                          }
+                        ],
+                        "description": "Company names, domains, or LinkedIn organization URLs. Invalid LinkedIn company URLs are rejected."
+                      },
+                      "companyUrl": {
+                        "oneOf": [
+                          {
+                            "type": "string"
+                          },
+                          {
+                            "type": "array",
+                            "items": {
+                              "type": "string"
+                            }
+                          }
+                        ],
+                        "description": "Company names, domains, or LinkedIn organization URLs. Invalid LinkedIn company URLs are rejected."
+                      },
+                      "peopleLocation": {
+                        "oneOf": [
+                          {
+                            "type": "string"
+                          },
+                          {
+                            "type": "array",
+                            "items": {
+                              "type": "string"
+                            }
+                          }
+                        ],
+                        "description": "One value or multiple values."
+                      },
+                      "peopleLocationExclude": {
+                        "oneOf": [
+                          {
+                            "type": "string"
+                          },
+                          {
+                            "type": "array",
+                            "items": {
+                              "type": "string"
+                            }
+                          }
+                        ],
+                        "description": "One value or multiple values."
+                      },
+                      "jobFunction": {
+                        "oneOf": [
+                          {
+                            "type": "string"
+                          },
+                          {
+                            "type": "array",
+                            "items": {
+                              "type": "string"
+                            }
+                          }
+                        ],
+                        "description": "Job functions; at most 300 non-empty values after splitting."
+                      },
+                      "jobFunctionExclude": {
+                        "oneOf": [
+                          {
+                            "type": "string"
+                          },
+                          {
+                            "type": "array",
+                            "items": {
+                              "type": "string"
+                            }
+                          }
+                        ],
+                        "description": "Job functions; at most 300 non-empty values after splitting."
+                      },
+                      "seniority": {
+                        "type": "string",
+                        "description": "Seniority values, separated by newlines."
+                      },
+                      "seniorityExclude": {
+                        "type": "string",
+                        "description": "Seniority values to exclude."
+                      },
+                      "yearsCurrentRole": {
+                        "type": "string",
+                        "description": "Current-role tenure, for example 1 to 2 years."
+                      },
+                      "yearsCurrentCompany": {
+                        "type": "string",
+                        "description": "Current-company tenure, for example 3 to 5 years."
+                      },
+                      "yearsWorkExperience": {
+                        "type": "string",
+                        "description": "Total experience, for example More than 10 years."
+                      },
+                      "skills": {
+                        "type": "string",
+                        "description": "Skills to include."
+                      },
+                      "skillsExclude": {
+                        "type": "string",
+                        "description": "Skills to exclude."
+                      },
+                      "language": {
+                        "type": "string",
+                        "description": "Languages to include."
+                      },
+                      "languageExclude": {
+                        "type": "string",
+                        "description": "Languages to exclude."
+                      },
+                      "certification": {
+                        "type": "string",
+                        "description": "Certifications to include."
+                      },
+                      "certificationExclude": {
+                        "type": "string",
+                        "description": "Certifications to exclude."
+                      },
+                      "profileKeywords": {
+                        "type": "string",
+                        "description": "Profile keywords to include."
+                      },
+                      "profileKeywordsExclude": {
+                        "type": "string",
+                        "description": "Profile keywords to exclude."
+                      },
+                      "profileBadge": {
+                        "type": "string",
+                        "description": "Profile badge values."
+                      },
+                      "industry": {
+                        "type": "string",
+                        "description": "Company industries to include."
+                      },
+                      "industryExclude": {
+                        "type": "string",
+                        "description": "Company industries to exclude."
+                      },
+                      "size": {
+                        "type": "string",
+                        "description": "Company headcount range, for example 11-50."
+                      },
+                      "hq": {
+                        "type": "string",
+                        "description": "Company headquarters locations to include."
+                      },
+                      "hqExclude": {
+                        "type": "string",
+                        "description": "Headquarters locations to exclude."
+                      },
+                      "type": {
+                        "type": "string",
+                        "description": "Company types, for example PRIVATELY_HELD."
+                      },
+                      "typeExclude": {
+                        "type": "string",
+                        "description": "Company types to exclude."
+                      },
+                      "revenue": {
+                        "type": "string",
+                        "description": "Company revenue range, for example 1000000-10000000."
+                      },
+                      "companyKeywords": {
+                        "type": "string",
+                        "description": "Company keywords to include."
+                      },
+                      "companyKeywordsExclude": {
+                        "type": "string",
+                        "description": "Company keywords to exclude."
+                      },
+                      "founded": {
+                        "type": "string",
+                        "description": "Founding-year range, for example 2015-2022."
+                      },
+                      "funding": {
+                        "type": "string",
+                        "description": "Funding rounds, for example SEED or SERIES_A."
+                      },
+                      "fundingAmount": {
+                        "type": "string",
+                        "description": "Last funding amount range, for example 1000000-5000000."
+                      },
+                      "fundingDateMonths": {
+                        "type": "string",
+                        "description": "Funding lookback in months, for example 12."
+                      },
+                      "department": {
+                        "type": "string",
+                        "description": "Department and headcount range on separate lines, for example sales followed by 10-100."
+                      },
+                      "growth": {
+                        "type": "string",
+                        "description": "Department, growth range, and period on separate lines, for example sales, 20-80, and 3 months."
+                      },
+                      "duration": {
+                        "type": "object",
+                        "additionalProperties": false,
+                        "description": "Structured tenure bounds override the matching textual tenure field. Use non-negative integer years and months from 0 through 11.",
+                        "properties": {
+                          "latestCompany": {
+                            "type": "object",
+                            "minProperties": 1,
+                            "additionalProperties": false,
+                            "description": "When both bounds are present, min must not exceed max in total months.",
+                            "properties": {
+                              "min": {
+                                "type": "object",
+                                "minProperties": 1,
+                                "additionalProperties": false,
+                                "properties": {
+                                  "year": {
+                                    "type": "integer",
+                                    "minimum": 0
+                                  },
+                                  "month": {
+                                    "type": "integer",
+                                    "minimum": 0,
+                                    "maximum": 11
+                                  }
+                                }
+                              },
+                              "max": {
+                                "type": "object",
+                                "minProperties": 1,
+                                "additionalProperties": false,
+                                "properties": {
+                                  "year": {
+                                    "type": "integer",
+                                    "minimum": 0
+                                  },
+                                  "month": {
+                                    "type": "integer",
+                                    "minimum": 0,
+                                    "maximum": 11
+                                  }
+                                }
+                              }
+                            }
+                          },
+                          "currentCompany": {
+                            "type": "object",
+                            "minProperties": 1,
+                            "additionalProperties": false,
+                            "description": "When both bounds are present, min must not exceed max in total months.",
+                            "properties": {
+                              "min": {
+                                "type": "object",
+                                "minProperties": 1,
+                                "additionalProperties": false,
+                                "properties": {
+                                  "year": {
+                                    "type": "integer",
+                                    "minimum": 0
+                                  },
+                                  "month": {
+                                    "type": "integer",
+                                    "minimum": 0,
+                                    "maximum": 11
+                                  }
+                                }
+                              },
+                              "max": {
+                                "type": "object",
+                                "minProperties": 1,
+                                "additionalProperties": false,
+                                "properties": {
+                                  "year": {
+                                    "type": "integer",
+                                    "minimum": 0
+                                  },
+                                  "month": {
+                                    "type": "integer",
+                                    "minimum": 0,
+                                    "maximum": 11
+                                  }
+                                }
+                              }
+                            }
+                          },
+                          "previousCompany": {
+                            "type": "object",
+                            "minProperties": 1,
+                            "additionalProperties": false,
+                            "description": "When both bounds are present, min must not exceed max in total months.",
+                            "properties": {
+                              "min": {
+                                "type": "object",
+                                "minProperties": 1,
+                                "additionalProperties": false,
+                                "properties": {
+                                  "year": {
+                                    "type": "integer",
+                                    "minimum": 0
+                                  },
+                                  "month": {
+                                    "type": "integer",
+                                    "minimum": 0,
+                                    "maximum": 11
+                                  }
+                                }
+                              },
+                              "max": {
+                                "type": "object",
+                                "minProperties": 1,
+                                "additionalProperties": false,
+                                "properties": {
+                                  "year": {
+                                    "type": "integer",
+                                    "minimum": 0
+                                  },
+                                  "month": {
+                                    "type": "integer",
+                                    "minimum": 0,
+                                    "maximum": 11
+                                  }
+                                }
+                              }
+                            }
+                          },
+                          "latestJob": {
+                            "type": "object",
+                            "minProperties": 1,
+                            "additionalProperties": false,
+                            "description": "When both bounds are present, min must not exceed max in total months.",
+                            "properties": {
+                              "min": {
+                                "type": "object",
+                                "minProperties": 1,
+                                "additionalProperties": false,
+                                "properties": {
+                                  "year": {
+                                    "type": "integer",
+                                    "minimum": 0
+                                  },
+                                  "month": {
+                                    "type": "integer",
+                                    "minimum": 0,
+                                    "maximum": 11
+                                  }
+                                }
+                              },
+                              "max": {
+                                "type": "object",
+                                "minProperties": 1,
+                                "additionalProperties": false,
+                                "properties": {
+                                  "year": {
+                                    "type": "integer",
+                                    "minimum": 0
+                                  },
+                                  "month": {
+                                    "type": "integer",
+                                    "minimum": 0,
+                                    "maximum": 11
+                                  }
+                                }
+                              }
+                            }
+                          },
+                          "currentJob": {
+                            "type": "object",
+                            "minProperties": 1,
+                            "additionalProperties": false,
+                            "description": "When both bounds are present, min must not exceed max in total months.",
+                            "properties": {
+                              "min": {
+                                "type": "object",
+                                "minProperties": 1,
+                                "additionalProperties": false,
+                                "properties": {
+                                  "year": {
+                                    "type": "integer",
+                                    "minimum": 0
+                                  },
+                                  "month": {
+                                    "type": "integer",
+                                    "minimum": 0,
+                                    "maximum": 11
+                                  }
+                                }
+                              },
+                              "max": {
+                                "type": "object",
+                                "minProperties": 1,
+                                "additionalProperties": false,
+                                "properties": {
+                                  "year": {
+                                    "type": "integer",
+                                    "minimum": 0
+                                  },
+                                  "month": {
+                                    "type": "integer",
+                                    "minimum": 0,
+                                    "maximum": 11
+                                  }
+                                }
+                              }
+                            }
+                          },
+                          "previousJob": {
+                            "type": "object",
+                            "minProperties": 1,
+                            "additionalProperties": false,
+                            "description": "When both bounds are present, min must not exceed max in total months.",
+                            "properties": {
+                              "min": {
+                                "type": "object",
+                                "minProperties": 1,
+                                "additionalProperties": false,
+                                "properties": {
+                                  "year": {
+                                    "type": "integer",
+                                    "minimum": 0
+                                  },
+                                  "month": {
+                                    "type": "integer",
+                                    "minimum": 0,
+                                    "maximum": 11
+                                  }
+                                }
+                              },
+                              "max": {
+                                "type": "object",
+                                "minProperties": 1,
+                                "additionalProperties": false,
+                                "properties": {
+                                  "year": {
+                                    "type": "integer",
+                                    "minimum": 0
+                                  },
+                                  "month": {
+                                    "type": "integer",
+                                    "minimum": 0,
+                                    "maximum": 11
+                                  }
+                                }
+                              }
+                            }
+                          },
+                          "total": {
+                            "type": "object",
+                            "minProperties": 1,
+                            "additionalProperties": false,
+                            "description": "When both bounds are present, min must not exceed max in total months.",
+                            "properties": {
+                              "min": {
+                                "type": "object",
+                                "minProperties": 1,
+                                "additionalProperties": false,
+                                "properties": {
+                                  "year": {
+                                    "type": "integer",
+                                    "minimum": 0
+                                  },
+                                  "month": {
+                                    "type": "integer",
+                                    "minimum": 0,
+                                    "maximum": 11
+                                  }
+                                }
+                              },
+                              "max": {
+                                "type": "object",
+                                "minProperties": 1,
+                                "additionalProperties": false,
+                                "properties": {
+                                  "year": {
+                                    "type": "integer",
+                                    "minimum": 0
+                                  },
+                                  "month": {
+                                    "type": "integer",
+                                    "minimum": 0,
+                                    "maximum": 11
+                                  }
+                                }
+                              }
+                            }
+                          }
+                        }
+                      },
+                      "searchMode": {
+                        "type": "string",
+                        "enum": [
+                          "SMART",
+                          "WORD",
+                          "STRICT"
+                        ],
+                        "default": "SMART",
+                        "description": "Matching mode. Runtime falls back to SMART for an unrecognized value; use an explicit supported mode."
+                      }
+                    }
+                  },
+                  "page": {
+                    "oneOf": [
+                      {
+                        "type": "integer",
+                        "minimum": 0
+                      },
+                      {
+                        "type": "string",
+                        "pattern": "^(?:0|[1-9][0-9]*)$"
+                      }
+                    ],
+                    "default": 0
+                  },
+                  "size": {
+                    "oneOf": [
+                      {
+                        "type": "integer",
+                        "minimum": 1,
+                        "maximum": 100
+                      },
+                      {
+                        "type": "string",
+                        "pattern": "^(?:[1-9]|[1-9][0-9]|100)$"
+                      }
+                    ],
+                    "default": 50
+                  }
+                }
+              },
+              "examples": {
+                "example": {
+                  "value": {
+                    "filters": {
+                      "job": [
+                        "Founder"
+                      ],
+                      "company": "example.com",
+                      "peopleLocation": [
+                        "United States"
+                      ],
+                      "searchMode": "SMART"
+                    },
+                    "page": 0,
+                    "size": 25
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "A page of public lead records. No cursor is returned.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "rows",
+                    "total",
+                    "page",
+                    "size"
+                  ],
+                  "properties": {
+                    "rows": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/FlexibleResult"
+                      }
+                    },
+                    "total": {
+                      "type": [
+                        "number",
+                        "null"
+                      ],
+                      "description": "May be null when a reliable total is unavailable or company/title correlation removes rows."
+                    },
+                    "page": {
+                      "type": "integer"
+                    },
+                    "size": {
+                      "type": "integer"
+                    }
+                  }
+                },
+                "examples": {
+                  "example": {
+                    "value": {
+                      "rows": [
+                        {
+                          "firstname": "Example",
+                          "lastname": "Person",
+                          "profileUrl": "https://www.linkedin.com/in/example-person-000000"
+                        }
+                      ],
+                      "total": 1,
+                      "page": 0,
+                      "size": 25
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "description": "Insufficient credits or access.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Unknown path or method.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "Request body exceeds 256 KiB.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Workspace rate limit exceeded.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Service configuration error.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "502": {
+            "description": "Upstream service failed.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Authentication or credit service temporarily unavailable.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/dnc-check": {
+      "post": {
+        "operationId": "checkDnc",
+        "tags": [
+          "Miscellaneous"
+        ],
+        "summary": "Check a US phone number against DNC",
+        "description": "Checks a US phone number. A successful check costs one credit whether the number is listed or not. Non-US and malformed numbers are rejected before the provider request.",
+        "x-airscale-rate-limit": "5 requests per second per workspace.",
+        "x-airscale-credit-cost": "1 credit per successful check; validation and provider failures are not charged.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "phone": {
+                    "type": "string",
+                    "minLength": 1,
+                    "description": "Recommended phone field. A US phone number, normalized to +1 format."
+                  },
+                  "phone_number": {
+                    "type": "string",
+                    "description": "Alias used only if phone is null or absent."
+                  },
+                  "mobile_phone": {
+                    "type": "string",
+                    "description": "Alias used only if phone and phone_number are null or absent."
+                  }
+                },
+                "anyOf": [
+                  {
+                    "required": [
+                      "phone"
+                    ]
+                  },
+                  {
+                    "required": [
+                      "phone_number"
+                    ]
+                  },
+                  {
+                    "required": [
+                      "mobile_phone"
+                    ]
+                  }
+                ]
+              },
+              "examples": {
+                "example": {
+                  "value": {
+                    "phone": "+12025550147"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "The result of a completed DNC check.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "status",
+                    "phone",
+                    "listed",
+                    "result",
+                    "credits_used",
+                    "credits_remaining"
+                  ],
+                  "properties": {
+                    "status": {
+                      "type": "string",
+                      "const": "success"
+                    },
+                    "phone": {
+                      "type": "string"
+                    },
+                    "listed": {
+                      "type": "boolean"
+                    },
+                    "result": {
+                      "type": "string",
+                      "enum": [
+                        "Listed on DNC",
+                        "Not listed on DNC"
+                      ]
+                    },
+                    "credits_used": {
+                      "type": "number"
+                    },
+                    "credits_remaining": {
+                      "type": [
+                        "number",
+                        "null"
+                      ]
+                    }
+                  }
+                },
+                "examples": {
+                  "example": {
+                    "value": {
+                      "status": "success",
+                      "phone": "+12025550147",
+                      "listed": false,
+                      "result": "Not listed on DNC",
+                      "credits_used": 1,
+                      "credits_remaining": 99
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "description": "Insufficient credits or access.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Unknown path or method.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "Request body exceeds 256 KiB.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Invalid or unsupported US phone number.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Workspace rate limit exceeded.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Service configuration error.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "502": {
+            "description": "Upstream service failed.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Authentication or credit service temporarily unavailable.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
               }
             }
           }

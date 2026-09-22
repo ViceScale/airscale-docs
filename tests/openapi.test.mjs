@@ -1842,7 +1842,7 @@ test("Post engagement operations model synchronous cursor pagination and enrichm
   }
 });
 
-test("committed OpenAPI 3.1 artifact matches the pinned 31-operation catalog exactly", async () => {
+test("committed OpenAPI 3.1 artifact matches the pinned 34-operation catalog exactly", async () => {
   const parsed = await SwaggerParser.validate("openapi.json");
   const generated = buildSpec();
   const committed = committedSpec();
@@ -1853,7 +1853,7 @@ test("committed OpenAPI 3.1 artifact matches the pinned 31-operation catalog exa
   assert.deepEqual(committed.servers, baseSpec.servers);
   assert.deepEqual(committed.security, baseSpec.security);
   assert.equal(approvedCatalog.sourceSha, SOURCE_SHA);
-  assert.equal(approvedCatalog.operations.length, 31);
+  assert.equal(approvedCatalog.operations.length, 34);
 
   const actualOperations = [];
   for (const [path, pathItem] of Object.entries(committed.paths)) {
@@ -1861,8 +1861,8 @@ test("committed OpenAPI 3.1 artifact matches the pinned 31-operation catalog exa
       if (pathItem[method]) actualOperations.push({ method: method.toUpperCase(), path, operation: pathItem[method] });
     }
   }
-  assert.equal(actualOperations.length, 31);
-  assert.equal(actualOperations.filter(({ method }) => method === "POST").length, 23);
+  assert.equal(actualOperations.length, 34);
+  assert.equal(actualOperations.filter(({ method }) => method === "POST").length, 26);
   assert.equal(actualOperations.filter(({ method }) => method === "GET").length, 5);
   assert.equal(actualOperations.filter(({ method }) => method === "PATCH").length, 1);
   assert.equal(actualOperations.filter(({ method }) => method === "DELETE").length, 2);

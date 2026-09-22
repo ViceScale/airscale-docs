@@ -1,0 +1,18 @@
+---
+title: "Leads Finder preview alias"
+description: "Use the existing Leads Finder preview route with the same filters, results, and credit cost."
+canonical: "https://airscale.mintlify.app/api-reference/leads-finder/preview"
+openapi: "/openapi.json POST /v1/leads-finder/preview"
+---
+
+This is an alias of [Leads Finder](/api-reference/leads-finder), with the same request and response shape, page-based pagination, and error handling.
+
+<Warning>
+Despite its name, this route is not a free preview or count operation. It costs 0.1 credits per returned lead and shares the limit of 5 requests per second per workspace with `/v1/leads-finder`.
+</Warning>
+
+Follow the [filter and pagination guidance](/api-reference/leads-finder#choose-filters). After `429`, retry with bounded backoff. Wait for the credit service to recover before retrying a settlement failure.
+
+## Next step
+
+Review the [Leads Finder filter guide](/api-reference/leads-finder#choose-filters) before changing an existing integration.

@@ -15,7 +15,9 @@
     "mcp:check": "node scripts/build-mcp-catalog.mjs --check",
     "agents:build": "node scripts/build-agent-files.mjs --write",
     "agents:check": "node scripts/build-agent-files.mjs --check",
-    "check:live-ai-discovery": "node scripts/check-live-ai-discovery.mjs"
+    "check:live-ai-discovery": "node scripts/check-live-ai-discovery.mjs",
+    "publication:check": "node scripts/prepare-publication.mjs --check",
+    "publication:prepare": "node scripts/prepare-publication.mjs"
   },
   "dependencies": {
     "@xmldom/xmldom": "0.9.12"

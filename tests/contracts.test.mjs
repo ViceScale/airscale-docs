@@ -34,7 +34,10 @@ const EXPECTED_OPERATIONS = [
   ["POST", "/v1/whatsapp-check", "checkWhatsapp", "api-reference/miscale-news/whatsapp-check", "Miscellaneous"],
   ["GET", "/v1/whatsapp-check/operations/{operation_id}", "getWhatsappCheckOperation", "api-reference/miscale-news/whatsapp-check/status", "Miscellaneous"],
   ["POST", "/v1/meta-ads", "lookupMetaAds", "api-reference/miscale-news/meta-ads", "Miscellaneous"],
-  ["POST", "/v1/email-verifier", "verifyEmail", "api-reference/miscale-news/email-verifier", "Miscellaneous"]
+  ["POST", "/v1/email-verifier", "verifyEmail", "api-reference/miscale-news/email-verifier", "Miscellaneous"],
+  ["POST", "/v1/leads-finder", "searchLeadsFinder", "api-reference/leads-finder", "Search and discovery"],
+  ["POST", "/v1/leads-finder/preview", "previewLeadsFinder", "api-reference/leads-finder/preview", "Search and discovery"],
+  ["POST", "/v1/dnc-check", "checkDnc", "api-reference/dnc-checker", "Miscellaneous"]
 ];
 const EXPECTED_PAGES = [
   "api-overview",
@@ -55,7 +58,8 @@ const EXPECTED_PAGES = [
   "find-companies",
   "airsearch",
   "post-engagement",
-  "job-change-monitors", "whatsapp-check", "meta-ads", "email-verifier"
+  "job-change-monitors", "whatsapp-check", "meta-ads", "email-verifier",
+  "leads-finder", "dnc-checker"
 ];
 
 function deepFreeze(value) {
@@ -241,7 +245,39 @@ const EXPECTED_CONTRACTS = deepFreeze({
       "workers/public-api/email-verifier.js",
       "workers/public-api/email-verifier.test.mjs"
     ]
-  }
+  },
+  "leads-finder": {
+  "sourceRepository": "ViceScale/airscale-docs",
+  "sourceSha": "9d871e69dc8cda2520d7c98e1fcbed42ffb39f2112a7fabffe2046121e094906",
+  "sourceKind": "cloudflare-deployed-worker-sha256",
+  "endpoints": [
+    {
+      "method": "POST",
+      "path": "/v1/leads-finder"
+    },
+    {
+      "method": "POST",
+      "path": "/v1/leads-finder/preview"
+    }
+  ],
+  "sourceFiles": [
+    "contracts/deployed-public-api-evidence.json"
+  ]
+},
+  "dnc-checker": {
+  "sourceRepository": "ViceScale/airscale-docs",
+  "sourceSha": "9024015f52d98583035543ff916b7e955df29b56e31a9c2b7fc7927ba37769de",
+  "sourceKind": "cloudflare-deployed-worker-sha256",
+  "endpoints": [
+    {
+      "method": "POST",
+      "path": "/v1/dnc-check"
+    }
+  ],
+  "sourceFiles": [
+    "contracts/deployed-public-api-evidence.json"
+  ]
+}
 });
 
 function isRepositoryRelativePath(path) {
@@ -298,14 +334,14 @@ test("operation catalog preserves the approved operation order and routing metad
   const catalog = JSON.parse(readFileSync("contracts/public-api-operations.json", "utf8"));
   assert.equal(catalog.sourceRepository, "ViceScale/airscale-code");
   assert.equal(catalog.sourceSha, EXPECTED_SOURCE_SHA);
-  assert.equal(catalog.operations.length, 31);
+  assert.equal(catalog.operations.length, 34);
   assert.deepEqual(
     catalog.operations.map(({ method, path, operationId, page, tag }) => [method, path, operationId, page, tag]),
     EXPECTED_OPERATIONS
   );
-  assert.equal(new Set(catalog.operations.map(({ method, path }) => `${method} ${path}`)).size, 31);
-  assert.equal(new Set(catalog.operations.map(({ operationId }) => operationId)).size, 31);
-  assert.equal(new Set(catalog.operations.map(({ page }) => page)).size, 31);
+  assert.equal(new Set(catalog.operations.map(({ method, path }) => `${method} ${path}`)).size, 34);
+  assert.equal(new Set(catalog.operations.map(({ operationId }) => operationId)).size, 34);
+  assert.equal(new Set(catalog.operations.map(({ page }) => page)).size, 34);
 });
 
 test("operation catalog links each operation to matching source-page evidence", () => {

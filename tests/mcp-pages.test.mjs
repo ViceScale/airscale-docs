@@ -17,7 +17,8 @@ const API_REFERENCE_TAB = {
       pages: [
         "api-reference/api-overview",
         "api-reference/authentication",
-        "api-reference/rate-limits"
+        "api-reference/rate-limits",
+        "api-reference/documentation-corrections"
       ]
     },
     {
@@ -30,6 +31,7 @@ const API_REFERENCE_TAB = {
       group: "Search and discovery",
       pages: [
         "api-reference/find-people",
+        "api-reference/leads-finder",
         "api-reference/find-companies",
         "api-reference/find-companies/filter-values",
         "api-reference/airsearch"
@@ -84,7 +86,8 @@ const API_REFERENCE_TAB = {
         "api-reference/miscale-news/whatsapp-check",
         "api-reference/miscale-news/whatsapp-check/status",
         "api-reference/miscale-news/meta-ads",
-        "api-reference/miscale-news/email-verifier"
+        "api-reference/miscale-news/email-verifier",
+        "api-reference/dnc-checker"
       ],
       expanded: false
     }

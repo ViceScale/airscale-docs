@@ -1,0 +1,33 @@
+---
+title: "DNC Checker"
+description: "Check whether a US phone number is listed on DNC."
+canonical: "https://airscale.mintlify.app/api-reference/dnc-checker"
+openapi: "/openapi.json POST /v1/dnc-check"
+---
+
+Submit a US phone number using `phone`. The operation normalizes accepted numbers to `+1` format and returns whether the number is listed on DNC.
+
+<Note>
+A successful check costs 1 credit whether `listed` is `true` or `false`. The limit is 5 requests per second per workspace. Validation and provider failures are not charged.
+</Note>
+
+Non-US numbers return `422` with `code: "unsupported_phone_region"` before the provider request. Malformed numbers return `422` with `code: "invalid_input"`. Correct the input before retrying either response.
+
+`phone_number` and `mobile_phone` are accepted aliases. `phone` takes precedence when non-null, followed by `phone_number`, then `mobile_phone`. Use one field to avoid ambiguity.
+
+## Read a successful result
+
+| Field | Meaning |
+| --- | --- |
+| `status` | `success` for a completed check. |
+| `phone` | Normalized US phone number. |
+| `listed` | Boolean indicating whether the number is listed. |
+| `result` | `Listed on DNC` or `Not listed on DNC`. |
+| `credits_used` | Credits charged for this check. |
+| `credits_remaining` | Remaining balance returned by the credit service. |
+
+After `429`, retry in a later second with bounded exponential backoff. For `502` or `503`, wait for the dependency to recover before retrying. The maximum JSON body size is 256 KiB.
+
+## Next step
+
+Review [Authentication](/api-reference/authentication) or [documentation corrections](/api-reference/documentation-corrections) before updating an existing integration.
