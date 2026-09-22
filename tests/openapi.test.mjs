@@ -495,13 +495,12 @@ test("Contact Email operation accepts profile or complete name identification", 
   assert.equal(operation.requestBody.required, true);
   assert.equal(schema.type, "object");
   assert.equal(schema.additionalProperties, false);
-  assert.deepEqual(schema.anyOf, [
-    { required: ["linkedin_profile_url"] },
-    {
-      required: ["first_name", "last_name"],
-      anyOf: [{ required: ["domain"] }, { required: ["company_name"] }]
-    }
-  ]);
+  assert.equal(schema.anyOf, undefined);
+  assert.deepEqual(schema.if, { not: { required: ["linkedin_profile_url"] } });
+  assert.deepEqual(schema.then, {
+    required: ["first_name", "last_name"],
+    anyOf: [{ required: ["domain"] }, { required: ["company_name"] }]
+  });
   assert.deepEqual(schema.properties.linkedin_profile_url, { $ref: "#/components/schemas/LinkedInPersonUrl" });
   for (const property of ["first_name", "last_name", "domain", "company_name"]) {
     assert.deepEqual(schema.properties[property], { type: "string", minLength: 1 });
@@ -558,13 +557,12 @@ test("Contact Email Bulk operation accepts bounded batches and returns only 202"
     description: "If omitted or null, the item's zero-based array index is used; any other JSON value is echoed unchanged."
   });
   assert.equal(itemSchema.required, undefined);
-  assert.deepEqual(itemSchema.anyOf, [
-    { required: ["linkedin_profile_url"] },
-    {
-      required: ["first_name", "last_name"],
-      anyOf: [{ required: ["domain"] }, { required: ["company_name"] }]
-    }
-  ]);
+  assert.equal(itemSchema.anyOf, undefined);
+  assert.deepEqual(itemSchema.if, { not: { required: ["linkedin_profile_url"] } });
+  assert.deepEqual(itemSchema.then, {
+    required: ["first_name", "last_name"],
+    anyOf: [{ required: ["domain"] }, { required: ["company_name"] }]
+  });
   for (const property of ["first_name", "last_name", "domain", "company_name"]) {
     assert.equal(itemSchema.properties[property].minLength, 1);
   }

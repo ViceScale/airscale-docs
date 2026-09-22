@@ -13,7 +13,8 @@ const requestSchema = (path) => operation(path).requestBody.content["application
 
 test("DNC and both Leads Finder routes have deployed source fingerprints", () => {
   const evidence = JSON.parse(readFileSync("contracts/deployed-public-api-evidence.json"));
-  for (const worker of Object.values(evidence.workers)) {
+  for (const name of ["dnc-checker", "leads-finder"]) {
+    const worker = evidence.workers[name];
     assert.match(worker.scriptSha256, /^[a-f0-9]{64}$/);
     assert.equal(worker.rateLimitPerSecond, 5);
     for (const path of worker.routes) assert.ok(operation(path));

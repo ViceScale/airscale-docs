@@ -169,35 +169,53 @@
                     "minLength": 1
                   }
                 },
-                "anyOf": [
-                  {
+                "if": {
+                  "not": {
                     "required": [
                       "linkedin_profile_url"
                     ]
-                  },
-                  {
-                    "required": [
-                      "first_name",
-                      "last_name"
-                    ],
-                    "anyOf": [
-                      {
-                        "required": [
-                          "domain"
-                        ]
-                      },
-                      {
-                        "required": [
-                          "company_name"
-                        ]
-                      }
-                    ]
                   }
-                ]
+                },
+                "then": {
+                  "required": [
+                    "first_name",
+                    "last_name"
+                  ],
+                  "anyOf": [
+                    {
+                      "required": [
+                        "domain"
+                      ]
+                    },
+                    {
+                      "required": [
+                        "company_name"
+                      ]
+                    }
+                  ]
+                }
               },
               "examples": {
+                "allKnownFields": {
+                  "summary": "Combine all known fields",
+                  "value": {
+                    "linkedin_profile_url": "https://www.linkedin.com/in/example-person-000000",
+                    "first_name": "Example",
+                    "last_name": "Person",
+                    "domain": "example.org",
+                    "company_name": "Example Company"
+                  }
+                },
+                "byCompanyName": {
+                  "summary": "Name and company name",
+                  "value": {
+                    "first_name": "Example",
+                    "last_name": "Person",
+                    "company_name": "Example Company"
+                  }
+                },
                 "byProfile": {
-                  "summary": "Identify by profile",
+                  "summary": "LinkedIn profile URL alone",
                   "value": {
                     "linkedin_profile_url": "https://www.linkedin.com/in/example-person-000000"
                   }
@@ -388,31 +406,31 @@
                           "minLength": 1
                         }
                       },
-                      "anyOf": [
-                        {
+                      "if": {
+                        "not": {
                           "required": [
                             "linkedin_profile_url"
                           ]
-                        },
-                        {
-                          "required": [
-                            "first_name",
-                            "last_name"
-                          ],
-                          "anyOf": [
-                            {
-                              "required": [
-                                "domain"
-                              ]
-                            },
-                            {
-                              "required": [
-                                "company_name"
-                              ]
-                            }
-                          ]
                         }
-                      ]
+                      },
+                      "then": {
+                        "required": [
+                          "first_name",
+                          "last_name"
+                        ],
+                        "anyOf": [
+                          {
+                            "required": [
+                              "domain"
+                            ]
+                          },
+                          {
+                            "required": [
+                              "company_name"
+                            ]
+                          }
+                        ]
+                      }
                     }
                   }
                 }

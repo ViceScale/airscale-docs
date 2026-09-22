@@ -20,6 +20,18 @@
       "rateLimitPerSecond": 5,
       "creditCost": 1,
       "retirementEvidence": false
+    },
+    "v2-waterfall-email": {
+      "checkedAt": "2026-09-23",
+      "scriptSha256": "f2fe9ad14fbab758971f12a872950768da5f1e93e8f23b58bed39ca1fd43c0cc",
+      "routes": [
+        "/v1/email"
+      ],
+      "minimumInputs": "linkedin_profile_url OR first_name + last_name + (domain OR company_name)",
+      "combinedInputsAccepted": true,
+      "fullNameFieldAccepted": false,
+      "companyOnlyAccepted": false,
+      "nameOnlyAccepted": false
     }
   }
 }

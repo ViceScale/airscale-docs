@@ -37,6 +37,16 @@ npm run publication:check
 
 Browser checks used the local preview with requests to the API and MCP hosts blocked. Search activation requires Mintlify login and was not tested locally. Hosted deployment, production search, cache propagation, and custom-domain behavior must be verified during cutover; these local checks do not claim the site is already published.
 
+## Follow-up verification on 2026-09-23
+
+The migration branch now includes the merged CLI 0.2.1 documentation from `54f6161df041222542241d98005352710776c87d`. A newly generated production candidate passed HTTP checks for all 82 legacy sitemap routes: 78 direct pages, the three documented API-to-MCP redirects, and the homepage redirect to `/docs/sales-navigator`. Retained pages returned production canonicals and `index, follow`. The homepage currently opens the first product guide; it does not reproduce the old Framer welcome page.
+
+The work-email request now renders as one set of combinable fields, with minimum-input examples and an all-fields example. Desktop and mobile checks passed with no request Option tabs, page errors, or document overflow. The deployed Worker source confirms LinkedIn URL alone or split name plus company/domain; company-only, name-only, and a `full_name` field are not supported. Clarification of the user's intended contract remains pending before publishing this wording and proceeding with cutover.
+
+Final validation passed: `npm run validate` completed with all 343 tests passing and Mintlify build validation successful. The final 384-file production candidate also passed its own `mint validate`. Work-email browser checks were repeated after the final prose edit and passed at both viewport sizes.
+
+These checks do not certify the factual accuracy of every product guide or hosted search. The connected Mintlify Admin SDK currently returns `No target deployment for this request` for settings reads despite listing the `airscale` deployment; custom-domain setup remains unmodified.
+
 ## Prepare the production publication
 
 Choose a new absolute directory outside the source checkout:

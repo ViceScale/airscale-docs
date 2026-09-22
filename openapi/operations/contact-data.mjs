@@ -61,13 +61,13 @@ function emailIdentificationSchema({ includeCustomId = false } = {}) {
       domain: { type: "string", minLength: 1 },
       company_name: { type: "string", minLength: 1 }
     },
-    anyOf: [
-      { required: ["linkedin_profile_url"] },
-      {
-        required: ["first_name", "last_name"],
-        anyOf: [{ required: ["domain"] }, { required: ["company_name"] }]
-      }
-    ]
+    // Keep a single field list in the reference. These are minimum input
+    // requirements, not mutually exclusive request variants.
+    if: { not: { required: ["linkedin_profile_url"] } },
+    then: {
+      required: ["first_name", "last_name"],
+      anyOf: [{ required: ["domain"] }, { required: ["company_name"] }]
+    }
   };
 }
 
@@ -130,8 +130,16 @@ export const contactDataOperations = [
       requestBody: requestBody(
         emailIdentificationSchema(),
         {
+          allKnownFields: {
+            summary: "Combine all known fields",
+            value: { linkedin_profile_url: PROFILE_EXAMPLE, first_name: "Example", last_name: "Person", domain: "example.org", company_name: "Example Company" }
+          },
+          byCompanyName: {
+            summary: "Name and company name",
+            value: { first_name: "Example", last_name: "Person", company_name: "Example Company" }
+          },
           byProfile: {
-            summary: "Identify by profile",
+            summary: "LinkedIn profile URL alone",
             value: { linkedin_profile_url: PROFILE_EXAMPLE }
           },
           byName: {
