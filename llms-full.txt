@@ -1,11 +1,11 @@
 # Airscale API full documentation
 
 > Airscale product guides, integration workflows, MCP documentation, and public API reference.
-> This is the full public, navigable preview corpus. It remains intentionally noindex for traditional search engines.
+> This is the full public, navigable Airscale documentation corpus.
 
 ## Airscale documentation
 
-Source: https://airscale.mintlify.app/index.md
+Source: https://docs.airscale.io/index.md
 
 Description: Learn to build prospect lists, enrich contact data, and connect Airscale through its API, MCP server, or command-line tools.
 
@@ -42,7 +42,7 @@ Find the guide or API reference you need to build lists, enrich contacts, and au
 
 ## Scrape a Sales Navigator search
 
-Source: https://airscale.mintlify.app/docs/sales-navigator.md
+Source: https://docs.airscale.io/docs/sales-navigator.md
 
 Description: Turn your Sales Navigator searches (people only) into actionable prospect lists in Airschool. This feature extracts profiles directly from any Sales Navigator search results, eliminating manual copy-pasting and building targeted lists in minutes
 
@@ -124,7 +124,7 @@ Click **"See your results"** to view your new prospect table:
 
 ## Extract post likers/commenters
 
-Source: https://airscale.mintlify.app/docs/likers-commenters.md
+Source: https://docs.airscale.io/docs/likers-commenters.md
 
 Description: Find highly engaged prospects by extracting users who have liked or commented on specific LinkedIn posts. This powerful feature helps you identify people already interested in topics relevant to your business, making them warmer prospects for outreach
 
@@ -203,7 +203,7 @@ For integrations, use the [Post likers API](/api-reference/post-likers) or [Post
 
 ## Single Search
 
-Source: https://airscale.mintlify.app/docs/single-search.md
+Source: https://docs.airscale.io/docs/single-search.md
 
 Description: Extract people profile information from a LinkedIn URL and find emails and/or phone number
 
@@ -232,7 +232,7 @@ Description: Extract people profile information from a LinkedIn URL and find ema
 
 ## Leads finder
 
-Source: https://airscale.mintlify.app/docs/leads-finder.md
+Source: https://docs.airscale.io/docs/leads-finder.md
 
 Description: Export up to 10,000 leads in one search from various filters
 
@@ -345,7 +345,7 @@ Configure your search criteria using the available filters:
 
 ## Find People
 
-Source: https://airscale.mintlify.app/docs/find-people.md
+Source: https://docs.airscale.io/docs/find-people.md
 
 Description: Use Airschool's built-in people search to discover prospects based on company, job title, location, and other criteria. This powerful native feature helps you build targeted prospect lists without needing external tools or complex imports
 
@@ -447,7 +447,7 @@ Configure your search criteria using the available filters:
 
 ## Find Companies
 
-Source: https://airscale.mintlify.app/docs/find-companies.md
+Source: https://docs.airscale.io/docs/find-companies.md
 
 Description: Use Airschool's built-in company search to discover target businesses based on size, industry, location, and other firmographic criteria. This native feature helps you build comprehensive company lists for account-based prospecting and market research
 
@@ -622,7 +622,7 @@ You can now start enriching!
 
 ## Find Companies (Linkedin)
 
-Source: https://airscale.mintlify.app/docs/find-companies-linkedin.md
+Source: https://docs.airscale.io/docs/find-companies-linkedin.md
 
 Description: Use Airschool’s real-time LinkedIn scraping module to discover target companies based on size, industry, location, and other firmographic criteria. This powerful add-on continuously extracts fresh company data from LinkedIn, helping you build accurate prospecting lists for account-based sales and market research.
 
@@ -794,7 +794,7 @@ You can now start enriching!
 
 ## Find local businesses with Google Maps
 
-Source: https://airscale.mintlify.app/docs/google-maps.md
+Source: https://docs.airscale.io/docs/google-maps.md
 
 Description: Find local businesses with Google Maps directly in Airschool. Extract names, addresses, phones and emails in one click to fuel your prospecting lists.
 
@@ -819,7 +819,7 @@ Description: Find local businesses with Google Maps directly in Airschool. Extra
 
 ## Find companies hiring for specific positions
 
-Source: https://airscale.mintlify.app/docs/companies-hiring.md
+Source: https://docs.airscale.io/docs/companies-hiring.md
 
 Description: Find companies hiring for specific positions using Airschool. Target the right accounts at the right time and reach out when hiring intent is highest.
 
@@ -855,7 +855,7 @@ Click on **"Load companies to a table"** to begin the scraping process and load 
 
 ## Import a file as a CSV
 
-Source: https://airscale.mintlify.app/docs/import-csv.md
+Source: https://docs.airscale.io/docs/import-csv.md
 
 Description: Import a CSV file into Airschool in seconds. Enrich, clean and push your contact lists directly into your CRM or sales workflows - no manual work.
 
@@ -895,7 +895,7 @@ Before importing your file, ensure:
 
 ## Find phone numbers
 
-Source: https://airscale.mintlify.app/docs/phone-numbers.md
+Source: https://docs.airscale.io/docs/phone-numbers.md
 
 Description: Find verified phone numbers via Airschool's waterfall enrichment
 
@@ -932,7 +932,7 @@ The workflow will restart from the provider that returned the first phone number
 
 ## Find professional emails
 
-Source: https://airscale.mintlify.app/docs/professional-emails.md
+Source: https://docs.airscale.io/docs/professional-emails.md
 
 Description: Find verified emails via Airschool's waterfall enrichment
 
@@ -983,7 +983,7 @@ Once the enrichment is complete, you can see which provider returned the verifie
 
 ## Find personal emails
 
-Source: https://airscale.mintlify.app/docs/personal-emails.md
+Source: https://docs.airscale.io/docs/personal-emails.md
 
 Description: Find personal emails via Airschool's waterfall enrichment
 
@@ -1012,7 +1012,7 @@ Description: Find personal emails via Airschool's waterfall enrichment
 
 ## Verify if an email is deliverable
 
-Source: https://airscale.mintlify.app/docs/verify-email.md
+Source: https://docs.airscale.io/docs/verify-email.md
 
 Description: Verify email deliverability in real time with Airschool. Reduce bounce rates, protect your sender score and reach more prospects in the inbox.
 
@@ -1042,7 +1042,7 @@ Description: Verify email deliverability in real time with Airschool. Reduce bou
 
 ## Enrich people profile from LinkedIn
 
-Source: https://airscale.mintlify.app/docs/enrich-people-linkedin.md
+Source: https://docs.airscale.io/docs/enrich-people-linkedin.md
 
 Description: Enrich people profiles from LinkedIn with Airschool. Get verified emails, phone numbers and job details from any LinkedIn profile - instantly.
 
@@ -1072,7 +1072,7 @@ Description: Enrich people profiles from LinkedIn with Airschool. Get verified e
 
 ## Enrich company profile from LinkedIn
 
-Source: https://airscale.mintlify.app/docs/enrich-company-linkedin.md
+Source: https://docs.airscale.io/docs/enrich-company-linkedin.md
 
 Description: Enrich company profiles from LinkedIn with Airschool. Extract firmographics, headcount, industry and decision-makers data to power your outbound.
 
@@ -1102,7 +1102,7 @@ Description: Enrich company profiles from LinkedIn with Airschool. Extract firmo
 
 ## Fetch company insights
 
-Source: https://airscale.mintlify.app/docs/fetch-company-insights.md
+Source: https://docs.airscale.io/docs/fetch-company-insights.md
 
 Description: Find some company insights from Linkedin : description, headcount growth (overall and by function), hiring trends, job openings, etc.
 
@@ -1132,7 +1132,7 @@ Description: Find some company insights from Linkedin : description, headcount g
 
 ## Find current job openings on LinkedIn
 
-Source: https://airscale.mintlify.app/docs/job-openings-linkedin.md
+Source: https://docs.airscale.io/docs/job-openings-linkedin.md
 
 Description: Find current job openings on LinkedIn with Airschool. Identify hiring companies, target the right contacts and time your outreach with buying intent.
 
@@ -1162,7 +1162,7 @@ Description: Find current job openings on LinkedIn with Airschool. Identify hiri
 
 ## Find the latest posts of a company / person
 
-Source: https://airscale.mintlify.app/docs/linkedin-posts-scraper.md
+Source: https://docs.airscale.io/docs/linkedin-posts-scraper.md
 
 Description: Retrieve the latest posts published by a company or an individual on LinkedIn
 
@@ -1192,7 +1192,7 @@ Description: Retrieve the latest posts published by a company or an individual o
 
 ## Find LinkedIn profile data from a phone number
 
-Source: https://airscale.mintlify.app/docs/reverse-phone.md
+Source: https://docs.airscale.io/docs/reverse-phone.md
 
 Description: Retrieve a LinkedIn profile URL and data from any phone number using Airschool's Reverse Phone enrichment
 
@@ -1226,7 +1226,7 @@ Description: Retrieve a LinkedIn profile URL and data from any phone number usin
 
 ## Find LinkedIn profile data from an email
 
-Source: https://airscale.mintlify.app/docs/reverse-email.md
+Source: https://docs.airscale.io/docs/reverse-email.md
 
 Description: Retrieve a LinkedIn profile URL and data from any email using Airschool's Reverse Email enrichment
 
@@ -1260,7 +1260,7 @@ Description: Retrieve a LinkedIn profile URL and data from any email using Airsc
 
 ## AI custom prompts
 
-Source: https://airscale.mintlify.app/docs/ai-custom-prompts.md
+Source: https://docs.airscale.io/docs/ai-custom-prompts.md
 
 Description: Run AI with the best LLMs using custom prompts
 
@@ -1301,7 +1301,7 @@ When the workflow is launched, **a new column will be created with the output**
 
 ## AI agent (AirSearch)
 
-Source: https://airscale.mintlify.app/docs/ai-agent-airsearch.md
+Source: https://docs.airscale.io/docs/ai-agent-airsearch.md
 
 Description: Use Airschool’s AI agent to browse the web and find any information about a company or a prospect
 
@@ -1354,7 +1354,7 @@ The enrichment will return 4 keys:
 
 ## Create custom Google searches
 
-Source: https://airscale.mintlify.app/docs/google-searches.md
+Source: https://docs.airscale.io/docs/google-searches.md
 
 Description: Create custom Google searches in Airschool. Build targeted queries to find any prospect or company and extract results straight into your lists.
 
@@ -1390,7 +1390,7 @@ Description: Create custom Google searches in Airschool. Build targeted queries 
 
 ## Find a LinkedIn profile URL
 
-Source: https://airscale.mintlify.app/docs/linkedin-profile-url.md
+Source: https://docs.airscale.io/docs/linkedin-profile-url.md
 
 Description: Find any LinkedIn profile URL with Airschool. Locate prospects from their name and company to fuel your outreach and enrichment workflows.
 
@@ -1414,7 +1414,7 @@ Description: Find any LinkedIn profile URL with Airschool. Locate prospects from
 
 ## Find a LinkedIn company URL
 
-Source: https://airscale.mintlify.app/docs/linkedin-company-url.md
+Source: https://docs.airscale.io/docs/linkedin-company-url.md
 
 Description: Find any LinkedIn company URL with Airschool. Identify company pages to enrich accounts and target decision-makers faster.
 
@@ -1438,7 +1438,7 @@ Description: Find any LinkedIn company URL with Airschool. Identify company page
 
 ## Find a Linkedin company URL from a domain
 
-Source: https://airscale.mintlify.app/docs/linkedin-company-url-from-a-domain.md
+Source: https://docs.airscale.io/docs/linkedin-company-url-from-a-domain.md
 
 Description: Find a LinkedIn company URL from a domain with Airschool. Turn any website into a LinkedIn company page instantly - no manual search needed.
 
@@ -1464,7 +1464,7 @@ Description: Find a LinkedIn company URL from a domain with Airschool. Turn any 
 
 ## Fetch a company's Meta ads
 
-Source: https://airscale.mintlify.app/docs/meta-ads.md
+Source: https://docs.airscale.io/docs/meta-ads.md
 
 Description: Retrieve all active Meta ads running for any company directly from Airschool's Meta Ads enrichment
 
@@ -1500,7 +1500,7 @@ Description: Retrieve all active Meta ads running for any company directly from 
 
 ## Fetch a company's Google ads
 
-Source: https://airscale.mintlify.app/docs/google-ads.md
+Source: https://docs.airscale.io/docs/google-ads.md
 
 Description: Retrieve all active Google ads running for any company directly from Airschool's Google Ads enrichment
 
@@ -1536,7 +1536,7 @@ Description: Retrieve all active Google ads running for any company directly fro
 
 ## Find a company domain
 
-Source: https://airscale.mintlify.app/docs/company-domain.md
+Source: https://docs.airscale.io/docs/company-domain.md
 
 Description: Find any company domain with Airschool. Turn a company name into a verified website URL to enrich contacts and launch outbound campaigns faster.
 
@@ -1560,7 +1560,7 @@ Description: Find any company domain with Airschool. Turn a company name into a 
 
 ## Find company technologies
 
-Source: https://airscale.mintlify.app/docs/company-technologies.md
+Source: https://docs.airscale.io/docs/company-technologies.md
 
 Description: Find company technologies used by any account with Airschool. Identify tech stacks to qualify prospects, personalize outreach and prioritize the right leads.
 
@@ -1584,7 +1584,7 @@ Description: Find company technologies used by any account with Airschool. Ident
 
 ## Find company funding data
 
-Source: https://airscale.mintlify.app/docs/funding-data.md
+Source: https://docs.airscale.io/docs/funding-data.md
 
 Description: Find company funding data with Airschool. Access funding rounds and investors to target high-growth accounts and time your outreach perfectly.
 
@@ -1614,7 +1614,7 @@ Description: Find company funding data with Airschool. Access funding rounds and
 
 ## Extract website content with Zenrows
 
-Source: https://airscale.mintlify.app/docs/website-content.md
+Source: https://docs.airscale.io/docs/website-content.md
 
 Description: Scrape and extract the text content from any website using Airschool's Zenrows integration. This powerful enrichment tool converts websites into LLM-ready markdown data, perfect for research, competitor analysis, and content gathering from your prospects' company websites
 
@@ -1647,7 +1647,7 @@ Once the enrichment completes:
 
 ## Fetch business intent topics
 
-Source: https://airscale.mintlify.app/docs/fetch-business-intent-topics.md
+Source: https://docs.airscale.io/docs/fetch-business-intent-topics.md
 
 Description: Find what topics a company’s employees are researching from its LinkedIn URL
 
@@ -1687,7 +1687,7 @@ Acess you results once the enrichment has finished running. Click on **"Click to
 
 ## Find company website traffic data
 
-Source: https://airscale.mintlify.app/docs/website-traffic.md
+Source: https://docs.airscale.io/docs/website-traffic.md
 
 Description: Retrieve the website traffic count, evolution, source using Similarweb. The required input is a company domain
 
@@ -1717,7 +1717,7 @@ Description: Retrieve the website traffic count, evolution, source using Similar
 
 ## Lookup contacts in Hubspot
 
-Source: https://airscale.mintlify.app/docs/lookup-hubspot.md
+Source: https://docs.airscale.io/docs/lookup-hubspot.md
 
 Description: Check if a contact already exists in your CRM
 
@@ -1741,7 +1741,7 @@ Description: Check if a contact already exists in your CRM
 
 ## Export your data as CSV
 
-Source: https://airscale.mintlify.app/docs/export-csv.md
+Source: https://docs.airscale.io/docs/export-csv.md
 
 Description: Export your prospect lists from Airschool as CSV files for use in email marketing tools, CRMs, or further analysis. This feature lets you download all enriched data while giving you full control over which contacts and columns to include
 
@@ -1793,7 +1793,7 @@ Note:
 
 ## Transfer your data to another table
 
-Source: https://airscale.mintlify.app/docs/transfer-another-table.md
+Source: https://docs.airscale.io/docs/transfer-another-table.md
 
 Description: Move prospects between tables within Airschool to organize your data, create targeted segments, or consolidate lists from multiple sources. This feature helps you keep your prospect database clean and well-organized for different campaigns and initiatives
 
@@ -1835,7 +1835,7 @@ Description: Move prospects between tables within Airschool to organize your dat
 
 ## Export your leads to HubSpot
 
-Source: https://airscale.mintlify.app/docs/export-hubspot.md
+Source: https://docs.airscale.io/docs/export-hubspot.md
 
 Description: Export your prospects directly from Airschool to HubSpot CRM to streamline your sales pipeline. This integration pushes enriched prospect data directly into your HubSpot database, allowing you to manage leads, track interactions, and nurture prospects through your established sales processes
 
@@ -1897,7 +1897,7 @@ If this is your first time connecting to HubSpot:
 
 ## Export your leads to Instantly
 
-Source: https://airscale.mintlify.app/docs/export-instantly.md
+Source: https://docs.airscale.io/docs/export-instantly.md
 
 Description: Export your prospects directly from Airschool to Instantly campaigns for automated email outreach. This integration streamlines your workflow by pushing enriched prospect data directly into your email sequences without manual uploads or CSV exports.
 
@@ -1996,7 +1996,7 @@ Configure how Airschool data maps to Instantly fields:
 
 ## Export your leads to Smartlead
 
-Source: https://airscale.mintlify.app/docs/export-smartlead.md
+Source: https://docs.airscale.io/docs/export-smartlead.md
 
 Description: Export your prospects directly from Airschool to Smartlead campaigns for automated email outreach. This integration streamlines your workflow by pushing enriched prospect data directly into your email sequences without manual uploads or CSV exports.
 
@@ -2073,7 +2073,7 @@ Configure how Airschool data maps to SmartLead fields:
 
 ## Export your leads to Lemlist
 
-Source: https://airscale.mintlify.app/docs/export-lemlist.md
+Source: https://docs.airscale.io/docs/export-lemlist.md
 
 Description: Export your prospects directly from Airschool to Lemlist campaigns for automated email outreach. This integration streamlines your workflow by pushing enriched prospect data directly into your email sequences without manual uploads or CSV exports
 
@@ -2153,7 +2153,7 @@ Configure how Airschool data maps to Lemlist fields:
 
 ## Import contacts from Hubspot
 
-Source: https://airscale.mintlify.app/docs/import-hubspot.md
+Source: https://docs.airscale.io/docs/import-hubspot.md
 
 Description: Pull contacts from Hubspot lists
 
@@ -2215,7 +2215,7 @@ If this is your first time connecting to HubSpot:
 
 ## Airschool for HubSpot app
 
-Source: https://airscale.mintlify.app/docs/hubspot-app.md
+Source: https://docs.airscale.io/docs/hubspot-app.md
 
 Description: The complete step-by-step guide to install and use the Airschool enrichment app on your HubSpot account.
 
@@ -2419,7 +2419,7 @@ Airschool adds three actions to the HubSpot workflow builder:
 
 ## Add users & switch workspaces
 
-Source: https://airscale.mintlify.app/docs/users-workspaces.md
+Source: https://docs.airscale.io/docs/users-workspaces.md
 
 Description: Invite new users to your workspace and seamlessly switch between different workspaces based on your needs
 
@@ -2461,7 +2461,7 @@ Whenever you switch workspaces, the credit balance will update to reflect the ne
 
 ## Deduplicate leads between tables
 
-Source: https://airscale.mintlify.app/docs/deduplicate-leads-tables.md
+Source: https://docs.airscale.io/docs/deduplicate-leads-tables.md
 
 Description: Identify and merge duplicate leads between your tables to keep your database clean and accurate
 
@@ -2486,7 +2486,7 @@ It may take a few minutes to run entirely if the current table is large. Once th
 
 ## Filter tables
 
-Source: https://airscale.mintlify.app/docs/filer-tables.md
+Source: https://docs.airscale.io/docs/filer-tables.md
 
 Description: Apply filters to your tables to quickly find and analyze the data that matters most
 
@@ -2536,7 +2536,7 @@ You also have the option to use the search bar to look for a specific item withi
 
 ## Transfer column content
 
-Source: https://airscale.mintlify.app/docs/transfer-content.md
+Source: https://docs.airscale.io/docs/transfer-content.md
 
 Description: Move or copy data from one column to another to reorganize or update your records efficiently
 
@@ -2562,7 +2562,7 @@ Description: Move or copy data from one column to another to reorganize or updat
 
 ## API Overview
 
-Source: https://airscale.mintlify.app/api-reference/api-overview.md
+Source: https://docs.airscale.io/api-reference/api-overview.md
 
 Description: Authenticate with Airschool and make your first API request.
 
@@ -2638,7 +2638,7 @@ Before you build a production integration, review [Authentication](/api-referenc
 
 ## Authentication
 
-Source: https://airscale.mintlify.app/api-reference/authentication.md
+Source: https://docs.airscale.io/api-reference/authentication.md
 
 Description: Create, send, protect, and rotate an Airschool API key.
 
@@ -2680,7 +2680,7 @@ Next, review [Rate limits](/api-reference/rate-limits) before adding request con
 
 ## Rate limits
 
-Source: https://airscale.mintlify.app/api-reference/rate-limits.md
+Source: https://docs.airscale.io/api-reference/rate-limits.md
 
 Description: Understand endpoint-specific request limits and 429 responses.
 
@@ -2715,7 +2715,7 @@ Review the request limit on the endpoint page before setting concurrency:
 
 ## Corrections to the previous API documentation
 
-Source: https://airscale.mintlify.app/api-reference/documentation-corrections.md
+Source: https://docs.airscale.io/api-reference/documentation-corrections.md
 
 Description: Update integrations that relied on older request examples, response shapes, or billing descriptions.
 
@@ -2750,7 +2750,7 @@ The [Leads Finder](/api-reference/leads-finder) and [DNC Checker](/api-reference
 
 ## Credit count
 
-Source: https://airscale.mintlify.app/api-reference/credit-count.md
+Source: https://docs.airscale.io/api-reference/credit-count.md
 
 Description: Check the remaining credit balance for your Airschool workspace.
 
@@ -2770,7 +2770,7 @@ Use your authenticated client to [find people](/api-reference/find-people), or r
 
 ## Find people
 
-Source: https://airscale.mintlify.app/api-reference/find-people.md
+Source: https://docs.airscale.io/api-reference/find-people.md
 
 Description: Search people using person, role, and company filters.
 
@@ -2843,7 +2843,7 @@ Use the same `query` to retrieve the counted audience, [Find companies](/api-ref
 
 ## Leads Finder
 
-Source: https://airscale.mintlify.app/api-reference/leads-finder.md
+Source: https://docs.airscale.io/api-reference/leads-finder.md
 
 Description: Search people with Leads Finder filters and page-based pagination.
 
@@ -2905,7 +2905,7 @@ Use [Find people](/api-reference/find-people) if you need its person/current-com
 
 ## Find companies
 
-Source: https://airscale.mintlify.app/api-reference/find-companies.md
+Source: https://docs.airscale.io/api-reference/find-companies.md
 
 Description: Search companies using firmographic, location, event, intent, and technology filters.
 
@@ -2948,7 +2948,7 @@ Use [Company filter values](/api-reference/find-companies/filter-values) to disc
 
 ## Company filter values
 
-Source: https://airscale.mintlify.app/api-reference/find-companies/filter-values.md
+Source: https://docs.airscale.io/api-reference/find-companies/filter-values.md
 
 Description: Search supported values for Find Companies filters.
 
@@ -2965,7 +2965,7 @@ Use `country` and `region` to narrow location suggestions. A bare region name ne
 The operation shares a limit of 6 requests per second per workspace with Find companies. After a `429 Too Many Requests` response, wait for the next second and retry with bounded exponential backoff.
 
 <Info>
-This preview renders non-executing examples. It does not send a request or ask for an API key.
+This page renders non-executing examples. It does not send a request or ask for an API key.
 </Info>
 
 ## Discovery examples
@@ -3015,7 +3015,7 @@ Copy the returned `value` into the matching filter on [Find companies](/api-refe
 
 ## Airsearch
 
-Source: https://airscale.mintlify.app/api-reference/airsearch.md
+Source: https://docs.airscale.io/api-reference/airsearch.md
 
 Description: Research the web and return structured answers with Airsearch.
 
@@ -3037,7 +3037,7 @@ Use [Find companies](/api-reference/find-companies) when the research target sho
 
 ## Email finder
 
-Source: https://airscale.mintlify.app/api-reference/email-finder.md
+Source: https://docs.airscale.io/api-reference/email-finder.md
 
 Description: Find a professional email address for one person.
 
@@ -3074,7 +3074,7 @@ Use [Bulk email finder](/api-reference/email-finder-(bulk)) when you need asynch
 
 ## Bulk email finder
 
-Source: https://airscale.mintlify.app/api-reference/email-finder-(bulk).md
+Source: https://docs.airscale.io/api-reference/email-finder-(bulk).md
 
 Description: Find professional email addresses for a batch of people.
 
@@ -3108,7 +3108,7 @@ Use [Email finder](/api-reference/email-finder) for a synchronous single-person 
 
 ## Mobile finder
 
-Source: https://airscale.mintlify.app/api-reference/mobile-finder.md
+Source: https://docs.airscale.io/api-reference/mobile-finder.md
 
 Description: Find a mobile phone number from a professional profile.
 
@@ -3134,7 +3134,7 @@ Use [Personal email](/api-reference/personal-email) to look for a personal addre
 
 ## Personal email
 
-Source: https://airscale.mintlify.app/api-reference/personal-email.md
+Source: https://docs.airscale.io/api-reference/personal-email.md
 
 Description: Find a personal email address from a professional profile.
 
@@ -3158,7 +3158,7 @@ Use [People URL finder](/api-reference/people-url-finder) when you have a name a
 
 ## People URL finder
 
-Source: https://airscale.mintlify.app/api-reference/people-url-finder.md
+Source: https://docs.airscale.io/api-reference/people-url-finder.md
 
 Description: Find a professional profile URL from person and company details.
 
@@ -3178,7 +3178,7 @@ Pass the matched URL to [Email finder](/api-reference/email-finder) for professi
 
 ## People profile
 
-Source: https://airscale.mintlify.app/api-reference/extract-people-profile.md
+Source: https://docs.airscale.io/api-reference/extract-people-profile.md
 
 Description: Extract a structured person profile from a professional profile URL.
 
@@ -3200,7 +3200,7 @@ Use [Company profile](/api-reference/extract-company-profile) for the organizati
 
 ## Company profile
 
-Source: https://airscale.mintlify.app/api-reference/extract-company-profile.md
+Source: https://docs.airscale.io/api-reference/extract-company-profile.md
 
 Description: Extract a structured company profile from a company profile URL.
 
@@ -3222,7 +3222,7 @@ Use [People profile](/api-reference/extract-people-profile) for the person-focus
 
 ## Domain to LinkedIn
 
-Source: https://airscale.mintlify.app/api-reference/domain-to-linkedin.md
+Source: https://docs.airscale.io/api-reference/domain-to-linkedin.md
 
 Description: Find a LinkedIn company URL from a company domain.
 
@@ -3256,7 +3256,7 @@ Use [Extract company profile](/api-reference/extract-company-profile) to retriev
 
 ## Reverse email
 
-Source: https://airscale.mintlify.app/api-reference/reverse-email.md
+Source: https://docs.airscale.io/api-reference/reverse-email.md
 
 Description: Find a person profile from an email address.
 
@@ -3276,7 +3276,7 @@ Use [Reverse phone](/api-reference/reverse-phone) when a phone number is the ide
 
 ## Reverse phone
 
-Source: https://airscale.mintlify.app/api-reference/reverse-phone.md
+Source: https://docs.airscale.io/api-reference/reverse-phone.md
 
 Description: Find a person profile from a phone number.
 
@@ -3298,7 +3298,7 @@ Use [People profile](/api-reference/extract-people-profile) when you already hav
 
 ## Post likers
 
-Source: https://airscale.mintlify.app/api-reference/post-likers.md
+Source: https://docs.airscale.io/api-reference/post-likers.md
 
 Description: Retrieve and enrich people who liked a LinkedIn post.
 
@@ -3360,7 +3360,7 @@ Use [Post commenters](/api-reference/post-commenters) for the other engagement t
 
 ## Post commenters
 
-Source: https://airscale.mintlify.app/api-reference/post-commenters.md
+Source: https://docs.airscale.io/api-reference/post-commenters.md
 
 Description: Retrieve and enrich people who commented on a LinkedIn post.
 
@@ -3422,7 +3422,7 @@ Use [Post likers](/api-reference/post-likers) for the other engagement type, or 
 
 ## Create a job-change monitor
 
-Source: https://airscale.mintlify.app/api-reference/job-change-monitors/create.md
+Source: https://docs.airscale.io/api-reference/job-change-monitors/create.md
 
 Description: Monitor up to 10,000 personal LinkedIn profiles for employer changes with one schedule and webhook.
 
@@ -3461,7 +3461,7 @@ Use [List job-change monitors](/api-reference/job-change-monitors/list) to confi
 
 ## List job-change monitors
 
-Source: https://airscale.mintlify.app/api-reference/job-change-monitors/list.md
+Source: https://docs.airscale.io/api-reference/job-change-monitors/list.md
 
 Description: List the monitors and unread-event counts in a workspace.
 
@@ -3481,7 +3481,7 @@ Open [Get a monitor](/api-reference/job-change-monitors/get) for its profiles an
 
 ## Get a job-change monitor
 
-Source: https://airscale.mintlify.app/api-reference/job-change-monitors/get.md
+Source: https://docs.airscale.io/api-reference/job-change-monitors/get.md
 
 Description: Retrieve one monitor, its profiles, and its latest events.
 
@@ -3503,7 +3503,7 @@ Use [List job-change events](/api-reference/job-change-monitors/events) when you
 
 ## Update a job-change monitor
 
-Source: https://airscale.mintlify.app/api-reference/job-change-monitors/update.md
+Source: https://docs.airscale.io/api-reference/job-change-monitors/update.md
 
 Description: Change a monitor's name or frequency, or pause and resume checks.
 
@@ -3523,7 +3523,7 @@ Use [Add profiles](/api-reference/job-change-monitors/profiles/add) before resum
 
 ## Delete a job-change monitor
 
-Source: https://airscale.mintlify.app/api-reference/job-change-monitors/delete.md
+Source: https://docs.airscale.io/api-reference/job-change-monitors/delete.md
 
 Description: Permanently remove a monitor and its stored monitoring data.
 
@@ -3543,7 +3543,7 @@ Use [List job-change monitors](/api-reference/job-change-monitors/list) to verif
 
 ## Add profiles to a job-change monitor
 
-Source: https://airscale.mintlify.app/api-reference/job-change-monitors/profiles/add.md
+Source: https://docs.airscale.io/api-reference/job-change-monitors/profiles/add.md
 
 Description: Add up to 10,000 personal LinkedIn profiles per request while preserving existing baselines.
 
@@ -3567,7 +3567,7 @@ Use [Get a monitor](/api-reference/job-change-monitors/get) to inspect each prof
 
 ## Remove a profile from a job-change monitor
 
-Source: https://airscale.mintlify.app/api-reference/job-change-monitors/profiles/remove.md
+Source: https://docs.airscale.io/api-reference/job-change-monitors/profiles/remove.md
 
 Description: Stop checking one profile while preserving its event history.
 
@@ -3587,7 +3587,7 @@ Use [List job-change events](/api-reference/job-change-monitors/events) to revie
 
 ## List job-change events
 
-Source: https://airscale.mintlify.app/api-reference/job-change-monitors/events.md
+Source: https://docs.airscale.io/api-reference/job-change-monitors/events.md
 
 Description: Read cursor-paginated employer-change events for a monitor.
 
@@ -3607,7 +3607,7 @@ Use [Mark an event as read](/api-reference/job-change-monitors/events/read) afte
 
 ## Mark a job-change event as read
 
-Source: https://airscale.mintlify.app/api-reference/job-change-monitors/events/read.md
+Source: https://docs.airscale.io/api-reference/job-change-monitors/events/read.md
 
 Description: Acknowledge one job-change event after processing it.
 
@@ -3627,7 +3627,7 @@ Review [Create a job-change monitor](/api-reference/job-change-monitors/create) 
 
 ## WhatsApp checker
 
-Source: https://airscale.mintlify.app/api-reference/miscale-news/whatsapp-check.md
+Source: https://docs.airscale.io/api-reference/miscale-news/whatsapp-check.md
 
 Description: Check whether one phone number is available on WhatsApp.
 
@@ -3653,7 +3653,7 @@ A recorded insufficient-credit rejection returns `403`; a known unavailable chec
 
 ## WhatsApp check status
 
-Source: https://airscale.mintlify.app/api-reference/miscale-news/whatsapp-check/status.md
+Source: https://docs.airscale.io/api-reference/miscale-news/whatsapp-check/status.md
 
 Description: Reconcile a WhatsApp check using its operation ID.
 
@@ -3675,7 +3675,7 @@ Return to [WhatsApp checker](/api-reference/miscale-news/whatsapp-check). Keep t
 
 ## Meta Ads
 
-Source: https://airscale.mintlify.app/api-reference/miscale-news/meta-ads.md
+Source: https://docs.airscale.io/api-reference/miscale-news/meta-ads.md
 
 Description: Look up Meta ads for a company domain.
 
@@ -3701,7 +3701,7 @@ Review [credit balance](/api-reference/credit-count) or [rate limits](/api-refer
 
 ## Email verifier
 
-Source: https://airscale.mintlify.app/api-reference/miscale-news/email-verifier.md
+Source: https://docs.airscale.io/api-reference/miscale-news/email-verifier.md
 
 Description: Verify the deliverability of one email address.
 
@@ -3733,7 +3733,7 @@ Use [Email finder](/api-reference/email-finder) to find a work email, or check y
 
 ## DNC Checker
 
-Source: https://airscale.mintlify.app/api-reference/dnc-checker.md
+Source: https://docs.airscale.io/api-reference/dnc-checker.md
 
 Description: Check whether a US phone number is listed on DNC.
 
@@ -3768,7 +3768,7 @@ Review [Authentication](/api-reference/authentication) or [documentation correct
 
 ## How to use the Airschool MCP (+Claude demo)
 
-Source: https://airscale.mintlify.app/mcp/how-to-use-the-airscale-mcp.md
+Source: https://docs.airscale.io/mcp/how-to-use-the-airscale-mcp.md
 
 Description: Prospect through conversation with Airschool search, enrichment, and export tools.
 
@@ -3850,7 +3850,7 @@ Do not start a duplicate export while the existing job is `queued` or `running`;
 
 ## Connect Airschool MCP to ChatGPT
 
-Source: https://airscale.mintlify.app/mcp/connect-airscale-mcp-to-chatgpt.md
+Source: https://docs.airscale.io/mcp/connect-airscale-mcp-to-chatgpt.md
 
 Description: Connect ChatGPT to Airschool through browser OAuth and validate the connection without spending credits.
 
@@ -3969,7 +3969,7 @@ Authorize only the Airschool workspace you intend to use. Keep secrets out of ch
 
 ## Connect Airschool MCP to Claude
 
-Source: https://airscale.mintlify.app/mcp/connect-airscale-mcp-to-claude.md
+Source: https://docs.airscale.io/mcp/connect-airscale-mcp-to-claude.md
 
 Description: Connect Claude clients to Airschool with hosted OAuth or a protected Claude Code authorization header.
 
@@ -4134,7 +4134,7 @@ Hosted Claude users should authorize only the Airschool workspace they intend to
 
 ## Airschool MCP Server
 
-Source: https://airscale.mintlify.app/mcp/airscale-mcp-server.md
+Source: https://docs.airscale.io/mcp/airscale-mcp-server.md
 
 Description: Connect Airschool to your AI assistant and prospect without leaving the chat.
 
@@ -4269,7 +4269,7 @@ Start once. While status is `queued` or `running`, poll status for the same expo
 
 ## Airscale CLI
 
-Source: https://airscale.mintlify.app/cli/overview.md
+Source: https://docs.airscale.io/cli/overview.md
 
 Description: Install the Airscale CLI, preview a contact file for free, connect a workspace, and run bounded searches and enrichment.
 
@@ -4431,7 +4431,7 @@ airscale --base-url http://127.0.0.1:8787/v1 auth status --json
 
 ## Command reference
 
-Source: https://airscale.mintlify.app/cli/commands.md
+Source: https://docs.airscale.io/cli/commands.md
 
 Description: Every Airscale CLI 0.2.1 command and flag for setup, authentication, completion, search, file enrichment, credits, and runs.
 
@@ -4802,7 +4802,7 @@ API URLs must use HTTPS, except HTTP loopback URLs. URLs containing credentials,
 
 ## Troubleshooting
 
-Source: https://airscale.mintlify.app/cli/troubleshooting.md
+Source: https://docs.airscale.io/cli/troubleshooting.md
 
 Description: Fix Airscale CLI installation, authentication, CSV validation, credit confirmation, output, and resume problems.
 
@@ -5002,7 +5002,7 @@ If the issue persists, capture the command shape, CLI version, exit code, and re
 
 ## Quick beginner guide
 
-Source: https://airscale.mintlify.app/usecases/quick-beginner-guide.md
+Source: https://docs.airscale.io/usecases/quick-beginner-guide.md
 
 Description: This quick beginner tutorial shows you how to navigate the Airschool platform and start using its key features
 
@@ -5084,7 +5084,7 @@ If you have any questions, feel free to reach out, the Airschool team is always 
 
 ## The basics of AI
 
-Source: https://airscale.mintlify.app/usecases/the-basics-of-ai.md
+Source: https://docs.airscale.io/usecases/the-basics-of-ai.md
 
 Description: Run AI on Airschool with the best LLMs using custom prompts
 
@@ -5193,7 +5193,7 @@ Two columns usually appear at the end of your table when the workflow has run:
 
 ## Using Airsearch
 
-Source: https://airscale.mintlify.app/usecases/using-airsearch.md
+Source: https://docs.airscale.io/usecases/using-airsearch.md
 
 Description: Capture valuable data from any webpage instantly, making data collection effortless and efficient
 
@@ -5272,7 +5272,7 @@ Find the full tutorial in: [Airsearch (AI research agent)](/api-reference/airsea
 
 ## Templates
 
-Source: https://airscale.mintlify.app/usecases/templates.md
+Source: https://docs.airscale.io/usecases/templates.md
 
 Description: Find some ready-to-use templates for your AI prompts
 
@@ -5871,7 +5871,7 @@ Never fabricate quotes. If fewer than 3 are found, output only those available. 
 
 ## Turn hiring signals into high-quality leads
 
-Source: https://airscale.mintlify.app/usecases/turn-hiring-signals-into-high-quality-leads.md
+Source: https://docs.airscale.io/usecases/turn-hiring-signals-into-high-quality-leads.md
 
 Description: Find decision makers from hiring companies, qualify them with AI, and enrich their email data
 
@@ -5964,7 +5964,7 @@ This makes it easy to activate your leads immediately in your sales workflow.
 
 ## Scrape a LinkedIn post to find qualified leads
 
-Source: https://airscale.mintlify.app/usecases/scrape-a-linkedin-post.md
+Source: https://docs.airscale.io/usecases/scrape-a-linkedin-post.md
 
 Description: In just a few steps, Airschool transforms raw LinkedIn engagement into a qualified, enriched prospect list - ready to be exported to your CRM, cold email platform, or outbound tool of choice.
 
@@ -6045,7 +6045,7 @@ Finally, the qualified and enriched list can be exported directly to your tools:
 
 ## From Google Maps to local business decision-makers
 
-Source: https://airscale.mintlify.app/usecases/from-google-maps-to-local-business-decision-makers.md
+Source: https://docs.airscale.io/usecases/from-google-maps-to-local-business-decision-makers.md
 
 Description: Scrape local businesses, identify their owners, and find verified contact information in a few steps.
 
@@ -6115,7 +6115,7 @@ This approach allows you to retrieve multiple decision-makers per company in a s
 
 ## From intent signals to personalized outreach
 
-Source: https://airscale.mintlify.app/usecases/from-intent-signals-to-personalized-outreach.md
+Source: https://docs.airscale.io/usecases/from-intent-signals-to-personalized-outreach.md
 
 Description: Find decision-makers in hiring companies, qualify them with AI, and generate personalized cold outreach messages automatically
 
@@ -6202,5 +6202,5 @@ When exporting to platforms like Lemlist, you can map Airschool columns to the c
 
 ## Machine-readable contracts
 
-- [MCP tool catalog](https://airscale.mintlify.app/mcp/tools.md): Hosted Markdown for all 22 operational MCP tools.
-- [Agent resource directory](https://airscale.mintlify.app/mcp/agent-resources.md): Human and machine entry points for Airschool agents and documentation consumers.
+- [MCP tool catalog](https://docs.airscale.io/mcp/tools.md): Hosted Markdown for all 22 operational MCP tools.
+- [Agent resource directory](https://docs.airscale.io/mcp/agent-resources.md): Human and machine entry points for Airschool agents and documentation consumers.

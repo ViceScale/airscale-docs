@@ -12,9 +12,9 @@ Use Airschool to search for people and companies, enrich professional contact da
 
 ## Choose the correct interface
 
-- Use the HTTP API when application code needs direct request and response control. Start at https://airscale.mintlify.app/api-reference/api-overview.
+- Use the HTTP API when application code needs direct request and response control. Start at https://docs.airscale.io/api-reference/api-overview.
 - Use the authenticated Airschool MCP product server at https://mcp.airscale.io/mcp when an MCP client should call Airschool tools. Some tools spend workspace credits.
-- Use the documentation-scoped MCP at https://airscale.mintlify.app/mcp only for documentation. Its search and filesystem tools are read-only; submit_feedback can send documentation feedback. It does not execute Airschool product tools or consume Airschool credits.
+- Use the documentation-scoped MCP at https://docs.airscale.io/mcp only for documentation. Its search and filesystem tools are read-only; submit_feedback can send documentation feedback. It does not execute Airschool product tools or consume Airschool credits.
 
 ## Authentication boundaries
 
@@ -44,10 +44,10 @@ Prefer browser OAuth in supported remote MCP clients. Header-capable local clien
 
 ## Authoritative resources
 
-- MCP workflow and safety: https://airscale.mintlify.app/mcp/how-to-use-the-airscale-mcp
-- MCP tool catalog (Markdown): https://airscale.mintlify.app/mcp/tools.md
-- HTTP API reference: https://airscale.mintlify.app/api-reference/api-overview
-- OpenAPI specification: https://airscale.mintlify.app/openapi.json
-- Agent resource directory: https://airscale.mintlify.app/mcp/agent-resources
+- MCP workflow and safety: https://docs.airscale.io/mcp/how-to-use-the-airscale-mcp
+- MCP tool catalog (Markdown): https://docs.airscale.io/mcp/tools.md
+- HTTP API reference: https://docs.airscale.io/api-reference/api-overview
+- OpenAPI specification: https://docs.airscale.io/openapi.json
+- Agent resource directory: https://docs.airscale.io/mcp/agent-resources
 
-For the documentation MCP filesystem, run tree / -L 2 before reading files. Actual paths include /api-reference/api-overview.mdx and /mcp/airscale-mcp-server.mdx; generic example paths shown by a client may not exist. If an MCP-rendered API page shows repeated or conflicting request fields, trust the endpoint prose or https://airscale.mintlify.app/openapi.json.
+For the documentation MCP filesystem, run tree / -L 2 before reading files. Actual paths include /api-reference/api-overview.mdx and /mcp/airscale-mcp-server.mdx; generic example paths shown by a client may not exist. If an MCP-rendered API page shows repeated or conflicting request fields, trust the endpoint prose or https://docs.airscale.io/openapi.json.

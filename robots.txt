@@ -1,0 +1,7 @@
+User-agent: *
+Allow: /
+Disallow: /_next/
+Allow: /_next/image
+Disallow: /cdn-cgi/
+
+Sitemap: https://docs.airscale.io/sitemap.xml
