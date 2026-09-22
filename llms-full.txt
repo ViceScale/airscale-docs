@@ -4012,7 +4012,7 @@ Description: Install the Airscale CLI, preview a contact file for free, connect 
 
 ## Install
 
-Requires **Node.js 20.3 or newer**. This guide covers CLI **0.2.1**. If you installed an earlier version, follow the [upgrade instructions](/cli/troubleshooting#upgrade-to-021).
+Requires **Node.js 20.3 or newer**. This guide covers CLI **0.2.1**. If you installed an earlier version, follow the [upgrade instructions](/cli/troubleshooting#upgrade-to-0-2-1).
 
 <Tabs>
   <Tab title="npx (no install)">
@@ -4504,7 +4504,7 @@ Version 0.2.1 keeps the same commands, flags, credentials, and saved enrichment 
 - Before authentication or API requests, `credits`, `people search`, `companies search`, `runs status`, and `runs wait` check any `--output` file destination. A directory or an unwritable destination exits `2` without starting paid work. Existing files are not truncated by this check. Local `--dry-run` still makes no HTTP requests and writes no output file.
 - API errors retain sanitized request IDs when the server supplies them, including interrupted-response errors and ambiguous paid-search failures. Include the `request_id` in a support report when present. Exit codes and the rule against automatically retrying paid searches are unchanged.
 
-See [upgrade instructions](/cli/troubleshooting#upgrade-to-021) before using a saved global installation.
+See [upgrade instructions](/cli/troubleshooting#upgrade-to-0-2-1) before using a saved global installation.
 
 ## 0.1.0 to 0.2.0 compatibility
 
