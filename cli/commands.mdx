@@ -1,10 +1,10 @@
 ---
 title: "Command reference"
-description: "Every Airscale CLI 0.2.0 command and flag for setup, authentication, completion, search, file enrichment, credits, and runs."
+description: "Every Airscale CLI 0.2.1 command and flag for setup, authentication, completion, search, file enrichment, credits, and runs."
 canonical: "https://airscale.mintlify.app/cli/commands"
 ---
 
-This reference covers `@airscale/cli` **0.2.0**. Start with [Airscale CLI](/cli/overview) for the free first-run workflow.
+This reference covers `@airscale/cli` **0.2.1**. Start with [Airscale CLI](/cli/overview) for the free first-run workflow.
 
 ## Global flags and help
 
@@ -330,6 +330,15 @@ airscale runs wait exp_example --quiet --output run.json
 ```
 
 Polling follows the server's `poll_after_seconds` hint, waits at least one second, caps the delay at 30 seconds, and adds jitter. Transient `429` and `5xx` responses retry with bounded backoff. Other `4xx` responses fail immediately.
+
+## 0.2.0 to 0.2.1 compatibility
+
+Version 0.2.1 keeps the same commands, flags, credentials, and saved enrichment state as 0.2.0.
+
+- Before authentication or API requests, `credits`, `people search`, `companies search`, `runs status`, and `runs wait` check any `--output` file destination. A directory or an unwritable destination exits `2` without starting paid work. Existing files are not truncated by this check. Local `--dry-run` still makes no HTTP requests and writes no output file.
+- API errors retain sanitized request IDs when the server supplies them, including interrupted-response errors and ambiguous paid-search failures. Include the `request_id` in a support report when present. Exit codes and the rule against automatically retrying paid searches are unchanged.
+
+See [upgrade instructions](/cli/troubleshooting#upgrade-to-021) before using a saved global installation.
 
 ## 0.1.0 to 0.2.0 compatibility
 

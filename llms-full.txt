@@ -4012,7 +4012,7 @@ Description: Install the Airscale CLI, preview a contact file for free, connect 
 
 ## Install
 
-Requires **Node.js 20.3 or newer**.
+Requires **Node.js 20.3 or newer**. This guide covers CLI **0.2.1**. If you installed an earlier version, follow the [upgrade instructions](/cli/troubleshooting#upgrade-to-021).
 
 <Tabs>
   <Tab title="npx (no install)">
@@ -4168,9 +4168,9 @@ airscale --base-url http://127.0.0.1:8787/v1 auth status --json
 
 Source: https://airscale.mintlify.app/cli/commands.md
 
-Description: Every Airscale CLI 0.2.0 command and flag for setup, authentication, completion, search, file enrichment, credits, and runs.
+Description: Every Airscale CLI 0.2.1 command and flag for setup, authentication, completion, search, file enrichment, credits, and runs.
 
-This reference covers `@airscale/cli` **0.2.0**. Start with [Airscale CLI](/cli/overview) for the free first-run workflow.
+This reference covers `@airscale/cli` **0.2.1**. Start with [Airscale CLI](/cli/overview) for the free first-run workflow.
 
 ## Global flags and help
 
@@ -4497,6 +4497,15 @@ airscale runs wait exp_example --quiet --output run.json
 
 Polling follows the server's `poll_after_seconds` hint, waits at least one second, caps the delay at 30 seconds, and adds jitter. Transient `429` and `5xx` responses retry with bounded backoff. Other `4xx` responses fail immediately.
 
+## 0.2.0 to 0.2.1 compatibility
+
+Version 0.2.1 keeps the same commands, flags, credentials, and saved enrichment state as 0.2.0.
+
+- Before authentication or API requests, `credits`, `people search`, `companies search`, `runs status`, and `runs wait` check any `--output` file destination. A directory or an unwritable destination exits `2` without starting paid work. Existing files are not truncated by this check. Local `--dry-run` still makes no HTTP requests and writes no output file.
+- API errors retain sanitized request IDs when the server supplies them, including interrupted-response errors and ambiguous paid-search failures. Include the `request_id` in a support report when present. Exit codes and the rule against automatically retrying paid searches are unchanged.
+
+See [upgrade instructions](/cli/troubleshooting#upgrade-to-021) before using a saved global installation.
+
 ## 0.1.0 to 0.2.0 compatibility
 
 - `airscale auth login` is the canonical key-storage command. Existing `airscale auth set-key` calls continue to work as an alias.
@@ -4561,6 +4570,30 @@ npm prefix --global
 ```
 
 The npm global executable directory must be on `PATH`. Restart the shell after changing its startup file, or keep using `npx @airscale/cli` without a global install.
+
+## Upgrade to 0.2.1
+
+Check your installed version, then update a global installation:
+
+```bash
+airscale --version
+npm install --global @airscale/cli@latest
+airscale --version
+```
+
+For a fresh invocation without a global install, use `npx @airscale/cli@latest --help`. Version 0.2.1 keeps existing credentials, command flags, and saved enrichment state compatible.
+
+### Output destination rejected
+
+For `credits`, `people search`, `companies search`, `runs status`, and `runs wait`, version 0.2.1 checks `--output` before authentication or API requests. A directory or a destination that cannot be written causes exit `2`. Choose a filename in a writable directory and rerun the command. Existing files are not truncated during validation.
+
+Version 0.2.0 can discover this error after a paid search has already run. If that happened, inspect API request logs before repeating the search; upgrading does not recover the previous response. A filesystem change after validation can still make the final write fail.
+
+### Include the request ID when asking for help
+
+Version 0.2.1 retains sanitized request IDs from API failures when the server provides them. Include the `request_id`, command shape, CLI version, exit code, and redacted stderr in a support report. A failure before the server supplies an ID may have none. Never include an API key.
+
+Paid search failures remain ambiguous and are not automatically retried. Inspect the request logs before starting another search.
 
 ## Missing API key
 

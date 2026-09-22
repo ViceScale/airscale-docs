@@ -34,6 +34,30 @@ npm prefix --global
 
 The npm global executable directory must be on `PATH`. Restart the shell after changing its startup file, or keep using `npx @airscale/cli` without a global install.
 
+## Upgrade to 0.2.1
+
+Check your installed version, then update a global installation:
+
+```bash
+airscale --version
+npm install --global @airscale/cli@latest
+airscale --version
+```
+
+For a fresh invocation without a global install, use `npx @airscale/cli@latest --help`. Version 0.2.1 keeps existing credentials, command flags, and saved enrichment state compatible.
+
+### Output destination rejected
+
+For `credits`, `people search`, `companies search`, `runs status`, and `runs wait`, version 0.2.1 checks `--output` before authentication or API requests. A directory or a destination that cannot be written causes exit `2`. Choose a filename in a writable directory and rerun the command. Existing files are not truncated during validation.
+
+Version 0.2.0 can discover this error after a paid search has already run. If that happened, inspect API request logs before repeating the search; upgrading does not recover the previous response. A filesystem change after validation can still make the final write fail.
+
+### Include the request ID when asking for help
+
+Version 0.2.1 retains sanitized request IDs from API failures when the server provides them. Include the `request_id`, command shape, CLI version, exit code, and redacted stderr in a support report. A failure before the server supplies an ID may have none. Never include an API key.
+
+Paid search failures remain ambiguous and are not automatically retried. Inspect the request logs before starting another search.
+
 ## Missing API key
 
 The message `No Airscale API key configured.` means neither `AIRSCALE_API_KEY` nor a saved credential is available.
