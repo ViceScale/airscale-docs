@@ -47,6 +47,10 @@ Final validation passed: `npm run validate` completed with all 343 tests passing
 
 These checks do not certify the factual accuracy of every product guide or hosted search. The connected Mintlify Admin SDK currently returns `No target deployment for this request` for settings reads despite listing the `airscale` deployment; custom-domain setup remains unmodified.
 
+## SEO preflight follow-up
+
+The later [SEO preflight](SEO_MIGRATION_PREFLIGHT.md) supersedes the initial homepage and route-check observations above. The candidate now serves a real homepage, includes a generated production sitemap/robots file, and explicitly requests permanent redirects. All 348 tests pass. The strict local SEO audit passes 103/106 checks and deliberately fails the three temporary redirects; hosted permanence is still unverified. The live domain has not changed.
+
 ## Prepare the production publication
 
 Choose a new absolute directory outside the source checkout:

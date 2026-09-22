@@ -76,6 +76,12 @@
         "tab": "Documentation",
         "groups": [
           {
+            "group": "Start here",
+            "pages": [
+              "index"
+            ]
+          },
+          {
             "group": "Build lists",
             "pages": [
               "docs/sales-navigator",

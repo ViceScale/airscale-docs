@@ -3,6 +3,10 @@
 > Airscale product guides, integration workflows, MCP documentation, and public API reference.
 > Preview documentation is intentionally noindex. Use only the airscale.mintlify.app links in this file.
 
+## Documentation — Start here
+
+- [Airscale documentation](https://airscale.mintlify.app/index.md): Learn to build prospect lists, enrich contact data, and connect Airscale through its API, MCP server, or command-line tools.
+
 ## Documentation — Build lists
 
 - [Scrape a Sales Navigator search](https://airscale.mintlify.app/docs/sales-navigator.md): Turn your Sales Navigator searches (people only) into actionable prospect lists in Airschool. This feature extracts profiles directly from any Sales Navigator search results, eliminating manual copy-pasting and building targeted lists in minutes

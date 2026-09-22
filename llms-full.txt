@@ -3,6 +3,43 @@
 > Airscale product guides, integration workflows, MCP documentation, and public API reference.
 > This is the full public, navigable preview corpus. It remains intentionally noindex for traditional search engines.
 
+## Airscale documentation
+
+Source: https://airscale.mintlify.app/index.md
+
+Description: Learn to build prospect lists, enrich contact data, and connect Airscale through its API, MCP server, or command-line tools.
+
+Find the guide or API reference you need to build lists, enrich contacts, and automate your workflow.
+
+<CardGroup cols={2}>
+  <Card title="Use Airscale" icon="book-open" href="/usecases/quick-beginner-guide">
+    Start with the beginner guide, then explore product workflows for building and enriching prospect lists.
+  </Card>
+  <Card title="Build with the API" icon="code" href="/api-reference/api-overview">
+    Set up authentication and explore endpoint inputs, responses, rate limits, and credit costs.
+  </Card>
+</CardGroup>
+
+## Connect your tools
+
+<CardGroup cols={2}>
+  <Card title="MCP and AI agents" icon="bot" href="/mcp/airscale-mcp-server">
+    Connect supported AI tools to Airscale and understand the available operations.
+  </Card>
+  <Card title="Command-line tools" icon="terminal" href="/cli/overview">
+    Install the CLI, authenticate, and preview file enrichment before spending credits.
+  </Card>
+</CardGroup>
+
+## Popular guides
+
+- [Find people](/docs/find-people)
+- [Find companies](/docs/find-companies)
+- [Find a professional email](/api-reference/email-finder)
+- [Use cases](/usecases/templates)
+
+---
+
 ## Scrape a Sales Navigator search
 
 Source: https://airscale.mintlify.app/docs/sales-navigator.md

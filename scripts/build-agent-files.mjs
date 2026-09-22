@@ -99,7 +99,7 @@ function parsePage(path, source) {
   if (!isPlainObject(frontmatter)) throw new Error(`${path} frontmatter must be an object`);
   const title = assertSafeText(frontmatter.title, `${path} title`, { maxLength: 180 });
   const description = assertSafeText(frontmatter.description, `${path} description`, { maxLength: 500 });
-  const expectedCanonical = `${PREVIEW_ORIGIN}/${path}`;
+  const expectedCanonical = `${PREVIEW_ORIGIN}/${path === "index" ? "" : path}`;
   if (frontmatter.canonical !== expectedCanonical) {
     throw new Error(`${path} canonical must use the preview URL ${expectedCanonical}`);
   }

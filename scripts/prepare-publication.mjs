@@ -6,28 +6,32 @@ import { updateFrontmatterSource } from "./set-preview-canonicals.mjs";
 
 const ROOT = fileURLToPath(new URL("..", import.meta.url));
 const readJson = (root, path) => JSON.parse(readFileSync(resolve(root, path), "utf8"));
-export function apiRouteCoverage(root = ROOT, config = readJson(root, "docs.json")) {
+export function routeCoverage(root = ROOT, config = readJson(root, "docs.json"), apiOnly = false) {
   const inventory = readJson(root, "inventory/framer-routes.json");
   const redirects = new Map((config.redirects ?? []).map(({ source, destination }) => [source, destination]));
-  const rows = inventory.routes.filter(({ category }) => category === "api-reference");
+  const rows = inventory.routes.filter(({ category }) => !apiOnly || category === "api-reference");
   for (const row of rows) {
     if (row.disposition === "omit" || !row.targetPath) throw new Error(`API route would disappear: ${row.path}`);
     if (row.path !== row.targetPath && redirects.get(row.path) !== row.targetPath) throw new Error(`Missing redirect: ${row.path}`);
-    if (!existsSync(resolve(root, `${row.targetPath.slice(1)}.mdx`))) throw new Error(`Missing target: ${row.targetPath}`);
+    if (!existsSync(resolve(root, row.targetPath === "/" ? "index.mdx" : `${row.targetPath.slice(1)}.mdx`))) throw new Error(`Missing target: ${row.targetPath}`);
   }
   return rows.map(({ path, targetPath }) => ({ source: path, destination: targetPath, behavior: path === targetPath ? "page" : "redirect" }));
+}
+export function apiRouteCoverage(root = ROOT, config = readJson(root, "docs.json")) {
+  return routeCoverage(root, config, true);
 }
 export function publicationConfig(root = ROOT) {
   const policy = readJson(root, "contracts/publication-policy.json");
   const config = readJson(root, "docs.json");
   if (config.seo?.metatags?.robots !== policy.previewRobots) throw new Error("Source must remain a noindex preview");
   config.seo.metatags.robots = "index, follow";
+  config.seo.metatags.canonical = policy.liveDocumentationOrigin;
   const inventory = readJson(root, "inventory/framer-routes.json");
   const redirects = inventory.routes.filter((row) => row.category === "api-reference" && row.disposition === "consolidate")
-    .map(({ path, targetPath }) => ({ source: path, destination: targetPath }));
+    .map(({ path, targetPath }) => ({ source: path, destination: targetPath, permanent: true }));
   config.redirects = [...(config.redirects ?? []), ...redirects];
   if (new Set(config.redirects.map(({ source }) => source)).size !== config.redirects.length) throw new Error("Duplicate redirect source");
-  apiRouteCoverage(root, config);
+  routeCoverage(root, config);
   return config;
 }
 function walk(root, folder) {
@@ -46,7 +50,7 @@ export function renderPublication(root = ROOT) {
   if (policy.previewOrigin !== "https://airscale.mintlify.app" || policy.liveDocumentationOrigin !== "https://docs.airscale.io") throw new Error("Unexpected publication origins");
   const files = new Map();
   const config = publicationConfig(root);
-  const textPaths = [...contentPaths(root), "openapi.json", "llms.txt", "llms-full.txt", "skill.md", "mcp-tools.txt", "custom.css", "custom.js"];
+  const textPaths = ["index.mdx", ...contentPaths(root), "openapi.json", "llms.txt", "llms-full.txt", "skill.md", "mcp-tools.txt", "custom.css", "custom.js"];
   for (const path of textPaths) {
     let text = readFileSync(resolve(root, path), "utf8");
     if (path.endsWith(".mdx")) text = updateFrontmatterSource(path, text, policy.liveDocumentationOrigin).nextSource;
@@ -61,10 +65,19 @@ export function renderPublication(root = ROOT) {
     files.set(path, readFileSync(resolve(root, path)));
   }
   files.set("docs.json", Buffer.from(JSON.stringify(config, null, 2) + "\n"));
+  const pagePaths = [...new Set([
+    ...config.navigation.tabs.flatMap(tab => tab.groups.flatMap(group => group.pages)).map(path => path === "index" ? "/" : `/${path}`),
+    ...routeCoverage(root, config).map(row => row.destination)
+  ])].sort();
+  const xmlEscape = value => value.replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll('"', "&quot;");
+  files.set("sitemap.xml", Buffer.from(`<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${pagePaths.map(path => `  <url><loc>${xmlEscape(policy.liveDocumentationOrigin + path)}</loc></url>`).join("\n")}\n</urlset>\n`));
+  files.set("robots.txt", Buffer.from(`User-agent: *\nAllow: /\nDisallow: /_next/\nAllow: /_next/image\nDisallow: /cdn-cgi/\n\nSitemap: ${policy.liveDocumentationOrigin}/sitemap.xml\n`));
   const manifest = {
     documentationOrigin: policy.liveDocumentationOrigin,
     apiOrigin: "https://api.airscale.io",
     apiRoutes: apiRouteCoverage(root, config),
+    routes: routeCoverage(root, config),
+    indexablePages: pagePaths,
     files: Object.fromEntries([...files].sort(([a], [b]) => a.localeCompare(b)).map(([path, data]) => [path, createHash("sha256").update(data).digest("hex")]))
   };
   files.set("publication-manifest.json", Buffer.from(JSON.stringify(manifest, null, 2) + "\n"));

@@ -52,3 +52,19 @@ test("publication refuses to overwrite any existing directory or the source repo
     assert.equal(existsSync(join(output, ".git")), false);
   } finally { rmSync(temporary, { recursive: true, force: true }); }
 });
+
+test("SEO publication preserves the root and uses only permanent moved-page redirects", () => {
+  const files = renderPublication();
+  const config = JSON.parse(files.get("docs.json"));
+  assert.equal(config.seo.metatags.canonical, "https://docs.airscale.io");
+  assert.ok(files.has("index.mdx"), "the homepage must be published");
+  assert.match(files.get("index.mdx").toString(), /^canonical: "https:\/\/docs\.airscale\.io\/"$/m);
+  for (const redirect of config.redirects) assert.equal(redirect.permanent, true);
+  const manifest = JSON.parse(files.get("publication-manifest.json"));
+  assert.equal(manifest.routes.length, 82);
+  assert.deepEqual(manifest.routes.find(row => row.source === "/"), {source:"/", destination:"/", behavior:"page"});
+  const sitemap = files.get("sitemap.xml").toString();
+  assert.match(sitemap, /<loc>https:\/\/docs\.airscale\.io\/<\/loc>/);
+  assert.doesNotMatch(sitemap, /mintlify\.app|\/index<|\/api-reference\/airscale-mcp-server</);
+  assert.match(files.get("robots.txt").toString(), /Sitemap: https:\/\/docs\.airscale\.io\/sitemap.xml/);
+});
