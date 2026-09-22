@@ -6,7 +6,8 @@
   "seo": {
     "indexing": "navigable",
     "metatags": {
-      "robots": "noindex, follow"
+      "robots": "noindex, follow",
+      "canonical": "https://airscale.mintlify.app"
     }
   },
   "search": {
@@ -296,5 +297,22 @@
         ]
       }
     ]
-  }
+  },
+  "redirects": [
+    {
+      "source": "/api-reference/airscale-mcp-server",
+      "destination": "/mcp/airscale-mcp-server",
+      "permanent": true
+    },
+    {
+      "source": "/api-reference/connect-airscale-mcp-to-chatgpt",
+      "destination": "/mcp/connect-airscale-mcp-to-chatgpt",
+      "permanent": true
+    },
+    {
+      "source": "/api-reference/connect-airscale-mcp-to-claude",
+      "destination": "/mcp/connect-airscale-mcp-to-claude",
+      "permanent": true
+    }
+  ]
 }
