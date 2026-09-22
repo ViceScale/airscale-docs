@@ -119,10 +119,10 @@ test("overview leads to a free outputless dry run before authentication", () => 
   assert.doesNotMatch(source, /Homebrew|brew (?:tap|install)|github\.com\/ViceScale\/airscale-code/i);
 });
 
-test("command reference covers 0.2.0 commands, aliases, arguments, and every flag", () => {
+test("command reference covers 0.2.1 commands, aliases, arguments, and every flag", () => {
   assert.match(contract.source.revision, /^[a-f0-9]{40}$/);
   assert.match(contract.source.sha256["cli/airscale/src/program.ts"], /^[a-f0-9]{64}$/);
-  assert.equal(contract.version, "0.2.0");
+  assert.equal(contract.version, "0.2.1");
   const source = pages["cli/commands"];
   assert.ok(source.includes(`**${contract.version}**`));
   const headings = [...source.matchAll(/^### `(airscale [^`]+)`$/gm)].map(([, heading]) => heading);
