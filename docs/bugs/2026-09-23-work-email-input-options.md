@@ -37,3 +37,5 @@ Company-only or name-only support would require a separately specified backend c
 ## Authorized staging follow-up
 
 On 2026-09-23 (Europe/Paris), a fresh read-only Worker download had the same SHA-256. The authorized staging release documents the existing accepted inputs and removes misleading mutually exclusive Option tabs. No backend behavior is expanded. Company-only/name-only support remains an unimplemented product requirement, not a supported request example.
+
+Hosted verification completed: airscale.mintlify.app/api-reference/email-finder renders the five request fields together with the allKnownFields example and no request Option tabs on desktop/mobile. No document overflow or captured browser error. This verifies documentation presentation, not new API input support.

@@ -80,3 +80,27 @@ Retain the JSON report and exit status. Do not loosen permanent-redirect or inde
 The user subsequently authorized staging and hosted verification, without a domain switch. Generate a reproducible artifact with `npm run publication:prepare -- --staging --out /absolute/new/directory`. Its manifest declares `indexing: noindex`; the HTTP checker then requires a general noindex directive on every page while keeping the same canonical, sitemap, route, 404, and permanent-redirect checks. Production mode continues to require indexable pages. Serve the staging artifact from a separate generated branch, preserving the previous Mintlify serving branch (`main`) as the staging rollback target. PR #37 remains independent of the serving branch.
 
 The work-email candidate uses the freshly verified deployed contract. This documentation release does not add company-only/name-only lookup or a raw full_name API field. See the [staging execution plan](superpowers/plans/2026-09-23-docs-hosted-staging.md).
+
+## Hosted staging verified — 2026-09-23 (Europe/Paris)
+
+This result supersedes the earlier blocked hosted-candidate gate. The user authorized staging steps 1–3; the domain switch remains separate.
+
+- Source preparation: `0436d0fa706a0fa9e8af7b31ddef983ebf0beebc` on PR #37.
+- Generated branch: `docs/migration-staging`, head `87db4a691e9ca89d41071753046d50e9b206b765`. The last commit only triggers publication; its content tree is unchanged from `a6a5d54`.
+- Mintlify's Git source now serves that staging branch. The previous source was `main` at `54f6161df041222542241d98005352710776c87d`. Restore that Git-source setting for a staging rollback; do not merge the generated branch into the source branch.
+- Mintlify Activity reports **Manual update — Successful**, and Admin SDK `docVersion` advanced from 51 to 52. The dashboard has no custom domains configured. Its successful-update details do not contain a commit SHA; byte-for-byte verification of served `publication-manifest.json` and `openapi.json` establishes the candidate content instead.
+- `npm run validate`: **350 tests passed**, generated-file checks passed, source Mintlify build passed. The generated staging build also passed `mint validate`.
+- Hosted HTTP audit at `2026-09-22T22:57:25.058Z`: **106/106 passed**. All 100 page checks require `noindex`, exact preview-host canonicals, title/description, and HTTP 200. Sitemap, robots and genuine missing-page 404 passed.
+- The three old `/api-reference/` MCP guide paths each return **308** directly to their corresponding `/mcp/` page. The local 307 behavior does not occur on this hosted candidate.
+- Browser: work-email shows one five-field request list, the all-fields example, and no request Option tabs. Response success/not-found variants still have their valid response tabs. Desktop 1512 px and mobile 390×844 checks passed without page overflow. Homepage and API-card navigation passed. Search for `DNC` returned the restored DNC Checker and opened `/api-reference/dnc-checker`. Captured page-error log was empty; no API request was submitted.
+- `docs.airscale.io` still resolves to `sites.framer.app`; its email-finder page returned HTTP 200 with a Framer server header. PR #37 remains open and unmerged.
+
+### Remaining cache and cutover checks
+
+Bare `openapi.json`, `publication-manifest.json`, and `llms.txt` match the candidate hashes. Bare `llms-full.txt` still returns an older CDN copy (observed Age 17646); `llms-full.txt?release=87db4a691e9ca89d41071753046d50e9b206b765` matches the candidate with Age 0 and `max-age=86400`. This is not a complete AI-discovery freshness pass. Recheck the unqualified URL after cache expiration or a supported purge, and check all discovery URLs again on the actual domain after an authorized switch. No cache-purge operation was exposed by the connected Admin SDK. Do not repeatedly redeploy solely to refresh this cache.
+
+Before a later authorized cutover, regenerate the production artifact from the reviewed source (without `--staging`), update the serving branch intentionally, capture fresh DNS/provider settings, configure the custom domain, and run production-mode SEO checks. The staging noindex result does not certify production indexing. Google indexing and ranking still require post-switch monitoring.
+
+### Connector recovery
+
+Deployment-level calls initially returned `No target deployment for this request`. Calling Mintlify MCP `checkout` on the existing `docs/api-migration-readiness` branch established the project context; `deployment.get`, `getGitSources`, and `updateGitSourceItem` then worked. No editor content was changed through the session. Prefer this bounded recovery before relying on dashboard automation.

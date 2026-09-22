@@ -92,3 +92,7 @@ The production host switch is a separate release step. Before it, preserve the c
 6. Verification does not submit paid API playground requests.
 
 If the host switch fails, restore the preserved DNS/deployment configuration. The documentation changes do not require any API runtime rollback.
+
+## Hosted staging closeout — 2026-09-23
+
+The user authorized staging steps 1–3. Staging now serves the verified existing work-email contract, with combinable inputs and no misleading request alternatives. All 106 hosted SEO checks passed, including permanent 308 redirects for the three moved MCP pages; hosted search and desktop/mobile UI checks passed. This supersedes the earlier pending-publication and hosted-verification notes. Company-only/name-only support has not been implemented. PR #37 remains open; docs.airscale.io remains on Framer. See [the final staging evidence and remaining AI-discovery cache check](SEO_MIGRATION_PREFLIGHT.md#hosted-staging-verified--2026-09-23-europeparis).

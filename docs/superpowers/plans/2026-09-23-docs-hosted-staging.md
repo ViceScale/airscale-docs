@@ -6,10 +6,14 @@ Execute inline without delegation. The user authorized steps 1, 2, and 3: resolv
 - [x] Add a deterministic noindex staging mode to the publication generator, including the same route inventory and permanent redirects as production.
 - [x] Add staging-specific assertions to the HTTP checker without relaxing production indexing or redirect requirements. Verify failing tests before implementation.
 - [x] Validate the source and generated staging artifact.
-- [ ] Push a separate generated staging branch and select it in Mintlify's Git settings. Preserve the old serving branch for rollback.
-- [ ] Check all hosted routes, noindex, canonicals, sitemap, real 404, and exact permanent redirects. Verify hosted search and the work-email UI on desktop/mobile without API submissions.
-- [ ] Record deployment evidence and remaining domain-cutover gates.
+- [x] Push a separate generated staging branch and select it in Mintlify's Git settings. Preserve the old serving branch for rollback.
+- [x] Check all hosted routes, noindex, canonicals, sitemap, real 404, and exact permanent redirects. Verify hosted search and the work-email UI on desktop/mobile without API submissions.
+- [x] Record deployment evidence and remaining domain-cutover gates.
 
 ## Work-email disposition
 
 The 2026-09-23 local-date read-only recheck returned the same deployed Worker SHA-256 already recorded in `contracts/deployed-public-api-evidence.json`. The staging docs describe this implemented contract: LinkedIn URL alone, or first_name + last_name with company_name/domain; all five fields may be sent together. A full name must be split into the supported name fields. Company-only, name-only, or a raw full_name field are not advertised as sufficient. This settles which behavior the migration candidate documents; it does not implement the broader behavior the user previously described or claim that requirement is delivered.
+
+## Result
+
+Hosted staging completed: 350 tests passed, both builds passed, 106/106 HTTP checks passed, all three redirects are 308, and search plus desktop/mobile checks passed. See `docs/SEO_MIGRATION_PREFLIGHT.md` for receipts, rollback and the remaining bare llms-full.txt cache freshness caveat. No domain switch or PR merge.

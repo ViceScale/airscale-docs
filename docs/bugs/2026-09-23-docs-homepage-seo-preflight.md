@@ -20,3 +20,7 @@ Publication tests failed before the implementation and pass afterward. SEO check
 ## Watch later
 
 Do not infer hosted 308 behavior from local configuration. Verify on Mintlify hosting before cutover, then on docs.airscale.io immediately after the authorized switch. The current plan does not include PR preview deployments. See ../SEO_MIGRATION_PREFLIGHT.md for exact commands, rollout gates, and rollback steps. No DNS, production deployment, paid API, or plan mutation was performed.
+
+## Hosted follow-up — 2026-09-23
+
+Authorized noindex staging at airscale.mintlify.app now returns 200 for the homepage and 308 for all three MCP redirects. The hosted audit passed 106/106 checks. Added staging-generation regression coverage and a checker regression requiring general noindex on staging without weakening production checks; both tests failed before implementation and passed afterward. Full validation: 350 tests and both source/candidate Mintlify builds passed. Desktop/mobile homepage and work-email UI, homepage-to-API navigation, and hosted DNC search passed. The original domain remains on Framer. See the SEO preflight runbook for CDN freshness limits and staging rollback.
