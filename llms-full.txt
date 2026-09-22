@@ -3,6 +3,43 @@
 > Airscale product guides, integration workflows, MCP documentation, and public API reference.
 > This is the full public, navigable preview corpus. It remains intentionally noindex for traditional search engines.
 
+## Airscale documentation
+
+Source: https://airscale.mintlify.app/index.md
+
+Description: Learn to build prospect lists, enrich contact data, and connect Airscale through its API, MCP server, or command-line tools.
+
+Find the guide or API reference you need to build lists, enrich contacts, and automate your workflow.
+
+<CardGroup cols={2}>
+  <Card title="Use Airscale" icon="book-open" href="/usecases/quick-beginner-guide">
+    Start with the beginner guide, then explore product workflows for building and enriching prospect lists.
+  </Card>
+  <Card title="Build with the API" icon="code" href="/api-reference/api-overview">
+    Set up authentication and explore endpoint inputs, responses, rate limits, and credit costs.
+  </Card>
+</CardGroup>
+
+## Connect your tools
+
+<CardGroup cols={2}>
+  <Card title="MCP and AI agents" icon="bot" href="/mcp/airscale-mcp-server">
+    Connect supported AI tools to Airscale and understand the available operations.
+  </Card>
+  <Card title="Command-line tools" icon="terminal" href="/cli/overview">
+    Install the CLI, authenticate, and preview file enrichment before spending credits.
+  </Card>
+</CardGroup>
+
+## Popular guides
+
+- [Find people](/docs/find-people)
+- [Find companies](/docs/find-companies)
+- [Find a professional email](/api-reference/email-finder)
+- [Use cases](/usecases/templates)
+
+---
+
 ## Scrape a Sales Navigator search
 
 Source: https://airscale.mintlify.app/docs/sales-navigator.md
@@ -2676,6 +2713,41 @@ Review the request limit on the endpoint page before setting concurrency:
 
 ---
 
+## Corrections to the previous API documentation
+
+Source: https://airscale.mintlify.app/api-reference/documentation-corrections.md
+
+Description: Update integrations that relied on older request examples, response shapes, or billing descriptions.
+
+The API reference now describes the contracts below explicitly. These are corrections and clarifications to the previous documentation, not an announcement that these API behaviors changed when the documentation moved.
+
+| Operation | Previous documentation | Contract to use |
+| --- | --- | --- |
+| [Credit count](/api-reference/credit-count) | Top-level `credits` string. | Read the numeric balance from `response.credits`. |
+| [Bulk email](/api-reference/email-finder-(bulk)) | HTTP `200` on acceptance. | Expect HTTP `202` with `status: "accepted"`; process one webhook callback per item. |
+| [Personal email](/api-reference/personal-email) | Required-field table named `email`. | Send `linkedin_profile_url`. |
+| [Reverse phone](/api-reference/reverse-phone) | Required-field table named `email`. | Send `mobile_phone`. |
+| [Reverse email](/api-reference/reverse-email) | Profile shown in a `body` wrapper. | A match returns a profile directly; a miss returns the JSON string `"not found"`. |
+| [People profile](/api-reference/extract-people-profile) and [Company profile](/api-reference/extract-company-profile) | Incomplete `body`-wrapped examples and optional webhook hints. | Read the returned profile directly. Omit `mode` for the default workflow, or use `p2`/`p3` for normalized output. `webhook_url` is not part of this request contract. |
+| [Find companies](/api-reference/find-companies) | Largest preset buckets lacked `+`. | Use `10001+`, `10T+`, `20+`, and `1001+` for employee size, revenue, age, and location count. |
+| [Airsearch](/api-reference/airsearch) | Found and not-found results both described as costing one credit. | Only `success` costs one credit. `not_found` and `timeout` are not charged. |
+
+The previous [DNC Checker](/api-reference/dnc-checker) page listed 3 requests per second; the deployed limit verified for this reference is 5 requests per second per workspace.
+
+## Handle completed requests and failures separately
+
+Airsearch can return HTTP `200` with `status: "timeout"` for a later-stage soft timeout, or HTTP `504` for an initial-stage timeout. Its `response` can be text or an object, and `sources` can include public labels as well as URLs.
+
+Bulk email acceptance does not mean all inputs succeeded. Persist callbacks, reconcile them by `custom_id`, and handle `not_found`, `timeout`, and `error: "insufficient_credits"`. Automatic webhook retries are not guaranteed.
+
+For personal email, a `502` can occur after a result was charged if usage recording fails. Check your balance before retrying that input. Follow each endpoint's retry guidance rather than retrying every error immediately.
+
+## Existing integration references
+
+The [Leads Finder](/api-reference/leads-finder) and [DNC Checker](/api-reference/dnc-checker) documentation URLs are preserved. Their pages explain the available evidence and integration guidance; moving the documentation does not itself retire an API endpoint.
+
+---
+
 ## Credit count
 
 Source: https://airscale.mintlify.app/api-reference/credit-count.md
@@ -2738,9 +2810,96 @@ Count is free. It neither reserves nor debits credits and returns only `total`, 
 
 </Accordion>
 
+## Combining past-experience filters
+
+All past-experience filters apply to the same prior role. For example, combining `pastJobTitle.include: ["Engineer"]` with `pastCompanyName.include: ["Example Company"]` finds people who worked as an engineer at that company. It does not match someone who was an engineer at another company and held a different role at Example Company.
+
+`pastCompany.location` accepts country names and ISO alpha-2 country codes, just like `location` and `currentCompany.location`.
+
+## Lead fields
+
+`leads` contains public person records. The following fields are common, not a guarantee that every field is present or non-null. Preserve additional public fields your integration needs and tolerate missing values.
+
+| Field | Meaning |
+| --- | --- |
+| `firstname`, `lastname` | Person's first and last names. |
+| `headline`, `description` | Profile headline and description. |
+| `profileUrl` | LinkedIn person profile URL. |
+| `jobTitle` | Current role title. |
+| `jobStartDate` | Current-role start date, for example `03-2024`. |
+| `address` | Person location. |
+| `companyName` | Current employer name. |
+| `companyUrl`, `companyWebsite` | Employer LinkedIn URL and website. |
+| `companySize` | Available company headcount. |
+| `companyIndustry`, `companyAddress` | Employer industry and location. |
+
+Use `next_cursor` from the response envelope for pagination. Do not construct a cursor from a lead's fields.
+
 ## Next step
 
 Use the same `query` to retrieve the counted audience, [Find companies](/api-reference/find-companies) to discover organizations, or [Rate limits](/api-reference/rate-limits) before adding concurrency.
+
+---
+
+## Leads Finder
+
+Source: https://airscale.mintlify.app/api-reference/leads-finder.md
+
+Description: Search people with Leads Finder filters and page-based pagination.
+
+Search for people using person and company filters. This operation uses a `filters` object and zero-based `page` pagination. [Find people](/api-reference/find-people) uses a different `query` model and cursor pagination; their request bodies are not interchangeable.
+
+<Note>
+The limit is 5 requests per second per workspace, shared with the [preview alias](/api-reference/leads-finder/preview). Both routes cost 0.1 credits per returned lead; empty pages cost zero credits. At least 0.1 credits must be available before searching; credit admission can reserve up to `size × 0.1` credits before the request runs. The preview alias is not a free count operation.
+</Note>
+
+## Choose filters
+
+At least one non-empty filter other than `searchMode` is required. Include only the criteria you need. The OpenAPI request schema below lists the supported fields.
+
+| Criteria | Fields |
+| --- | --- |
+| Job titles | `job`, `jobExclude` |
+| Companies | `company`, `companyUrl` |
+| Person locations | `peopleLocation`, `peopleLocationExclude` |
+| Seniority and functions | `seniority`, `seniorityExclude`, `jobFunction`, `jobFunctionExclude` |
+| Tenure and experience | `yearsCurrentRole`, `yearsCurrentCompany`, `yearsWorkExperience`, `duration` |
+| Skills, languages, certifications | `skills`, `language`, `certification`, and their `Exclude` fields |
+| Profile text and badges | `profileKeywords`, `profileKeywordsExclude`, `profileBadge` |
+| Company industry, headquarters, type | `industry`, `hq`, `type`, and their `Exclude` fields |
+| Company size, revenue, founding year | `size`, `revenue`, `founded` |
+| Company text | `companyKeywords`, `companyKeywordsExclude` |
+| Funding | `funding`, `fundingAmount`, `fundingDateMonths` |
+| Department metrics | `department`, `growth` |
+
+Use strings or arrays for `job`, `jobExclude`, `company`, `companyUrl`, person locations, and job functions. Other text filters accept strings; separate multiple values with newlines. Each job-function include/exclude input allows at most 300 non-empty values. `searchMode` supports `SMART`, `WORD`, and `STRICT`, defaulting to `SMART`.
+
+Textual tenure examples include `1 to 2 years`, `Less than 1 year`, and `More than 10 years`. Structured `duration` accepts `latestCompany`, `currentCompany`, `previousCompany`, `latestJob`, `currentJob`, `previousJob`, and `total`. Each contains `min`, `max`, or both, with non-negative integer `year` and/or `month` values; months must be 0–11 and the minimum must not exceed the maximum. Structured bounds override the corresponding textual tenure field.
+
+```json Structured tenure example
+{
+  "filters": {
+    "job": ["Founder"],
+    "duration": {
+      "currentCompany": { "min": { "year": 1 }, "max": { "year": 3 } }
+    }
+  },
+  "page": 0,
+  "size": 25
+}
+```
+
+## Read results and paginate
+
+The response contains `rows`, `total`, `page`, and `size`. Rows are public lead records whose fields depend on available data. `total` can be `null` when a reliable count is unavailable or company/title correlation removes rows.
+
+`size` defaults to 50 and accepts 1–100. Start at `page: 0` and increment the page while keeping the same filters and size. This operation does not return `next_cursor`. When company and title filters are combined, returned rows are checked for a matching title at the identified company; a page can contain fewer rows after that check, and a short page alone does not establish exhaustion.
+
+After `429`, retry in a later second with bounded exponential backoff. For `503`, wait for the authentication or credit service to recover. Correct invalid filters before retrying `400` responses. Requests larger than 256 KiB return `413`.
+
+## Next step
+
+Use [Find people](/api-reference/find-people) if you need its person/current-company/past-experience filter model and free count operation. Existing Leads Finder integrations can continue using their documented route and request model.
 
 ---
 
@@ -2759,6 +2918,27 @@ Search shares a limit of 6 requests per second per workspace with [Company filte
 When `next_cursor` is not `null`, send the exact value unchanged as `cursor` with the same filters. Do not decode, construct, or edit the cursor. Cursor pagination preserves the original page size and can traverse up to 10,000 companies for one search.
 
 After a `429`, wait for the next second and retry with bounded exponential backoff. Retry a settlement failure only after the credit service recovers.
+
+## Company fields
+
+`rows` contains sanitized public company records. Fields vary with available data; the following list is illustrative, not a set of required fields.
+
+| Field | Meaning |
+| --- | --- |
+| `name`, `description` | Company name and description. |
+| `domain`, `website` | Company domain and website URL. |
+| `linkedinProfile` | LinkedIn company profile URL when available. |
+| `logo` | Company logo URL when available. |
+| `countryName`, `cityName` | Company location. |
+| `employeeRange`, `revenueRange` | Available headcount and revenue ranges. |
+
+Internal identifiers such as `id`, `_id`, `uuid`, `business_id`, and keys ending in `_id`, `Id`, `Urn`, or `Identifier` are removed recursively. Raw provider, token, secret, and trace fields are also removed. Do not depend on those fields as public company identifiers.
+
+## Discover filter values
+
+Use [Company filter values](/api-reference/find-companies/filter-values#discovery-examples) to discover city, region, industry, intent-topic, and technology values, then send the returned `value` unchanged. Industry and topic values come from canonical lookup lists; `keywords` and `companyName` accept free text.
+
+Use JSON booleans for `hasWebsite` and `isPublicCompany`, not strings such as `"true"`. The largest fixed buckets are `10001+` for employee size, `10T+` for revenue, `20+` for company age, and `1001+` for location count.
 
 ## Next step
 
@@ -2787,6 +2967,45 @@ The operation shares a limit of 6 requests per second per workspace with Find co
 <Info>
 This preview renders non-executing examples. It does not send a request or ask for an API key.
 </Info>
+
+## Discovery examples
+
+These examples only discover filter values; the endpoint is free. Set `AIRSCALE_API_KEY` in your server environment before running a command.
+
+```bash Region suggestions
+curl --get 'https://api.airscale.io/v1/find-companies/filter-values' \
+  -H "Authorization: Bearer $AIRSCALE_API_KEY" \
+  --data-urlencode 'filter=region' \
+  --data-urlencode 'q=california' \
+  --data-urlencode 'country=US'
+```
+
+```bash City suggestions
+curl --get 'https://api.airscale.io/v1/find-companies/filter-values' \
+  -H "Authorization: Bearer $AIRSCALE_API_KEY" \
+  --data-urlencode 'filter=city' \
+  --data-urlencode 'q=san' \
+  --data-urlencode 'country=US' \
+  --data-urlencode 'region=us-ca'
+```
+
+```bash Technology suggestions
+curl --get 'https://api.airscale.io/v1/find-companies/filter-values' \
+  -H "Authorization: Bearer $AIRSCALE_API_KEY" \
+  --data-urlencode 'filter=techStack' \
+  --data-urlencode 'q=hubspot'
+```
+
+```bash Industry suggestions
+curl --get 'https://api.airscale.io/v1/find-companies/filter-values' \
+  -H "Authorization: Bearer $AIRSCALE_API_KEY" \
+  --data-urlencode 'filter=industry' \
+  --data-urlencode 'q=software'
+```
+
+Each result has a display `label` and a request `value`. Copy `value` into the corresponding search filter. For locations, preserve the returned country/region context instead of assembling a city value from its display label. Search accepts recognized pipe-form and comma-form city values; autocomplete supplies the value to reuse.
+
+`q` or its `query` alias must contain 2–120 characters after trimming. `q` takes precedence even when blank. The optional `limit` defaults to 20; integer values are clamped to 1–100, while non-numeric or non-integer values use the default.
 
 ## Next step
 
@@ -2828,7 +3047,18 @@ Identify one person by LinkedIn profile URL or by name and company, then return 
 The limit is 3,000 requests per minute per workspace. A successful result costs 2 credits; `not_found` is not charged.
 </Note>
 
-At least one complete identification form is required. You may send both forms when you have them.
+## Which inputs can I send?
+
+All five fields belong to the same request. **You can send them together.** The examples describe minimum information, not mutually exclusive options.
+
+| Information available | Fields to send |
+| --- | --- |
+| LinkedIn profile URL only | `linkedin_profile_url` |
+| Person's name and company name | `first_name`, `last_name`, `company_name` |
+| Person's name and company domain | `first_name`, `last_name`, `domain` |
+| All of the above | Send all five fields together. |
+
+Send a person's name as `first_name` and `last_name`; `full_name` is not a supported request field. Without a LinkedIn profile URL, both name fields and a company name or domain are required. Company name alone or a person's name alone does not meet the current API's minimum input requirement.
 
 The success example includes all documented response fields. `provider` and `verifier` use placeholder labels; optional fields may be absent from a result.
 
@@ -3498,6 +3728,41 @@ This endpoint does not support caller idempotency keys. Retrying creates another
 ## Next step
 
 Use [Email finder](/api-reference/email-finder) to find a work email, or check your [credit balance](/api-reference/credit-count).
+
+---
+
+## DNC Checker
+
+Source: https://airscale.mintlify.app/api-reference/dnc-checker.md
+
+Description: Check whether a US phone number is listed on DNC.
+
+Submit a US phone number using `phone`. The operation normalizes accepted numbers to `+1` format and returns whether the number is listed on DNC.
+
+<Note>
+A successful check costs 1 credit whether `listed` is `true` or `false`. The limit is 5 requests per second per workspace. Validation and provider failures are not charged.
+</Note>
+
+Non-US numbers return `422` with `code: "unsupported_phone_region"` before the provider request. Malformed numbers return `422` with `code: "invalid_input"`. Correct the input before retrying either response.
+
+`phone_number` and `mobile_phone` are accepted aliases. `phone` takes precedence when non-null, followed by `phone_number`, then `mobile_phone`. Use one field to avoid ambiguity.
+
+## Read a successful result
+
+| Field | Meaning |
+| --- | --- |
+| `status` | `success` for a completed check. |
+| `phone` | Normalized US phone number. |
+| `listed` | Boolean indicating whether the number is listed. |
+| `result` | `Listed on DNC` or `Not listed on DNC`. |
+| `credits_used` | Credits charged for this check. |
+| `credits_remaining` | Remaining balance returned by the credit service. |
+
+After `429`, retry in a later second with bounded exponential backoff. For `502` or `503`, wait for the dependency to recover before retrying. The maximum JSON body size is 256 KiB.
+
+## Next step
+
+Review [Authentication](/api-reference/authentication) or [documentation corrections](/api-reference/documentation-corrections) before updating an existing integration.
 
 ---
 

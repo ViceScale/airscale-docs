@@ -3,6 +3,10 @@
 > Airscale product guides, integration workflows, MCP documentation, and public API reference.
 > Preview documentation is intentionally noindex. Use only the airscale.mintlify.app links in this file.
 
+## Documentation — Start here
+
+- [Airscale documentation](https://airscale.mintlify.app/index.md): Learn to build prospect lists, enrich contact data, and connect Airscale through its API, MCP server, or command-line tools.
+
 ## Documentation — Build lists
 
 - [Scrape a Sales Navigator search](https://airscale.mintlify.app/docs/sales-navigator.md): Turn your Sales Navigator searches (people only) into actionable prospect lists in Airschool. This feature extracts profiles directly from any Sales Navigator search results, eliminating manual copy-pasting and building targeted lists in minutes
@@ -71,6 +75,7 @@
 - [API Overview](https://airscale.mintlify.app/api-reference/api-overview.md): Authenticate with Airschool and make your first API request.
 - [Authentication](https://airscale.mintlify.app/api-reference/authentication.md): Create, send, protect, and rotate an Airschool API key.
 - [Rate limits](https://airscale.mintlify.app/api-reference/rate-limits.md): Understand endpoint-specific request limits and 429 responses.
+- [Corrections to the previous API documentation](https://airscale.mintlify.app/api-reference/documentation-corrections.md): Update integrations that relied on older request examples, response shapes, or billing descriptions.
 
 ## API Reference — Account
 
@@ -79,6 +84,7 @@
 ## API Reference — Search and discovery
 
 - [Find people](https://airscale.mintlify.app/api-reference/find-people.md): Search people using person, role, and company filters.
+- [Leads Finder](https://airscale.mintlify.app/api-reference/leads-finder.md): Search people with Leads Finder filters and page-based pagination.
 - [Find companies](https://airscale.mintlify.app/api-reference/find-companies.md): Search companies using firmographic, location, event, intent, and technology filters.
 - [Company filter values](https://airscale.mintlify.app/api-reference/find-companies/filter-values.md): Search supported values for Find Companies filters.
 - [Airsearch](https://airscale.mintlify.app/api-reference/airsearch.md): Research the web and return structured answers with Airsearch.
@@ -122,6 +128,7 @@
 - [WhatsApp check status](https://airscale.mintlify.app/api-reference/miscale-news/whatsapp-check/status.md): Reconcile a WhatsApp check using its operation ID.
 - [Meta Ads](https://airscale.mintlify.app/api-reference/miscale-news/meta-ads.md): Look up Meta ads for a company domain.
 - [Email verifier](https://airscale.mintlify.app/api-reference/miscale-news/email-verifier.md): Verify the deliverability of one email address.
+- [DNC Checker](https://airscale.mintlify.app/api-reference/dnc-checker.md): Check whether a US phone number is listed on DNC.
 
 ## MCP & Agents — Getting started
 

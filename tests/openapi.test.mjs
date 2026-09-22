@@ -495,13 +495,12 @@ test("Contact Email operation accepts profile or complete name identification", 
   assert.equal(operation.requestBody.required, true);
   assert.equal(schema.type, "object");
   assert.equal(schema.additionalProperties, false);
-  assert.deepEqual(schema.anyOf, [
-    { required: ["linkedin_profile_url"] },
-    {
-      required: ["first_name", "last_name"],
-      anyOf: [{ required: ["domain"] }, { required: ["company_name"] }]
-    }
-  ]);
+  assert.equal(schema.anyOf, undefined);
+  assert.deepEqual(schema.if, { not: { required: ["linkedin_profile_url"] } });
+  assert.deepEqual(schema.then, {
+    required: ["first_name", "last_name"],
+    anyOf: [{ required: ["domain"] }, { required: ["company_name"] }]
+  });
   assert.deepEqual(schema.properties.linkedin_profile_url, { $ref: "#/components/schemas/LinkedInPersonUrl" });
   for (const property of ["first_name", "last_name", "domain", "company_name"]) {
     assert.deepEqual(schema.properties[property], { type: "string", minLength: 1 });
@@ -558,13 +557,12 @@ test("Contact Email Bulk operation accepts bounded batches and returns only 202"
     description: "If omitted or null, the item's zero-based array index is used; any other JSON value is echoed unchanged."
   });
   assert.equal(itemSchema.required, undefined);
-  assert.deepEqual(itemSchema.anyOf, [
-    { required: ["linkedin_profile_url"] },
-    {
-      required: ["first_name", "last_name"],
-      anyOf: [{ required: ["domain"] }, { required: ["company_name"] }]
-    }
-  ]);
+  assert.equal(itemSchema.anyOf, undefined);
+  assert.deepEqual(itemSchema.if, { not: { required: ["linkedin_profile_url"] } });
+  assert.deepEqual(itemSchema.then, {
+    required: ["first_name", "last_name"],
+    anyOf: [{ required: ["domain"] }, { required: ["company_name"] }]
+  });
   for (const property of ["first_name", "last_name", "domain", "company_name"]) {
     assert.equal(itemSchema.properties[property].minLength, 1);
   }
@@ -1842,7 +1840,7 @@ test("Post engagement operations model synchronous cursor pagination and enrichm
   }
 });
 
-test("committed OpenAPI 3.1 artifact matches the pinned 31-operation catalog exactly", async () => {
+test("committed OpenAPI 3.1 artifact matches the pinned 34-operation catalog exactly", async () => {
   const parsed = await SwaggerParser.validate("openapi.json");
   const generated = buildSpec();
   const committed = committedSpec();
@@ -1853,7 +1851,7 @@ test("committed OpenAPI 3.1 artifact matches the pinned 31-operation catalog exa
   assert.deepEqual(committed.servers, baseSpec.servers);
   assert.deepEqual(committed.security, baseSpec.security);
   assert.equal(approvedCatalog.sourceSha, SOURCE_SHA);
-  assert.equal(approvedCatalog.operations.length, 31);
+  assert.equal(approvedCatalog.operations.length, 34);
 
   const actualOperations = [];
   for (const [path, pathItem] of Object.entries(committed.paths)) {
@@ -1861,8 +1859,8 @@ test("committed OpenAPI 3.1 artifact matches the pinned 31-operation catalog exa
       if (pathItem[method]) actualOperations.push({ method: method.toUpperCase(), path, operation: pathItem[method] });
     }
   }
-  assert.equal(actualOperations.length, 31);
-  assert.equal(actualOperations.filter(({ method }) => method === "POST").length, 23);
+  assert.equal(actualOperations.length, 34);
+  assert.equal(actualOperations.filter(({ method }) => method === "POST").length, 26);
   assert.equal(actualOperations.filter(({ method }) => method === "GET").length, 5);
   assert.equal(actualOperations.filter(({ method }) => method === "PATCH").length, 1);
   assert.equal(actualOperations.filter(({ method }) => method === "DELETE").length, 2);

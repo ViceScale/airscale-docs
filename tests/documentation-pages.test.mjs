@@ -27,7 +27,7 @@ test("Documentation mirrors all 48 live sidebar routes in the five source groups
   assert.equal(paths.length, 48);
   assert.equal(new Set(paths).size, 48);
   assert.deepEqual(config.navigation.tabs.map(({ tab }) => tab), ["Documentation", "API Reference", "MCP & Agents", "CLI", "Use cases"]);
-  assert.deepEqual(config.navigation.tabs[0], { tab: "Documentation", groups: manifest.navigation });
+  assert.deepEqual(config.navigation.tabs[0], { tab: "Documentation", groups: [{ group: "Start here", pages: ["index"] }, ...manifest.navigation] });
   assert.deepEqual(manifest.pages.map(({ path }) => path), paths);
   assert.deepEqual(readdirSync("docs").filter((name) => name.endsWith(".mdx")).sort(), paths.map((path) => `${path.slice(5)}.mdx`).sort());
   assert.ok(paths.includes("docs/filer-tables"), "preserve the source URL even though its slug has a typo");

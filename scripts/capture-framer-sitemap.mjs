@@ -9,7 +9,7 @@ export const OUTPUT_PATH = "inventory/framer-routes.json";
 export const EXPECTED_ROUTE_COUNT = 82;
 export const REQUEST_TIMEOUT_MS = 10_000;
 
-const EXPECTED_COUNTS = { migrate: 60, rewrite: 17, consolidate: 3, omit: 2 };
+const EXPECTED_COUNTS = { migrate: 60, rewrite: 19, consolidate: 3, omit: 0 };
 
 const publicApiContract = JSON.parse(
   readFileSync(new URL("../contracts/public-api-contracts.json", import.meta.url), "utf8")
@@ -25,10 +25,7 @@ export const consolidations = new Map([
   ["/api-reference/airscale-mcp-server", "/mcp/airscale-mcp-server"]
 ]);
 
-export const omissions = new Map([
-  ["/api-reference/dnc-checker", "No approved public operation exists in the locked API contract manifest."],
-  ["/api-reference/leads-finder", "The retired Leads Finder API page is excluded from the approved public reference."]
-]);
+export const omissions = new Map();
 
 function localName(node) {
   return node.localName || node.nodeName.split(":").at(-1);

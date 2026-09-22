@@ -11,10 +11,11 @@ import {
 } from "./helpers/content-safety.mjs";
 
 const GROUPS = [
-  ["Start here", ["api-reference/api-overview", "api-reference/authentication", "api-reference/rate-limits"]],
+  ["Start here", ["api-reference/api-overview", "api-reference/authentication", "api-reference/rate-limits", "api-reference/documentation-corrections"]],
   ["Account", ["api-reference/credit-count"]],
   ["Search and discovery", [
     "api-reference/find-people",
+    "api-reference/leads-finder",
     "api-reference/find-companies",
     "api-reference/find-companies/filter-values",
     "api-reference/airsearch"
@@ -45,12 +46,12 @@ const GROUPS = [
     "api-reference/job-change-monitors/events",
     "api-reference/job-change-monitors/events/read"
   ], { expanded: false }],
-  ["Miscellaneous", ["api-reference/miscale-news/whatsapp-check", "api-reference/miscale-news/whatsapp-check/status", "api-reference/miscale-news/meta-ads", "api-reference/miscale-news/email-verifier"], { expanded: false }]
+  ["Miscellaneous", ["api-reference/miscale-news/whatsapp-check", "api-reference/miscale-news/whatsapp-check/status", "api-reference/miscale-news/meta-ads", "api-reference/miscale-news/email-verifier", "api-reference/dnc-checker"], { expanded: false }]
 ];
 
 // Keep the legacy Count URL covered even though it is no longer in navigation.
-const PAGE_PATHS = [...GROUPS.flatMap(([, pages]) => pages), "api-reference/find-people/count"];
-const GUIDE_PATHS = ["api-reference/api-overview", "api-reference/authentication", "api-reference/rate-limits"];
+const PAGE_PATHS = [...GROUPS.flatMap(([, pages]) => pages), "api-reference/find-people/count", "api-reference/leads-finder/preview"];
+const GUIDE_PATHS = ["api-reference/api-overview", "api-reference/authentication", "api-reference/rate-limits", "api-reference/documentation-corrections"];
 const EXPECTED_API_TAB = {
   tab: "API Reference",
   groups: GROUPS.map(([group, pages, options]) => ({ group, pages, ...(options ?? {}) }))
@@ -539,14 +540,14 @@ test("every public operation has one exact OpenAPI-backed wrapper", () => {
     assert.equal(frontmatter.openapi, expectedBinding, `${page} must bind its catalog operation`);
     assert.doesNotMatch(body, /<Badge\b[^>]*>\s*(?:GET|POST|PATCH|DELETE)\s*<\/Badge>/i);
     assert.doesNotMatch(body, /^## (?:Request|Response|Errors|Examples)$/m);
-    if (page !== "api-reference/find-people") assert.doesNotMatch(body, /<CodeGroup>|^```/m);
+    if (!["api-reference/find-people", "api-reference/leads-finder", "api-reference/find-companies/filter-values"].includes(page)) assert.doesNotMatch(body, /<CodeGroup>|^```/m);
     assert.match(body, /^## Next step$/m, `${page} must retain next-step guidance`);
     assert.ok(body.split(/\n\s*\n/)[0].trim(), `${page} must retain a purpose statement`);
   }
 
-  assert.equal(expectedBindings.size, 31);
-  assert.equal(new Set(expectedBindings.values()).size, 31);
-  assert.equal(actualBindings.size, 31);
+  assert.equal(expectedBindings.size, 34);
+  assert.equal(new Set(expectedBindings.values()).size, 34);
+  assert.equal(actualBindings.size, 34);
   assert.deepEqual(actualBindings, expectedBindings);
 });
 
@@ -566,11 +567,11 @@ test("every wrapper binding resolves to its cataloged generated OpenAPI operatio
     resolved.push(`${method} ${path}`);
   }
 
-  assert.equal(new Set(resolved).size, 31);
+  assert.equal(new Set(resolved).size, 34);
   assert.deepEqual(resolved.sort(), catalog.operations.map(({ method, path }) => `${method} ${path}`).sort());
 });
 
-test("exactly three guide pages remain prose-only", () => {
+test("exactly four guide pages remain prose-only", () => {
   const guides = PAGE_PATHS.filter((page) => !Object.hasOwn(readPage(page).frontmatter, "openapi"));
   assert.deepEqual(guides, GUIDE_PATHS);
 });
@@ -615,6 +616,9 @@ test("guide pages teach authentication, safe retries, and a first request", () =
 });
 
 const DURABLE_OPERATION_GUIDANCE = {
+  "api-reference/leads-finder": [/5 requests per second/, /0.1 credits/, /page/, /not interchangeable/],
+  "api-reference/leads-finder/preview": [/not a free preview/, /0.1 credits/, /bounded backoff/],
+  "api-reference/dnc-checker": [/5 requests per second/, /1 credit/, /unsupported_phone_region/, /not charged/],
   "api-reference/miscale-news/whatsapp-check": [/60 requests per minute/, /1 credit/, /Idempotency-Key/, /202/],
   "api-reference/miscale-news/whatsapp-check/status": [/read-only/, /bounded backoff/, /unavailable/, /rejected/],
   "api-reference/miscale-news/meta-ads": [/60 requests per minute/, /1 credit/, /504/, /idempotency/],
@@ -660,7 +664,7 @@ const DURABLE_OPERATION_GUIDANCE = {
 };
 
 test("operation wrappers retain durable rate, credit, retry, and asynchronous guidance", () => {
-  assert.equal(Object.keys(DURABLE_OPERATION_GUIDANCE).length, 31);
+  assert.equal(Object.keys(DURABLE_OPERATION_GUIDANCE).length, 34);
   for (const [page, patterns] of Object.entries(DURABLE_OPERATION_GUIDANCE)) {
     const { body } = readPage(page);
     for (const pattern of patterns) assert.match(body, pattern, `${page} must retain ${pattern}`);

@@ -18,7 +18,7 @@ export function mdxFiles(directory) {
 }
 
 export function canonicalFor(path, previewOrigin = PREVIEW_ORIGIN) {
-  return `${previewOrigin}/${path.replace(/\.mdx$/, "")}`;
+  return `${previewOrigin}/${path === "index.mdx" ? "" : path.replace(/\.mdx$/, "")}`;
 }
 
 function parseFrontmatter(path, frontmatter, phase, options) {

@@ -61,9 +61,9 @@
     {
       "path": "/api-reference/dnc-checker",
       "category": "api-reference",
-      "disposition": "omit",
-      "targetPath": null,
-      "reason": "No approved public operation exists in the locked API contract manifest."
+      "disposition": "rewrite",
+      "targetPath": "/api-reference/dnc-checker",
+      "reason": "Convert the approved public API page to the OpenAPI-plus-MDX reference model."
     },
     {
       "path": "/api-reference/email-finder",
@@ -110,9 +110,9 @@
     {
       "path": "/api-reference/leads-finder",
       "category": "api-reference",
-      "disposition": "omit",
-      "targetPath": null,
-      "reason": "The retired Leads Finder API page is excluded from the approved public reference."
+      "disposition": "rewrite",
+      "targetPath": "/api-reference/leads-finder",
+      "reason": "Convert the approved public API page to the OpenAPI-plus-MDX reference model."
     },
     {
       "path": "/api-reference/mobile-finder",

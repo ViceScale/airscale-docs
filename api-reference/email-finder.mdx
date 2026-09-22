@@ -11,7 +11,18 @@ Identify one person by LinkedIn profile URL or by name and company, then return 
 The limit is 3,000 requests per minute per workspace. A successful result costs 2 credits; `not_found` is not charged.
 </Note>
 
-At least one complete identification form is required. You may send both forms when you have them.
+## Which inputs can I send?
+
+All five fields belong to the same request. **You can send them together.** The examples describe minimum information, not mutually exclusive options.
+
+| Information available | Fields to send |
+| --- | --- |
+| LinkedIn profile URL only | `linkedin_profile_url` |
+| Person's name and company name | `first_name`, `last_name`, `company_name` |
+| Person's name and company domain | `first_name`, `last_name`, `domain` |
+| All of the above | Send all five fields together. |
+
+Send a person's name as `first_name` and `last_name`; `full_name` is not a supported request field. Without a LinkedIn profile URL, both name fields and a company name or domain are required. Company name alone or a person's name alone does not meet the current API's minimum input requirement.
 
 The success example includes all documented response fields. `provider` and `verifier` use placeholder labels; optional fields may be absent from a result.
 

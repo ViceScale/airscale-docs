@@ -23,9 +23,9 @@ const policy = JSON.parse(readFileSync("contracts/publication-policy.json", "utf
 
 const expectedCounts = {
   migrate: 60,
-  rewrite: 17,
+  rewrite: 19,
   consolidate: 3,
-  omit: 2
+  omit: 0
 };
 
 const expectedConsolidations = new Map([
@@ -34,12 +34,11 @@ const expectedConsolidations = new Map([
   ["/api-reference/airscale-mcp-server", "/mcp/airscale-mcp-server"]
 ]);
 
-const expectedOmissions = new Set([
-  "/api-reference/dnc-checker",
-  "/api-reference/leads-finder"
-]);
+const expectedOmissions = new Set();
 
 const expectedApiRoutes = new Set([
+  "/api-reference/dnc-checker",
+  "/api-reference/leads-finder",
   "/api-reference/api-overview",
   "/api-reference/authentication",
   "/api-reference/rate-limits",
@@ -152,7 +151,7 @@ test("duplicate MCP references consolidate only inside the preview route model",
   }
 });
 
-test("unapproved API pages are omitted from the preview API reference", () => {
+test("no legacy API page is omitted from the migration", () => {
   const omitted = new Set(
     inventory.routes.filter(({ disposition }) => disposition === "omit").map(({ path }) => path)
   );

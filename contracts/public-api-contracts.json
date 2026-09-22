@@ -175,6 +175,38 @@
         "workers/public-api/email-verifier.js",
         "workers/public-api/email-verifier.test.mjs"
       ]
+    },
+    "leads-finder": {
+      "sourceRepository": "ViceScale/airscale-docs",
+      "sourceSha": "9d871e69dc8cda2520d7c98e1fcbed42ffb39f2112a7fabffe2046121e094906",
+      "sourceKind": "cloudflare-deployed-worker-sha256",
+      "endpoints": [
+        {
+          "method": "POST",
+          "path": "/v1/leads-finder"
+        },
+        {
+          "method": "POST",
+          "path": "/v1/leads-finder/preview"
+        }
+      ],
+      "sourceFiles": [
+        "contracts/deployed-public-api-evidence.json"
+      ]
+    },
+    "dnc-checker": {
+      "sourceRepository": "ViceScale/airscale-docs",
+      "sourceSha": "9024015f52d98583035543ff916b7e955df29b56e31a9c2b7fc7927ba37769de",
+      "sourceKind": "cloudflare-deployed-worker-sha256",
+      "endpoints": [
+        {
+          "method": "POST",
+          "path": "/v1/dnc-check"
+        }
+      ],
+      "sourceFiles": [
+        "contracts/deployed-public-api-evidence.json"
+      ]
     }
   }
 }

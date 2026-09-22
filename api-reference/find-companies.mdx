@@ -15,6 +15,27 @@ When `next_cursor` is not `null`, send the exact value unchanged as `cursor` wit
 
 After a `429`, wait for the next second and retry with bounded exponential backoff. Retry a settlement failure only after the credit service recovers.
 
+## Company fields
+
+`rows` contains sanitized public company records. Fields vary with available data; the following list is illustrative, not a set of required fields.
+
+| Field | Meaning |
+| --- | --- |
+| `name`, `description` | Company name and description. |
+| `domain`, `website` | Company domain and website URL. |
+| `linkedinProfile` | LinkedIn company profile URL when available. |
+| `logo` | Company logo URL when available. |
+| `countryName`, `cityName` | Company location. |
+| `employeeRange`, `revenueRange` | Available headcount and revenue ranges. |
+
+Internal identifiers such as `id`, `_id`, `uuid`, `business_id`, and keys ending in `_id`, `Id`, `Urn`, or `Identifier` are removed recursively. Raw provider, token, secret, and trace fields are also removed. Do not depend on those fields as public company identifiers.
+
+## Discover filter values
+
+Use [Company filter values](/api-reference/find-companies/filter-values#discovery-examples) to discover city, region, industry, intent-topic, and technology values, then send the returned `value` unchanged. Industry and topic values come from canonical lookup lists; `keywords` and `companyName` accept free text.
+
+Use JSON booleans for `hasWebsite` and `isPublicCompany`, not strings such as `"true"`. The largest fixed buckets are `10001+` for employee size, `10T+` for revenue, `20+` for company age, and `1001+` for location count.
+
 ## Next step
 
 Use [Company filter values](/api-reference/find-companies/filter-values) to discover accepted values, [Find people](/api-reference/find-people) to search for roles at identified companies, or [Authentication](/api-reference/authentication) before integrating.
