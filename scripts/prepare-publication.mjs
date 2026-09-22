@@ -45,16 +45,21 @@ function walk(root, folder) {
 function contentPaths(root) {
   return ["api-reference", "docs", "mcp", "cli", "usecases"].flatMap((folder) => walk(root, folder).filter((path) => path.endsWith(".mdx")));
 }
-export function renderPublication(root = ROOT) {
+export function renderPublication(root = ROOT, { staging = false } = {}) {
   const policy = readJson(root, "contracts/publication-policy.json");
   if (policy.previewOrigin !== "https://airscale.mintlify.app" || policy.liveDocumentationOrigin !== "https://docs.airscale.io") throw new Error("Unexpected publication origins");
   const files = new Map();
   const config = publicationConfig(root);
+  const documentationOrigin = staging ? policy.previewOrigin : policy.liveDocumentationOrigin;
+  if (staging) {
+    config.seo.metatags.robots = policy.previewRobots;
+    config.seo.metatags.canonical = documentationOrigin;
+  }
   const textPaths = ["index.mdx", ...contentPaths(root), "openapi.json", "llms.txt", "llms-full.txt", "skill.md", "mcp-tools.txt", "custom.css", "custom.js"];
   for (const path of textPaths) {
     let text = readFileSync(resolve(root, path), "utf8");
-    if (path.endsWith(".mdx")) text = updateFrontmatterSource(path, text, policy.liveDocumentationOrigin).nextSource;
-    text = text.replaceAll(policy.previewOrigin, policy.liveDocumentationOrigin)
+    if (path.endsWith(".mdx")) text = updateFrontmatterSource(path, text, documentationOrigin).nextSource;
+    if (!staging) text = text.replaceAll(policy.previewOrigin, policy.liveDocumentationOrigin)
       .replaceAll("airscale.mintlify.app", "docs.airscale.io")
       .replace("> Preview documentation is intentionally noindex. Use only the docs.airscale.io links in this file.", "> Official Airscale documentation at docs.airscale.io.")
       .replace("> This is the full public, navigable preview corpus. It remains intentionally noindex for traditional search engines.", "> This is the full public, navigable Airscale documentation corpus.")
@@ -70,10 +75,11 @@ export function renderPublication(root = ROOT) {
     ...routeCoverage(root, config).map(row => row.destination)
   ])].sort();
   const xmlEscape = value => value.replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll('"', "&quot;");
-  files.set("sitemap.xml", Buffer.from(`<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${pagePaths.map(path => `  <url><loc>${xmlEscape(policy.liveDocumentationOrigin + path)}</loc></url>`).join("\n")}\n</urlset>\n`));
-  files.set("robots.txt", Buffer.from(`User-agent: *\nAllow: /\nDisallow: /_next/\nAllow: /_next/image\nDisallow: /cdn-cgi/\n\nSitemap: ${policy.liveDocumentationOrigin}/sitemap.xml\n`));
+  files.set("sitemap.xml", Buffer.from(`<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${pagePaths.map(path => `  <url><loc>${xmlEscape(documentationOrigin + path)}</loc></url>`).join("\n")}\n</urlset>\n`));
+  files.set("robots.txt", Buffer.from(`User-agent: *\nAllow: /\nDisallow: /_next/\nAllow: /_next/image\nDisallow: /cdn-cgi/\n\nSitemap: ${documentationOrigin}/sitemap.xml\n`));
   const manifest = {
-    documentationOrigin: policy.liveDocumentationOrigin,
+    documentationOrigin,
+    indexing: staging ? "noindex" : "index",
     apiOrigin: "https://api.airscale.io",
     apiRoutes: apiRouteCoverage(root, config),
     routes: routeCoverage(root, config),
@@ -83,13 +89,13 @@ export function renderPublication(root = ROOT) {
   files.set("publication-manifest.json", Buffer.from(JSON.stringify(manifest, null, 2) + "\n"));
   return files;
 }
-export function preparePublication(output, { root = ROOT } = {}) {
+export function preparePublication(output, { root = ROOT, staging = false } = {}) {
   if (!output || !isAbsolute(output)) throw new Error("Provide an absolute output directory");
   const target = resolve(output);
   // Never write over this repository, its ancestors, or an existing directory.
   if (target === resolve(root) || resolve(root).startsWith(target + sep)) throw new Error("Output cannot replace the source repository");
   if (existsSync(target)) throw new Error("Output already exists; choose a new directory");
-  const files = renderPublication(root); // Validate everything before creating output.
+  const files = renderPublication(root, { staging }); // Validate everything before creating output.
   mkdirSync(target, { recursive: true });
   for (const [path, data] of files) {
     const destination = resolve(target, path);
@@ -102,11 +108,13 @@ export function preparePublication(output, { root = ROOT } = {}) {
 if (process.argv[1] && import.meta.url === pathToFileURL(resolve(process.argv[1])).href) {
   try {
     const args = process.argv.slice(2);
+    const staging = args[0] === "--staging";
+    if (staging) args.shift();
     if (args.length === 1 && args[0] === "--check") {
-      const files = renderPublication();
+      const files = renderPublication(ROOT, { staging });
       process.stdout.write(`Publication candidate verified: ${files.size} files; ${apiRouteCoverage(ROOT, publicationConfig()).length} legacy API routes preserved. No files or network settings changed.\n`);
     } else if (args.length === 2 && args[0] === "--out") {
-      process.stdout.write(JSON.stringify(preparePublication(args[1]), null, 2) + "\n");
-    } else throw new Error("Usage: node scripts/prepare-publication.mjs --check | --out /absolute/new/directory");
+      process.stdout.write(JSON.stringify(preparePublication(args[1], { staging }), null, 2) + "\n");
+    } else throw new Error("Usage: node scripts/prepare-publication.mjs [--staging] --check | --out /absolute/new/directory");
   } catch (error) { process.stderr.write(`${error.message}\n`); process.exitCode = 1; }
 }

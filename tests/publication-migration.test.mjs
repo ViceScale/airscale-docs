@@ -68,3 +68,22 @@ test("SEO publication preserves the root and uses only permanent moved-page redi
   assert.doesNotMatch(sitemap, /mintlify\.app|\/index<|\/api-reference\/airscale-mcp-server</);
   assert.match(files.get("robots.txt").toString(), /Sitemap: https:\/\/docs\.airscale\.io\/sitemap.xml/);
 });
+
+test("staging candidate preserves permanent redirects while remaining noindex on the Mintlify host", () => {
+  const before = readFileSync("docs.json", "utf8");
+  const files = renderPublication(undefined, { staging: true });
+  const config = JSON.parse(files.get("docs.json"));
+  const manifest = JSON.parse(files.get("publication-manifest.json"));
+  assert.equal(config.seo.metatags.robots, "noindex, follow");
+  assert.equal(config.seo.metatags.canonical, "https://airscale.mintlify.app");
+  assert.equal(manifest.documentationOrigin, "https://airscale.mintlify.app");
+  assert.equal(manifest.indexing, "noindex");
+  assert.equal(config.redirects.length, 3);
+  for (const redirect of config.redirects) assert.equal(redirect.permanent, true);
+  assert.match(files.get("index.mdx").toString(), /^canonical: "https:\/\/airscale\.mintlify\.app\/"$/m);
+  assert.match(files.get("robots.txt").toString(), /Sitemap: https:\/\/airscale\.mintlify\.app\/sitemap.xml/);
+  assert.match(files.get("llms-full.txt").toString(), /intentionally noindex/);
+  assert.equal(JSON.parse(files.get("openapi.json")).servers[0].url, "https://api.airscale.io");
+  assert.equal(readFileSync("docs.json", "utf8"), before);
+  assert.deepEqual(files, renderPublication(undefined, { staging: true }));
+});

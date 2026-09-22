@@ -10,6 +10,14 @@ test('SEO checker accepts indexable HTML and rejects hidden header or page exclu
   assert.ok(pageIssues({status:200,html:html.replace(canonical,'https://airscale.mintlify.app/email'),headers:new Headers(),canonical}).some(x=>x.includes('canonical')));
   assert.ok(pageIssues({status:404,html,headers:new Headers(),canonical}).some(x=>x.includes('200')));
 });
+test('staging checks require a general noindex directive instead of allowing indexable pages', () => {
+  const check = (source, headers = new Headers()) => pageIssues({status:200,html:source,headers,canonical,indexing:'noindex'});
+  assert.deepEqual(check(html.replace('index, follow','noindex, follow')), []);
+  assert.deepEqual(check(html,new Headers({'X-Robots-Tag':'noindex'})), []);
+  assert.ok(check(html).some(x=>x.includes('Staging must declare noindex')));
+  assert.ok(check(html.replace('name="robots"','name="googlebot"').replace('index, follow','noindex')).length);
+  assert.ok(check(html,new Headers({'X-Robots-Tag':'googlebot: noindex'})).length);
+});
 test('SEO checker requires an exact permanent redirect with no chain', () => {
   assert.deepEqual(redirectIssues(308,'/mcp/airscale-mcp-server','/mcp/airscale-mcp-server','http://localhost:3210'),[]);
   assert.ok(redirectIssues(307,'/mcp/airscale-mcp-server','/mcp/airscale-mcp-server','http://localhost:3210').length);

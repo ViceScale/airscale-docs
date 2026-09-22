@@ -1,7 +1,7 @@
 # Bug: Work-email input tabs look like mutually exclusive choices
 
 Date reported: 2026-09-23
-Status: fixed on the PR branch; contract clarification pending before publication
+Status: fixed on the PR branch; staging follows the verified deployed contract
 Area: documentation
 Related PR: https://github.com/ViceScale/airscale-docs/pull/37
 Related tests: tests/work-email-inputs.test.mjs; tests/openapi.test.mjs
@@ -33,3 +33,7 @@ The new test failed on the old top-level `anyOf` schema, then passed after the c
 ## Watch Later
 
 Company-only or name-only support would require a separately specified backend change; do not advertise it based on a documentation-only edit. Validate the rendered Body after schema regeneration and a fresh Mintlify server startup.
+
+## Authorized staging follow-up
+
+On 2026-09-23 (Europe/Paris), a fresh read-only Worker download had the same SHA-256. The authorized staging release documents the existing accepted inputs and removes misleading mutually exclusive Option tabs. No backend behavior is expanded. Company-only/name-only support remains an unimplemented product requirement, not a supported request example.

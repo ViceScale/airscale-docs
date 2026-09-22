@@ -74,3 +74,9 @@ Retain the JSON report and exit status. Do not loosen permanent-redirect or inde
 - [Mintlify redirect behavior](https://www.mintlify.com/docs/create/redirects)
 - [Google hosting-change guidance](https://developers.google.com/search/docs/crawling-indexing/site-move-no-url-changes)
 - [Google permanent and temporary redirects](https://developers.google.com/search/docs/crawling-indexing/301-redirects)
+
+## Authorized hosted staging follow-up
+
+The user subsequently authorized staging and hosted verification, without a domain switch. Generate a reproducible artifact with `npm run publication:prepare -- --staging --out /absolute/new/directory`. Its manifest declares `indexing: noindex`; the HTTP checker then requires a general noindex directive on every page while keeping the same canonical, sitemap, route, 404, and permanent-redirect checks. Production mode continues to require indexable pages. Serve the staging artifact from a separate generated branch, preserving the previous Mintlify serving branch (`main`) as the staging rollback target. PR #37 remains independent of the serving branch.
+
+The work-email candidate uses the freshly verified deployed contract. This documentation release does not add company-only/name-only lookup or a raw full_name API field. See the [staging execution plan](superpowers/plans/2026-09-23-docs-hosted-staging.md).

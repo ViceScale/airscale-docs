@@ -9,14 +9,18 @@ function tags(html, name) {
   return [...head.matchAll(new RegExp(`<${name}\\b([^>]*)>`, 'gi'))].map(([, source]) =>
     Object.fromEntries([...source.matchAll(/([\w:-]+)\s*=\s*(?:"([^"]*)"|'([^']*)'|([^\s>]+))/g)].map(([, key, a, b, c]) => [key.toLowerCase(), decode(a ?? b ?? c)])));
 }
-export function pageIssues({status, html, headers, canonical}) {
+export function pageIssues({status, html, headers, canonical, indexing = 'index'}) {
   const issues = [];
   if (status !== 200) issues.push(`Expected 200, received ${status}`);
   const links = tags(html, 'link').filter(x => x.rel?.toLowerCase() === 'canonical');
   if (links.length !== 1 || links[0].href !== canonical) issues.push(`Expected one canonical ${canonical}; received ${links.map(x=>x.href).join(', ')}`);
   const meta = tags(html, 'meta');
   const robotValues = [headers.get('x-robots-tag') ?? '', ...meta.filter(x => /^(robots|googlebot)$/i.test(x.name)).map(x=>x.content ?? '')];
-  if (robotValues.some(x => /\b(noindex|none)\b/i.test(x))) issues.push('Indexing blocked by noindex/none in a tag or header');
+  if (indexing === 'noindex') {
+    const header = headers.get('x-robots-tag') ?? '';
+    const generalValues = [...meta.filter(x=>x.name?.toLowerCase()==='robots').map(x=>x.content ?? ''), ...(!header.includes(':') ? [header] : [])];
+    if (!generalValues.some(x=>/\b(noindex|none)\b/i.test(x))) issues.push('Staging must declare noindex for all search engines');
+  } else if (robotValues.some(x => /\b(noindex|none)\b/i.test(x))) issues.push('Indexing blocked by noindex/none in a tag or header');
   if (!/<title>[^<]+<\/title>/i.test(html)) issues.push('Missing title');
   if (!meta.some(x=>x.name?.toLowerCase()==='description' && x.content?.trim())) issues.push('Missing description');
   return issues;
@@ -81,7 +85,7 @@ export async function checkSeo({base,manifest,fetcher=fetch}) {
     while(cursor<tasks.length) {
       const task=tasks[cursor++];
       await check(task.path,r=>task.destination ? redirectIssues(r.status,r.headers.get('location'),task.destination,origin) : [
-        ...pageIssues({...r,canonical:task.canonical}),
+        ...pageIssues({...r,canonical:task.canonical,indexing:manifest.indexing ?? 'index'}),
         ...(robotsAllows(robots,task.path)?[]:['robots.txt blocks Googlebot'])
       ]);
     }
