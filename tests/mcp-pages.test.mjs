@@ -17,8 +17,7 @@ const API_REFERENCE_TAB = {
       pages: [
         "api-reference/api-overview",
         "api-reference/authentication",
-        "api-reference/rate-limits",
-        "api-reference/documentation-corrections"
+        "api-reference/rate-limits"
       ]
     },
     {

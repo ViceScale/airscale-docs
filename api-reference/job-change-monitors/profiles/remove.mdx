@@ -5,6 +5,10 @@ canonical: "https://airscale.mintlify.app/api-reference/job-change-monitors/prof
 openapi: "/openapi.json DELETE /v1/job-change-monitors/{monitor_id}/profiles/{profile_id}"
 ---
 
+<Note>
+Job-change monitoring requires a **V2 workspace API key**. V1 (Bubble) API keys are not supported by these endpoints. Monitors and monitoring credits belong to the V2 workspace associated with the key.
+</Note>
+
 Soft-remove one profile with its `monitor_id` and `profile_id`. The profile no longer participates in future checks, but its record and event history remain available.
 
 <Info>

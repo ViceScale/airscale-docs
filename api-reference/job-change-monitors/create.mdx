@@ -5,6 +5,10 @@ canonical: "https://airscale.mintlify.app/api-reference/job-change-monitors/crea
 openapi: "/openapi.json POST /v1/job-change-monitors"
 ---
 
+<Note>
+Job-change monitoring requires a **V2 workspace API key**. V1 (Bubble) API keys are not supported by these endpoints. Monitors and monitoring credits belong to the V2 workspace associated with the key.
+</Note>
+
 Create an active monitor for one to 10,000 personal LinkedIn profiles with [Bearer authentication](/api-reference/authentication). All profiles belong to one monitor ID, with one frequency and optional webhook. Each successful request creates a new monitor. If a network failure leaves the result unknown, list or retrieve monitors before retrying so you do not create an unintended duplicate.
 
 <Note>

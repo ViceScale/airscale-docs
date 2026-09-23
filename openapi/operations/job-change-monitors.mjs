@@ -409,6 +409,11 @@ export const jobChangeMonitorOperations = [
       description: "Marks one event read and returns the event with its read_at timestamp.",
       "x-airscale-rate-limit": "120 requests per minute per workspace.",
       parameters: [MONITOR_ID, EVENT_ID],
+      requestBody: requestBody(
+        { type: "object", properties: {}, additionalProperties: false },
+        { acknowledgement: { summary: "Acknowledge the event", value: {} } },
+        "Send an empty JSON object ({}). The public API rejects POST requests without a JSON body."
+      ),
       responses: {
         200: response({
           type: "object",
@@ -422,4 +427,10 @@ export const jobChangeMonitorOperations = [
       }
     }
   }
-];
+].map(entry => ({
+  ...entry,
+  operation: {
+    ...entry.operation,
+    description: `${entry.operation.description} Requires a V2 workspace API key. V1 (Bubble) API keys are not supported. Monitors and monitoring credits belong to the V2 workspace.`
+  }
+}));
