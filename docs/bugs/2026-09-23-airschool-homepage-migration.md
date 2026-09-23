@@ -2,7 +2,7 @@
 
 Date: 2026-09-23
 Area: documentation homepage
-Status: implementation verified locally; hosted receipt follows
+Status: merged and verified on noindex Mintlify staging
 
 ## Reference and reproduction
 
@@ -25,3 +25,13 @@ Manual browser smoke: verify the rendered shortcut navigation, all images loaded
 Local desktop 1512x982 and mobile emulation 390x844: all artwork loaded, three columns/one column respectively, scrollWidth equals viewport width. Dark theme selected through Mintlify's theme menu and inspected. API card opened `/api-reference/api-overview`, where homepage styles were absent. Console contained only the Mintlify development Socket.io warning, no captured errors. Final source validation passed 351/351 tests, generated checks, and Mintlify build. Generated staging and production Mintlify builds passed. The final homepage-only border-color adjustment also passed the six publication tests and browser inspection. Hosted verification follows publication.
 
 Domain and production publication remain separate from this staging homepage change.
+
+## Hosted receipt — 2026-09-23
+
+PR #40 merged as `916e00b8b6f8a62aa0f0f0c2f41d52ce3ad8ed82`. Mintlify serves `docs/migration-staging` at `b4a0d029b5f3bbf508dab03277e268d918fd9b57`, docVersion 53. The prepared production branch is `docs/production-release-20260923` at `8d2ebfbe27479d6aac640775decc2dfe0c957962`; it has not been selected for publication.
+
+Hosted SEO audit at `2026-09-23T11:48:03.277Z`: **106/106 passed**. The publication manifest matches semantically, including all 391 file hashes (392 files including the manifest); hosted JSON serialization differs from the local bytes. Bare `llms.txt`, `llms-full.txt`, `openapi.json`, and the grid SVG match candidate bytes. CSS and JavaScript are bundled by Mintlify rather than served at the source filenames.
+
+Browser verification on the hosted homepage: 1512px desktop and 390px mobile have no horizontal overflow; all three illustrations load; native search opens from the hero on both sizes. Searching “Sales Navigator” returns its guide, and selecting it opens `/docs/sales-navigator#scrape-a-sales-navigator-search`. The hosted browser captured no errors; Mintlify emitted image-preload warnings for alternative CDN image variants, while the actual images loaded successfully. Local dark-mode and keyboard shortcut checks passed. No booking, email, or API enrichment was submitted.
+
+Both authoritative DNS servers still return `docs.airscale.io CNAME sites.framer.app`, TTL 300. No custom domains are configured on Mintlify. For pre-homepage staging rollback, the previous generated commit remains `87db4a691e9ca89d41071753046d50e9b206b765`; the older-content pinned rollback branch remains `docs/pre-migration-rollback-20260923` at `54f6161df041222542241d98005352710776c87d`. Do not use main to restore old documentation.

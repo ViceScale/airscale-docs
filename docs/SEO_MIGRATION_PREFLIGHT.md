@@ -39,7 +39,7 @@ Do not enable a project-wide noindex switch to hide only the Mintlify hostname: 
 
 ## Remaining release gates
 
-1. Confirm that the unqualified hosted `llms-full.txt` matches the staged artifact after CDN expiration or a supported purge. A release-query URL matches, but does not prove the ordinary URL is fresh.
+1. AI-discovery freshness passed after the AirSchool staging update below: bare `llms-full.txt` and `llms.txt` match the candidate. Recheck on the actual domain after cutover.
 2. Capture the exact Cloudflare DNS provider record, including proxy mode and record ID. Both authoritative servers confirm the Framer CNAME and TTL 300; the available API credential receives HTTP 403 for DNS records, and browser automation is detached. The provider snapshot remains incomplete.
 3. Immediately before an authorized cutover, recheck Mintlify settings and branch, artifact hashes, DNS, and rollback targets. The production artifact is prepared, but has not been selected as the serving branch.
 4. Only after a separately authorized release, serve the production artifact and bind/switch the custom domain. Run the exact-domain checks below immediately, verify both hostnames, then inspect representative URLs in Search Console and submit/refresh the production sitemap.
@@ -118,3 +118,15 @@ Deployment-level calls initially returned `No target deployment for this request
 - A standards-based cache-revalidation request and subsequent ordinary GET still returned stale `llms-full.txt`. Observed SHA-256: `4106be48c62ce5e0f13fdd8c05f3acc45351b496cc77188a61a023dccd78e0e7`; expected staged SHA-256: `b628d114a4b98d5f77843d1b5bc108ab102ba524586b7f0786709e2daa234720`. Recheck the bare URL around `2026-09-23T18:05:00Z`, based on the observed cache lifetime; this is a checkpoint, not a guaranteed refresh time.
 
 Private validation logs, cache responses, authoritative DNS answers, and the Mintlify configuration snapshot are retained outside this public repository. The incomplete provider snapshot and stale discovery file remain open preparation gates. No production indexing result or domain migration is claimed by this receipt.
+
+## AirSchool homepage release — 2026-09-23
+
+This receipt supersedes the earlier prepared-branch heads and stale-cache result. [PR #40](https://github.com/ViceScale/airscale-docs/pull/40) recreates the approved AirSchool homepage and is merged at `916e00b8b6f8a62aa0f0f0c2f41d52ce3ad8ed82`.
+
+- Current verified staging: `docs/migration-staging` at `b4a0d029b5f3bbf508dab03277e268d918fd9b57`, Mintlify docVersion 53.
+- Current prepared production: `docs/production-release-20260923` at `8d2ebfbe27479d6aac640775decc2dfe0c957962`, **not selected or deployed**.
+- Source validation: 351/351 tests and build passed. Publication includes 392 files; its regression verifies homepage styles/artwork are retained in both modes. Hosted SEO: 106/106 passed at `2026-09-23T11:48:03.277Z`.
+- Bare `llms-full.txt`, `llms.txt`, and `openapi.json` now match the staged candidate. The manifest matches all fields and 391 file hashes after JSON parsing; raw serialization differs.
+- Desktop/mobile rendering and native hosted search passed. The homepage remains noindex with the preview canonical. No Mintlify custom domains are configured. Both authoritative DNS servers still return the Framer CNAME with TTL 300.
+
+The exact Cloudflare provider-record snapshot remains a pre-cutover task. Before any separately authorized switch, refresh all settings and validate the current prepared artifact. Preserve the pinned older-content rollback branch; `main` is not a rollback target. See the [homepage verification record](bugs/2026-09-23-airschool-homepage-migration.md) for browser evidence and rollback commits.
