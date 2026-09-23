@@ -22,15 +22,6 @@ const EXPECTED_OPERATIONS = [
   ["POST", "/v1/airsearch", "airsearch", "api-reference/airsearch", "Search and discovery"],
   ["POST", "/v1/post-likers", "listPostLikers", "api-reference/post-likers", "Post engagement"],
   ["POST", "/v1/post-commenters", "listPostCommenters", "api-reference/post-commenters", "Post engagement"],
-  ["POST", "/v1/job-change-monitors", "createJobChangeMonitor", "api-reference/job-change-monitors/create", "Job change monitoring"],
-  ["GET", "/v1/job-change-monitors", "listJobChangeMonitors", "api-reference/job-change-monitors/list", "Job change monitoring"],
-  ["GET", "/v1/job-change-monitors/{monitor_id}", "getJobChangeMonitor", "api-reference/job-change-monitors/get", "Job change monitoring"],
-  ["PATCH", "/v1/job-change-monitors/{monitor_id}", "updateJobChangeMonitor", "api-reference/job-change-monitors/update", "Job change monitoring"],
-  ["DELETE", "/v1/job-change-monitors/{monitor_id}", "deleteJobChangeMonitor", "api-reference/job-change-monitors/delete", "Job change monitoring"],
-  ["POST", "/v1/job-change-monitors/{monitor_id}/profiles", "addJobChangeMonitorProfiles", "api-reference/job-change-monitors/profiles/add", "Job change monitoring"],
-  ["DELETE", "/v1/job-change-monitors/{monitor_id}/profiles/{profile_id}", "removeJobChangeMonitorProfile", "api-reference/job-change-monitors/profiles/remove", "Job change monitoring"],
-  ["GET", "/v1/job-change-monitors/{monitor_id}/events", "listJobChangeMonitorEvents", "api-reference/job-change-monitors/events", "Job change monitoring"],
-  ["POST", "/v1/job-change-monitors/{monitor_id}/events/{event_id}/read", "markJobChangeEventRead", "api-reference/job-change-monitors/events/read", "Job change monitoring"],
   ["POST", "/v1/whatsapp-check", "checkWhatsapp", "api-reference/miscale-news/whatsapp-check", "Miscellaneous"],
   ["GET", "/v1/whatsapp-check/operations/{operation_id}", "getWhatsappCheckOperation", "api-reference/miscale-news/whatsapp-check/status", "Miscellaneous"],
   ["POST", "/v1/meta-ads", "lookupMetaAds", "api-reference/miscale-news/meta-ads", "Miscellaneous"],
@@ -58,7 +49,7 @@ const EXPECTED_PAGES = [
   "find-companies",
   "airsearch",
   "post-engagement",
-  "job-change-monitors", "whatsapp-check", "meta-ads", "email-verifier",
+  "whatsapp-check", "meta-ads", "email-verifier",
   "leads-finder", "dnc-checker"
 ];
 
@@ -174,32 +165,6 @@ const EXPECTED_CONTRACTS = deepFreeze({
         "api/src/lib/publicPostEngagementService.test.ts",
         "api/src/lib/publicPostEngagementBilling.ts",
         "api/src/lib/publicPostEngagementBilling.test.ts"
-      ]
-    },
-    "job-change-monitors": {
-      endpoints: [
-        { method: "POST", path: "/v1/job-change-monitors" },
-        { method: "GET", path: "/v1/job-change-monitors" },
-        { method: "GET", path: "/v1/job-change-monitors/{monitor_id}" },
-        { method: "PATCH", path: "/v1/job-change-monitors/{monitor_id}" },
-        { method: "DELETE", path: "/v1/job-change-monitors/{monitor_id}" },
-        { method: "POST", path: "/v1/job-change-monitors/{monitor_id}/profiles" },
-        { method: "DELETE", path: "/v1/job-change-monitors/{monitor_id}/profiles/{profile_id}" },
-        { method: "GET", path: "/v1/job-change-monitors/{monitor_id}/events" },
-        { method: "POST", path: "/v1/job-change-monitors/{monitor_id}/events/{event_id}/read" }
-      ],
-      sourceFiles: [
-        "workers/public-api/job-change-monitors.js",
-        "workers/public-api/job-change-monitors.test.mjs",
-        "api/src/routes/publicJobChangeMonitors.ts",
-        "api/src/routes/publicJobChangeMonitors.test.ts",
-        "api/src/lib/jobChangeMonitorLimits.ts",
-        "api/src/lib/jobChangePublicApi.ts",
-        "api/src/lib/jobChangePublicApi.test.ts",
-        "api/src/lib/jobChangeMonitoring.ts",
-        "api/src/lib/jobChangeMonitoring.test.ts",
-        "api/src/trigger/job-change-monitor.ts",
-        "api/src/trigger/job-change-monitor.batches.test.ts"
       ]
     },
   "whatsapp-check": {
@@ -334,14 +299,14 @@ test("operation catalog preserves the approved operation order and routing metad
   const catalog = JSON.parse(readFileSync("contracts/public-api-operations.json", "utf8"));
   assert.equal(catalog.sourceRepository, "ViceScale/airscale-code");
   assert.equal(catalog.sourceSha, EXPECTED_SOURCE_SHA);
-  assert.equal(catalog.operations.length, 34);
+  assert.equal(catalog.operations.length, 25);
   assert.deepEqual(
     catalog.operations.map(({ method, path, operationId, page, tag }) => [method, path, operationId, page, tag]),
     EXPECTED_OPERATIONS
   );
-  assert.equal(new Set(catalog.operations.map(({ method, path }) => `${method} ${path}`)).size, 34);
-  assert.equal(new Set(catalog.operations.map(({ operationId }) => operationId)).size, 34);
-  assert.equal(new Set(catalog.operations.map(({ page }) => page)).size, 34);
+  assert.equal(new Set(catalog.operations.map(({ method, path }) => `${method} ${path}`)).size, 25);
+  assert.equal(new Set(catalog.operations.map(({ operationId }) => operationId)).size, 25);
+  assert.equal(new Set(catalog.operations.map(({ page }) => page)).size, 25);
 });
 
 test("operation catalog links each operation to matching source-page evidence", () => {

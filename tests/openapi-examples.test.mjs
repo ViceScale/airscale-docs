@@ -15,11 +15,6 @@ const BODYLESS_OPERATIONS = new Set([
   "GET /v1/whatsapp-check/operations/{operation_id}",
   "GET /v1/find-companies/filter-values",
   "POST /v1/credits",
-  "GET /v1/job-change-monitors",
-  "GET /v1/job-change-monitors/{monitor_id}",
-  "DELETE /v1/job-change-monitors/{monitor_id}",
-  "DELETE /v1/job-change-monitors/{monitor_id}/profiles/{profile_id}",
-  "GET /v1/job-change-monitors/{monitor_id}/events"
 ]);
 const PRIVATE_IDENTITY_FIELDS = new Set(["provider", "verifier", "provider_internal"]);
 const PROVIDER_IDENTITIES = /\b(?:Prospeo|Icypeas|RapidAPI|Leadmagic|SalesQL|Limadata|ContactOut|Wiza|Forager|Bounceban|Findymail|Trykitt|Kitt|A-?Leads|Explorium|OpenAI|Serper|Jina|HistoricalImport|EmailLogCache|Supabase|Bubble|Durable Object)\b/i;
@@ -393,7 +388,7 @@ function assertCodeSampleShapes(operation, label) {
 test("all public operation examples validate against their dereferenced schemas", (t) => {
   assertAuthoredExampleShapes(rawDocument);
   const operations = operationsFrom(document);
-  assert.equal(operations.length, 34, "expected exactly 34 public operations");
+  assert.equal(operations.length, 25, "expected exactly 25 public operations");
 
   const exampleValues = [];
   const seenSchemas = new Set();

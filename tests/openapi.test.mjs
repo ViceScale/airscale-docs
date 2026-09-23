@@ -129,38 +129,6 @@ function requestValidator(schema) {
   return schemaValidator(schema);
 }
 
-test("job-change monitor schemas accept 10,000 profiles and reject requests above the per-request limit", () => {
-  const spec = buildSpec();
-  const profiles = Array.from({ length: 10_000 }, (_, index) => ({
-    linkedin_url: `https://www.linkedin.com/in/example-person-${index}`,
-    external_id: `crm-contact-${index}`
-  }));
-
-  for (const [path, extra] of [
-    ["/v1/job-change-monitors", { name: "CRM champions" }],
-    ["/v1/job-change-monitors/{monitor_id}/profiles", {}]
-  ]) {
-    const operation = spec.paths[path].post;
-    const validate = requestValidator(requestSchema(operation));
-    assert.equal(validate({ ...extra, profiles }), true, JSON.stringify(validate.errors));
-    assert.equal(validate({ ...extra, profiles: [...profiles, profiles[0]] }), false);
-    assert.ok(validate.errors.some(({ keyword }) => keyword === "maxItems"));
-    assert.equal(validate({ ...extra, profiles: [] }), false);
-    assert.match(operation.requestBody.description, /8 MiB \(8,388,608 bytes\)/);
-    assert.match(operation.responses["413"].description, /8 MiB \(8,388,608 bytes\)/);
-    assert.match(operation.description, /asynchronously/);
-  }
-
-  const create = spec.paths["/v1/job-change-monitors"].post;
-  assert.ok(create.responses["202"]);
-  assert.deepEqual(create.responses["202"].content["application/json"].schema.required, [
-    "monitor", "profiles", "signing_secret", "signing_secret_warning"
-  ]);
-  assert.deepEqual(requestSchema(create).properties.frequency.enum, ["weekly", "every_30_days", "every_90_days"]);
-  assert.equal(spec.components.schemas.JobChangeMonitor.properties.active_profile_count.maximum, 10_000);
-  assert.equal(spec.paths["/v1/job-change-monitors/{monitor_id}/profiles"].post.responses["201"].content["application/json"].schema.properties.active_profile_count.maximum, 10_000);
-});
-
 function errorStatuses(operation) {
   return Object.keys(operation.responses).filter((status) => !["200", "201", "202"].includes(status));
 }
@@ -348,7 +316,7 @@ test("base spec identifies the Airschool public API", () => {
   assert.equal(baseSpec.openapi, "3.1.0");
   assert.equal(baseSpec.info.title, "Airschool Public API");
   assert.equal(baseSpec.info.version, "2026-09-11");
-  assert.equal(baseSpec.info.description, "Search, enrich, resolve public business data, and monitor job changes with Airschool.");
+  assert.equal(baseSpec.info.description, "Search, enrich, and resolve public business data with Airschool.");
   assert.equal(baseSpec.info["x-airscale-source-repository"], "ViceScale/airscale-code");
   assert.equal(baseSpec.info["x-airscale-source-sha"], SOURCE_SHA);
   assert.deepEqual(baseSpec.servers, [
@@ -360,7 +328,6 @@ test("base spec identifies the Airschool public API", () => {
     { name: "Contact data", description: "Find professional and personal contact data." },
     { name: "Profiles and reverse lookup", description: "Extract profiles or resolve a person from known contact data." },
     { name: "Post engagement", description: "Retrieve and enrich people who liked or commented on LinkedIn posts." },
-    { name: "Job change monitoring", description: "Track LinkedIn profiles and receive job-change events." },
     { name: "Account", description: "Inspect workspace account state." },
     { name: "Miscellaneous", description: "Check WhatsApp availability, Meta ads, and email deliverability." }
   ]);
@@ -1840,7 +1807,7 @@ test("Post engagement operations model synchronous cursor pagination and enrichm
   }
 });
 
-test("committed OpenAPI 3.1 artifact matches the pinned 34-operation catalog exactly", async () => {
+test("committed OpenAPI 3.1 artifact matches the pinned 25-operation catalog exactly", async () => {
   const parsed = await SwaggerParser.validate("openapi.json");
   const generated = buildSpec();
   const committed = committedSpec();
@@ -1851,7 +1818,7 @@ test("committed OpenAPI 3.1 artifact matches the pinned 34-operation catalog exa
   assert.deepEqual(committed.servers, baseSpec.servers);
   assert.deepEqual(committed.security, baseSpec.security);
   assert.equal(approvedCatalog.sourceSha, SOURCE_SHA);
-  assert.equal(approvedCatalog.operations.length, 34);
+  assert.equal(approvedCatalog.operations.length, 25);
 
   const actualOperations = [];
   for (const [path, pathItem] of Object.entries(committed.paths)) {
@@ -1859,11 +1826,11 @@ test("committed OpenAPI 3.1 artifact matches the pinned 34-operation catalog exa
       if (pathItem[method]) actualOperations.push({ method: method.toUpperCase(), path, operation: pathItem[method] });
     }
   }
-  assert.equal(actualOperations.length, 34);
-  assert.equal(actualOperations.filter(({ method }) => method === "POST").length, 26);
-  assert.equal(actualOperations.filter(({ method }) => method === "GET").length, 5);
-  assert.equal(actualOperations.filter(({ method }) => method === "PATCH").length, 1);
-  assert.equal(actualOperations.filter(({ method }) => method === "DELETE").length, 2);
+  assert.equal(actualOperations.length, 25);
+  assert.equal(actualOperations.filter(({ method }) => method === "POST").length, 23);
+  assert.equal(actualOperations.filter(({ method }) => method === "GET").length, 2);
+  assert.equal(actualOperations.filter(({ method }) => method === "PATCH").length, 0);
+  assert.equal(actualOperations.filter(({ method }) => method === "DELETE").length, 0);
   assert.deepEqual(
     actualOperations.map(({ method, path }) => `${method} ${path}`).sort(),
     approvedCatalog.operations.map(({ method, path }) => `${method} ${path}`).sort()

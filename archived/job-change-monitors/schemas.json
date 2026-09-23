@@ -1,0 +1,251 @@
+{
+  "JobChangeError": {
+    "type": "object",
+    "additionalProperties": false,
+    "required": [
+      "error"
+    ],
+    "properties": {
+      "error": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "code",
+          "message"
+        ],
+        "properties": {
+          "code": {
+            "type": "string"
+          },
+          "message": {
+            "type": "string"
+          }
+        }
+      }
+    }
+  },
+  "JobChangeMonitor": {
+    "type": "object",
+    "additionalProperties": false,
+    "required": [
+      "id",
+      "name",
+      "frequency",
+      "status",
+      "next_check_at",
+      "last_successful_check_at",
+      "created_at",
+      "updated_at",
+      "webhook_url",
+      "webhook_configured",
+      "active_profile_count",
+      "unread_event_count"
+    ],
+    "properties": {
+      "id": {
+        "type": "string",
+        "format": "uuid"
+      },
+      "name": {
+        "type": "string"
+      },
+      "frequency": {
+        "type": "string",
+        "enum": [
+          "weekly",
+          "every_30_days",
+          "every_90_days"
+        ]
+      },
+      "status": {
+        "type": "string",
+        "enum": [
+          "active",
+          "paused",
+          "running",
+          "setup_failed"
+        ]
+      },
+      "next_check_at": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "format": "date-time"
+      },
+      "last_successful_check_at": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "format": "date-time"
+      },
+      "created_at": {
+        "type": "string",
+        "format": "date-time"
+      },
+      "updated_at": {
+        "type": "string",
+        "format": "date-time"
+      },
+      "webhook_url": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "format": "uri"
+      },
+      "webhook_configured": {
+        "type": "boolean"
+      },
+      "active_profile_count": {
+        "type": "integer",
+        "minimum": 0,
+        "maximum": 10000
+      },
+      "unread_event_count": {
+        "type": "integer",
+        "minimum": 0
+      }
+    }
+  },
+  "JobChangeProfile": {
+    "type": "object",
+    "additionalProperties": false,
+    "required": [
+      "id",
+      "linkedin_url",
+      "external_id",
+      "status",
+      "removed_at"
+    ],
+    "properties": {
+      "id": {
+        "type": "string",
+        "format": "uuid"
+      },
+      "linkedin_url": {
+        "type": "string",
+        "format": "uri"
+      },
+      "external_id": {
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "status": {
+        "type": "string",
+        "enum": [
+          "pending",
+          "baseline",
+          "checked",
+          "unavailable",
+          "failed",
+          "removed"
+        ]
+      },
+      "removed_at": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "format": "date-time"
+      }
+    }
+  },
+  "JobChangeEmployer": {
+    "type": "object",
+    "additionalProperties": false,
+    "required": [
+      "identity",
+      "name"
+    ],
+    "properties": {
+      "identity": {
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "name": {
+        "type": [
+          "string",
+          "null"
+        ]
+      }
+    }
+  },
+  "JobChangeEvent": {
+    "type": "object",
+    "additionalProperties": false,
+    "required": [
+      "id",
+      "monitor_id",
+      "profile_id",
+      "linkedin_url",
+      "external_id",
+      "previous_employer",
+      "new_employer",
+      "detected_at",
+      "read_at"
+    ],
+    "properties": {
+      "id": {
+        "type": "string",
+        "format": "uuid"
+      },
+      "monitor_id": {
+        "type": "string",
+        "format": "uuid"
+      },
+      "profile_id": {
+        "type": "string",
+        "format": "uuid"
+      },
+      "linkedin_url": {
+        "type": "string",
+        "format": "uri"
+      },
+      "external_id": {
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "previous_employer": {
+        "$ref": "#/components/schemas/JobChangeEmployer"
+      },
+      "new_employer": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "identity",
+          "name"
+        ],
+        "properties": {
+          "identity": {
+            "type": "string"
+          },
+          "name": {
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        }
+      },
+      "detected_at": {
+        "type": "string",
+        "format": "date-time"
+      },
+      "read_at": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "format": "date-time"
+      }
+    }
+  }
+}
