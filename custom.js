@@ -36,7 +36,17 @@
     document.querySelectorAll("#sidebar .sidebar-group-header").forEach(makeCollapsible);
   }
 
+  // Delegate to Mintlify's native search so results, keyboard shortcuts, and
+  // navigation stay in sync with the rest of the documentation site.
+  function openHomepageSearch(event) {
+    if (!(event.target instanceof Element) || !event.target.closest("[data-airschool-search]")) return;
+    const entries = ["search-bar-entry", "search-bar-entry-mobile"].map(id => document.getElementById(id));
+    const entry = entries.find(button => button && button.getClientRects().length > 0) ?? entries.find(Boolean);
+    if (entry) entry.click();
+  }
+
   function start() {
+    document.addEventListener("click", openHomepageSearch);
     applyCollapsibleGroups();
     new MutationObserver(applyCollapsibleGroups).observe(document.body, { childList: true, subtree: true });
   }
