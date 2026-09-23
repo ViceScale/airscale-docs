@@ -55,7 +55,7 @@ export function renderPublication(root = ROOT, { staging = false } = {}) {
     config.seo.metatags.robots = policy.previewRobots;
     config.seo.metatags.canonical = documentationOrigin;
   }
-  const textPaths = ["index.mdx", ...contentPaths(root), "openapi.json", "llms.txt", "llms-full.txt", "skill.md", "mcp-tools.txt", "custom.css", "custom.js"];
+  const textPaths = ["index.mdx", ...contentPaths(root), "openapi.json", "llms.txt", "llms-full.txt", "skill.md", "mcp-tools.txt", "custom.css", "airschool.css", "custom.js"];
   for (const path of textPaths) {
     let text = readFileSync(resolve(root, path), "utf8");
     if (path.endsWith(".mdx")) text = updateFrontmatterSource(path, text, documentationOrigin).nextSource;

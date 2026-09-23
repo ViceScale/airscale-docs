@@ -87,3 +87,13 @@ test("staging candidate preserves permanent redirects while remaining noindex on
   assert.equal(readFileSync("docs.json", "utf8"), before);
   assert.deepEqual(files, renderPublication(undefined, { staging: true }));
 });
+
+test("homepage stylesheet and artwork survive both publication modes", () => {
+  for (const staging of [true, false]) {
+    const files = renderPublication(undefined, { staging });
+    for (const path of ["airschool.css", "images/airschool/grid.svg", "images/airschool/documentation.png", "images/airschool/api-reference.png", "images/airschool/use-cases.png"]) {
+      assert.ok(files.has(path), `${path} must be included in the ${staging ? 'staging' : 'production'} artifact`);
+      assert.deepEqual(files.get(path), readFileSync(path));
+    }
+  }
+});

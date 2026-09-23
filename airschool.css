@@ -1,0 +1,71 @@
+/* Homepage-only styles; documentation and API pages retain Mintlify's layout. */
+.airschool {
+  --school-text: #121419;
+  --school-muted: #697289;
+  --school-border: #e2e7ee;
+  --school-surface: #fff;
+  --school-subtle: #f9fafb;
+  color: var(--school-text);
+  background: var(--school-surface) url('/images/airschool/grid.svg') center top / cover;
+  padding: 80px 0;
+  font-family: Poppins, sans-serif;
+}
+.airschool * { box-sizing: border-box; }
+.airschool :is(h1, h2, h3, p) { margin: 0; }
+.airschool a { color: inherit; text-decoration: none; }
+/* Mintlify adds a blue bottom border to prose links, including custom cards. */
+.airschool a.link { border-bottom-color: var(--school-border) !important; }
+.airschool a.link:hover { border-bottom-color: #aab6cb !important; }
+.airschool-content { width: 100%; max-width: 1200px; margin: 0 auto; padding: 0 32px; display: grid; gap: 80px; }
+.airschool-hero { display: grid; justify-items: center; gap: 40px; text-align: center; }
+.airschool-intro { max-width: 768px; display: grid; justify-items: center; gap: 20px; }
+.airschool .airschool-badge { border: 1px solid var(--school-border); border-radius: 99px; padding: 9px 16px; background: var(--school-surface); font-size: 12px; line-height: 16px; font-weight: 500; }
+.airschool h1 { font-size: 48px; line-height: 56px; font-weight: 600; letter-spacing: -1.8px; }
+.airschool .airschool-description { max-width: 600px; font-size: 16px; line-height: 28px; color: #333842; }
+.airschool-search-area { width: 100%; max-width: 680px; display: grid; justify-items: center; gap: 24px; }
+.airschool-search { width: 100%; max-width: 550px; min-height: 56px; padding: 12px 16px; display: flex; align-items: center; gap: 12px; border: 1px solid var(--school-border); border-radius: 16px; background: var(--school-surface); color: var(--school-muted); text-align: left; font: inherit; font-size: 14px; cursor: pointer; box-shadow: 0 3px 8px -5px #0003; }
+.airschool-search > svg { flex: none; }
+.airschool-shortcut-keys { margin-left: auto; display: flex; gap: 4px; }
+.airschool kbd { display: grid; place-items: center; width: 28px; height: 28px; border: 1px solid var(--school-border); border-radius: 8px; background: var(--school-subtle); font: inherit; font-size: 12px; }
+.airschool-shortcuts { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; justify-content: center; font-size: 12px; line-height: 18px; color: var(--school-muted); }
+.airschool-shortcuts a { padding: 5px 10px; background: var(--school-subtle); border: 1px solid var(--school-border); border-radius: 8px; font-weight: 500; }
+.airschool-section { display: grid; gap: 32px; }
+.airschool h2 { font-size: 20px; line-height: 28px; font-weight: 400; letter-spacing: -.5px; }
+.airschool-categories { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 20px; }
+.airschool-card { display: flex; flex-direction: column; gap: 20px; padding: 12px; border: 1px solid var(--school-border); border-radius: 36px; background: var(--school-surface); transition: border-color 150ms ease, box-shadow 150ms ease; }
+.airschool-card img { display: block; width: 100%; height: auto; aspect-ratio: 2 / 1; object-fit: cover; border-radius: 24px; margin: 0; }
+.airschool-card-content { flex: 1; display: flex; flex-direction: column; justify-content: space-between; gap: 16px; padding: 0 16px 16px; }
+.airschool h3 { font-size: 16px; line-height: 24px; font-weight: 400; letter-spacing: -.4px; }
+.airschool-card p, .airschool-support-card p { margin-top: 6px; font-size: 12px; line-height: 18px; color: var(--school-muted); }
+.airschool-link { font-size: 14px; line-height: 20px; color: var(--school-muted); font-weight: 500; }
+.airschool-link > span { display: inline-block; margin-left: 3px; }
+.airschool-support-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 20px; }
+.airschool-support-card { display: flex; align-items: center; gap: 20px; padding: 28px; border: 1px solid var(--school-border); border-radius: 32px; background: var(--school-surface); transition: border-color 150ms ease, box-shadow 150ms ease; }
+.airschool-support-icon { display: grid; place-items: center; flex: none; width: 50px; height: 50px; border-radius: 50%; background: var(--school-subtle); color: var(--school-muted); }
+.airschool-support-copy { flex: 1; }
+.airschool-support-card > .airschool-link { flex: none; }
+.airschool :is(.airschool-card, .airschool-support-card, .airschool-search, .airschool-shortcuts a):hover { border-color: #aab6cb; box-shadow: 0 4px 16px -10px #33415555; }
+.airschool :is(a, button):focus-visible { outline: 3px solid #4079ff; outline-offset: 4px; }
+html.dark .airschool { --school-text: #f4f5f7; --school-muted: #aeb7c8; --school-border: #303640; --school-surface: #111316; --school-subtle: #1b1e24; background-image: none; }
+html.dark .airschool .airschool-description { color: #c4cbd6; }
+html.dark .airschool-card img { filter: brightness(.88); }
+@media (max-width: 1000px) {
+  .airschool-support-card { flex-wrap: wrap; gap: 16px; padding: 24px; }
+  .airschool-support-card > .airschool-link { width: 100%; padding-left: 66px; }
+}
+@media (max-width: 700px) {
+  .airschool { padding: 48px 0; }
+  .airschool-content { padding: 0 20px; gap: 48px; }
+  .airschool h1 { font-size: 36px; line-height: 44px; letter-spacing: -1.2px; }
+  .airschool .airschool-description { font-size: 15px; line-height: 26px; }
+  .airschool-hero { gap: 28px; }
+  .airschool-categories, .airschool-support-grid { grid-template-columns: minmax(0, 1fr); }
+  .airschool-section { gap: 24px; }
+  .airschool-shortcut-keys { display: none; }
+  .airschool-shortcuts > span { width: 100%; }
+  .airschool-card { border-radius: 28px; }
+  .airschool-card-content { padding: 0 12px 12px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .airschool :is(.airschool-card, .airschool-support-card) { transition: none; }
+}
