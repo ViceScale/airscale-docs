@@ -22,7 +22,7 @@ test("production candidate is deterministic, indexable, and leaves the source pr
   assert.deepEqual(files, renderPublication());
   const config = JSON.parse(files.get("docs.json"));
   assert.equal(config.seo.metatags.robots, "index, follow");
-  assert.equal(config.navigation.tabs[1].groups[0].pages.includes("api-reference/documentation-corrections"), true);
+  assert.equal(config.navigation.tabs.find(({ tab }) => tab === "API Reference").groups[0].pages.includes("api-reference/documentation-corrections"), true);
   for (const [path, bytes] of files) {
     if (!/\.(mdx|md|txt|json)$/.test(path)) continue;
     const text = bytes.toString();

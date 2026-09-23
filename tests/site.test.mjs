@@ -267,7 +267,7 @@ test("brand configuration and assets match Airscale", () => {
   assert.equal(config.theme, "mint");
   assert.equal(config.name, "Airscale API");
   assert.deepEqual(config.colors, { primary: "#4079FF", light: "#4079FF", dark: "#6F9BFF" });
-  assert.deepEqual(config.logo, { light: "/logo/light.svg", dark: "/logo/dark.svg", href: "https://airscale.io/" });
+  assert.deepEqual(config.logo, { light: "/logo/light.svg", dark: "/logo/dark.svg", href: "/" });
   assert.equal(config.favicon, "/favicon.svg");
   assert.equal(config.appearance.default, "light");
   assert.equal(config.fonts.family, "Poppins");
