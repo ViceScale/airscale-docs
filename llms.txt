@@ -3,7 +3,7 @@
 > Airscale product guides, integration workflows, MCP documentation, and public API reference.
 > Preview documentation is intentionally noindex. Use only the airscale.mintlify.app links in this file.
 
-## Documentation — Start here
+## Home — AirSchool
 
 - [AirSchool — Airscale documentation](https://airscale.mintlify.app/index.md): Master list building, data enrichment, and modern GTM systems with Airscale guides, API references, and best practices.
 
