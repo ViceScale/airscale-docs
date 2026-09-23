@@ -2720,6 +2720,42 @@ Description: Understand endpoint-specific request limits and 429 responses.
 
 Airschool rate limits are endpoint-specific. Each endpoint can enforce a different request limit and time window, so use the value documented on the endpoint page you are calling.
 
+## Limits by endpoint
+
+All numeric limits below apply per workspace. A shared limit is one combined allowance for the named routes.
+
+| Endpoint | Rate limit |
+| --- | --- |
+| [Credit count](/api-reference/credit-count) | No endpoint-specific rate limit is documented. |
+| [Email finder](/api-reference/email-finder) | 3,000 requests per minute per workspace. |
+| [Bulk email finder](/api-reference/email-finder-(bulk)) | 3,000 input items per minute per workspace. |
+| [Mobile finder](/api-reference/mobile-finder) | 3,000 requests per minute per workspace. |
+| [Personal email](/api-reference/personal-email) | 2,000 requests per minute per workspace. |
+| [People URL finder](/api-reference/people-url-finder) | 6 requests per second per workspace. |
+| [People profile](/api-reference/extract-people-profile) | 3,000 requests per minute per workspace. |
+| [Company profile](/api-reference/extract-company-profile) | 3,000 requests per minute per workspace. |
+| [Domain to LinkedIn](/api-reference/domain-to-linkedin) | 180 requests per minute per workspace. |
+| [Reverse email](/api-reference/reverse-email) | 25 requests per second per workspace. |
+| [Reverse phone](/api-reference/reverse-phone) | 2,000 requests per minute per workspace. |
+| [Find people](/api-reference/find-people) | 6 requests per second per workspace. |
+| [Count people](/api-reference/find-people/count) | 6 requests per second per workspace. |
+| [Find companies](/api-reference/find-companies) | 6 requests per second per workspace. |
+| [Company filter values](/api-reference/find-companies/filter-values) | 6 requests per second per workspace. |
+| [Airsearch](/api-reference/airsearch) | 300 requests per minute per workspace. |
+| [Post likers](/api-reference/post-likers) | 180 requests per fixed minute per workspace, shared by post-likers and post-commenters; pagination requests and retries count. |
+| [Post commenters](/api-reference/post-commenters) | 180 requests per fixed minute per workspace, shared by post-likers and post-commenters; pagination requests and retries count. |
+| [WhatsApp checker](/api-reference/miscale-news/whatsapp-check) | 60 requests per minute per workspace for POST, including replays. |
+| [WhatsApp check status](/api-reference/miscale-news/whatsapp-check/status) | No endpoint-specific GET throttle. |
+| [Meta Ads](/api-reference/miscale-news/meta-ads) | 60 requests per minute per workspace. |
+| [Email verifier](/api-reference/miscale-news/email-verifier) | No endpoint-specific throttle. |
+| [Leads Finder](/api-reference/leads-finder) | 5 requests per second per workspace, shared by both Leads Finder routes. |
+| [Leads Finder preview alias](/api-reference/leads-finder/preview) | 5 requests per second per workspace, shared by both Leads Finder routes. |
+| [DNC Checker](/api-reference/dnc-checker) | 5 requests per second per workspace. |
+
+Find people shares its **6 requests per second** with Count people. Find companies shares its **6 requests per second** with Company filter values. These are separate limits for the two endpoint families.
+
+For bulk email, the allowance counts **input items**, not HTTP requests. An endpoint without a documented numeric limit should not be treated as unlimited; use bounded concurrency and handle `429` responses.
+
 ## Handle rate-limit responses
 
 When a request exceeds an endpoint's limit, the API returns `429 Too Many Requests`. Treat the status code as the rate-limit signal; do not depend on an error field or response header unless that endpoint page documents it.
@@ -2751,7 +2787,7 @@ Review the request limit on the endpoint page before setting concurrency:
 
 Source: https://airscale.mintlify.app/api-reference/credit-count.md
 
-Description: Check the remaining credit balance for your Airschool workspace.
+Description: Check the remaining credit balance for your Airschool workspace. Rate limit: No endpoint-specific rate limit is documented.
 
 Read the remaining credit balance for the workspace associated with your API key before starting paid enrichment work.
 
@@ -2771,7 +2807,7 @@ Use your authenticated client to [find people](/api-reference/find-people), or r
 
 Source: https://airscale.mintlify.app/api-reference/find-people.md
 
-Description: Search people using person, role, and company filters.
+Description: Search people using person, role, and company filters. Rate limit: 6 requests per second per workspace.
 
 Search for people using person, role, current-company, and past-experience filters, then page through the matching lead records.
 
@@ -2844,7 +2880,7 @@ Use the same `query` to retrieve the counted audience, [Find companies](/api-ref
 
 Source: https://airscale.mintlify.app/api-reference/leads-finder.md
 
-Description: Search people with Leads Finder filters and page-based pagination.
+Description: Search people with Leads Finder filters and page-based pagination. Rate limit: 5 requests per second per workspace, shared by both Leads Finder routes.
 
 Search for people using person and company filters. This operation uses a `filters` object and zero-based `page` pagination. [Find people](/api-reference/find-people) uses a different `query` model and cursor pagination; their request bodies are not interchangeable.
 
@@ -2906,7 +2942,7 @@ Use [Find people](/api-reference/find-people) if you need its person/current-com
 
 Source: https://airscale.mintlify.app/api-reference/find-companies.md
 
-Description: Search companies using firmographic, location, event, intent, and technology filters.
+Description: Search companies using firmographic, location, event, intent, and technology filters. Rate limit: 6 requests per second per workspace.
 
 Search companies by firmographic, location, event, intent, and technology filters, then page through the matching organizations.
 
@@ -2949,7 +2985,7 @@ Use [Company filter values](/api-reference/find-companies/filter-values) to disc
 
 Source: https://airscale.mintlify.app/api-reference/find-companies/filter-values.md
 
-Description: Search supported values for Find Companies filters.
+Description: Search supported values for Find Companies filters. Rate limit: 6 requests per second per workspace.
 
 Discover accepted values before adding a city, region, industry, topic, or technology filter to [Find companies](/api-reference/find-companies).
 
@@ -3016,7 +3052,7 @@ Copy the returned `value` into the matching filter on [Find companies](/api-refe
 
 Source: https://airscale.mintlify.app/api-reference/airsearch.md
 
-Description: Research the web and return structured answers with Airsearch.
+Description: Research the web and return structured answers with Airsearch. Rate limit: 300 requests per minute per workspace.
 
 Ask a research question and receive a sourced answer, with optional output fields shaped for your application.
 
@@ -3038,7 +3074,7 @@ Use [Find companies](/api-reference/find-companies) when the research target sho
 
 Source: https://airscale.mintlify.app/api-reference/email-finder.md
 
-Description: Find a professional email address for one person.
+Description: Find a professional email address for one person. Rate limit: 3,000 requests per minute per workspace.
 
 Identify one person by LinkedIn profile URL or by name and company, then return a verified professional email when one is found.
 
@@ -3075,7 +3111,7 @@ Use [Bulk email finder](/api-reference/email-finder-(bulk)) when you need asynch
 
 Source: https://airscale.mintlify.app/api-reference/email-finder-(bulk).md
 
-Description: Find professional email addresses for a batch of people.
+Description: Find professional email addresses for a batch of people. Rate limit: 3,000 input items per minute per workspace.
 
 Submit up to 100 people and receive one asynchronous professional-email result per item at your webhook.
 
@@ -3109,7 +3145,7 @@ Use [Email finder](/api-reference/email-finder) for a synchronous single-person 
 
 Source: https://airscale.mintlify.app/api-reference/mobile-finder.md
 
-Description: Find a mobile phone number from a professional profile.
+Description: Find a mobile phone number from a professional profile. Rate limit: 3,000 requests per minute per workspace.
 
 Submit a LinkedIn person profile URL and return a mobile phone number when one is found.
 
@@ -3135,7 +3171,7 @@ Use [Personal email](/api-reference/personal-email) to look for a personal addre
 
 Source: https://airscale.mintlify.app/api-reference/personal-email.md
 
-Description: Find a personal email address from a professional profile.
+Description: Find a personal email address from a professional profile. Rate limit: 2,000 requests per minute per workspace.
 
 Submit a LinkedIn person profile URL and return a personal email address when one is found.
 
@@ -3159,7 +3195,7 @@ Use [People URL finder](/api-reference/people-url-finder) when you have a name a
 
 Source: https://airscale.mintlify.app/api-reference/people-url-finder.md
 
-Description: Find a professional profile URL from person and company details.
+Description: Find a professional profile URL from person and company details. Rate limit: 6 requests per second per workspace.
 
 Identify a person by first name, last name, and company, then return a matching professional profile URL when one is found.
 
@@ -3179,7 +3215,7 @@ Pass the matched URL to [Email finder](/api-reference/email-finder) for professi
 
 Source: https://airscale.mintlify.app/api-reference/extract-people-profile.md
 
-Description: Extract a structured person profile from a professional profile URL.
+Description: Extract a structured person profile from a professional profile URL. Rate limit: 3,000 requests per minute per workspace.
 
 Extract a structured person profile from a recognized LinkedIn URL, normally an `/in/` profile.
 
@@ -3201,7 +3237,7 @@ Use [Company profile](/api-reference/extract-company-profile) for the organizati
 
 Source: https://airscale.mintlify.app/api-reference/extract-company-profile.md
 
-Description: Extract a structured company profile from a company profile URL.
+Description: Extract a structured company profile from a company profile URL. Rate limit: 3,000 requests per minute per workspace.
 
 Extract a structured organization profile from a recognized LinkedIn `/company/` or `/school/` URL.
 
@@ -3223,7 +3259,7 @@ Use [People profile](/api-reference/extract-people-profile) for the person-focus
 
 Source: https://airscale.mintlify.app/api-reference/domain-to-linkedin.md
 
-Description: Find a LinkedIn company URL from a company domain.
+Description: Find a LinkedIn company URL from a company domain. Rate limit: 180 requests per minute per workspace.
 
 Submit one company domain and receive its LinkedIn company URL. The response contains only `linkedin_company_url`.
 
@@ -3257,7 +3293,7 @@ Use [Extract company profile](/api-reference/extract-company-profile) to retriev
 
 Source: https://airscale.mintlify.app/api-reference/reverse-email.md
 
-Description: Find a person profile from an email address.
+Description: Find a person profile from an email address. Rate limit: 25 requests per second per workspace.
 
 Submit an email address and receive the matching person profile when one can be resolved.
 
@@ -3277,7 +3313,7 @@ Use [Reverse phone](/api-reference/reverse-phone) when a phone number is the ide
 
 Source: https://airscale.mintlify.app/api-reference/reverse-phone.md
 
-Description: Find a person profile from a phone number.
+Description: Find a person profile from a phone number. Rate limit: 2,000 requests per minute per workspace.
 
 Submit a phone number and receive the matching person profile when one can be resolved.
 
@@ -3299,7 +3335,7 @@ Use [People profile](/api-reference/extract-people-profile) when you already hav
 
 Source: https://airscale.mintlify.app/api-reference/post-likers.md
 
-Description: Retrieve and enrich people who liked a LinkedIn post.
+Description: Retrieve and enrich people who liked a LinkedIn post. Rate limit: 180 requests per fixed minute per workspace, shared by post-likers and post-commenters; pagination requests and retries count.
 
 Retrieve one synchronous page of people who liked a LinkedIn post, with public profile fields enriched for each returned engagement.
 
@@ -3361,7 +3397,7 @@ Use [Post commenters](/api-reference/post-commenters) for the other engagement t
 
 Source: https://airscale.mintlify.app/api-reference/post-commenters.md
 
-Description: Retrieve and enrich people who commented on a LinkedIn post.
+Description: Retrieve and enrich people who commented on a LinkedIn post. Rate limit: 180 requests per fixed minute per workspace, shared by post-likers and post-commenters; pagination requests and retries count.
 
 Retrieve one synchronous page of people who commented on a LinkedIn post, with public profile fields enriched for each returned engagement.
 
@@ -3423,7 +3459,7 @@ Use [Post likers](/api-reference/post-likers) for the other engagement type, or 
 
 Source: https://airscale.mintlify.app/api-reference/miscale-news/whatsapp-check.md
 
-Description: Check whether one phone number is available on WhatsApp.
+Description: Check whether one phone number is available on WhatsApp. Rate limit: 60 requests per minute per workspace for POST, including replays.
 
 Check one phone number in strict E.164 format: a leading `+` followed by 7–15 digits, without spaces. The body must contain exactly one `phone` field and fit within 16 KiB.
 
@@ -3449,7 +3485,7 @@ A recorded insufficient-credit rejection returns `403`; a known unavailable chec
 
 Source: https://airscale.mintlify.app/api-reference/miscale-news/whatsapp-check/status.md
 
-Description: Reconcile a WhatsApp check using its operation ID.
+Description: Reconcile a WhatsApp check using its operation ID. Rate limit: No endpoint-specific GET throttle.
 
 Read a WhatsApp check in the authenticated workspace using the returned `operation_id`. This read-only lookup has no request body and does not start another check or charge additional credits. There is no endpoint-specific GET throttle.
 
@@ -3471,7 +3507,7 @@ Return to [WhatsApp checker](/api-reference/miscale-news/whatsapp-check). Keep t
 
 Source: https://airscale.mintlify.app/api-reference/miscale-news/meta-ads.md
 
-Description: Look up Meta ads for a company domain.
+Description: Look up Meta ads for a company domain. Rate limit: 60 requests per minute per workspace.
 
 Look up Meta ads for one company. Send exactly one `domain` field: a bare hostname or HTTP(S) URL. Paths and queries are ignored after normalization. IP literals, credentials, non-default ports, and invalid domain labels are rejected. The JSON body must fit within 16 KiB.
 
@@ -3497,7 +3533,7 @@ Review [credit balance](/api-reference/credit-count) or [rate limits](/api-refer
 
 Source: https://airscale.mintlify.app/api-reference/miscale-news/email-verifier.md
 
-Description: Verify the deliverability of one email address.
+Description: Verify the deliverability of one email address. Rate limit: No endpoint-specific throttle.
 
 Verify one email address using your workspace API key. Send exactly one `email` field in a JSON body of at most **16 KiB**. Surrounding whitespace is trimmed, and the trimmed address must be at most 320 characters. The legacy `/email-verifier` route remains available.
 
@@ -3529,7 +3565,7 @@ Use [Email finder](/api-reference/email-finder) to find a work email, or check y
 
 Source: https://airscale.mintlify.app/api-reference/dnc-checker.md
 
-Description: Check whether a US phone number is listed on DNC.
+Description: Check whether a US phone number is listed on DNC. Rate limit: 5 requests per second per workspace.
 
 Submit a US phone number using `phone`. The operation normalizes accepted numbers to `+1` format and returns whether the number is listed on DNC.
 
