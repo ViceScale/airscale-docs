@@ -5,6 +5,10 @@ canonical: "https://docs.airscale.io/api-reference/job-change-monitors/list"
 openapi: "/openapi.json GET /v1/job-change-monitors"
 ---
 
+<Note>
+Job-change monitoring requires a **V2 workspace API key**. V1 (Bubble) API keys are not supported by these endpoints. Monitors and monitoring credits belong to the V2 workspace associated with the key.
+</Note>
+
 List every job-change monitor in the authenticated workspace. Each monitor includes its current status, schedule, active profile count, and unread event count.
 
 <Info>

@@ -24,6 +24,10 @@ Include this header on every API request:
 Authorization: Bearer $AIRSCALE_API_KEY
 ```
 
+## Job-change monitoring keys
+
+Job-change monitoring requires a **V2 workspace API key**. V1 (Bubble) API keys are not supported by the `/v1/job-change-monitors` endpoints. Use the key from your V2 workspace; monitors and monitoring credits belong to that workspace.
+
 ## Handle unauthorized requests
 
 A missing Bearer token or an invalid API key returns `401 Unauthorized`. Check that the header is present, that it starts with `Bearer`, and that your deployed secret contains the current key before retrying.

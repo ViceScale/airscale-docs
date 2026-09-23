@@ -75,7 +75,6 @@
 - [API Overview](https://docs.airscale.io/api-reference/api-overview.md): Authenticate with Airschool and make your first API request.
 - [Authentication](https://docs.airscale.io/api-reference/authentication.md): Create, send, protect, and rotate an Airschool API key.
 - [Rate limits](https://docs.airscale.io/api-reference/rate-limits.md): Understand endpoint-specific request limits and 429 responses.
-- [Corrections to the previous API documentation](https://docs.airscale.io/api-reference/documentation-corrections.md): Update integrations that relied on older request examples, response shapes, or billing descriptions.
 
 ## API Reference — Account
 

@@ -5,7 +5,13 @@ canonical: "https://docs.airscale.io/api-reference/job-change-monitors/events/re
 openapi: "/openapi.json POST /v1/job-change-monitors/{monitor_id}/events/{event_id}/read"
 ---
 
+<Note>
+Job-change monitoring requires a **V2 workspace API key**. V1 (Bubble) API keys are not supported by these endpoints. Monitors and monitoring credits belong to the V2 workspace associated with the key.
+</Note>
+
 Mark one event as read after your integration has handled it. The response returns the event with its `read_at` timestamp, and the monitor's unread count decreases.
+
+Send an empty JSON body (`{}`) with `Content-Type: application/json`. Omitting the body returns `400 Invalid JSON` from the public API.
 
 <Info>
 Treat the event ID as the durable acknowledgement key. Webhook retries use the same event ID, so processing it idempotently prevents duplicate downstream work.

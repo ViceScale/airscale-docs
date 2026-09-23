@@ -5,6 +5,10 @@ canonical: "https://docs.airscale.io/api-reference/job-change-monitors/delete"
 openapi: "/openapi.json DELETE /v1/job-change-monitors/{monitor_id}"
 ---
 
+<Note>
+Job-change monitoring requires a **V2 workspace API key**. V1 (Bubble) API keys are not supported by these endpoints. Monitors and monitoring credits belong to the V2 workspace associated with the key.
+</Note>
+
 Delete a monitor by `monitor_id`. This permanently removes the monitor, its profile baselines, and its events from the workspace.
 
 <Warning>

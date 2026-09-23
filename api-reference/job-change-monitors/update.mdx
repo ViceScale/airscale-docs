@@ -5,6 +5,10 @@ canonical: "https://docs.airscale.io/api-reference/job-change-monitors/update"
 openapi: "/openapi.json PATCH /v1/job-change-monitors/{monitor_id}"
 ---
 
+<Note>
+Job-change monitoring requires a **V2 workspace API key**. V1 (Bubble) API keys are not supported by these endpoints. Monitors and monitoring credits belong to the V2 workspace associated with the key.
+</Note>
+
 Update one or more monitor fields with `PATCH`. Send a new `name`, a supported `frequency`, an `action` of `pause`, or an `action` of `resume`.
 
 <Warning>
