@@ -14,15 +14,6 @@
   <url><loc>https://docs.airscale.io/api-reference/find-companies</loc></url>
   <url><loc>https://docs.airscale.io/api-reference/find-companies/filter-values</loc></url>
   <url><loc>https://docs.airscale.io/api-reference/find-people</loc></url>
-  <url><loc>https://docs.airscale.io/api-reference/job-change-monitors/create</loc></url>
-  <url><loc>https://docs.airscale.io/api-reference/job-change-monitors/delete</loc></url>
-  <url><loc>https://docs.airscale.io/api-reference/job-change-monitors/events</loc></url>
-  <url><loc>https://docs.airscale.io/api-reference/job-change-monitors/events/read</loc></url>
-  <url><loc>https://docs.airscale.io/api-reference/job-change-monitors/get</loc></url>
-  <url><loc>https://docs.airscale.io/api-reference/job-change-monitors/list</loc></url>
-  <url><loc>https://docs.airscale.io/api-reference/job-change-monitors/profiles/add</loc></url>
-  <url><loc>https://docs.airscale.io/api-reference/job-change-monitors/profiles/remove</loc></url>
-  <url><loc>https://docs.airscale.io/api-reference/job-change-monitors/update</loc></url>
   <url><loc>https://docs.airscale.io/api-reference/leads-finder</loc></url>
   <url><loc>https://docs.airscale.io/api-reference/miscale-news/email-verifier</loc></url>
   <url><loc>https://docs.airscale.io/api-reference/miscale-news/meta-ads</loc></url>
