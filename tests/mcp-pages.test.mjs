@@ -285,7 +285,7 @@ function directColumnBodies(body, path) {
 
 test("MCP and Agents mirrors the four-page AirSchool getting-started flow", () => {
   const config = JSON.parse(readFileSync("docs.json", "utf8"));
-  assert.equal(config.navigation.tabs.length, 5);
+  assert.equal(config.navigation.tabs.length, 6);
   assert.deepEqual(config.navigation.tabs.find(({ tab }) => tab === "API Reference"), API_REFERENCE_TAB);
   assert.deepEqual(config.navigation.tabs.find(({ tab }) => tab === "MCP & Agents"), { tab: "MCP & Agents", groups: MCP_GROUPS });
   assert.equal(config.styling.eyebrows, "breadcrumbs");

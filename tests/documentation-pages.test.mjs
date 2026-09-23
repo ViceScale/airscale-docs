@@ -26,8 +26,8 @@ test("Documentation mirrors all 48 live sidebar routes in the five source groups
   const paths = manifest.navigation.flatMap(({ pages }) => pages);
   assert.equal(paths.length, 48);
   assert.equal(new Set(paths).size, 48);
-  assert.deepEqual(config.navigation.tabs.map(({ tab }) => tab), ["Documentation", "API Reference", "MCP & Agents", "CLI", "Use cases"]);
-  assert.deepEqual(config.navigation.tabs[0], { tab: "Documentation", groups: [{ group: "Start here", pages: ["index"] }, ...manifest.navigation] });
+  assert.deepEqual(config.navigation.tabs.map(({ tab }) => tab), ["Home", "Documentation", "API Reference", "MCP & Agents", "CLI", "Use cases"]);
+  assert.deepEqual(config.navigation.tabs.find(({ tab }) => tab === "Documentation"), { tab: "Documentation", groups: manifest.navigation });
   assert.deepEqual(manifest.pages.map(({ path }) => path), paths);
   assert.deepEqual(readdirSync("docs").filter((name) => name.endsWith(".mdx")).sort(), paths.map((path) => `${path.slice(5)}.mdx`).sort());
   assert.ok(paths.includes("docs/filer-tables"), "preserve the source URL even though its slug has a typo");
@@ -95,4 +95,17 @@ test("every migrated image and video matches the downloaded source checksum", ()
     assert.equal(bytes.length, asset.bytes, asset.path);
     assert.equal(hash(bytes), asset.sha256, asset.path);
   }
+});
+
+
+test("Documentation opens a sidebar guide while Home owns the custom landing page", () => {
+  const home = config.navigation.tabs.find(({ tab }) => tab === "Home");
+  assert.deepEqual(home?.groups.flatMap(({ pages }) => pages), ["index"]);
+  const docs = config.navigation.tabs.find(({ tab }) => tab === "Documentation");
+  const entry = docs.groups[0].pages[0];
+  assert.equal(entry, "docs/sales-navigator");
+  const entrySource = readFileSync(`${entry}.mdx`, "utf8");
+  assert.doesNotMatch(entrySource.match(/^---\n([\s\S]*?)\n---/)[1], /^mode: ["']?custom/m);
+  assert.equal(docs.groups.flatMap(({ pages }) => pages).length, 48);
+  assert.equal(config.logo.href, "/");
 });

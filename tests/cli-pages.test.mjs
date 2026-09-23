@@ -79,7 +79,7 @@ function validateExample(line) {
 test("CLI follows MCP and exposes onboarding, reference, and troubleshooting pages", () => {
   const config = JSON.parse(readFileSync("docs.json", "utf8"));
   const tabs = config.navigation.tabs;
-  assert.deepEqual(tabs.map(({ tab }) => tab), ["Documentation", "API Reference", "MCP & Agents", "CLI", "Use cases"]);
+  assert.deepEqual(tabs.map(({ tab }) => tab), ["Home", "Documentation", "API Reference", "MCP & Agents", "CLI", "Use cases"]);
   assert.deepEqual(tabs[tabs.findIndex(({ tab }) => tab === "MCP & Agents") + 1], {
     tab: "CLI", groups: [{ group: "Getting started", pages: paths }]
   });
