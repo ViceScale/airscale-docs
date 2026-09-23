@@ -3,7 +3,7 @@
 > Airscale product guides, integration workflows, MCP documentation, and public API reference.
 > Official Airscale documentation at docs.airscale.io.
 
-## Documentation — Start here
+## Home — AirSchool
 
 - [AirSchool — Airscale documentation](https://docs.airscale.io/index.md): Master list building, data enrichment, and modern GTM systems with Airscale guides, API references, and best practices.
 
