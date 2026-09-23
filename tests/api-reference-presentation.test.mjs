@@ -44,3 +44,17 @@ test("Find people includes a count request and response validated against the co
   assert.equal(ajv.validate(count.requestBody.content["application/json"].schema, JSON.parse(request[1])), true, ajv.errorsText());
   assert.equal(ajv.validate(count.responses["200"].content["application/json"].schema, JSON.parse(response[1])), true, ajv.errorsText());
 });
+
+test("every endpoint exposes its documented rate limit in the page header and overview", () => {
+  const catalog = JSON.parse(readFileSync("contracts/public-api-operations.json", "utf8"));
+  const overview = readFileSync("api-reference/rate-limits.mdx", "utf8");
+  for (const { page, method, path } of catalog.operations) {
+    const limit = spec.paths[path][method.toLowerCase()]["x-airscale-rate-limit"];
+    const source = readFileSync(`${page}.mdx`, "utf8");
+    const description = source.match(/^description: (".*")$/m);
+    assert.ok(description, `${page} must have a visible header description`);
+    assert.ok(JSON.parse(description[1]).includes(`Rate limit: ${limit}`), `${page}: header must expose ${limit}`);
+    assert.ok(overview.includes(`](/${page})`), `${page}: rate-limit overview must link to the operation`);
+    assert.ok(overview.includes(limit), `${page}: rate-limit overview must preserve its scope and window`);
+  }
+});
