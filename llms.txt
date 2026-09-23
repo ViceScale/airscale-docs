@@ -78,44 +78,44 @@
 
 ## API Reference — Account
 
-- [Credit count](https://docs.airscale.io/api-reference/credit-count.md): Check the remaining credit balance for your Airschool workspace.
+- [Credit count](https://docs.airscale.io/api-reference/credit-count.md): Check the remaining credit balance for your Airschool workspace. Rate limit: No endpoint-specific rate limit is documented.
 
 ## API Reference — Search and discovery
 
-- [Find people](https://docs.airscale.io/api-reference/find-people.md): Search people using person, role, and company filters.
-- [Leads Finder](https://docs.airscale.io/api-reference/leads-finder.md): Search people with Leads Finder filters and page-based pagination.
-- [Find companies](https://docs.airscale.io/api-reference/find-companies.md): Search companies using firmographic, location, event, intent, and technology filters.
-- [Company filter values](https://docs.airscale.io/api-reference/find-companies/filter-values.md): Search supported values for Find Companies filters.
-- [Airsearch](https://docs.airscale.io/api-reference/airsearch.md): Research the web and return structured answers with Airsearch.
+- [Find people](https://docs.airscale.io/api-reference/find-people.md): Search people using person, role, and company filters. Rate limit: 6 requests per second per workspace.
+- [Leads Finder](https://docs.airscale.io/api-reference/leads-finder.md): Search people with Leads Finder filters and page-based pagination. Rate limit: 5 requests per second per workspace, shared by both Leads Finder routes.
+- [Find companies](https://docs.airscale.io/api-reference/find-companies.md): Search companies using firmographic, location, event, intent, and technology filters. Rate limit: 6 requests per second per workspace.
+- [Company filter values](https://docs.airscale.io/api-reference/find-companies/filter-values.md): Search supported values for Find Companies filters. Rate limit: 6 requests per second per workspace.
+- [Airsearch](https://docs.airscale.io/api-reference/airsearch.md): Research the web and return structured answers with Airsearch. Rate limit: 300 requests per minute per workspace.
 
 ## API Reference — Contact data
 
-- [Email finder](https://docs.airscale.io/api-reference/email-finder.md): Find a professional email address for one person.
-- [Bulk email finder](https://docs.airscale.io/api-reference/email-finder-(bulk).md): Find professional email addresses for a batch of people.
-- [Mobile finder](https://docs.airscale.io/api-reference/mobile-finder.md): Find a mobile phone number from a professional profile.
-- [Personal email](https://docs.airscale.io/api-reference/personal-email.md): Find a personal email address from a professional profile.
-- [People URL finder](https://docs.airscale.io/api-reference/people-url-finder.md): Find a professional profile URL from person and company details.
+- [Email finder](https://docs.airscale.io/api-reference/email-finder.md): Find a professional email address for one person. Rate limit: 3,000 requests per minute per workspace.
+- [Bulk email finder](https://docs.airscale.io/api-reference/email-finder-(bulk).md): Find professional email addresses for a batch of people. Rate limit: 3,000 input items per minute per workspace.
+- [Mobile finder](https://docs.airscale.io/api-reference/mobile-finder.md): Find a mobile phone number from a professional profile. Rate limit: 3,000 requests per minute per workspace.
+- [Personal email](https://docs.airscale.io/api-reference/personal-email.md): Find a personal email address from a professional profile. Rate limit: 2,000 requests per minute per workspace.
+- [People URL finder](https://docs.airscale.io/api-reference/people-url-finder.md): Find a professional profile URL from person and company details. Rate limit: 6 requests per second per workspace.
 
 ## API Reference — Profiles and reverse lookup
 
-- [People profile](https://docs.airscale.io/api-reference/extract-people-profile.md): Extract a structured person profile from a professional profile URL.
-- [Company profile](https://docs.airscale.io/api-reference/extract-company-profile.md): Extract a structured company profile from a company profile URL.
-- [Domain to LinkedIn](https://docs.airscale.io/api-reference/domain-to-linkedin.md): Find a LinkedIn company URL from a company domain.
-- [Reverse email](https://docs.airscale.io/api-reference/reverse-email.md): Find a person profile from an email address.
-- [Reverse phone](https://docs.airscale.io/api-reference/reverse-phone.md): Find a person profile from a phone number.
+- [People profile](https://docs.airscale.io/api-reference/extract-people-profile.md): Extract a structured person profile from a professional profile URL. Rate limit: 3,000 requests per minute per workspace.
+- [Company profile](https://docs.airscale.io/api-reference/extract-company-profile.md): Extract a structured company profile from a company profile URL. Rate limit: 3,000 requests per minute per workspace.
+- [Domain to LinkedIn](https://docs.airscale.io/api-reference/domain-to-linkedin.md): Find a LinkedIn company URL from a company domain. Rate limit: 180 requests per minute per workspace.
+- [Reverse email](https://docs.airscale.io/api-reference/reverse-email.md): Find a person profile from an email address. Rate limit: 25 requests per second per workspace.
+- [Reverse phone](https://docs.airscale.io/api-reference/reverse-phone.md): Find a person profile from a phone number. Rate limit: 2,000 requests per minute per workspace.
 
 ## API Reference — Post engagement
 
-- [Post likers](https://docs.airscale.io/api-reference/post-likers.md): Retrieve and enrich people who liked a LinkedIn post.
-- [Post commenters](https://docs.airscale.io/api-reference/post-commenters.md): Retrieve and enrich people who commented on a LinkedIn post.
+- [Post likers](https://docs.airscale.io/api-reference/post-likers.md): Retrieve and enrich people who liked a LinkedIn post. Rate limit: 180 requests per fixed minute per workspace, shared by post-likers and post-commenters; pagination requests and retries count.
+- [Post commenters](https://docs.airscale.io/api-reference/post-commenters.md): Retrieve and enrich people who commented on a LinkedIn post. Rate limit: 180 requests per fixed minute per workspace, shared by post-likers and post-commenters; pagination requests and retries count.
 
 ## API Reference — Miscellaneous
 
-- [WhatsApp checker](https://docs.airscale.io/api-reference/miscale-news/whatsapp-check.md): Check whether one phone number is available on WhatsApp.
-- [WhatsApp check status](https://docs.airscale.io/api-reference/miscale-news/whatsapp-check/status.md): Reconcile a WhatsApp check using its operation ID.
-- [Meta Ads](https://docs.airscale.io/api-reference/miscale-news/meta-ads.md): Look up Meta ads for a company domain.
-- [Email verifier](https://docs.airscale.io/api-reference/miscale-news/email-verifier.md): Verify the deliverability of one email address.
-- [DNC Checker](https://docs.airscale.io/api-reference/dnc-checker.md): Check whether a US phone number is listed on DNC.
+- [WhatsApp checker](https://docs.airscale.io/api-reference/miscale-news/whatsapp-check.md): Check whether one phone number is available on WhatsApp. Rate limit: 60 requests per minute per workspace for POST, including replays.
+- [WhatsApp check status](https://docs.airscale.io/api-reference/miscale-news/whatsapp-check/status.md): Reconcile a WhatsApp check using its operation ID. Rate limit: No endpoint-specific GET throttle.
+- [Meta Ads](https://docs.airscale.io/api-reference/miscale-news/meta-ads.md): Look up Meta ads for a company domain. Rate limit: 60 requests per minute per workspace.
+- [Email verifier](https://docs.airscale.io/api-reference/miscale-news/email-verifier.md): Verify the deliverability of one email address. Rate limit: No endpoint-specific throttle.
+- [DNC Checker](https://docs.airscale.io/api-reference/dnc-checker.md): Check whether a US phone number is listed on DNC. Rate limit: 5 requests per second per workspace.
 
 ## MCP & Agents — Getting started
 
