@@ -19,8 +19,7 @@ const BODYLESS_OPERATIONS = new Set([
   "GET /v1/job-change-monitors/{monitor_id}",
   "DELETE /v1/job-change-monitors/{monitor_id}",
   "DELETE /v1/job-change-monitors/{monitor_id}/profiles/{profile_id}",
-  "GET /v1/job-change-monitors/{monitor_id}/events",
-  "POST /v1/job-change-monitors/{monitor_id}/events/{event_id}/read"
+  "GET /v1/job-change-monitors/{monitor_id}/events"
 ]);
 const PRIVATE_IDENTITY_FIELDS = new Set(["provider", "verifier", "provider_internal"]);
 const PROVIDER_IDENTITIES = /\b(?:Prospeo|Icypeas|RapidAPI|Leadmagic|SalesQL|Limadata|ContactOut|Wiza|Forager|Bounceban|Findymail|Trykitt|Kitt|A-?Leads|Explorium|OpenAI|Serper|Jina|HistoricalImport|EmailLogCache|Supabase|Bubble|Durable Object)\b/i;

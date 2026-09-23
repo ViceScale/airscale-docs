@@ -11,7 +11,7 @@ import {
 } from "./helpers/content-safety.mjs";
 
 const GROUPS = [
-  ["Start here", ["api-reference/api-overview", "api-reference/authentication", "api-reference/rate-limits", "api-reference/documentation-corrections"]],
+  ["Start here", ["api-reference/api-overview", "api-reference/authentication", "api-reference/rate-limits"]],
   ["Account", ["api-reference/credit-count"]],
   ["Search and discovery", [
     "api-reference/find-people",
@@ -51,7 +51,7 @@ const GROUPS = [
 
 // Keep the legacy Count URL covered even though it is no longer in navigation.
 const PAGE_PATHS = [...GROUPS.flatMap(([, pages]) => pages), "api-reference/find-people/count", "api-reference/leads-finder/preview"];
-const GUIDE_PATHS = ["api-reference/api-overview", "api-reference/authentication", "api-reference/rate-limits", "api-reference/documentation-corrections"];
+const GUIDE_PATHS = ["api-reference/api-overview", "api-reference/authentication", "api-reference/rate-limits"];
 const EXPECTED_API_TAB = {
   tab: "API Reference",
   groups: GROUPS.map(([group, pages, options]) => ({ group, pages, ...(options ?? {}) }))
@@ -660,7 +660,7 @@ const DURABLE_OPERATION_GUIDANCE = {
   "api-reference/job-change-monitors/profiles/add": [/already active/i, /new baseline/i, /10,000-profile limit/i, /8 MiB \(8,388,608 bytes\)/i, /same monitor/i],
   "api-reference/job-change-monitors/profiles/remove": [/Soft-remove/i, /event history/i, /new profile ID/i],
   "api-reference/job-change-monitors/events": [/next_cursor/i, /external_id/i, /durable fallback/i],
-  "api-reference/job-change-monitors/events/read": [/event ID/i, /read_at/i, /does not delete/i]
+  "api-reference/job-change-monitors/events/read": [/event ID/i, /read_at/i, /does not delete/i, /empty JSON body/, /400 Invalid JSON/]
 };
 
 test("operation wrappers retain durable rate, credit, retry, and asynchronous guidance", () => {
@@ -668,6 +668,10 @@ test("operation wrappers retain durable rate, credit, retry, and asynchronous gu
   for (const [page, patterns] of Object.entries(DURABLE_OPERATION_GUIDANCE)) {
     const { body } = readPage(page);
     for (const pattern of patterns) assert.match(body, pattern, `${page} must retain ${pattern}`);
+    if (page.startsWith("api-reference/job-change-monitors/")) {
+      assert.match(body, /V2 workspace API key/);
+      assert.match(body, /V1 \(Bubble\) API keys are not supported/);
+    }
   }
 });
 
