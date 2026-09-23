@@ -5,7 +5,7 @@
 
 ## Documentation — Start here
 
-- [Airscale documentation](https://airscale.mintlify.app/index.md): Learn to build prospect lists, enrich contact data, and connect Airscale through its API, MCP server, or command-line tools.
+- [AirSchool — Airscale documentation](https://airscale.mintlify.app/index.md): Master list building, data enrichment, and modern GTM systems with Airscale guides, API references, and best practices.
 
 ## Documentation — Build lists
 

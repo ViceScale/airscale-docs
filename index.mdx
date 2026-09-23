@@ -1,34 +1,72 @@
 ---
-title: "Airscale documentation"
-description: "Learn to build prospect lists, enrich contact data, and connect Airscale through its API, MCP server, or command-line tools."
+title: "AirSchool — Airscale documentation"
+description: "Master list building, data enrichment, and modern GTM systems with Airscale guides, API references, and best practices."
 canonical: "https://airscale.mintlify.app/"
+mode: "custom"
 ---
 
-Find the guide or API reference you need to build lists, enrich contacts, and automate your workflow.
-
-<CardGroup cols={2}>
-  <Card title="Use Airscale" icon="book-open" href="/usecases/quick-beginner-guide">
-    Start with the beginner guide, then explore product workflows for building and enriching prospect lists.
-  </Card>
-  <Card title="Build with the API" icon="code" href="/api-reference/api-overview">
-    Set up authentication and explore endpoint inputs, responses, rate limits, and credit costs.
-  </Card>
-</CardGroup>
-
-## Connect your tools
-
-<CardGroup cols={2}>
-  <Card title="MCP and AI agents" icon="bot" href="/mcp/airscale-mcp-server">
-    Connect supported AI tools to Airscale and understand the available operations.
-  </Card>
-  <Card title="Command-line tools" icon="terminal" href="/cli/overview">
-    Install the CLI, authenticate, and preview file enrichment before spending credits.
-  </Card>
-</CardGroup>
-
-## Popular guides
-
-- [Find people](/docs/find-people)
-- [Find companies](/docs/find-companies)
-- [Find a professional email](/api-reference/email-finder)
-- [Use cases](/usecases/templates)
+<div className="airschool">
+  <div className="airschool-content">
+    <section className="airschool-hero" aria-labelledby="airschool-title">
+      <div className="airschool-intro">
+        <p className="airschool-badge">Master list building, data enrichment, and modern GTM systems</p>
+        <h1 id="airschool-title">Welcome to AirSchool</h1>
+        <p className="airschool-description">Clear, structured documentation to help you get started faster. Explore guides, API references, and best practices.</p>
+      </div>
+      <div className="airschool-search-area">
+        <button type="button" className="airschool-search" data-airschool-search="true" aria-label="Search AirSchool documentation" aria-haspopup="dialog">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" aria-hidden="true"><path d="M17.5 10.5a7 7 0 1 1-14 0 7 7 0 0 1 14 0Z" /><path d="m16 16 5 5" /></svg>
+          <span>Search (e.g. integrations, API)</span>
+          <span className="airschool-shortcut-keys" aria-hidden="true"><kbd>⌘</kbd><kbd>K</kbd></span>
+        </button>
+        <div role="navigation" className="airschool-shortcuts" aria-label="Popular guides">
+          <span>Search shortcuts:</span>
+          <a href="/docs/sales-navigator">Scrape a Sales Navigator search</a>
+          <a href="/docs/professional-emails">Find Emails</a>
+          <a href="/docs/phone-numbers">Find Mobiles</a>
+        </div>
+      </div>
+    </section>
+    <section className="airschool-section" aria-labelledby="airschool-categories">
+      <h2 id="airschool-categories">Explore by category</h2>
+      <div className="airschool-categories">
+        <a className="airschool-card" href="/docs/sales-navigator">
+          <img src="/images/airschool/documentation.png" alt="" noZoom width="1034" height="589" />
+          <div className="airschool-card-content">
+            <div><h3>Documentation</h3><p>Get started with Airscale</p></div>
+            <span className="airschool-link">Get started <span aria-hidden="true">↗</span></span>
+          </div>
+        </a>
+        <a className="airschool-card" href="/api-reference/api-overview">
+          <img src="/images/airschool/api-reference.png" alt="" noZoom width="1034" height="589" />
+          <div className="airschool-card-content">
+            <div><h3>API Reference</h3><p>Complete info for developers to build with our API</p></div>
+            <span className="airschool-link">Go to API Reference <span aria-hidden="true">↗</span></span>
+          </div>
+        </a>
+        <a className="airschool-card" href="/usecases/quick-beginner-guide">
+          <img src="/images/airschool/use-cases.png" alt="" noZoom width="1034" height="589" />
+          <div className="airschool-card-content">
+            <div><h3>Use cases</h3><p>Tutorials on how to use Airscale in your daily workflow</p></div>
+            <span className="airschool-link">Go to use cases <span aria-hidden="true">↗</span></span>
+          </div>
+        </a>
+      </div>
+    </section>
+    <section className="airschool-section" aria-labelledby="airschool-support">
+      <h2 id="airschool-support">Demo &amp; support</h2>
+      <div className="airschool-support-grid">
+        <a className="airschool-support-card" href="https://calendly.com/airscale/demo" target="_blank" rel="noopener noreferrer">
+          <span className="airschool-support-icon" aria-hidden="true"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round"><rect x="4" y="5" width="16" height="16" rx="2" /><path d="M8 3v4m8-4v4M4 11h16" /></svg></span>
+          <div className="airschool-support-copy"><h3>Chat with us</h3><p>Introductory discovery call to better understand your needs and give you an overview of Airscale</p></div>
+          <span className="airschool-link">Book now <span aria-hidden="true">↗</span></span>
+        </a>
+        <a className="airschool-support-card" href="mailto:support@airscale.io">
+          <span className="airschool-support-icon" aria-hidden="true"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round"><path d="M21 11.5a8.5 8.5 0 0 1-8.5 8.5H4l-1 1v-9.5a9 9 0 0 1 18 0Z" /><path d="M8 12h.01M12 12h.01M16 12h.01" /></svg></span>
+          <div className="airschool-support-copy"><h3>Need help?</h3><p>Get in touch with our support team.</p></div>
+          <span className="airschool-link">Contact Support <span aria-hidden="true">↗</span></span>
+        </a>
+      </div>
+    </section>
+  </div>
+</div>
