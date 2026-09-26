@@ -4,7 +4,7 @@ Date reported: 2026-09-26
 Status: fixed locally
 Area: other
 Related issue: User request
-Related PR: Not created yet; local documentation branch docs/user-facing-api-reference.
+Related PR: https://github.com/ViceScale/airscale-docs/pull/46
 Related tests: tests/api-reference-presentation.test.mjs; tests/site.test.mjs; tests/openapi.test.mjs
 
 ## User Report
