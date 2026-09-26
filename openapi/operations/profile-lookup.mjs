@@ -50,12 +50,11 @@ const profileRequestSchema = {
   required: ["linkedin_profile_url"],
   additionalProperties: false,
   properties: {
-    linkedin_profile_url: { type: "string", minLength: 1 },
-    mode: { type: "string", enum: ["p1", "p2", "p3"] }
+    linkedin_profile_url: { type: "string", minLength: 1 }
   }
 };
 
-const profileRequestDescription = "The LinkedIn URL is trimmed and a missing scheme is normalized. The hostname must be linkedin.com or a subdomain, and the first path segment must be /in/, /company/, or /school/. Query and extra path segments are canonicalized away. The submitted URL type chooses the person or company response and successful credit cost, regardless of which of these two routes receives it. When mode is omitted, the response can use a variable source shape; modes p2 and p3 request normalized shapes.";
+const profileRequestDescription = "The LinkedIn URL is trimmed and a missing scheme is normalized. The hostname must be linkedin.com or a subdomain, and the first path segment must be /in/, /company/, or /school/. Query and extra path segments are canonicalized away. The submitted URL type chooses the person or company response and successful credit cost, regardless of which of these two routes receives it. Response fields and their types can vary; check for missing or null values before using them.";
 
 const profileResponseSchema = {
   anyOf: [
@@ -108,7 +107,7 @@ function profileOperation({ operationId, summary, description, requestExample, r
       profileRequestSchema,
       {
         profile: {
-          summary: "Normalized profile extraction",
+          summary: "Extract a LinkedIn profile",
           value: requestExample
         }
       },
@@ -122,7 +121,7 @@ function profileOperation({ operationId, summary, description, requestExample, r
             schema: profileResponseSchema,
             examples: {
               success: {
-                summary: "Normalized profile",
+                summary: "Example profile",
                 value: responseExample
               }
             }
@@ -140,11 +139,11 @@ const reversePhoneSuccessSchema = {
   additionalProperties: true,
   properties: {
     body: { type: "object", additionalProperties: true },
-    url: { description: "A pass-through public profile URL value when supplied by the lookup source." },
-    identifier: { description: "A pass-through public profile identifier when supplied by the lookup source." },
-    link: { description: "A pass-through link value whose type and shape vary by lookup source." },
-    firstname: { description: "A pass-through public first-name value when supplied by the lookup source." },
-    lastname: { description: "A pass-through public last-name value when supplied by the lookup source." }
+    url: { description: "Profile URL, when available." },
+    identifier: { description: "Profile identifier, when available." },
+    link: { description: "Profile links, when available. Check the value type before using it." },
+    firstname: { description: "First name, when available. Check the value type before using it." },
+    lastname: { description: "Last name, when available. Check the value type before using it." }
   }
 };
 
@@ -165,8 +164,7 @@ export const profileLookupOperations = [
       summary: "Extract a person profile",
       description: "Extracts public profile data. The submitted URL determines whether the successful response is a person or company object.",
       requestExample: {
-        linkedin_profile_url: "linkedin.com/in/example-person-000000?source=synthetic",
-        mode: "p3"
+        linkedin_profile_url: "linkedin.com/in/example-person-000000?source=synthetic"
       },
       responseExample: personExample
     })
@@ -179,8 +177,7 @@ export const profileLookupOperations = [
       summary: "Extract a company profile",
       description: "Extracts public profile data. The submitted URL determines whether the successful response is a person or company object.",
       requestExample: {
-        linkedin_profile_url: "https://www.linkedin.com/company/example-company-000000/about/",
-        mode: "p3"
+        linkedin_profile_url: "https://www.linkedin.com/company/example-company-000000/about/"
       },
       responseExample: companyExample
     })
@@ -320,9 +317,9 @@ profileLookupOperations.push({
     operationId: "findCompanyLinkedinUrl",
     tags: [TAG],
     summary: "Find a LinkedIn company URL from a domain",
-    description: "Accepts only a company domain and returns only its LinkedIn company URL. Requires a current coded workspace API key; legacy Bubble-only keys are unsupported. The lookup deadline is 120 seconds; allow 130 seconds in the client. Billing runs asynchronously and never delays or changes the lookup result, including when credits are insufficient. Authentication and result storage must be available.",
+    description: "Accepts only a company domain and returns only its LinkedIn company URL. Use a current workspace API key from Airscale Settings; keys from the previous dashboard are not supported. The lookup deadline is 120 seconds; allow 130 seconds in the client. The charge may appear after the result, including after a top-up if your balance is insufficient.",
     "x-airscale-rate-limit": "180 requests per minute per workspace.",
-    "x-airscale-credit-cost": "0.5 credits on success, billed asynchronously. No-result and failed lookups cost zero. Pending charges retry later, including after a top-up.",
+    "x-airscale-credit-cost": "0.5 credits on success; the charge may appear later, including after a top-up. No-result and failed lookups cost zero.",
     parameters: [{
       name: "Idempotency-Key",
       in: "header",
@@ -343,7 +340,7 @@ profileLookupOperations.push({
     ),
     responses: {
       200: {
-        description: "A canonical LinkedIn company URL. Creates one asynchronous 0.5-credit charge.",
+        description: "A canonical LinkedIn company URL. Costs 0.5 credits; the charge may appear later.",
         content: {
           "application/json": {
             schema: {
@@ -365,7 +362,7 @@ profileLookupOperations.push({
       },
       413: jsonError("JSON request body exceeds 4 KiB."),
       429: jsonError("180 requests per minute per workspace exceeded. Retry with bounded backoff."),
-      503: jsonError("Authentication, result storage, or lookup temporarily unavailable."),
+      503: jsonError("The lookup is temporarily unavailable. Retry according to the idempotency guidance."),
       504: jsonError("Lookup deadline exhausted. Not charged.")
     }
   }

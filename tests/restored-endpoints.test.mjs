@@ -58,6 +58,6 @@ test("restored search guidance preserves semantics in prose and machine-readable
   assert.match(query.properties.pastCompanyName.description, /same prior role/);
   for (const field of ["jobStartDate", "companySize", "companyAddress"]) assert.ok(people.includes(field));
   const companies = readFileSync("api-reference/find-companies.mdx", "utf8");
-  assert.match(companies, /removed recursively/);
-  assert.match(companies, /Do not depend on those fields/);
+  assert.match(companies, /does not guarantee a stable company ID/);
+  assert.match(companies, /handle missing fields/);
 });

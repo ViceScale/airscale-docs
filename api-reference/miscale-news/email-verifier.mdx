@@ -11,17 +11,17 @@ Verify one email address using your workspace API key. Send exactly one `email` 
 
 The cost is **0.5 credits per request**, reserved before verification. There is no endpoint-specific throttle.
 
-When verification is pending, the API polls for up to **45 seconds** after the initial provider request without charging again. If pending verification cannot be resolved within that window, the effective result becomes `risky`. The initial provider request can itself take up to 90 seconds; allow time for both stages in your client timeout.
+Allow at least **135 seconds**, plus a network margin, in your client timeout. If verification remains inconclusive, the result is `risky`; waiting for that result does not add another charge.
 
 ## Reading the response
 
-Provider JSON object fields are preserved. A direct response receives `credits_consumed: 0.5` at the top level. If the provider uses a `body` wrapper, the result and `credits_consumed` remain inside `body`, and `returned_an_error` is set to `false`.
+Read the result from `body` when that object is present; otherwise read it from the top level. JSON object results include `credits_consumed: 0.5` alongside the result. Wrapped results also include `returned_an_error: false` at the top level.
 
-Fields such as `email`, `status`, and `result` are provider-dependent and may be absent. Non-object or non-JSON successful responses pass through unchanged without an added credit field.
+Fields such as `email`, `status`, and `result` may be absent or have different types. Check the response content type before parsing: successful responses can also contain non-object JSON or non-JSON content without a `credits_consumed` field.
 
 ## Errors and retries
 
-Initial non-2xx provider responses retain the provider's status and body, such as `422`. The API attempts to refund the reservation for an initial provider error or network failure. If the refund cannot be confirmed, it returns `503`.
+An unsuccessful verification can return an error such as `422`; error bodies can vary. Failed verification requests are eligible for a refund. A `503` can mean the charge or refund could not be confirmed, so do not assume the credits have been returned.
 
 This endpoint does not support caller idempotency keys. Retrying creates another verification request and can incur another charge. Use bounded backoff for temporary failures and avoid treating a timeout as proof that no credits were charged.
 

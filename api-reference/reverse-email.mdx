@@ -11,7 +11,7 @@ Submit an email address and receive the matching person profile when one can be 
 The limit is 25 requests per second per workspace. A returned profile costs 2 credits. A miss returns the JSON string `"not found"`, not an object with a status field, and is not charged.
 </Note>
 
-After a `429 Too Many Requests` response, retry in a later second with bounded exponential backoff. A `503` transport or settlement failure is not charged; retry the same email with bounded backoff after the dependency recovers.
+After a `429 Too Many Requests` response, retry in a later second with bounded exponential backoff. A `503` response is not charged. Retry the same email with increasing delays and a fixed retry limit; contact support if errors persist.
 
 ## Next step
 

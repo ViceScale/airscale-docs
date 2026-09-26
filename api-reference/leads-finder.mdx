@@ -53,7 +53,7 @@ The response contains `rows`, `total`, `page`, and `size`. Rows are public lead 
 
 `size` defaults to 50 and accepts 1–100. Start at `page: 0` and increment the page while keeping the same filters and size. This operation does not return `next_cursor`. When company and title filters are combined, returned rows are checked for a matching title at the identified company; a page can contain fewer rows after that check, and a short page alone does not establish exhaustion.
 
-After `429`, retry in a later second with bounded exponential backoff. For `503`, wait for the authentication or credit service to recover. Correct invalid filters before retrying `400` responses. Requests larger than 256 KiB return `413`.
+After `429`, retry in a later second with bounded exponential backoff. For `503`, retry with increasing delays and a fixed retry limit; contact support if errors persist. Correct invalid filters before retrying `400` responses. Requests larger than 256 KiB return `413`.
 
 ## Next step
 

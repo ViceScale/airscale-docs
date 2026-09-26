@@ -11,9 +11,17 @@ Extract a structured person profile from a recognized LinkedIn URL, normally an 
 The limit is 3,000 requests per minute per workspace. The submitted URL selects the response schema and successful-call credit cost: `/in/` successes cost 1 credit by default, while `/company/` and `/school/` successes cost 0.5 credits. Workspace-specific pricing can differ, and unsuccessful requests are not charged.
 </Note>
 
-The optional modes are `p1`, `p2`, and `p3`. Omit `mode` for the default extraction workflow, whose successful shape can vary; use `p2` or `p3` when you need the normalized schema. The submitted URL, not the route name, selects person versus company output.
+## Request and response
 
-Extraction failures return an error rather than a `200 OK` no-result envelope. Retry transient extraction or settlement failures with bounded backoff, and omit `mode` if you do not require a specific mode.
+Send a JSON body containing `linkedin_profile_url`. No other extraction settings are needed.
+
+The response contains the available profile data. Fields may be missing or `null`, and their types can vary. The example illustrates one possible result; check the fields your integration uses before reading them.
+
+## Errors and retries
+
+A `404` means no profile was found. Check the URL before trying again. Correct the input for `400`, check your API key for `401`, and check access and credits for `403`.
+
+For `429`, wait until the next minute before retrying. For temporary `502` or `503` responses, use a limited number of retries with increasing delays. If the errors persist, stop retrying and contact support. Unsuccessful requests are not charged; a lost response or client timeout does not confirm that the request failed.
 
 ## Next step
 

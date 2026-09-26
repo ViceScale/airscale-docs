@@ -1,9 +1,9 @@
 export const baseSpec = {
   openapi: "3.1.0",
   info: {
-    title: "Airschool Public API",
+    title: "Airscale Public API",
     version: "2026-09-11",
-    description: "Search, enrich, and resolve public business data with Airschool.",
+    description: "Search, enrich, and resolve public business data with Airscale.",
     "x-airscale-source-repository": "ViceScale/airscale-code",
     "x-airscale-source-sha": "1de19e1b70a052a4b8d9c2075021a7e5e7a94d51"
   },
@@ -24,7 +24,7 @@ export const baseSpec = {
         type: "http",
         scheme: "bearer",
         bearerFormat: "API key",
-        description: "Use an Airschool workspace API key. Never expose the key in client-side code."
+        description: "Use an Airscale workspace API key. Never expose the key in client-side code."
       }
     },
     schemas: {
@@ -104,7 +104,7 @@ export const baseSpec = {
       LinkedInPersonUrl: {
         type: "string",
         minLength: 1,
-        description: "A recognized LinkedIn person-profile URL or identifier. Airschool normalizes supported profile inputs.",
+        description: "A recognized LinkedIn person-profile URL or identifier. Airscale normalizes supported profile inputs.",
         example: "https://www.linkedin.com/in/example-person-000000"
       },
       SuccessEmail: {
@@ -139,13 +139,13 @@ export const baseSpec = {
         properties: {
           url: { type: ["string", "null"] },
           identifier: { type: ["string", "null"] },
-          profile: { description: "A pass-through profile value whose type and shape vary by response source." },
-          link: { description: "A pass-through link value whose type and shape vary by response source." },
-          firstname: { description: "A pass-through public first-name value whose type varies by response source." },
-          lastname: { description: "A pass-through public last-name value whose type varies by response source." },
-          headline: { description: "A pass-through public headline value whose type varies by response source." },
-          industry: { description: "A pass-through public industry value whose type varies by response source." },
-          location: { description: "A pass-through public location value whose type and shape vary by response source." }
+          profile: { description: "Additional profile data, when available." },
+          link: { description: "Profile links, when available." },
+          firstname: { description: "First name, when available." },
+          lastname: { description: "Last name, when available." },
+          headline: { description: "Profile headline, when available." },
+          industry: { description: "Industry, when available." },
+          location: { description: "Location information, when available." }
         }
       },
       VariableCompanyProfile: {
