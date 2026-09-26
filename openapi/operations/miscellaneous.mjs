@@ -11,7 +11,7 @@ const verifierJson = (...args) => {
   return response;
 };
 const verifierError = (description) => ({
-  description: `${description} Initial provider errors with this same status are passed through unchanged after an attempted refund; their body may differ.`,
+  description: `${description} Error bodies may vary. A failed verification is eligible for a refund; a 503 can mean the charge or refund could not be confirmed.`,
   content: { 'application/json': { schema: {} }, '*/*': { schema: {} } }
 });
 const request = (schema, value) => ({ required: true, content: { 'application/json': { schema, examples: { request: { value } } } } });
@@ -30,9 +30,9 @@ const whatsappErrors = {
   503: error('Authentication or operation storage is unavailable.')
 };
 const verificationBody = object({
-  email: { description: 'Email field preserved from the provider response, when present.' },
-  status: { description: 'Provider status, when present. Pending verification is polled before returning.' },
-  result: { description: 'Provider deliverability result, when present; risky is used when pending verification cannot be resolved.' },
+  email: { description: 'Email address, when present. Validate the value type before using it.' },
+  status: { description: 'Verification status, when present.' },
+  result: { description: 'Deliverability result, when present; risky means verification remained inconclusive.' },
   credits_consumed: { type: 'number', const: 0.5 }
 }, ['credits_consumed'], true);
 export const miscellaneousOperations = [
@@ -81,12 +81,12 @@ export const miscellaneousOperations = [
   {
     method: 'POST', path: '/v1/meta-ads', operation: {
       ...common, operationId: 'lookupMetaAds', summary: 'Look up Meta ads',
-      description: 'Look up ads for one company domain. Provider fields are preserved. Only a finite numeric number_of_ads greater than zero costs one credit; zero, missing, nonnumeric, or nonpositive counts cost zero. A balance of at least one credit is required before lookup. No caller idempotency key is supported; retrying a successful lookup can incur another charge.',
+      description: 'Look up ads for one company domain. Only a finite numeric number_of_ads greater than zero costs one credit; zero, missing, nonnumeric, or nonpositive counts cost zero. A balance of at least one credit is required before lookup. No caller idempotency key is supported; retrying a successful lookup can incur another charge.',
       'x-airscale-rate-limit': '60 requests per minute per workspace.',
       'x-airscale-credit-cost': '1 credit for a positive finite numeric ad count; otherwise 0.',
       requestBody: request(object({ domain: { type: 'string', minLength: 1, description: 'Bare company hostname or HTTP(S) URL. Whitespace is trimmed; hostname is lowercased and leading www. and trailing dot are removed. Paths and queries are ignored. IP literals, credentials, non-default ports, and invalid domain labels are rejected. Maximum JSON body size: 16 KiB (oversize returns 400).' } }), { domain: 'example.com' }),
       responses: {
-        200: json('Provider result with the settled credit cost. Provider fields are optional and are not coerced to fixed types.', object({ page_id: { description: 'Provider page identifier, when present.' }, number_of_ads: { description: 'Provider ad count, when present. Only a positive finite number is billable.' }, credits_consumed: { type: 'integer', enum: [0, 1] } }, ['credits_consumed'], true), {
+        200: json('Ad lookup result and credit cost. Ad fields are optional and their types can vary.', object({ page_id: { description: 'Meta page identifier, when present.' }, number_of_ads: { description: 'Ad count, when present. Only a positive finite number is billable.' }, credits_consumed: { type: 'integer', enum: [0, 1] } }, ['credits_consumed'], true), {
           ads: { page_id: 'meta-123', number_of_ads: 4, credits_consumed: 1 },
           noAds: { number_of_ads: 0, credits_consumed: 0 }
         }),
@@ -94,21 +94,21 @@ export const miscellaneousOperations = [
         401: { $ref: '#/components/responses/Unauthorized' },
         403: error('Insufficient credits.'),
         429: error('Workspace rate limit exceeded.'),
-        502: error('Provider request failed or returned an invalid response.'),
-        503: error('Authentication, rate limiting, configuration, or credit settlement is unavailable.'),
-        504: error('Provider lookup exceeded its 90-second timeout. No debit is made for this timeout.')
+        502: error('The ad lookup failed. Retry with increasing delays and a fixed retry limit.'),
+        503: error('The request is temporarily unavailable. Retry with increasing delays and a fixed retry limit; contact support if errors persist.'),
+        504: error('The lookup exceeded its 90-second timeout. No debit is made for this timeout.')
       }
     }
   },
   {
     method: 'POST', path: '/v1/email-verifier', operation: {
       ...common, operationId: 'verifyEmail', summary: 'Verify an email address',
-      description: 'Verify one email address for 0.5 credits. Pending verification is polled for up to 45 seconds after the initial provider request without another debit; unresolved pending results become risky. Provider JSON object fields and any body wrapper are preserved. The legacy /email-verifier route is also available. No caller idempotency key is supported.',
+      description: 'Verify one email address for 0.5 credits. Allow at least 135 seconds plus a network margin for the response. Inconclusive verification returns risky without another charge. Read the result from body when present, otherwise from the top level. The legacy /email-verifier route is also available. No caller idempotency key is supported.',
       'x-airscale-rate-limit': 'No endpoint-specific throttle.',
-      'x-airscale-credit-cost': '0.5 credits reserved per request. Provider request failures attempt a refund; refund failure returns 503.',
+      'x-airscale-credit-cost': '0.5 credits reserved per request. Failed verification requests are eligible for a refund; 503 can mean the charge or refund could not be confirmed.',
       requestBody: request(object({ email: { type: 'string', pattern: '^\\s*[^\\s@]+@[^\\s@]+\\.[^\\s@]+\\s*$', description: 'One email address. Surrounding whitespace is trimmed; the trimmed value must be at most 320 characters. Maximum JSON body size: 16 KiB.' } }), { email: 'person@example.com' }),
       responses: {
-        200: verifierJson('Normalized provider JSON object, either direct or wrapped in body. credits_consumed is added to the effective result object; other provider fields remain optional. Non-object or non-JSON successful provider responses are passed through unchanged under this same status.', { anyOf: [{ not: { type: 'object' } }, verificationBody, object({ body: verificationBody, returned_an_error: { type: 'boolean', const: false } }, ['body', 'returned_an_error'], true)] }, {
+        200: verifierJson('A verification result, either at the top level or inside body. JSON object results include credits_consumed; other fields are optional and their types can vary. Successful responses can also contain non-object JSON or non-JSON content without a credits_consumed field.', { anyOf: [{ not: { type: 'object' } }, verificationBody, object({ body: verificationBody, returned_an_error: { type: 'boolean', const: false } }, ['body', 'returned_an_error'], true)] }, {
           direct: { email: 'person@example.com', result: 'deliverable', credits_consumed: 0.5 },
           wrapped: { body: { email: 'person@example.com', status: 'success', result: 'risky', credits_consumed: 0.5 }, returned_an_error: false }
         }),
@@ -116,10 +116,10 @@ export const miscellaneousOperations = [
         401: verifierError('Missing or invalid bearer API key.'),
         403: verifierError('Insufficient credits.'),
         413: verifierError('JSON body exceeds 16 KiB.'),
-        500: verifierError('Server configuration or unexpected server error.'),
-        502: verifierError('Authentication lookup or provider network request failed.'),
-        503: verifierError('Credit reservation or refund service is unavailable.'),
-        default: { description: 'Provider status and body are preserved for other responses, including initial non-2xx errors (for example 422). A refund is attempted for an initial non-2xx response. Non-object or non-JSON successful payloads also pass through unchanged, without an added credits_consumed field.', content: { 'application/json': { schema: {} }, '*/*': { schema: {} } } }
+        500: verifierError('An unexpected server error occurred.'),
+        502: verifierError('The verification request could not be completed.'),
+        503: verifierError('The charge or refund could not be confirmed. Do not assume credits have been returned.'),
+        default: { description: 'Other errors, such as 422, can have varying bodies. Failed verification requests are eligible for a refund. Successful responses can also contain non-object JSON or non-JSON content without a credits_consumed field.', content: { 'application/json': { schema: {} }, '*/*': { schema: {} } } }
       }
     }
   }

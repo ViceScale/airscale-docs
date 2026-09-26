@@ -12,10 +12,10 @@ The limit is 2,000 requests per minute per workspace. The minimum balance requir
 </Note>
 
 <Warning>
-If a result is found and charged but required usage recording then fails, the operation returns `502 Bad Gateway`. Check your balance before retrying that input to avoid paying again for the same result.
+A `502 Bad Gateway` response can occur after credits were charged. Check your balance before retrying that input to avoid paying again for the same result.
 </Warning>
 
-For other transient failures, retry with bounded backoff. Wait for the credit service to recover before retrying a settlement failure.
+After checking your balance for a `502`, or for a temporary `503` response, use a limited number of retries with increasing delays. If errors persist, stop retrying and contact support. A client timeout does not confirm whether the request completed or was charged.
 
 ## Next step
 

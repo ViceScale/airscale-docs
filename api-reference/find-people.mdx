@@ -13,7 +13,7 @@ The Search and [Count people](#count-matching-people) operations share a limit o
 
 Search returns at most 100 leads per request. When `next_cursor` is not `null`, send it unchanged as `cursor` with the same `query`. Do not derive or edit cursor contents.
 
-After a `429`, wait for the next second and retry with bounded exponential backoff. A failed search or credit-service attempt does not return charged leads.
+After a `429`, wait for the next second and retry with bounded exponential backoff. Failed searches do not return charged leads. For temporary `502` or `503` responses, use a limited number of retries with increasing delays; contact support if errors persist.
 
 ## Count matching people
 

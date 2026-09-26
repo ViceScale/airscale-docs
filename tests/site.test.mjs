@@ -254,7 +254,7 @@ test("brand configuration and assets match Airscale", () => {
   const config = JSON.parse(readFileSync("docs.json", "utf8"));
   assert.equal(config.$schema, "https://mintlify.com/docs.json");
   assert.equal(config.theme, "mint");
-  assert.equal(config.name, "Airscale API");
+  assert.equal(config.name, "Airschool");
   assert.deepEqual(config.colors, { primary: "#4079FF", light: "#4079FF", dark: "#6F9BFF" });
   assert.deepEqual(config.logo, { light: "/logo/light.svg", dark: "/logo/dark.svg", href: "/" });
   assert.equal(config.favicon, "/favicon.svg");
@@ -376,12 +376,12 @@ for (const [mode, path, wordmarkFill] of [
   ["light", "logo/light.svg", "#111827"],
   ["dark", "logo/dark.svg", "#FFFFFF"]
 ]) {
-  test(`${mode} header logo uses the approved tiled Airscale lockup`, () => {
+  test(`${mode} header logo uses the approved tiled Airschool lockup`, () => {
     const source = readFileSync(path, "utf8");
     const svg = tagAttributes(openingTags(source, "svg")[0] ?? "");
     assert.equal(svg.viewBox, "0 0 157 38");
     assert.equal(svg.role, "img");
-    assert.equal(svg["aria-label"], "Airscale");
+    assert.equal(svg["aria-label"], "Airschool");
     const tile = openingTags(source, "rect").map(tagAttributes).find((attributes) => (
       attributes.x === "0" && attributes.y === "0" && attributes.width === "38" &&
       attributes.height === "38" && attributes.rx === "8" && attributes.fill === "#111827"
@@ -397,8 +397,8 @@ for (const [mode, path, wordmarkFill] of [
       `${path} must render the enlarged canonical mark optically centered inside the 38px tile`
     );
     assert.equal(canonicalMark.fill, "#FFFFFF");
-    const wordmarkTag = source.match(/<text\b[^>]*>\s*Airscale\s*<\/text>/)?.[0];
-    assert.ok(wordmarkTag, `${path} must contain the Airscale wordmark`);
+    const wordmarkTag = source.match(/<text\b[^>]*>\s*Airschool\s*<\/text>/)?.[0];
+    assert.ok(wordmarkTag, `${path} must contain the Airschool wordmark`);
     const wordmark = tagAttributes(wordmarkTag);
     assert.equal(wordmark.x, "48.5");
     assert.equal(wordmark.y, "25.125");
@@ -591,7 +591,7 @@ test("guide pages teach authentication, safe retries, and a first request", () =
   }
 
   const authentication = readPage("api-reference/authentication").source;
-  assert.match(authentication, /Airschool Settings/);
+  assert.match(authentication, /Airscale Settings/);
   assert.match(authentication, /401 Unauthorized/);
   assert.match(authentication, /<Warning>/);
   assert.match(authentication, /rotate/i);
@@ -609,9 +609,9 @@ const DURABLE_OPERATION_GUIDANCE = {
   "api-reference/miscale-news/whatsapp-check": [/60 requests per minute/, /1 credit/, /Idempotency-Key/, /202/],
   "api-reference/miscale-news/whatsapp-check/status": [/read-only/, /bounded backoff/, /unavailable/, /rejected/],
   "api-reference/miscale-news/meta-ads": [/60 requests per minute/, /1 credit/, /504/, /idempotency/],
-  "api-reference/miscale-news/email-verifier": [/0.5 credits/, /45 seconds/, /body/, /refund/],
-  "api-reference/credit-count": [/no request body/i, /does not debit Airschool credits/i],
-  "api-reference/email-finder": [/3,000 requests per minute/i, /2 credits/i, /`not_found` is not charged/i, /bounded backoff/i],
+  "api-reference/miscale-news/email-verifier": [/0.5 credits/, /135 seconds/, /body/, /refund/],
+  "api-reference/credit-count": [/no request body/i, /does not debit Airscale credits/i],
+  "api-reference/email-finder": [/3,000 requests per minute/i, /2 credits/i, /`not_found` is not charged/i, /limited number of retries with increasing delays/i],
   "api-reference/email-finder-(bulk)": [
     /asynchronous/i,
     /webhook/i,
@@ -624,21 +624,21 @@ const DURABLE_OPERATION_GUIDANCE = {
     /`status: "error"`.*`error: "insufficient_credits"`.*`email: null`/is,
     /`status: "not_found"` or `status: "timeout"`.*`email: null`/is
   ],
-  "api-reference/mobile-finder": [/3,000 requests per minute/i, /40 credits/i, /`not_found` is not charged/i, /bounded backoff/i],
-  "api-reference/personal-email": [/2,000 requests per minute/i, /3 and 12 credits/i, /minimum balance/i, /usage recording/i, /before retrying/i],
+  "api-reference/mobile-finder": [/3,000 requests per minute/i, /40 credits/i, /`not_found` is not charged/i, /limited number of retries with increasing delays/i],
+  "api-reference/personal-email": [/2,000 requests per minute/i, /3 and 12 credits/i, /minimum balance/i, /`502 Bad Gateway`.*credits were charged/i, /before retrying/i],
   "api-reference/people-url-finder": [/6 requests per second/i, /0\.5 credits/i, /`not_found` is not charged/i, /bounded exponential backoff/i],
-  "api-reference/extract-people-profile": [/submitted URL/i, /response schema/i, /credit cost/i, /`p1`.*`p2`.*`p3`/i, /3,000 requests per minute/i],
-  "api-reference/extract-company-profile": [/submitted URL/i, /response schema/i, /credit cost/i, /`p1`.*`p2`.*`p3`/i, /3,000 requests per minute/i],
-  "api-reference/domain-to-linkedin": [/0\.5 credits/i, /asynchronously/i, /180 requests per minute/i, /120-second deadline/i, /Idempotency-Key/i, /seven days/i],
-  "api-reference/reverse-email": [/25 requests per second/i, /2 credits/i, /JSON string `"not found"`/i, /not charged/i, /bounded backoff/i],
+  "api-reference/extract-people-profile": [/submitted URL/i, /response schema/i, /credit cost/i, /No other extraction settings are needed/i, /3,000 requests per minute/i],
+  "api-reference/extract-company-profile": [/submitted URL/i, /response schema/i, /credit cost/i, /No other extraction settings are needed/i, /3,000 requests per minute/i],
+  "api-reference/domain-to-linkedin": [/0\.5 credits/i, /charged after the lookup/i, /180 requests per minute/i, /120-second deadline/i, /Idempotency-Key/i, /seven days/i],
+  "api-reference/reverse-email": [/25 requests per second/i, /2 credits/i, /JSON string `"not found"`/i, /not charged/i, /increasing delays and a fixed retry limit/i],
   "api-reference/reverse-phone": [/2,000 requests per minute/i, /10 credits/i, /true miss.*exhausted or failed/i, /one bounded-backoff retry/i, /normalized number/i],
   "api-reference/find-people": [/6 requests per second/i, /0\.1 credits per returned lead/i, /empty result pages are not charged/i, /send it unchanged as `cursor`/i, /Count people/i],
   "api-reference/find-people/count": [/Count is free/i, /same `query`/i, /no pagination fields/i, /6 requests per second/i],
   "api-reference/find-companies": [/6 requests per second/i, /0\.1 credits per returned company/i, /zero returned rows cost zero credits/i, /when `next_cursor` is not `null`.*send the exact value unchanged as `cursor`/is, /10,000 companies/i],
   "api-reference/find-companies/filter-values": [/free and has no request body/i, /6 requests per second/i, /`q` parameter takes precedence/i],
-  "api-reference/airsearch": [/300 requests per minute/i, /1 credit/i, /`not_found` and `timeout` are not charged/i, /reservation is settled only for `success`/i, /initial-stage timeout.*`504 Gateway Timeout`/i],
-  "api-reference/post-likers": [/synchronous/i, /one credit/i, /next_cursor/i, /provider.*pinned/i, /failed.*refunded/i, /Idempotency-Key/i, /202.*pending/is, /account_restart_required/, /reported_total/],
-  "api-reference/post-commenters": [/synchronous/i, /one credit/i, /next_cursor/i, /provider.*pinned/i, /failed.*refunded/i, /Idempotency-Key/i, /202.*pending/is, /account_restart_required/, /reported_total/],
+  "api-reference/airsearch": [/300 requests per minute/i, /1 credit/i, /`not_found` and `timeout` are not charged/i, /Credits reserved.*are returned/i, /timeout.*`504 Gateway Timeout`/i],
+  "api-reference/post-likers": [/synchronous/i, /one credit/i, /next_cursor/i, /same post URL and `limit`/i, /failed.*refunded/i, /Idempotency-Key/i, /202.*pending/is, /account_restart_required/, /reported_total/],
+  "api-reference/post-commenters": [/synchronous/i, /one credit/i, /next_cursor/i, /same post URL and `limit`/i, /failed.*refunded/i, /Idempotency-Key/i, /202.*pending/is, /account_restart_required/, /reported_total/],
 };
 
 test("operation wrappers retain durable rate, credit, retry, and asynchronous guidance", () => {
@@ -652,7 +652,7 @@ test("operation wrappers retain durable rate, credit, retry, and asynchronous gu
 test("post engagement pages explain safe retries, expiry and account restart boundaries", () => {
   for (const page of ["api-reference/post-likers", "api-reference/post-commenters"]) {
     const { body } = readPage(page);
-    for (const pattern of [/UUID/, /same key/i, /new key.*next page/i, /Retry-After/, /409/, /24 hours/, /expired cursor.*new provider/i, /deduplicate/i, /reservation.*refund/is]) {
+    for (const pattern of [/UUID/, /same key/i, /new key.*next page/i, /Retry-After/, /409/, /24 hours/, /expired cursor.*fetch a new page/i, /deduplicate/i, /reservation.*refund/is]) {
       assert.match(body, pattern, `${page} must explain ${pattern}`);
     }
     assert.doesNotMatch(body, /If a response is lost, retrying the request can run the page again and reserve credits again\./);

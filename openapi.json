@@ -1,9 +1,9 @@
 {
   "openapi": "3.1.0",
   "info": {
-    "title": "Airschool Public API",
+    "title": "Airscale Public API",
     "version": "2026-09-11",
-    "description": "Search, enrich, and resolve public business data with Airschool.",
+    "description": "Search, enrich, and resolve public business data with Airscale.",
     "x-airscale-source-repository": "ViceScale/airscale-code",
     "x-airscale-source-sha": "1de19e1b70a052a4b8d9c2075021a7e5e7a94d51"
   },
@@ -52,9 +52,9 @@
           "Account"
         ],
         "summary": "Get workspace credit balance",
-        "description": "Returns the current Airschool credit balance for the authenticated workspace.",
+        "description": "Returns the current Airscale credit balance for the authenticated workspace.",
         "x-airscale-rate-limit": "No endpoint-specific rate limit is documented.",
-        "x-airscale-credit-cost": "No charge; checking the balance does not debit Airschool credits.",
+        "x-airscale-credit-cost": "No charge; checking the balance does not debit Airscale credits.",
         "responses": {
           "200": {
             "description": "The current workspace credit balance.",
@@ -1165,7 +1165,7 @@
         "x-airscale-credit-cost": "URL-selected: /in/ successes cost 1 credit by default (workspace-specific pricing may differ); /company/ or /school/ successes cost 0.5 credits; unsuccessful requests are not charged.",
         "requestBody": {
           "required": true,
-          "description": "The LinkedIn URL is trimmed and a missing scheme is normalized. The hostname must be linkedin.com or a subdomain, and the first path segment must be /in/, /company/, or /school/. Query and extra path segments are canonicalized away. The submitted URL type chooses the person or company response and successful credit cost, regardless of which of these two routes receives it. When mode is omitted, the response can use a variable source shape; modes p2 and p3 request normalized shapes.",
+          "description": "The LinkedIn URL is trimmed and a missing scheme is normalized. The hostname must be linkedin.com or a subdomain, and the first path segment must be /in/, /company/, or /school/. Query and extra path segments are canonicalized away. The submitted URL type chooses the person or company response and successful credit cost, regardless of which of these two routes receives it. Response fields and their types can vary; check for missing or null values before using them.",
           "content": {
             "application/json": {
               "schema": {
@@ -1178,23 +1178,14 @@
                   "linkedin_profile_url": {
                     "type": "string",
                     "minLength": 1
-                  },
-                  "mode": {
-                    "type": "string",
-                    "enum": [
-                      "p1",
-                      "p2",
-                      "p3"
-                    ]
                   }
                 }
               },
               "examples": {
                 "profile": {
-                  "summary": "Normalized profile extraction",
+                  "summary": "Extract a LinkedIn profile",
                   "value": {
-                    "linkedin_profile_url": "linkedin.com/in/example-person-000000?source=synthetic",
-                    "mode": "p3"
+                    "linkedin_profile_url": "linkedin.com/in/example-person-000000?source=synthetic"
                   }
                 }
               }
@@ -1218,7 +1209,7 @@
                 },
                 "examples": {
                   "success": {
-                    "summary": "Normalized profile",
+                    "summary": "Example profile",
                     "value": {
                       "url": "https://www.linkedin.com/in/example-person-000000",
                       "identifier": "example-person-000000",
@@ -1335,7 +1326,7 @@
         "x-airscale-credit-cost": "URL-selected: /in/ successes cost 1 credit by default (workspace-specific pricing may differ); /company/ or /school/ successes cost 0.5 credits; unsuccessful requests are not charged.",
         "requestBody": {
           "required": true,
-          "description": "The LinkedIn URL is trimmed and a missing scheme is normalized. The hostname must be linkedin.com or a subdomain, and the first path segment must be /in/, /company/, or /school/. Query and extra path segments are canonicalized away. The submitted URL type chooses the person or company response and successful credit cost, regardless of which of these two routes receives it. When mode is omitted, the response can use a variable source shape; modes p2 and p3 request normalized shapes.",
+          "description": "The LinkedIn URL is trimmed and a missing scheme is normalized. The hostname must be linkedin.com or a subdomain, and the first path segment must be /in/, /company/, or /school/. Query and extra path segments are canonicalized away. The submitted URL type chooses the person or company response and successful credit cost, regardless of which of these two routes receives it. Response fields and their types can vary; check for missing or null values before using them.",
           "content": {
             "application/json": {
               "schema": {
@@ -1348,23 +1339,14 @@
                   "linkedin_profile_url": {
                     "type": "string",
                     "minLength": 1
-                  },
-                  "mode": {
-                    "type": "string",
-                    "enum": [
-                      "p1",
-                      "p2",
-                      "p3"
-                    ]
                   }
                 }
               },
               "examples": {
                 "profile": {
-                  "summary": "Normalized profile extraction",
+                  "summary": "Extract a LinkedIn profile",
                   "value": {
-                    "linkedin_profile_url": "https://www.linkedin.com/company/example-company-000000/about/",
-                    "mode": "p3"
+                    "linkedin_profile_url": "https://www.linkedin.com/company/example-company-000000/about/"
                   }
                 }
               }
@@ -1388,7 +1370,7 @@
                 },
                 "examples": {
                   "success": {
-                    "summary": "Normalized profile",
+                    "summary": "Example profile",
                     "value": {
                       "url": "https://www.linkedin.com/company/example-company-000000",
                       "name": "Example Company",
@@ -1511,9 +1493,9 @@
           "Profiles and reverse lookup"
         ],
         "summary": "Find a LinkedIn company URL from a domain",
-        "description": "Accepts only a company domain and returns only its LinkedIn company URL. Requires a current coded workspace API key; legacy Bubble-only keys are unsupported. The lookup deadline is 120 seconds; allow 130 seconds in the client. Billing runs asynchronously and never delays or changes the lookup result, including when credits are insufficient. Authentication and result storage must be available.",
+        "description": "Accepts only a company domain and returns only its LinkedIn company URL. Use a current workspace API key from Airscale Settings; keys from the previous dashboard are not supported. The lookup deadline is 120 seconds; allow 130 seconds in the client. The charge may appear after the result, including after a top-up if your balance is insufficient.",
         "x-airscale-rate-limit": "180 requests per minute per workspace.",
-        "x-airscale-credit-cost": "0.5 credits on success, billed asynchronously. No-result and failed lookups cost zero. Pending charges retry later, including after a top-up.",
+        "x-airscale-credit-cost": "0.5 credits on success; the charge may appear later, including after a top-up. No-result and failed lookups cost zero.",
         "parameters": [
           {
             "name": "Idempotency-Key",
@@ -1561,7 +1543,7 @@
         },
         "responses": {
           "200": {
-            "description": "A canonical LinkedIn company URL. Creates one asynchronous 0.5-credit charge.",
+            "description": "A canonical LinkedIn company URL. Costs 0.5 credits; the charge may appear later.",
             "content": {
               "application/json": {
                 "schema": {
@@ -1652,7 +1634,7 @@
             }
           },
           "503": {
-            "description": "Authentication, result storage, or lookup temporarily unavailable.",
+            "description": "The lookup is temporarily unavailable. Retry according to the idempotency guidance.",
             "content": {
               "application/json": {
                 "schema": {
@@ -1885,19 +1867,19 @@
                           "additionalProperties": true
                         },
                         "url": {
-                          "description": "A pass-through public profile URL value when supplied by the lookup source."
+                          "description": "Profile URL, when available."
                         },
                         "identifier": {
-                          "description": "A pass-through public profile identifier when supplied by the lookup source."
+                          "description": "Profile identifier, when available."
                         },
                         "link": {
-                          "description": "A pass-through link value whose type and shape vary by lookup source."
+                          "description": "Profile links, when available. Check the value type before using it."
                         },
                         "firstname": {
-                          "description": "A pass-through public first-name value when supplied by the lookup source."
+                          "description": "First name, when available. Check the value type before using it."
                         },
                         "lastname": {
-                          "description": "A pass-through public last-name value when supplied by the lookup source."
+                          "description": "Last name, when available. Check the value type before using it."
                         }
                       }
                     },
@@ -2481,7 +2463,7 @@
         "summary": "Count people",
         "description": "Counts people using the exact same structured query contract as Find People, without retrieving or paginating lead records.",
         "x-airscale-rate-limit": "6 requests per second per workspace.",
-        "x-airscale-credit-cost": "No charge; Count does not debit Airschool credits.",
+        "x-airscale-credit-cost": "No charge; Count does not debit Airscale credits.",
         "requestBody": {
           "required": true,
           "description": "Provide at least one supported query filter. Count has no size or cursor fields.",
@@ -3568,7 +3550,7 @@
         "summary": "List Find Companies filter values",
         "description": "Discovers normalized values accepted by location, industry, intent-topic, and technology filters.",
         "x-airscale-rate-limit": "6 requests per second per workspace.",
-        "x-airscale-credit-cost": "No charge; Filter-values does not debit Airschool credits.",
+        "x-airscale-credit-cost": "No charge; Filter-values does not debit Airscale credits.",
         "x-codeSamples": [
           {
             "label": "cURL",
@@ -4381,7 +4363,7 @@
                             "string",
                             "null"
                           ],
-                          "description": "Opaque cursor for the next page, or null when the provider returns no continuation cursor. This does not prove complete LinkedIn coverage."
+                          "description": "Opaque cursor for the next page, or null when no further page is available. This does not prove complete LinkedIn coverage."
                         },
                         "has_more": {
                           "type": "boolean"
@@ -4407,7 +4389,7 @@
                         "stop_reason"
                       ],
                       "additionalProperties": false,
-                      "description": "Optional retrieval evidence. Exhausting a provider cursor does not prove all LinkedIn engagements were accessible.",
+                      "description": "Optional pagination details. Reaching the last available page does not guarantee that every LinkedIn engagement was accessible.",
                       "properties": {
                         "reported_total": {
                           "type": [
@@ -4528,7 +4510,7 @@
             }
           },
           "202": {
-            "description": "The bridge did not respond within 90 seconds. Its outcome is unconfirmed; retry the identical page with the returned key after Retry-After. This is not a completed result or a guarantee that processing started.",
+            "description": "The request did not finish within 90 seconds. Its outcome is unconfirmed; retry the identical page with the returned key after Retry-After. This is not a completed result or a guarantee that processing started.",
             "headers": {
               "Retry-After": {
                 "description": "Wait this many seconds before retrying (15 for page_pending).",
@@ -4609,7 +4591,7 @@
                     },
                     "code": {
                       "type": "string",
-                      "description": "Use the documented code to distinguish waiting, invalid reuse, and account restart."
+                      "description": "Use the documented code to distinguish waiting, invalid reuse, and restarting pagination."
                     },
                     "idempotency_key": {
                       "type": "string",
@@ -4646,7 +4628,7 @@
                     },
                     "code": {
                       "type": "string",
-                      "description": "Use the documented code to distinguish waiting, invalid reuse, and account restart."
+                      "description": "Use the documented code to distinguish waiting, invalid reuse, and restarting pagination."
                     },
                     "idempotency_key": {
                       "type": "string",
@@ -4680,7 +4662,7 @@
                     },
                     "code": {
                       "type": "string",
-                      "description": "Use the documented code to distinguish waiting, invalid reuse, and account restart."
+                      "description": "Use the documented code to distinguish waiting, invalid reuse, and restarting pagination."
                     },
                     "idempotency_key": {
                       "type": "string",
@@ -4714,7 +4696,7 @@
                     },
                     "code": {
                       "type": "string",
-                      "description": "Use the documented code to distinguish waiting, invalid reuse, and account restart."
+                      "description": "Use the documented code to distinguish waiting, invalid reuse, and restarting pagination."
                     },
                     "idempotency_key": {
                       "type": "string",
@@ -4748,7 +4730,7 @@
                     },
                     "code": {
                       "type": "string",
-                      "description": "Use the documented code to distinguish waiting, invalid reuse, and account restart."
+                      "description": "Use the documented code to distinguish waiting, invalid reuse, and restarting pagination."
                     },
                     "idempotency_key": {
                       "type": "string",
@@ -4782,7 +4764,7 @@
                     },
                     "code": {
                       "type": "string",
-                      "description": "Use the documented code to distinguish waiting, invalid reuse, and account restart."
+                      "description": "Use the documented code to distinguish waiting, invalid reuse, and restarting pagination."
                     },
                     "idempotency_key": {
                       "type": "string",
@@ -4799,7 +4781,7 @@
             }
           },
           "502": {
-            "description": "The post-engagement bridge could not be reached or returned an invalid response.",
+            "description": "The page could not be retrieved. Retry the identical page with the same idempotency key and increasing delays.",
             "content": {
               "application/json": {
                 "schema": {
@@ -4816,7 +4798,7 @@
                     },
                     "code": {
                       "type": "string",
-                      "description": "Use the documented code to distinguish waiting, invalid reuse, and account restart."
+                      "description": "Use the documented code to distinguish waiting, invalid reuse, and restarting pagination."
                     },
                     "idempotency_key": {
                       "type": "string",
@@ -4833,7 +4815,7 @@
             }
           },
           "503": {
-            "description": "A provider, profile-enrichment, pagination, or credit-settlement dependency is temporarily unavailable.",
+            "description": "The page is temporarily unavailable. Follow the response code guidance and keep the original request body and idempotency key.",
             "content": {
               "application/json": {
                 "schema": {
@@ -4850,7 +4832,7 @@
                     },
                     "code": {
                       "type": "string",
-                      "description": "Use the documented code to distinguish waiting, invalid reuse, and account restart."
+                      "description": "Use the documented code to distinguish waiting, invalid reuse, and restarting pagination."
                     },
                     "idempotency_key": {
                       "type": "string",
@@ -5121,7 +5103,7 @@
                             "string",
                             "null"
                           ],
-                          "description": "Opaque cursor for the next page, or null when the provider returns no continuation cursor. This does not prove complete LinkedIn coverage."
+                          "description": "Opaque cursor for the next page, or null when no further page is available. This does not prove complete LinkedIn coverage."
                         },
                         "has_more": {
                           "type": "boolean"
@@ -5147,7 +5129,7 @@
                         "stop_reason"
                       ],
                       "additionalProperties": false,
-                      "description": "Optional retrieval evidence. Exhausting a provider cursor does not prove all LinkedIn engagements were accessible.",
+                      "description": "Optional pagination details. Reaching the last available page does not guarantee that every LinkedIn engagement was accessible.",
                       "properties": {
                         "reported_total": {
                           "type": [
@@ -5268,7 +5250,7 @@
             }
           },
           "202": {
-            "description": "The bridge did not respond within 90 seconds. Its outcome is unconfirmed; retry the identical page with the returned key after Retry-After. This is not a completed result or a guarantee that processing started.",
+            "description": "The request did not finish within 90 seconds. Its outcome is unconfirmed; retry the identical page with the returned key after Retry-After. This is not a completed result or a guarantee that processing started.",
             "headers": {
               "Retry-After": {
                 "description": "Wait this many seconds before retrying (15 for page_pending).",
@@ -5349,7 +5331,7 @@
                     },
                     "code": {
                       "type": "string",
-                      "description": "Use the documented code to distinguish waiting, invalid reuse, and account restart."
+                      "description": "Use the documented code to distinguish waiting, invalid reuse, and restarting pagination."
                     },
                     "idempotency_key": {
                       "type": "string",
@@ -5386,7 +5368,7 @@
                     },
                     "code": {
                       "type": "string",
-                      "description": "Use the documented code to distinguish waiting, invalid reuse, and account restart."
+                      "description": "Use the documented code to distinguish waiting, invalid reuse, and restarting pagination."
                     },
                     "idempotency_key": {
                       "type": "string",
@@ -5420,7 +5402,7 @@
                     },
                     "code": {
                       "type": "string",
-                      "description": "Use the documented code to distinguish waiting, invalid reuse, and account restart."
+                      "description": "Use the documented code to distinguish waiting, invalid reuse, and restarting pagination."
                     },
                     "idempotency_key": {
                       "type": "string",
@@ -5454,7 +5436,7 @@
                     },
                     "code": {
                       "type": "string",
-                      "description": "Use the documented code to distinguish waiting, invalid reuse, and account restart."
+                      "description": "Use the documented code to distinguish waiting, invalid reuse, and restarting pagination."
                     },
                     "idempotency_key": {
                       "type": "string",
@@ -5488,7 +5470,7 @@
                     },
                     "code": {
                       "type": "string",
-                      "description": "Use the documented code to distinguish waiting, invalid reuse, and account restart."
+                      "description": "Use the documented code to distinguish waiting, invalid reuse, and restarting pagination."
                     },
                     "idempotency_key": {
                       "type": "string",
@@ -5522,7 +5504,7 @@
                     },
                     "code": {
                       "type": "string",
-                      "description": "Use the documented code to distinguish waiting, invalid reuse, and account restart."
+                      "description": "Use the documented code to distinguish waiting, invalid reuse, and restarting pagination."
                     },
                     "idempotency_key": {
                       "type": "string",
@@ -5539,7 +5521,7 @@
             }
           },
           "502": {
-            "description": "The post-engagement bridge could not be reached or returned an invalid response.",
+            "description": "The page could not be retrieved. Retry the identical page with the same idempotency key and increasing delays.",
             "content": {
               "application/json": {
                 "schema": {
@@ -5556,7 +5538,7 @@
                     },
                     "code": {
                       "type": "string",
-                      "description": "Use the documented code to distinguish waiting, invalid reuse, and account restart."
+                      "description": "Use the documented code to distinguish waiting, invalid reuse, and restarting pagination."
                     },
                     "idempotency_key": {
                       "type": "string",
@@ -5573,7 +5555,7 @@
             }
           },
           "503": {
-            "description": "A provider, profile-enrichment, pagination, or credit-settlement dependency is temporarily unavailable.",
+            "description": "The page is temporarily unavailable. Follow the response code guidance and keep the original request body and idempotency key.",
             "content": {
               "application/json": {
                 "schema": {
@@ -5590,7 +5572,7 @@
                     },
                     "code": {
                       "type": "string",
-                      "description": "Use the documented code to distinguish waiting, invalid reuse, and account restart."
+                      "description": "Use the documented code to distinguish waiting, invalid reuse, and restarting pagination."
                     },
                     "idempotency_key": {
                       "type": "string",
@@ -6221,7 +6203,7 @@
         "x-airscale-source-sha": "282e64878898b4f7082e6ce00b740d76aca787f1",
         "operationId": "lookupMetaAds",
         "summary": "Look up Meta ads",
-        "description": "Look up ads for one company domain. Provider fields are preserved. Only a finite numeric number_of_ads greater than zero costs one credit; zero, missing, nonnumeric, or nonpositive counts cost zero. A balance of at least one credit is required before lookup. No caller idempotency key is supported; retrying a successful lookup can incur another charge.",
+        "description": "Look up ads for one company domain. Only a finite numeric number_of_ads greater than zero costs one credit; zero, missing, nonnumeric, or nonpositive counts cost zero. A balance of at least one credit is required before lookup. No caller idempotency key is supported; retrying a successful lookup can incur another charge.",
         "x-airscale-rate-limit": "60 requests per minute per workspace.",
         "x-airscale-credit-cost": "1 credit for a positive finite numeric ad count; otherwise 0.",
         "requestBody": {
@@ -6254,17 +6236,17 @@
         },
         "responses": {
           "200": {
-            "description": "Provider result with the settled credit cost. Provider fields are optional and are not coerced to fixed types.",
+            "description": "Ad lookup result and credit cost. Ad fields are optional and their types can vary.",
             "content": {
               "application/json": {
                 "schema": {
                   "type": "object",
                   "properties": {
                     "page_id": {
-                      "description": "Provider page identifier, when present."
+                      "description": "Meta page identifier, when present."
                     },
                     "number_of_ads": {
-                      "description": "Provider ad count, when present. Only a positive finite number is billable."
+                      "description": "Ad count, when present. Only a positive finite number is billable."
                     },
                     "credits_consumed": {
                       "type": "integer",
@@ -6385,7 +6367,7 @@
             }
           },
           "502": {
-            "description": "Provider request failed or returned an invalid response.",
+            "description": "The ad lookup failed. Retry with increasing delays and a fixed retry limit.",
             "content": {
               "application/json": {
                 "schema": {
@@ -6413,7 +6395,7 @@
             }
           },
           "503": {
-            "description": "Authentication, rate limiting, configuration, or credit settlement is unavailable.",
+            "description": "The request is temporarily unavailable. Retry with increasing delays and a fixed retry limit; contact support if errors persist.",
             "content": {
               "application/json": {
                 "schema": {
@@ -6441,7 +6423,7 @@
             }
           },
           "504": {
-            "description": "Provider lookup exceeded its 90-second timeout. No debit is made for this timeout.",
+            "description": "The lookup exceeded its 90-second timeout. No debit is made for this timeout.",
             "content": {
               "application/json": {
                 "schema": {
@@ -6479,9 +6461,9 @@
         "x-airscale-source-sha": "282e64878898b4f7082e6ce00b740d76aca787f1",
         "operationId": "verifyEmail",
         "summary": "Verify an email address",
-        "description": "Verify one email address for 0.5 credits. Pending verification is polled for up to 45 seconds after the initial provider request without another debit; unresolved pending results become risky. Provider JSON object fields and any body wrapper are preserved. The legacy /email-verifier route is also available. No caller idempotency key is supported.",
+        "description": "Verify one email address for 0.5 credits. Allow at least 135 seconds plus a network margin for the response. Inconclusive verification returns risky without another charge. Read the result from body when present, otherwise from the top level. The legacy /email-verifier route is also available. No caller idempotency key is supported.",
         "x-airscale-rate-limit": "No endpoint-specific throttle.",
-        "x-airscale-credit-cost": "0.5 credits reserved per request. Provider request failures attempt a refund; refund failure returns 503.",
+        "x-airscale-credit-cost": "0.5 credits reserved per request. Failed verification requests are eligible for a refund; 503 can mean the charge or refund could not be confirmed.",
         "requestBody": {
           "required": true,
           "content": {
@@ -6512,7 +6494,7 @@
         },
         "responses": {
           "200": {
-            "description": "Normalized provider JSON object, either direct or wrapped in body. credits_consumed is added to the effective result object; other provider fields remain optional. Non-object or non-JSON successful provider responses are passed through unchanged under this same status.",
+            "description": "A verification result, either at the top level or inside body. JSON object results include credits_consumed; other fields are optional and their types can vary. Successful responses can also contain non-object JSON or non-JSON content without a credits_consumed field.",
             "content": {
               "application/json": {
                 "schema": {
@@ -6526,13 +6508,13 @@
                       "type": "object",
                       "properties": {
                         "email": {
-                          "description": "Email field preserved from the provider response, when present."
+                          "description": "Email address, when present. Validate the value type before using it."
                         },
                         "status": {
-                          "description": "Provider status, when present. Pending verification is polled before returning."
+                          "description": "Verification status, when present."
                         },
                         "result": {
-                          "description": "Provider deliverability result, when present; risky is used when pending verification cannot be resolved."
+                          "description": "Deliverability result, when present; risky means verification remained inconclusive."
                         },
                         "credits_consumed": {
                           "type": "number",
@@ -6551,13 +6533,13 @@
                           "type": "object",
                           "properties": {
                             "email": {
-                              "description": "Email field preserved from the provider response, when present."
+                              "description": "Email address, when present. Validate the value type before using it."
                             },
                             "status": {
-                              "description": "Provider status, when present. Pending verification is polled before returning."
+                              "description": "Verification status, when present."
                             },
                             "result": {
-                              "description": "Provider deliverability result, when present; risky is used when pending verification cannot be resolved."
+                              "description": "Deliverability result, when present; risky means verification remained inconclusive."
                             },
                             "credits_consumed": {
                               "type": "number",
@@ -6609,7 +6591,7 @@
             }
           },
           "400": {
-            "description": "Invalid JSON or body does not contain exactly one valid email field. Initial provider errors with this same status are passed through unchanged after an attempted refund; their body may differ.",
+            "description": "Invalid JSON or body does not contain exactly one valid email field. Error bodies may vary. A failed verification is eligible for a refund; a 503 can mean the charge or refund could not be confirmed.",
             "content": {
               "application/json": {
                 "schema": {}
@@ -6620,7 +6602,7 @@
             }
           },
           "401": {
-            "description": "Missing or invalid bearer API key. Initial provider errors with this same status are passed through unchanged after an attempted refund; their body may differ.",
+            "description": "Missing or invalid bearer API key. Error bodies may vary. A failed verification is eligible for a refund; a 503 can mean the charge or refund could not be confirmed.",
             "content": {
               "application/json": {
                 "schema": {}
@@ -6631,7 +6613,7 @@
             }
           },
           "403": {
-            "description": "Insufficient credits. Initial provider errors with this same status are passed through unchanged after an attempted refund; their body may differ.",
+            "description": "Insufficient credits. Error bodies may vary. A failed verification is eligible for a refund; a 503 can mean the charge or refund could not be confirmed.",
             "content": {
               "application/json": {
                 "schema": {}
@@ -6642,7 +6624,7 @@
             }
           },
           "413": {
-            "description": "JSON body exceeds 16 KiB. Initial provider errors with this same status are passed through unchanged after an attempted refund; their body may differ.",
+            "description": "JSON body exceeds 16 KiB. Error bodies may vary. A failed verification is eligible for a refund; a 503 can mean the charge or refund could not be confirmed.",
             "content": {
               "application/json": {
                 "schema": {}
@@ -6653,7 +6635,7 @@
             }
           },
           "500": {
-            "description": "Server configuration or unexpected server error. Initial provider errors with this same status are passed through unchanged after an attempted refund; their body may differ.",
+            "description": "An unexpected server error occurred. Error bodies may vary. A failed verification is eligible for a refund; a 503 can mean the charge or refund could not be confirmed.",
             "content": {
               "application/json": {
                 "schema": {}
@@ -6664,7 +6646,7 @@
             }
           },
           "502": {
-            "description": "Authentication lookup or provider network request failed. Initial provider errors with this same status are passed through unchanged after an attempted refund; their body may differ.",
+            "description": "The verification request could not be completed. Error bodies may vary. A failed verification is eligible for a refund; a 503 can mean the charge or refund could not be confirmed.",
             "content": {
               "application/json": {
                 "schema": {}
@@ -6675,7 +6657,7 @@
             }
           },
           "503": {
-            "description": "Credit reservation or refund service is unavailable. Initial provider errors with this same status are passed through unchanged after an attempted refund; their body may differ.",
+            "description": "The charge or refund could not be confirmed. Do not assume credits have been returned. Error bodies may vary. A failed verification is eligible for a refund; a 503 can mean the charge or refund could not be confirmed.",
             "content": {
               "application/json": {
                 "schema": {}
@@ -6686,7 +6668,7 @@
             }
           },
           "default": {
-            "description": "Provider status and body are preserved for other responses, including initial non-2xx errors (for example 422). A refund is attempted for an initial non-2xx response. Non-object or non-JSON successful payloads also pass through unchanged, without an added credits_consumed field.",
+            "description": "Other errors, such as 422, can have varying bodies. Failed verification requests are eligible for a refund. Successful responses can also contain non-object JSON or non-JSON content without a credits_consumed field.",
             "content": {
               "application/json": {
                 "schema": {}
@@ -8416,7 +8398,7 @@
         "type": "http",
         "scheme": "bearer",
         "bearerFormat": "API key",
-        "description": "Use an Airschool workspace API key. Never expose the key in client-side code."
+        "description": "Use an Airscale workspace API key. Never expose the key in client-side code."
       }
     },
     "schemas": {
@@ -8614,7 +8596,7 @@
       "LinkedInPersonUrl": {
         "type": "string",
         "minLength": 1,
-        "description": "A recognized LinkedIn person-profile URL or identifier. Airschool normalizes supported profile inputs.",
+        "description": "A recognized LinkedIn person-profile URL or identifier. Airscale normalizes supported profile inputs.",
         "example": "https://www.linkedin.com/in/example-person-000000"
       },
       "SuccessEmail": {
@@ -8689,25 +8671,25 @@
             ]
           },
           "profile": {
-            "description": "A pass-through profile value whose type and shape vary by response source."
+            "description": "Additional profile data, when available."
           },
           "link": {
-            "description": "A pass-through link value whose type and shape vary by response source."
+            "description": "Profile links, when available."
           },
           "firstname": {
-            "description": "A pass-through public first-name value whose type varies by response source."
+            "description": "First name, when available."
           },
           "lastname": {
-            "description": "A pass-through public last-name value whose type varies by response source."
+            "description": "Last name, when available."
           },
           "headline": {
-            "description": "A pass-through public headline value whose type varies by response source."
+            "description": "Profile headline, when available."
           },
           "industry": {
-            "description": "A pass-through public industry value whose type varies by response source."
+            "description": "Industry, when available."
           },
           "location": {
-            "description": "A pass-through public location value whose type and shape vary by response source."
+            "description": "Location information, when available."
           }
         }
       },

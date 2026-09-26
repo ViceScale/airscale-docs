@@ -1,4 +1,4 @@
-# Airscale API full documentation
+# Airschool full documentation
 
 > Airscale product guides, integration workflows, MCP documentation, and public API reference.
 > This is the full public, navigable preview corpus. It remains intentionally noindex for traditional search engines.
@@ -2601,9 +2601,9 @@ Description: Move or copy data from one column to another to reorganize or updat
 
 Source: https://airscale.mintlify.app/api-reference/api-overview.md
 
-Description: Authenticate with Airschool and make your first API request.
+Description: Authenticate with Airscale and make your first API request.
 
-Use the Airschool API to search for people and companies and enrich contact data from your application.
+Airschool is the documentation hub for Airscale. Use the Airscale API to search for people and companies and enrich contact data from your application.
 
 <CardGroup cols={2}>
   <Card title="Make your first request" href="/api-reference/credit-count">
@@ -2618,7 +2618,7 @@ Use the Airschool API to search for people and companies and enrich contact data
 
 <Steps>
   <Step title="Create an API key">
-    In Airschool, open **Settings → API key** and create a key for your server-side application.
+    In Airscale, open **Settings → API key** and create a key for your server-side application.
   </Step>
   <Step title="Authenticate">
     Store the key in an environment variable and send it as a Bearer token on every request.
@@ -2674,13 +2674,13 @@ Before you build a production integration, review [Authentication](/api-referenc
 
 Source: https://airscale.mintlify.app/api-reference/authentication.md
 
-Description: Create, send, protect, and rotate an Airschool API key.
+Description: Create, send, protect, and rotate an Airscale API key.
 
-Airschool authenticates API requests with a workspace API key sent as a Bearer token.
+Airscale authenticates API requests with a workspace API key sent as a Bearer token.
 
 ## Create an API key
 
-Create the key in **Airschool Settings**: open the [Airschool dashboard](https://app.airscale.io/dashboard), choose **Settings → API key**, and generate a key for your integration.
+Create the key in **Airscale Settings**: open the [Airscale dashboard](https://app.airscale.io/dashboard), choose **Settings → API key**, and generate a key for your integration.
 
 Store the value in your server's secret manager or environment configuration:
 
@@ -2706,7 +2706,7 @@ Keep API keys server-side. Never commit them to source control, place them in ex
 
 ## Rotate a compromised key
 
-If a key is exposed, rotate it immediately in **Airschool Settings**. Update the server-side secret, deploy the new value, verify an authenticated request, and stop using the old key.
+If a key is exposed, rotate it immediately in **Airscale Settings**. Update the server-side secret, deploy the new value, verify an authenticated request, and stop using the old key.
 
 Next, review [Rate limits](/api-reference/rate-limits) before adding request concurrency or retries.
 
@@ -2718,7 +2718,7 @@ Source: https://airscale.mintlify.app/api-reference/rate-limits.md
 
 Description: Understand endpoint-specific request limits and 429 responses.
 
-Airschool rate limits are endpoint-specific. Each endpoint can enforce a different request limit and time window, so use the value documented on the endpoint page you are calling.
+Airscale rate limits are endpoint-specific. Each endpoint can enforce a different request limit and time window, so use the value documented on the endpoint page you are calling.
 
 ## Limits by endpoint
 
@@ -2787,15 +2787,15 @@ Review the request limit on the endpoint page before setting concurrency:
 
 Source: https://airscale.mintlify.app/api-reference/credit-count.md
 
-Description: Check the remaining credit balance for your Airschool workspace. Rate limit: No endpoint-specific rate limit is documented.
+Description: Check the remaining credit balance for your Airscale workspace. Rate limit: No endpoint-specific rate limit is documented.
 
 Read the remaining credit balance for the workspace associated with your API key before starting paid enrichment work.
 
 <Note>
-Send no request body. Checking the balance is free and does not debit Airschool credits.
+Send no request body. Checking the balance is free and does not debit Airscale credits.
 </Note>
 
-An invalid or missing key returns `401 Unauthorized`. Confirm the current key in the Airschool dashboard and update your server-side secret; rotate it only if it was exposed.
+An invalid or missing key returns `401 Unauthorized`. Confirm the current key in the Airscale dashboard and update your server-side secret; rotate it only if it was exposed.
 
 ## Next step
 
@@ -2817,7 +2817,7 @@ The Search and [Count people](#count-matching-people) operations share a limit o
 
 Search returns at most 100 leads per request. When `next_cursor` is not `null`, send it unchanged as `cursor` with the same `query`. Do not derive or edit cursor contents.
 
-After a `429`, wait for the next second and retry with bounded exponential backoff. A failed search or credit-service attempt does not return charged leads.
+After a `429`, wait for the next second and retry with bounded exponential backoff. Failed searches do not return charged leads. For temporary `502` or `503` responses, use a limited number of retries with increasing delays; contact support if errors persist.
 
 ## Count matching people
 
@@ -2930,7 +2930,7 @@ The response contains `rows`, `total`, `page`, and `size`. Rows are public lead 
 
 `size` defaults to 50 and accepts 1–100. Start at `page: 0` and increment the page while keeping the same filters and size. This operation does not return `next_cursor`. When company and title filters are combined, returned rows are checked for a matching title at the identified company; a page can contain fewer rows after that check, and a short page alone does not establish exhaustion.
 
-After `429`, retry in a later second with bounded exponential backoff. For `503`, wait for the authentication or credit service to recover. Correct invalid filters before retrying `400` responses. Requests larger than 256 KiB return `413`.
+After `429`, retry in a later second with bounded exponential backoff. For `503`, retry with increasing delays and a fixed retry limit; contact support if errors persist. Correct invalid filters before retrying `400` responses. Requests larger than 256 KiB return `413`.
 
 ## Next step
 
@@ -2952,11 +2952,11 @@ Search shares a limit of 6 requests per second per workspace with [Company filte
 
 When `next_cursor` is not `null`, send the exact value unchanged as `cursor` with the same filters. Do not decode, construct, or edit the cursor. Cursor pagination preserves the original page size and can traverse up to 10,000 companies for one search.
 
-After a `429`, wait for the next second and retry with bounded exponential backoff. Retry a settlement failure only after the credit service recovers.
+After a `429`, wait for the next second and retry with bounded exponential backoff. For temporary `502` or `503` responses, retry with increasing delays and a fixed retry limit. If errors persist, stop retrying and contact support.
 
 ## Company fields
 
-`rows` contains sanitized public company records. Fields vary with available data; the following list is illustrative, not a set of required fields.
+`rows` contains public company records. Fields vary with available data; the following list is illustrative, not a set of required fields.
 
 | Field | Meaning |
 | --- | --- |
@@ -2967,7 +2967,7 @@ After a `429`, wait for the next second and retry with bounded exponential backo
 | `countryName`, `cityName` | Company location. |
 | `employeeRange`, `revenueRange` | Available headcount and revenue ranges. |
 
-Internal identifiers such as `id`, `_id`, `uuid`, `business_id`, and keys ending in `_id`, `Id`, `Urn`, or `Identifier` are removed recursively. Raw provider, token, secret, and trace fields are also removed. Do not depend on those fields as public company identifiers.
+The response does not guarantee a stable company ID. Use the available domain or LinkedIn URL to help match records, and handle missing fields.
 
 ## Discover filter values
 
@@ -2990,7 +2990,7 @@ Description: Search supported values for Find Companies filters. Rate limit: 6 r
 Discover accepted values before adding a city, region, industry, topic, or technology filter to [Find companies](/api-reference/find-companies).
 
 <Note>
-Filter-values is free and has no request body. It does not reserve or debit Airschool credits.
+Filter-values is free and has no request body. It does not reserve or debit Airscale credits.
 </Note>
 
 ## Choose useful context
@@ -3057,12 +3057,12 @@ Description: Research the web and return structured answers with Airsearch. Rate
 Ask a research question and receive a sourced answer, with optional output fields shaped for your application.
 
 <Note>
-The limit is 300 requests per minute per workspace. A `success` result costs 1 credit; `not_found` and `timeout` are not charged. The reservation is settled only for `success` and released for the other completed statuses.
+The limit is 300 requests per minute per workspace. A `success` result costs 1 credit; `not_found` and `timeout` are not charged. Credits reserved for a completed `not_found` or `timeout` result are returned.
 </Note>
 
 Requested schema keys are optional and nullable. Structured numeric and boolean values are returned as strings when present, so parse them explicitly when your application requires native scalar types.
 
-A later-stage soft timeout returns `200 OK` with `status: "timeout"`. An initial-stage timeout returns `504 Gateway Timeout`; narrow the prompt before retrying. Use bounded backoff for transient dependency failures.
+A timeout can return `200 OK` with `status: "timeout"` or `504 Gateway Timeout`. Narrow the prompt before retrying. For temporary `502` or `503` errors, retry with increasing delays and a fixed retry limit; contact support if errors persist.
 
 ## Next step
 
@@ -3098,7 +3098,7 @@ Send a person's name as `first_name` and `last_name`; `full_name` is not a suppo
 The success example includes all documented response fields. `provider` and `verifier` use placeholder labels; optional fields may be absent from a result.
 
 <Warning>
-Use bounded backoff after a transient `502` or `503`. A `503` can mean a successful result could not be settled by the credit service; retry the same input only after the service recovers.
+For temporary `502` or `503` responses, use a limited number of retries with increasing delays. If errors persist, stop retrying and contact support. A client timeout does not confirm whether the request completed or was charged.
 </Warning>
 
 ## Next step
@@ -3123,7 +3123,7 @@ The acceptance response only confirms that the batch was queued. Processing cont
 
 ## Webhook callbacks
 
-Every callback echoes `custom_id`. When the submitted value is omitted or `null`, Airschool uses that item's zero-based input index.
+Every callback echoes `custom_id`. When the submitted value is omitted or `null`, Airscale uses that item's zero-based input index.
 
 - A found email has `status: "success"`, the resolved `email`, `email_status: "valid"`, and the public `provider` and `verifier` labels.
 - An item skipped after the remaining batch balance drops below 2 credits has `status: "error"`, `error: "insufficient_credits"`, and `email: null`.
@@ -3159,7 +3159,7 @@ The limit is 3,000 requests per minute per workspace. A successful result costs 
 - `all_phone_numbers` is an array of normalized international phone numbers, with duplicates removed and the primary number first. It can contain just the primary number when no additional numbers are available.
 - A `not_found` result returns `phone_numbers: null` and `all_phone_numbers: []`.
 
-Use bounded backoff for transient failures. If a successful result could not be settled by the credit service, retry the same input only after the service recovers.
+For temporary `502` or `503` responses, use a limited number of retries with increasing delays. If errors persist, stop retrying and contact support. A client timeout does not confirm whether the request completed or was charged.
 
 ## Next step
 
@@ -3180,10 +3180,10 @@ The limit is 2,000 requests per minute per workspace. The minimum balance requir
 </Note>
 
 <Warning>
-If a result is found and charged but required usage recording then fails, the operation returns `502 Bad Gateway`. Check your balance before retrying that input to avoid paying again for the same result.
+A `502 Bad Gateway` response can occur after credits were charged. Check your balance before retrying that input to avoid paying again for the same result.
 </Warning>
 
-For other transient failures, retry with bounded backoff. Wait for the credit service to recover before retrying a settlement failure.
+After checking your balance for a `502`, or for a temporary `503` response, use a limited number of retries with increasing delays. If errors persist, stop retrying and contact support. A client timeout does not confirm whether the request completed or was charged.
 
 ## Next step
 
@@ -3203,7 +3203,7 @@ Identify a person by first name, last name, and company, then return a matching 
 The limit is 6 requests per second per workspace. A successful result costs 0.5 credits; `not_found` is not charged.
 </Note>
 
-After a `429 Too Many Requests` response, retry in a later second with bounded exponential backoff. Retry transient reservation failures with the same input only after the service recovers.
+After a `429 Too Many Requests` response, retry in a later second with bounded exponential backoff. For temporary `502` or `503` responses, retry the same input with increasing delays and a fixed retry limit; contact support if errors persist.
 
 ## Next step
 
@@ -3223,9 +3223,17 @@ Extract a structured person profile from a recognized LinkedIn URL, normally an 
 The limit is 3,000 requests per minute per workspace. The submitted URL selects the response schema and successful-call credit cost: `/in/` successes cost 1 credit by default, while `/company/` and `/school/` successes cost 0.5 credits. Workspace-specific pricing can differ, and unsuccessful requests are not charged.
 </Note>
 
-The optional modes are `p1`, `p2`, and `p3`. Omit `mode` for the default extraction workflow, whose successful shape can vary; use `p2` or `p3` when you need the normalized schema. The submitted URL, not the route name, selects person versus company output.
+## Request and response
 
-Extraction failures return an error rather than a `200 OK` no-result envelope. Retry transient extraction or settlement failures with bounded backoff, and omit `mode` if you do not require a specific mode.
+Send a JSON body containing `linkedin_profile_url`. No other extraction settings are needed.
+
+The response contains the available profile data. Fields may be missing or `null`, and their types can vary. The example illustrates one possible result; check the fields your integration uses before reading them.
+
+## Errors and retries
+
+A `404` means no profile was found. Check the URL before trying again. Correct the input for `400`, check your API key for `401`, and check access and credits for `403`.
+
+For `429`, wait until the next minute before retrying. For temporary `502` or `503` responses, use a limited number of retries with increasing delays. If the errors persist, stop retrying and contact support. Unsuccessful requests are not charged; a lost response or client timeout does not confirm that the request failed.
 
 ## Next step
 
@@ -3245,9 +3253,17 @@ Extract a structured organization profile from a recognized LinkedIn `/company/`
 The limit is 3,000 requests per minute per workspace. The submitted URL selects the response schema and successful-call credit cost: `/company/` and `/school/` successes cost 0.5 credits, while `/in/` successes cost 1 credit by default. Workspace-specific pricing can differ, and unsuccessful requests are not charged.
 </Note>
 
-The optional modes are `p1`, `p2`, and `p3`. Omit `mode` for the default extraction workflow, whose successful shape can vary; use `p2` or `p3` when you need the normalized schema. The submitted URL, not the route name, selects company versus person output.
+## Request and response
 
-Extraction failures return an error rather than a `200 OK` no-result envelope. Retry transient extraction or settlement failures with bounded backoff, and omit `mode` if you do not require a specific mode.
+Send a JSON body containing `linkedin_profile_url`. No other extraction settings are needed.
+
+The response contains the available profile data. Fields may be missing or `null`, and their types can vary. The example illustrates one possible result; check the fields your integration uses before reading them.
+
+## Errors and retries
+
+A `404` means no profile was found. Check the URL before trying again. Correct the input for `400`, check your API key for `401`, and check access and credits for `403`.
+
+For `429`, wait until the next minute before retrying. For temporary `502` or `503` responses, use a limited number of retries with increasing delays. If the errors persist, stop retrying and contact support. Unsuccessful requests are not charged; a lost response or client timeout does not confirm that the request failed.
 
 ## Next step
 
@@ -3264,10 +3280,10 @@ Description: Find a LinkedIn company URL from a company domain. Rate limit: 180 
 Submit one company domain and receive its LinkedIn company URL. The response contains only `linkedin_company_url`.
 
 <Note>
-A successful lookup costs **0.5 credits**, billed asynchronously. No-result and failed lookups cost zero. Billing delays, outages, and insufficient credits do not block the result; an outstanding charge is retried later. The limit is **180 requests per minute per workspace**.
+A successful lookup costs **0.5 credits**, charged after the lookup. No-result and failed lookups cost zero. The charge may appear later, including after a top-up if your balance is insufficient. The limit is **180 requests per minute per workspace**.
 </Note>
 
-Use a current workspace API key from [Settings → API key](/api-reference/authentication). Legacy Bubble-only API keys are not supported by this endpoint.
+Use a current workspace API key from [Settings → API key](/api-reference/authentication). Keys from the previous dashboard are not supported by this endpoint; generate a current key before calling it.
 
 ## Domain input
 
@@ -3275,13 +3291,13 @@ Send only `domain`: a hostname such as `example.org`, without a scheme, path, or
 
 ## Timeouts and retries
 
-The lookup has a **120-second deadline**. Allow **130 seconds** in your client. Sources are tried sequentially until a valid company URL is found. Personal profile and school URLs are not returned.
+The lookup has a **120-second deadline**. Allow **130 seconds** in your client. Personal profile and school URLs are not returned.
 
 Reuse the same `Idempotency-Key` for transport retries of the same domain. Keys are scoped to your workspace and this endpoint; responses replay for seven days without another lookup or charge. Without a key, every request is a new operation.
 
 An in-flight duplicate returns `409` with `Retry-After: 2`; wait and retry with the same key. A key reused for a different domain, or an expired key, also returns `409` and needs a new key. After a completed transient failure, use a new key to start a fresh lookup. New operations can incur a new charge if successful.
 
-Errors contain an `error` field. Billing errors never replace the lookup response. Authentication and result storage must still be available for the request to succeed.
+Errors contain an `error` field. A `404` means no match was found; a `504` means the lookup timed out. Neither is charged. For `503`, follow the retry guidance above.
 
 ## Next step
 
@@ -3301,7 +3317,7 @@ Submit an email address and receive the matching person profile when one can be 
 The limit is 25 requests per second per workspace. A returned profile costs 2 credits. A miss returns the JSON string `"not found"`, not an object with a status field, and is not charged.
 </Note>
 
-After a `429 Too Many Requests` response, retry in a later second with bounded exponential backoff. A `503` transport or settlement failure is not charged; retry the same email with bounded backoff after the dependency recovers.
+After a `429 Too Many Requests` response, retry in a later second with bounded exponential backoff. A `503` response is not charged. Retry the same email with increasing delays and a fixed retry limit; contact support if errors persist.
 
 ## Next step
 
@@ -3323,7 +3339,7 @@ The limit is 2,000 requests per minute per workspace. A returned profile costs 1
 
 A `not_found` result can represent a true miss or lookup paths that were exhausted or failed. When a match is expected, make one bounded-backoff retry. If it persists, verify that you sent the intended normalized number before retrying again.
 
-Wait for the credit service to recover before retrying a settlement failure with the same number.
+For temporary `502` or `503` responses, use a limited number of retries with increasing delays. If errors persist, stop retrying and contact support. A client timeout does not confirm whether the request completed or was charged.
 
 ## Next step
 
@@ -3347,13 +3363,13 @@ The API reserves one credit for each requested slot (`limit`) before retrieving 
 
 The limit is **180 requests per minute per workspace**, shared by Post likers and [Post commenters](/api-reference/post-commenters), including different API keys for the same workspace. Pagination requests and retries each count toward this limit.
 
-The counter uses a fixed minute window and resets at the next minute boundary. Requests above the limit receive HTTP `429` before provider or billing work. Wait until the next minute, then retry the identical page with the same `Idempotency-Key` using bounded backoff. This is a request limit, not a guarantee of enrichment throughput; the maximum page size remains 25.
+The counter uses a fixed minute window and resets at the next minute boundary. Requests above the limit receive HTTP `429` without starting the page or charging credits. Wait until the next minute, then retry the identical page with the same `Idempotency-Key` using bounded backoff. This is a request limit, not a guarantee of enrichment throughput; the maximum page size remains 25.
 
 ## Pagination
 
-Omit `cursor` on the first request. When `pagination.next_cursor` is not `null`, send it unchanged with the same post URL and `limit` to fetch the next page. The page size is 1–25 (default 25). The provider and continuation account remain pinned to the cursor. New cursors expire after 10 minutes and are bound to the workspace, post, engagement type, and page size.
+Omit `cursor` on the first request. When `pagination.next_cursor` is not `null`, send it unchanged with the same post URL and `limit` to fetch the next page. The page size is 1–25 (default 25). New cursors expire after 10 minutes and are bound to the workspace, post, engagement type, and page size.
 
-Optional `retrieval` metadata contains `reported_total`, `returned_count`, `status`, and `stop_reason`. A `provider_exhausted` status means that provider has no further cursor; it does not guarantee that every LinkedIn engagement was accessible. Provider totals can change, and comment events are not the same count as unique authors. Public pagination does not promise every reply returned by the dashboard's background extraction.
+Optional `retrieval` metadata contains `reported_total`, `returned_count`, `status`, and `stop_reason`. A `provider_exhausted` status means there are no more pages available for this request; it does not guarantee that every LinkedIn engagement was accessible. Reported totals can change, and comment events are not the same count as unique authors. Public pagination does not promise every reply returned by the dashboard's background extraction.
 
 ## Safe retries
 
@@ -3363,29 +3379,27 @@ The code examples read `AIRSCALE_PAGE_KEY` from your environment. Set it to a UU
 
 Omitting the header remains supported. However, an independent retry without the original key can reserve credits again. When a pending or uncertain response includes `idempotency_key`, retain and send that returned key even if your first request omitted the header.
 
-Completed results remain replayable for 24 hours after completion, including after the input cursor expires. Already-saved profile or billing work can also resume after cursor expiry. An expired cursor cannot start a new provider fetch. A reservation for unresolved work does not automatically become a refund after 24 hours.
+Completed results remain replayable for 24 hours after completion, including after the input cursor expires. A page whose results have already been saved can resume after cursor expiry. An expired cursor cannot fetch a new page. A reservation for unresolved work does not automatically become a refund after 24 hours.
 
 ## Pending and error responses
 
-A `202` response with `status: "pending"` and `code: "page_pending"` means the bridge did not respond within 90 seconds. The outcome is unconfirmed; processing may still be running or may not have started. Wait for `Retry-After` (15 seconds for this response), then resend the identical page with the returned `idempotency_key`. The body also supplies `retry_after_ms`.
+A `202` response with `status: "pending"` and `code: "page_pending"` means the request did not finish within 90 seconds. The outcome is unconfirmed; processing may still be running or may not have started. Wait for `Retry-After` (15 seconds for this response), then resend the identical page with the returned `idempotency_key`. The body also supplies `retry_after_ms`.
 
 | Response | Next action |
 | --- | --- |
 | `409 replay_in_progress` | Wait, then retry the identical page with the same key. |
 | `409 replay_request_mismatch` | Restore the original request fields for that key. Use a new key only for intentionally different work. |
 | `503 account_busy`, `rate_limited`, or `provider_unavailable` | Keep the page and key unchanged. Wait for the supplied delay and retry with bounded backoff. |
-| `503 provider_page_unavailable` | Retry the same cursor and key; continuation stays on its pinned provider. |
+| `503 provider_page_unavailable` | Wait for the supplied delay, then retry the same cursor and key. |
 | `503 account_restart_required` | Start again without a cursor and with a new key. Deduplicate results already received. |
-| Other `502` or `503` responses carrying `idempotency_key` | Preserve the original body and returned key. Retry with bounded backoff; do not assume that an uncertain profile or billing response was refunded. |
+| Other `502` or `503` responses carrying `idempotency_key` | Preserve the original body and returned key. Retry with bounded backoff; do not assume that an unconfirmed request was refunded. |
 | `429 Too Many Requests` | Wait and retry the same page and key with bounded exponential backoff. |
 
 If a cooldown outlasts an unfetched cursor, wait for the cooldown, then begin a fresh traversal without the cursor and with a new key. Deduplicate earlier results. A fresh traversal is new billable work. Saved work and completed replay results can still be recovered under the rules above.
 
-Airscale can choose another eligible account before a traversal starts. A continuation stays on its original account; it cannot silently switch accounts or reorder your results. Provider failures do not turn upstream access or pagination limits into a complete result set.
+## Avoid duplicate charges
 
-## Billing recovery
-
-A failed provider discovery attempt is refunded before a new attempt is funded. Once a page has been saved, retries resume its profile enrichment or billing settlement without rediscovering the page or repeating successfully settled profile charges. Keep the same key throughout recovery.
+Retry the same page with the same key to resume it without charging again for profiles already paid for. Keep that key until you receive a final result. Starting again with a new key is a new billable request.
 
 ## Next step
 
@@ -3409,13 +3423,13 @@ The API reserves one credit for each requested slot (`limit`) before retrieving 
 
 The limit is **180 requests per minute per workspace**, shared by [Post likers](/api-reference/post-likers) and Post commenters, including different API keys for the same workspace. Pagination requests and retries each count toward this limit.
 
-The counter uses a fixed minute window and resets at the next minute boundary. Requests above the limit receive HTTP `429` before provider or billing work. Wait until the next minute, then retry the identical page with the same `Idempotency-Key` using bounded backoff. This is a request limit, not a guarantee of enrichment throughput; the maximum page size remains 25.
+The counter uses a fixed minute window and resets at the next minute boundary. Requests above the limit receive HTTP `429` without starting the page or charging credits. Wait until the next minute, then retry the identical page with the same `Idempotency-Key` using bounded backoff. This is a request limit, not a guarantee of enrichment throughput; the maximum page size remains 25.
 
 ## Pagination
 
-Omit `cursor` on the first request. When `pagination.next_cursor` is not `null`, send it unchanged with the same post URL and `limit` to fetch the next page. The page size is 1–25 (default 25). The provider and continuation account remain pinned to the cursor. New cursors expire after 10 minutes and are bound to the workspace, post, engagement type, and page size.
+Omit `cursor` on the first request. When `pagination.next_cursor` is not `null`, send it unchanged with the same post URL and `limit` to fetch the next page. The page size is 1–25 (default 25). New cursors expire after 10 minutes and are bound to the workspace, post, engagement type, and page size.
 
-Optional `retrieval` metadata contains `reported_total`, `returned_count`, `status`, and `stop_reason`. A `provider_exhausted` status means that provider has no further cursor; it does not guarantee that every LinkedIn engagement was accessible. Provider totals can change, and comment events are not the same count as unique authors. Public pagination does not promise every reply returned by the dashboard's background extraction.
+Optional `retrieval` metadata contains `reported_total`, `returned_count`, `status`, and `stop_reason`. A `provider_exhausted` status means there are no more pages available for this request; it does not guarantee that every LinkedIn engagement was accessible. Reported totals can change, and comment events are not the same count as unique authors. Public pagination does not promise every reply returned by the dashboard's background extraction.
 
 ## Safe retries
 
@@ -3425,29 +3439,27 @@ The code examples read `AIRSCALE_PAGE_KEY` from your environment. Set it to a UU
 
 Omitting the header remains supported. However, an independent retry without the original key can reserve credits again. When a pending or uncertain response includes `idempotency_key`, retain and send that returned key even if your first request omitted the header.
 
-Completed results remain replayable for 24 hours after completion, including after the input cursor expires. Already-saved profile or billing work can also resume after cursor expiry. An expired cursor cannot start a new provider fetch. A reservation for unresolved work does not automatically become a refund after 24 hours.
+Completed results remain replayable for 24 hours after completion, including after the input cursor expires. A page whose results have already been saved can resume after cursor expiry. An expired cursor cannot fetch a new page. A reservation for unresolved work does not automatically become a refund after 24 hours.
 
 ## Pending and error responses
 
-A `202` response with `status: "pending"` and `code: "page_pending"` means the bridge did not respond within 90 seconds. The outcome is unconfirmed; processing may still be running or may not have started. Wait for `Retry-After` (15 seconds for this response), then resend the identical page with the returned `idempotency_key`. The body also supplies `retry_after_ms`.
+A `202` response with `status: "pending"` and `code: "page_pending"` means the request did not finish within 90 seconds. The outcome is unconfirmed; processing may still be running or may not have started. Wait for `Retry-After` (15 seconds for this response), then resend the identical page with the returned `idempotency_key`. The body also supplies `retry_after_ms`.
 
 | Response | Next action |
 | --- | --- |
 | `409 replay_in_progress` | Wait, then retry the identical page with the same key. |
 | `409 replay_request_mismatch` | Restore the original request fields for that key. Use a new key only for intentionally different work. |
 | `503 account_busy`, `rate_limited`, or `provider_unavailable` | Keep the page and key unchanged. Wait for the supplied delay and retry with bounded backoff. |
-| `503 provider_page_unavailable` | Retry the same cursor and key; continuation stays on its pinned provider. |
+| `503 provider_page_unavailable` | Wait for the supplied delay, then retry the same cursor and key. |
 | `503 account_restart_required` | Start again without a cursor and with a new key. Deduplicate results already received. |
-| Other `502` or `503` responses carrying `idempotency_key` | Preserve the original body and returned key. Retry with bounded backoff; do not assume that an uncertain profile or billing response was refunded. |
+| Other `502` or `503` responses carrying `idempotency_key` | Preserve the original body and returned key. Retry with bounded backoff; do not assume that an unconfirmed request was refunded. |
 | `429 Too Many Requests` | Wait and retry the same page and key with bounded exponential backoff. |
 
 If a cooldown outlasts an unfetched cursor, wait for the cooldown, then begin a fresh traversal without the cursor and with a new key. Deduplicate earlier results. A fresh traversal is new billable work. Saved work and completed replay results can still be recovered under the rules above.
 
-Airscale can choose another eligible account before a traversal starts. A continuation stays on its original account; it cannot silently switch accounts or reorder your results. Provider failures do not turn upstream access or pagination limits into a complete result set.
+## Avoid duplicate charges
 
-## Billing recovery
-
-A failed provider discovery attempt is refunded before a new attempt is funded. Once a page has been saved, retries resume its profile enrichment or billing settlement without rediscovering the page or repeating successfully settled profile charges. Keep the same key throughout recovery.
+Retry the same page with the same key to resume it without charging again for profiles already paid for. Keep that key until you receive a final result. Starting again with a new key is a new billable request.
 
 ## Next step
 
@@ -3515,11 +3527,11 @@ Look up Meta ads for one company. Send exactly one `domain` field: a bare hostna
 
 The limit is **60 requests per minute per workspace**. You need at least **1 credit** before the lookup can start. A finite numeric `number_of_ads` greater than zero costs **1 credit**. A zero, missing, nonnumeric, or nonpositive count costs **0 credits**.
 
-The response preserves provider fields and adds `credits_consumed`. Fields such as `page_id` and `number_of_ads` are optional; do not assume every provider response includes them or uses a fixed type. An upstream HTTP `204` response becomes a zero-ad result.
+Read `credits_consumed` for the cost of the lookup. Fields such as `page_id` and `number_of_ads` are optional and can vary in type; check them before use. A zero-ad result costs zero credits.
 
 ## Timeouts and retries
 
-The provider lookup can take up to **90 seconds**. HTTP `504` means that lookup timed out without a debit. Use bounded backoff for temporary errors and rate limits.
+The lookup can take up to **90 seconds**. HTTP `504` means that lookup timed out without a debit. Use bounded backoff for temporary errors and rate limits.
 
 This endpoint does not support caller idempotency keys. Retrying a successful lookup can run and bill another lookup, including when the original response was lost.
 
@@ -3541,17 +3553,17 @@ Verify one email address using your workspace API key. Send exactly one `email` 
 
 The cost is **0.5 credits per request**, reserved before verification. There is no endpoint-specific throttle.
 
-When verification is pending, the API polls for up to **45 seconds** after the initial provider request without charging again. If pending verification cannot be resolved within that window, the effective result becomes `risky`. The initial provider request can itself take up to 90 seconds; allow time for both stages in your client timeout.
+Allow at least **135 seconds**, plus a network margin, in your client timeout. If verification remains inconclusive, the result is `risky`; waiting for that result does not add another charge.
 
 ## Reading the response
 
-Provider JSON object fields are preserved. A direct response receives `credits_consumed: 0.5` at the top level. If the provider uses a `body` wrapper, the result and `credits_consumed` remain inside `body`, and `returned_an_error` is set to `false`.
+Read the result from `body` when that object is present; otherwise read it from the top level. JSON object results include `credits_consumed: 0.5` alongside the result. Wrapped results also include `returned_an_error: false` at the top level.
 
-Fields such as `email`, `status`, and `result` are provider-dependent and may be absent. Non-object or non-JSON successful responses pass through unchanged without an added credit field.
+Fields such as `email`, `status`, and `result` may be absent or have different types. Check the response content type before parsing: successful responses can also contain non-object JSON or non-JSON content without a `credits_consumed` field.
 
 ## Errors and retries
 
-Initial non-2xx provider responses retain the provider's status and body, such as `422`. The API attempts to refund the reservation for an initial provider error or network failure. If the refund cannot be confirmed, it returns `503`.
+An unsuccessful verification can return an error such as `422`; error bodies can vary. Failed verification requests are eligible for a refund. A `503` can mean the charge or refund could not be confirmed, so do not assume the credits have been returned.
 
 This endpoint does not support caller idempotency keys. Retrying creates another verification request and can incur another charge. Use bounded backoff for temporary failures and avoid treating a timeout as proof that no credits were charged.
 
@@ -3570,10 +3582,10 @@ Description: Check whether a US phone number is listed on DNC. Rate limit: 5 req
 Submit a US phone number using `phone`. The operation normalizes accepted numbers to `+1` format and returns whether the number is listed on DNC.
 
 <Note>
-A successful check costs 1 credit whether `listed` is `true` or `false`. The limit is 5 requests per second per workspace. Validation and provider failures are not charged.
+A successful check costs 1 credit whether `listed` is `true` or `false`. The limit is 5 requests per second per workspace. Validation and lookup failures are not charged.
 </Note>
 
-Non-US numbers return `422` with `code: "unsupported_phone_region"` before the provider request. Malformed numbers return `422` with `code: "invalid_input"`. Correct the input before retrying either response.
+Non-US numbers return `422` with `code: "unsupported_phone_region"` without starting a check. Malformed numbers return `422` with `code: "invalid_input"`. Correct the input before retrying either response.
 
 `phone_number` and `mobile_phone` are accepted aliases. `phone` takes precedence when non-null, followed by `phone_number`, then `mobile_phone`. Use one field to avoid ambiguity.
 
@@ -3586,9 +3598,9 @@ Non-US numbers return `422` with `code: "unsupported_phone_region"` before the p
 | `listed` | Boolean indicating whether the number is listed. |
 | `result` | `Listed on DNC` or `Not listed on DNC`. |
 | `credits_used` | Credits charged for this check. |
-| `credits_remaining` | Remaining balance returned by the credit service. |
+| `credits_remaining` | Remaining workspace credit balance. |
 
-After `429`, retry in a later second with bounded exponential backoff. For `502` or `503`, wait for the dependency to recover before retrying. The maximum JSON body size is 256 KiB.
+After `429`, retry in a later second with bounded exponential backoff. For temporary `502` or `503` responses, retry with increasing delays and a fixed retry limit; contact support if errors persist. The maximum JSON body size is 256 KiB.
 
 ## Next step
 

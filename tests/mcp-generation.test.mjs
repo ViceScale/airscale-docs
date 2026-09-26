@@ -3064,7 +3064,7 @@ test("agent renderers escape compact-index metadata and reject unsafe or incompl
   inputs.pageSources[firstPath] = inputs.pageSources[firstPath]
     .replace('title: "API Overview"', 'title: "API [Overview]"')
     .replace(
-      'description: "Authenticate with Airschool and make your first API request."',
+      'description: "Authenticate with Airscale and make your first API request."',
       'description: "Authenticate [safely] | without injecting a link."'
     );
   const index = renderLlmsIndex(inputs);

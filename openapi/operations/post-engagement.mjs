@@ -9,8 +9,8 @@ const errorDescriptions = {
   413: "The JSON request body exceeds the 128 KiB limit.",
   429: "The workspace has exceeded the 180 requests per minute limit shared by post-likers and post-commenters. Wait until the next minute boundary, then retry the identical page with the same idempotency key using bounded backoff.",
   500: "The request could not be completed because of an unexpected server error.",
-  502: "The post-engagement bridge could not be reached or returned an invalid response.",
-  503: "A provider, profile-enrichment, pagination, or credit-settlement dependency is temporarily unavailable."
+  502: "The page could not be retrieved. Retry the identical page with the same idempotency key and increasing delays.",
+  503: "The page is temporarily unavailable. Follow the response code guidance and keep the original request body and idempotency key."
 };
 
 function jsonError(description) {
@@ -24,7 +24,7 @@ function jsonError(description) {
           properties: {
             error: { type: "string" },
             message: { type: "string" },
-            code: { type: "string", description: "Use the documented code to distinguish waiting, invalid reuse, and account restart." },
+            code: { type: "string", description: "Use the documented code to distinguish waiting, invalid reuse, and restarting pagination." },
             idempotency_key: { type: "string", format: "uuid", description: "Retain this key and the original request body for safe recovery." },
             retry_after_ms: { type: "integer", minimum: 0 }
           }
@@ -139,7 +139,7 @@ const postEngagementResponseSchema = {
       properties: {
         next_cursor: {
           type: ["string", "null"],
-          description: "Opaque cursor for the next page, or null when the provider returns no continuation cursor. This does not prove complete LinkedIn coverage."
+          description: "Opaque cursor for the next page, or null when no further page is available. This does not prove complete LinkedIn coverage."
         },
         has_more: { type: "boolean" }
       }
@@ -153,7 +153,7 @@ const postEngagementResponseSchema = {
       type: "object",
       required: ["reported_total", "returned_count", "status", "stop_reason"],
       additionalProperties: false,
-      description: "Optional retrieval evidence. Exhausting a provider cursor does not prove all LinkedIn engagements were accessible.",
+      description: "Optional pagination details. Reaching the last available page does not guarantee that every LinkedIn engagement was accessible.",
       properties: {
         reported_total: { type: ["integer", "null"], minimum: 0 },
         returned_count: { type: "integer", minimum: 0 },
@@ -337,7 +337,7 @@ function operation({ path, operationId, engagementType, summary, description }) 
           }
         },
         202: {
-          description: "The bridge did not respond within 90 seconds. Its outcome is unconfirmed; retry the identical page with the returned key after Retry-After. This is not a completed result or a guarantee that processing started.",
+          description: "The request did not finish within 90 seconds. Its outcome is unconfirmed; retry the identical page with the returned key after Retry-After. This is not a completed result or a guarantee that processing started.",
           headers: { "Retry-After": { description: "Wait this many seconds before retrying (15 for page_pending).", schema: { type: "string" }, example: "15" } },
           content: { "application/json": {
             schema: {
