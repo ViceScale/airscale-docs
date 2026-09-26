@@ -27,7 +27,7 @@ Send a person's name as `first_name` and `last_name`; `full_name` is not a suppo
 The success example includes all documented response fields. `provider` and `verifier` use placeholder labels; optional fields may be absent from a result.
 
 <Warning>
-Use bounded backoff after a transient `502` or `503`. A `503` can mean a successful result could not be settled by the credit service; retry the same input only after the service recovers.
+For temporary `502` or `503` responses, use a limited number of retries with increasing delays. If errors persist, stop retrying and contact support. A client timeout does not confirm whether the request completed or was charged.
 </Warning>
 
 ## Next step

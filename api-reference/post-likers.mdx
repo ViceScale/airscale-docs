@@ -15,13 +15,13 @@ The API reserves one credit for each requested slot (`limit`) before retrieving 
 
 The limit is **180 requests per minute per workspace**, shared by Post likers and [Post commenters](/api-reference/post-commenters), including different API keys for the same workspace. Pagination requests and retries each count toward this limit.
 
-The counter uses a fixed minute window and resets at the next minute boundary. Requests above the limit receive HTTP `429` before provider or billing work. Wait until the next minute, then retry the identical page with the same `Idempotency-Key` using bounded backoff. This is a request limit, not a guarantee of enrichment throughput; the maximum page size remains 25.
+The counter uses a fixed minute window and resets at the next minute boundary. Requests above the limit receive HTTP `429` without starting the page or charging credits. Wait until the next minute, then retry the identical page with the same `Idempotency-Key` using bounded backoff. This is a request limit, not a guarantee of enrichment throughput; the maximum page size remains 25.
 
 ## Pagination
 
-Omit `cursor` on the first request. When `pagination.next_cursor` is not `null`, send it unchanged with the same post URL and `limit` to fetch the next page. The page size is 1–25 (default 25). The provider and continuation account remain pinned to the cursor. New cursors expire after 10 minutes and are bound to the workspace, post, engagement type, and page size.
+Omit `cursor` on the first request. When `pagination.next_cursor` is not `null`, send it unchanged with the same post URL and `limit` to fetch the next page. The page size is 1–25 (default 25). New cursors expire after 10 minutes and are bound to the workspace, post, engagement type, and page size.
 
-Optional `retrieval` metadata contains `reported_total`, `returned_count`, `status`, and `stop_reason`. A `provider_exhausted` status means that provider has no further cursor; it does not guarantee that every LinkedIn engagement was accessible. Provider totals can change, and comment events are not the same count as unique authors. Public pagination does not promise every reply returned by the dashboard's background extraction.
+Optional `retrieval` metadata contains `reported_total`, `returned_count`, `status`, and `stop_reason`. A `provider_exhausted` status means there are no more pages available for this request; it does not guarantee that every LinkedIn engagement was accessible. Reported totals can change, and comment events are not the same count as unique authors. Public pagination does not promise every reply returned by the dashboard's background extraction.
 
 ## Safe retries
 
@@ -31,29 +31,27 @@ The code examples read `AIRSCALE_PAGE_KEY` from your environment. Set it to a UU
 
 Omitting the header remains supported. However, an independent retry without the original key can reserve credits again. When a pending or uncertain response includes `idempotency_key`, retain and send that returned key even if your first request omitted the header.
 
-Completed results remain replayable for 24 hours after completion, including after the input cursor expires. Already-saved profile or billing work can also resume after cursor expiry. An expired cursor cannot start a new provider fetch. A reservation for unresolved work does not automatically become a refund after 24 hours.
+Completed results remain replayable for 24 hours after completion, including after the input cursor expires. A page whose results have already been saved can resume after cursor expiry. An expired cursor cannot fetch a new page. A reservation for unresolved work does not automatically become a refund after 24 hours.
 
 ## Pending and error responses
 
-A `202` response with `status: "pending"` and `code: "page_pending"` means the bridge did not respond within 90 seconds. The outcome is unconfirmed; processing may still be running or may not have started. Wait for `Retry-After` (15 seconds for this response), then resend the identical page with the returned `idempotency_key`. The body also supplies `retry_after_ms`.
+A `202` response with `status: "pending"` and `code: "page_pending"` means the request did not finish within 90 seconds. The outcome is unconfirmed; processing may still be running or may not have started. Wait for `Retry-After` (15 seconds for this response), then resend the identical page with the returned `idempotency_key`. The body also supplies `retry_after_ms`.
 
 | Response | Next action |
 | --- | --- |
 | `409 replay_in_progress` | Wait, then retry the identical page with the same key. |
 | `409 replay_request_mismatch` | Restore the original request fields for that key. Use a new key only for intentionally different work. |
 | `503 account_busy`, `rate_limited`, or `provider_unavailable` | Keep the page and key unchanged. Wait for the supplied delay and retry with bounded backoff. |
-| `503 provider_page_unavailable` | Retry the same cursor and key; continuation stays on its pinned provider. |
+| `503 provider_page_unavailable` | Wait for the supplied delay, then retry the same cursor and key. |
 | `503 account_restart_required` | Start again without a cursor and with a new key. Deduplicate results already received. |
-| Other `502` or `503` responses carrying `idempotency_key` | Preserve the original body and returned key. Retry with bounded backoff; do not assume that an uncertain profile or billing response was refunded. |
+| Other `502` or `503` responses carrying `idempotency_key` | Preserve the original body and returned key. Retry with bounded backoff; do not assume that an unconfirmed request was refunded. |
 | `429 Too Many Requests` | Wait and retry the same page and key with bounded exponential backoff. |
 
 If a cooldown outlasts an unfetched cursor, wait for the cooldown, then begin a fresh traversal without the cursor and with a new key. Deduplicate earlier results. A fresh traversal is new billable work. Saved work and completed replay results can still be recovered under the rules above.
 
-Airscale can choose another eligible account before a traversal starts. A continuation stays on its original account; it cannot silently switch accounts or reorder your results. Provider failures do not turn upstream access or pagination limits into a complete result set.
+## Avoid duplicate charges
 
-## Billing recovery
-
-A failed provider discovery attempt is refunded before a new attempt is funded. Once a page has been saved, retries resume its profile enrichment or billing settlement without rediscovering the page or repeating successfully settled profile charges. Keep the same key throughout recovery.
+Retry the same page with the same key to resume it without charging again for profiles already paid for. Keep that key until you receive a final result. Starting again with a new key is a new billable request.
 
 ## Next step
 

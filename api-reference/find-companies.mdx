@@ -13,11 +13,11 @@ Search shares a limit of 6 requests per second per workspace with [Company filte
 
 When `next_cursor` is not `null`, send the exact value unchanged as `cursor` with the same filters. Do not decode, construct, or edit the cursor. Cursor pagination preserves the original page size and can traverse up to 10,000 companies for one search.
 
-After a `429`, wait for the next second and retry with bounded exponential backoff. Retry a settlement failure only after the credit service recovers.
+After a `429`, wait for the next second and retry with bounded exponential backoff. For temporary `502` or `503` responses, retry with increasing delays and a fixed retry limit. If errors persist, stop retrying and contact support.
 
 ## Company fields
 
-`rows` contains sanitized public company records. Fields vary with available data; the following list is illustrative, not a set of required fields.
+`rows` contains public company records. Fields vary with available data; the following list is illustrative, not a set of required fields.
 
 | Field | Meaning |
 | --- | --- |
@@ -28,7 +28,7 @@ After a `429`, wait for the next second and retry with bounded exponential backo
 | `countryName`, `cityName` | Company location. |
 | `employeeRange`, `revenueRange` | Available headcount and revenue ranges. |
 
-Internal identifiers such as `id`, `_id`, `uuid`, `business_id`, and keys ending in `_id`, `Id`, `Urn`, or `Identifier` are removed recursively. Raw provider, token, secret, and trace fields are also removed. Do not depend on those fields as public company identifiers.
+The response does not guarantee a stable company ID. Use the available domain or LinkedIn URL to help match records, and handle missing fields.
 
 ## Discover filter values
 

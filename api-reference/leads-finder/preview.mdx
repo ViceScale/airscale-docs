@@ -11,7 +11,7 @@ This is an alias of [Leads Finder](/api-reference/leads-finder), with the same r
 Despite its name, this route is not a free preview or count operation. It costs 0.1 credits per returned lead and shares the limit of 5 requests per second per workspace with `/v1/leads-finder`.
 </Warning>
 
-Follow the [filter and pagination guidance](/api-reference/leads-finder#choose-filters). After `429`, retry with bounded backoff. Wait for the credit service to recover before retrying a settlement failure.
+Follow the [filter and pagination guidance](/api-reference/leads-finder#choose-filters). After `429`, retry with bounded backoff. For temporary `502` or `503` responses, use a limited number of retries with increasing delays. If errors persist, stop retrying and contact support. A client timeout does not confirm whether the request completed or was charged.
 
 ## Next step
 

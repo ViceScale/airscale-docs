@@ -17,7 +17,7 @@ The limit is 3,000 requests per minute per workspace. A successful result costs 
 - `all_phone_numbers` is an array of normalized international phone numbers, with duplicates removed and the primary number first. It can contain just the primary number when no additional numbers are available.
 - A `not_found` result returns `phone_numbers: null` and `all_phone_numbers: []`.
 
-Use bounded backoff for transient failures. If a successful result could not be settled by the credit service, retry the same input only after the service recovers.
+For temporary `502` or `503` responses, use a limited number of retries with increasing delays. If errors persist, stop retrying and contact support. A client timeout does not confirm whether the request completed or was charged.
 
 ## Next step
 

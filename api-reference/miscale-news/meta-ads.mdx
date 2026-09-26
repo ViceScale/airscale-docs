@@ -11,11 +11,11 @@ Look up Meta ads for one company. Send exactly one `domain` field: a bare hostna
 
 The limit is **60 requests per minute per workspace**. You need at least **1 credit** before the lookup can start. A finite numeric `number_of_ads` greater than zero costs **1 credit**. A zero, missing, nonnumeric, or nonpositive count costs **0 credits**.
 
-The response preserves provider fields and adds `credits_consumed`. Fields such as `page_id` and `number_of_ads` are optional; do not assume every provider response includes them or uses a fixed type. An upstream HTTP `204` response becomes a zero-ad result.
+Read `credits_consumed` for the cost of the lookup. Fields such as `page_id` and `number_of_ads` are optional and can vary in type; check them before use. A zero-ad result costs zero credits.
 
 ## Timeouts and retries
 
-The provider lookup can take up to **90 seconds**. HTTP `504` means that lookup timed out without a debit. Use bounded backoff for temporary errors and rate limits.
+The lookup can take up to **90 seconds**. HTTP `504` means that lookup timed out without a debit. Use bounded backoff for temporary errors and rate limits.
 
 This endpoint does not support caller idempotency keys. Retrying a successful lookup can run and bill another lookup, including when the original response was lost.
 

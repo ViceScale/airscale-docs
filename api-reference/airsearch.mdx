@@ -8,12 +8,12 @@ openapi: "/openapi.json POST /v1/airsearch"
 Ask a research question and receive a sourced answer, with optional output fields shaped for your application.
 
 <Note>
-The limit is 300 requests per minute per workspace. A `success` result costs 1 credit; `not_found` and `timeout` are not charged. The reservation is settled only for `success` and released for the other completed statuses.
+The limit is 300 requests per minute per workspace. A `success` result costs 1 credit; `not_found` and `timeout` are not charged. Credits reserved for a completed `not_found` or `timeout` result are returned.
 </Note>
 
 Requested schema keys are optional and nullable. Structured numeric and boolean values are returned as strings when present, so parse them explicitly when your application requires native scalar types.
 
-A later-stage soft timeout returns `200 OK` with `status: "timeout"`. An initial-stage timeout returns `504 Gateway Timeout`; narrow the prompt before retrying. Use bounded backoff for transient dependency failures.
+A timeout can return `200 OK` with `status: "timeout"` or `504 Gateway Timeout`. Narrow the prompt before retrying. For temporary `502` or `503` errors, retry with increasing delays and a fixed retry limit; contact support if errors persist.
 
 ## Next step
 

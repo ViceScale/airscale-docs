@@ -11,7 +11,7 @@ Identify a person by first name, last name, and company, then return a matching 
 The limit is 6 requests per second per workspace. A successful result costs 0.5 credits; `not_found` is not charged.
 </Note>
 
-After a `429 Too Many Requests` response, retry in a later second with bounded exponential backoff. Retry transient reservation failures with the same input only after the service recovers.
+After a `429 Too Many Requests` response, retry in a later second with bounded exponential backoff. For temporary `502` or `503` responses, retry the same input with increasing delays and a fixed retry limit; contact support if errors persist.
 
 ## Next step
 
