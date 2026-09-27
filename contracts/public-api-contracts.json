@@ -158,10 +158,6 @@
         {
           "method": "POST",
           "path": "/v1/leads-finder"
-        },
-        {
-          "method": "POST",
-          "path": "/v1/leads-finder/preview"
         }
       ],
       "sourceFiles": [

@@ -1,4 +1,6 @@
 // Restored public operations verified from deployed Workers on 2026-09-22.
+// POST /v1/leads-finder/preview is still served (same handler and cost as
+// /v1/leads-finder) for existing integrations, but is intentionally undocumented.
 // Provenance: contracts/deployed-public-api-evidence.json.
 import { leadsFinderRowExample } from "../person-record.mjs";
 const json = (schema, value) => ({ content: { "application/json": { schema, examples: { example: { value } } } } });
@@ -37,16 +39,15 @@ const leadsResponse = { type: "object", required: ["rows","total","page","size"]
 function leadsOperation(operationId, summary) {
   return {
     operationId, tags: ["Search and discovery"], summary,
-    description: "Search with Leads Finder filters and zero-based page pagination. The preview alias has the same contract and is charged; it is not a free count operation. This filter model is different from Find people's query model.",
-    "x-airscale-rate-limit": "5 requests per second per workspace, shared by both Leads Finder routes.",
-    "x-airscale-credit-cost": "0.1 credits per returned lead. The preview alias has the same cost. At least 0.1 credits are required to start.",
+    description: "Search with Leads Finder filters and zero-based page pagination. This filter model is different from Find people's query model.",
+    "x-airscale-rate-limit": "5 requests per second per workspace.",
+    "x-airscale-credit-cost": "0.1 credits per returned lead. At least 0.1 credits are required to start.",
     requestBody: { required: true, ...json(leadsBody, { filters: { job: ["Founder"], company: "example.com", peopleLocation: ["United States"], searchMode: "SMART" }, page: 0, size: 25 }) },
     responses: { 200: { description: "A page of public lead records. No cursor is returned.", ...json(leadsResponse, { rows: [leadsFinderRowExample], total: 1, page: 0, size: 25 }) }, ...errors([400,401,403,404,413,429,500,502,503]) }
   };
 }
 export const restoredOperations = [
   { method: "POST", path: "/v1/leads-finder", operation: leadsOperation("searchLeadsFinder", "Search Leads Finder") },
-  { method: "POST", path: "/v1/leads-finder/preview", operation: leadsOperation("previewLeadsFinder", "Search Leads Finder using the preview alias") },
   { method: "POST", path: "/v1/dnc-check", operation: {
     operationId: "checkDnc", tags: ["Miscellaneous"], summary: "Check a US phone number against DNC",
     description: "Checks a US phone number. A successful check costs one credit whether the number is listed or not. Non-US and malformed numbers are rejected before the provider request.",

@@ -20,7 +20,7 @@ import {
 const PROJECT_ROOT = fileURLToPath(new URL("..", import.meta.url));
 const PREVIEW_ORIGIN = "https://airscale.mintlify.app";
 const OPERATIONAL_MCP_URL = "https://mcp.airscale.io/mcp";
-const SOURCE_SHA = "6ae3cc2e6e93971f2172d240e0bc0b6c90dd3772";
+const SOURCE_SHA = "c55176dba55f958f89048a51408f2170caef41de";
 const SKILL_DESCRIPTION = "Search for people and companies, enrich professional contact data, run web research, and create asynchronous exports through the Airschool API or MCP server.";
 const OUTPUT_PATHS = Object.freeze([
   "llms.txt",
@@ -139,13 +139,13 @@ function validateMcpTools(mcpTools, mcpContract) {
   }
   if (mcpTools.sourceSha !== SOURCE_SHA) throw new Error("mcp-tools.txt source SHA does not match the pinned MCP contract");
   if (mcpTools.serverUrl !== OPERATIONAL_MCP_URL) throw new Error("mcp-tools.txt has an unexpected operational MCP URL");
-  if (mcpTools.toolCount !== 32 || !Array.isArray(mcpTools.tools) || mcpTools.tools.length !== 32) {
-    throw new Error("mcp-tools.txt must expose exactly 32 tools");
+  if (mcpTools.toolCount !== 31 || !Array.isArray(mcpTools.tools) || mcpTools.tools.length !== 31) {
+    throw new Error("mcp-tools.txt must expose exactly 31 tools");
   }
   const names = new Set();
   for (const tool of mcpTools.tools) {
     if (!isPlainObject(tool) || typeof tool.name !== "string" || names.has(tool.name)) {
-      throw new Error("mcp-tools.txt must expose 32 uniquely named tool objects");
+      throw new Error("mcp-tools.txt must expose 31 uniquely named tool objects");
     }
     names.add(tool.name);
   }
@@ -217,7 +217,7 @@ function renderLlmsIndexModel(model) {
     "## Machine-readable contracts",
     "",
     `- [OpenAPI specification](${PREVIEW_ORIGIN}/openapi.json): HTTP API operations, schemas, authentication, and responses.`,
-    `- [MCP tool catalog](${PREVIEW_ORIGIN}/mcp/tools.md): Hosted Markdown with names, input schemas, credit behavior, examples, and API mappings for all 32 operational MCP tools.`,
+    `- [MCP tool catalog](${PREVIEW_ORIGIN}/mcp/tools.md): Hosted Markdown with names, input schemas, credit behavior, examples, and API mappings for all 31 operational MCP tools.`,
     `- [Agent resource directory](${PREVIEW_ORIGIN}/mcp/agent-resources.md): Human and machine entry points for Airschool agents and documentation consumers.`,
     `- [Agent skill](${PREVIEW_ORIGIN}/skill.md): Capability, authentication, credit, and approval guidance for agents.`,
     ""
@@ -250,7 +250,7 @@ function renderLlmsFullModel(model) {
   lines.push(
     "## Machine-readable contracts",
     "",
-    `- [MCP tool catalog](${PREVIEW_ORIGIN}/mcp/tools.md): Hosted Markdown for all 32 operational MCP tools.`,
+    `- [MCP tool catalog](${PREVIEW_ORIGIN}/mcp/tools.md): Hosted Markdown for all 31 operational MCP tools.`,
     `- [Agent resource directory](${PREVIEW_ORIGIN}/mcp/agent-resources.md): Human and machine entry points for Airschool agents and documentation consumers.`,
     ""
   );

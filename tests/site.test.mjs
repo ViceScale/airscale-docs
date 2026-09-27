@@ -39,7 +39,7 @@ const GROUPS = [
 ];
 
 // Keep the legacy Count URL covered even though it is no longer in navigation.
-const PAGE_PATHS = [...GROUPS.flatMap(([, pages]) => pages), "api-reference/find-people/count", "api-reference/leads-finder/preview"];
+const PAGE_PATHS = [...GROUPS.flatMap(([, pages]) => pages), "api-reference/find-people/count"];
 const GUIDE_PATHS = ["api-reference/api-overview", "api-reference/authentication", "api-reference/rate-limits"];
 const EXPECTED_API_TAB = {
   tab: "API Reference",
@@ -532,9 +532,9 @@ test("every public operation has one exact OpenAPI-backed wrapper", () => {
     assert.ok(body.split(/\n\s*\n/)[0].trim(), `${page} must retain a purpose statement`);
   }
 
-  assert.equal(expectedBindings.size, 25);
-  assert.equal(new Set(expectedBindings.values()).size, 25);
-  assert.equal(actualBindings.size, 25);
+  assert.equal(expectedBindings.size, 24);
+  assert.equal(new Set(expectedBindings.values()).size, 24);
+  assert.equal(actualBindings.size, 24);
   assert.deepEqual(actualBindings, expectedBindings);
 });
 
@@ -554,7 +554,7 @@ test("every wrapper binding resolves to its cataloged generated OpenAPI operatio
     resolved.push(`${method} ${path}`);
   }
 
-  assert.equal(new Set(resolved).size, 25);
+  assert.equal(new Set(resolved).size, 24);
   assert.deepEqual(resolved.sort(), catalog.operations.map(({ method, path }) => `${method} ${path}`).sort());
 });
 
@@ -604,7 +604,6 @@ test("guide pages teach authentication, safe retries, and a first request", () =
 
 const DURABLE_OPERATION_GUIDANCE = {
   "api-reference/leads-finder": [/5 requests per second/, /0.1 credits/, /page/, /not interchangeable/],
-  "api-reference/leads-finder/preview": [/not a free preview/, /0.1 credits/, /bounded backoff/],
   "api-reference/dnc-checker": [/5 requests per second/, /1 credit/, /unsupported_phone_region/, /not charged/],
   "api-reference/miscale-news/whatsapp-check": [/60 requests per minute/, /1 credit/, /Idempotency-Key/, /202/],
   "api-reference/miscale-news/whatsapp-check/status": [/read-only/, /bounded backoff/, /unavailable/, /rejected/],
@@ -642,7 +641,7 @@ const DURABLE_OPERATION_GUIDANCE = {
 };
 
 test("operation wrappers retain durable rate, credit, retry, and asynchronous guidance", () => {
-  assert.equal(Object.keys(DURABLE_OPERATION_GUIDANCE).length, 25);
+  assert.equal(Object.keys(DURABLE_OPERATION_GUIDANCE).length, 24);
   for (const [page, patterns] of Object.entries(DURABLE_OPERATION_GUIDANCE)) {
     const { body } = readPage(page);
     for (const pattern of patterns) assert.match(body, pattern, `${page} must retain ${pattern}`);

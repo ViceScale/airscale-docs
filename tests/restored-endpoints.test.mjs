@@ -11,24 +11,25 @@ addFormats(ajv);
 const operation = (path) => spec.paths[path].post;
 const requestSchema = (path) => operation(path).requestBody.content["application/json"].schema;
 
-test("DNC and both Leads Finder routes have deployed source fingerprints", () => {
+test("DNC and Leads Finder routes have deployed source fingerprints", () => {
   const evidence = JSON.parse(readFileSync("contracts/deployed-public-api-evidence.json"));
   for (const name of ["dnc-checker", "leads-finder"]) {
     const worker = evidence.workers[name];
     assert.match(worker.scriptSha256, /^[a-f0-9]{64}$/);
     assert.equal(worker.rateLimitPerSecond, 5);
-    for (const path of worker.routes) assert.ok(operation(path));
+    for (const path of worker.routes.filter((route) => route !== "/v1/leads-finder/preview")) assert.ok(operation(path));
   }
   assert.equal(evidence.workers["dnc-checker"].creditCost, 1);
   assert.deepEqual(evidence.workers["leads-finder"].routes, ["/v1/leads-finder", "/v1/leads-finder/preview"]);
 });
 
-test("Leads Finder alias preserves the paid request and response contract", () => {
+test("Leads Finder preview route stays served but undocumented", () => {
+  // The deployed worker still answers /v1/leads-finder/preview for existing
+  // integrations; it duplicates /v1/leads-finder, so the docs omit it.
   const primary = operation("/v1/leads-finder");
-  const alias = operation("/v1/leads-finder/preview");
-  assert.deepEqual(primary.requestBody, alias.requestBody);
-  assert.deepEqual(primary.responses, alias.responses);
-  assert.match(alias["x-airscale-credit-cost"], /0\.1 credits/);
+  assert.equal(spec.paths["/v1/leads-finder/preview"], undefined);
+  assert.doesNotMatch(JSON.stringify(primary), /preview/i);
+  assert.match(primary["x-airscale-credit-cost"], /0\.1 credits/);
   const validate = ajv.compile(requestSchema("/v1/leads-finder"));
   assert.equal(validate({ filters: { job: ["Founder"], company: "example.com" }, page: 0, size: 25 }), true);
   assert.equal(validate({ filters: { job: ["Founder"], duration: { currentCompany: { min: { year: 1, month: 6 } } } } }), true);

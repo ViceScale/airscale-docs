@@ -1,10 +1,10 @@
 ---
 title: "MCP tool catalog"
-description: "Browse all 32 typed tools exposed by the Airschool MCP server."
+description: "Browse all 31 typed tools exposed by the Airschool MCP server."
 canonical: "https://airscale.mintlify.app/mcp/tools"
 ---
 
-Airschool MCP exposes 32 typed tools for workspace checks, search, enrichment, research, managed batches, and asynchronous exports.
+Airschool MCP exposes 31 typed tools for workspace checks, search, enrichment, research, managed batches, and asynchronous exports.
 
 <Warning>
 Review each tool's credit behavior before approval. Paid export starts require `confirm_credit_spend: true`.
@@ -78,7 +78,6 @@ Returns the workspace's current Airschool credit balance without spending credit
 | [`airscale_find_companies_filter_values`](#airscale-find-companies-filter-values) | Discover accepted values for find-companies filters (city, region, industry, topics, techStack). Free, no credits charged. | Free; no credits charged | Sync |
 | [`airscale_airsearch`](#airscale-airsearch) | AI web research agent: ask a natural-language question and optionally specify structured fields to extract. Costs 2 credits per call. | 2 credits per call | Sync |
 | [`airscale_leads_finder`](#airscale-leads-finder) | Search people with Leads Finder filters (job, company, location, seniority, skills, company size, funding, and more). Zero-based page pagination. Costs 0.1 credits per returned lead. | 0.1 credits per returned lead | Sync |
-| [`airscale_leads_finder_preview`](#airscale-leads-finder-preview) | Leads Finder preview alias: same filters, results, and cost as airscale_leads_finder (0.1 credits per returned lead). It is not a free count. | 0.1 credits per returned lead; not a free count | Sync |
 
 <a id="airscale-find-people"></a>
 
@@ -415,65 +414,6 @@ Credit behavior: 0.1 credits per returned lead.
 Returns one zero-based page of nested Leads Finder person records with total, page, and size.
 
 **Related API reference:** [searchLeadsFinder](/api-reference/leads-finder)
-
-<a id="airscale-leads-finder-preview"></a>
-
-### `airscale_leads_finder_preview`
-
-**MCP tool**
-
-Leads Finder preview alias: same filters, results, and cost as airscale_leads_finder (0.1 credits per returned lead). It is not a free count.
-
-- **Category:** Search and research
-
-- **Spend classification:** Variable credit cost
-
-- **Credit behavior:** 0.1 credits per returned lead; not a free count
-
-- **Execution:** Synchronous
-
-- **Authentication:** Uses the credentials configured on the MCP connection; never include an API key in tool arguments.
-
-<Note>
-Credit behavior: 0.1 credits per returned lead; not a free count.
-</Note>
-
-#### Inputs
-
-| Field | Type | Required | Description | Constraints |
-| --- | --- | --- | --- | --- |
-| `filters` | `object` | Yes | At least one filter other than searchMode | allowed properties: `job`, `jobExclude`, `company`, `companyUrl`, `peopleLocation`, `peopleLocationExclude`, `jobFunction`, `jobFunctionExclude`, `seniority`, `seniorityExclude`, `yearsCurrentRole`, `yearsCurrentCompany`, `yearsWorkExperience`, `skills`, `skillsExclude`, `language`, `languageExclude`, `certification`, `certificationExclude`, `profileKeywords`, `profileKeywordsExclude`, `profileBadge`, `industry`, `industryExclude`, `size`, `hq`, `hqExclude`, `type`, `typeExclude`, `revenue`, `companyKeywords`, `companyKeywordsExclude`, `founded`, `funding`, `fundingAmount`, `fundingDateMonths`, `department`, `growth`, `duration`, `searchMode`; additional properties are not allowed |
-| `page` | `integer` | No | Zero-based page. Defaults to 0 | minimum: 0 |
-| `size` | `integer` | No | Leads per page, 1..100. Defaults to 50 | minimum: 1; maximum: 100 |
-
-#### Minimal `tools/call` example
-
-```json
-{
-  "jsonrpc": "2.0",
-  "id": 1,
-  "method": "tools/call",
-  "params": {
-    "name": "airscale_leads_finder_preview",
-    "arguments": {
-      "filters": {
-        "job": [
-          "Founder"
-        ],
-        "company": "example.com"
-      },
-      "page": 0,
-      "size": 1
-    }
-  }
-}
-```
-
-#### Expected result
-
-Returns the same page of Leads Finder person records as airscale_leads_finder; it is charged the same way.
-
-**Related API reference:** [previewLeadsFinder](/api-reference/leads-finder/preview)
 
 ## Contact and profile enrichment
 
