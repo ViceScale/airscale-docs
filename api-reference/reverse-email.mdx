@@ -13,6 +13,10 @@ The limit is 25 requests per second per workspace. A returned profile costs 2 cr
 
 After a `429 Too Many Requests` response, retry in a later second with bounded exponential backoff. A `503` response is not charged. Retry the same email with increasing delays and a fixed retry limit; contact support if errors persist.
 
+## Read the profile
+
+A match returns a nested person record with **camelCase** keys. The name is under `profile` (`profile.firstName`, `profile.lastName`, `profile.headline`), not at the top level. The LinkedIn URL is in `url` and `link.linkedin`, work history is `positionGroups`, and the current employer is `company` (`company.summary.name`, `company.link.domain`). Fields can be `null` or absent. When the match comes from a fallback lookup, the record uses the flat fields of [People profile](/api-reference/extract-people-profile) instead, or contains only `url` and `identifier`.
+
 ## Next step
 
 Use [Reverse phone](/api-reference/reverse-phone) when a phone number is the identifier you have for a person.

@@ -1,3 +1,19 @@
+import { camelPersonRecord, snakePersonRecord } from "./person-record.mjs";
+
+const dateRange = { properties: { start: {}, end: {} } };
+
+function pagedSection(item, description) {
+  return {
+    description: description ?? "Paginated list section, when available.",
+    properties: {
+      totalElements: {},
+      page: {},
+      size: {},
+      contents: { type: "array", items: item }
+    }
+  };
+}
+
 export const baseSpec = {
   openapi: "3.1.0",
   info: {
@@ -84,21 +100,62 @@ export const baseSpec = {
           }
         ]
       },
-      FlexibleResult: {
+      LeadsFinderPerson: {
+        ...snakePersonRecord,
+        description: "A Leads Finder person record with nested snake_case keys. Fields vary per record and may be null; records can include fields not listed here."
+      },
+      ReverseLookupPerson: {
+        ...camelPersonRecord,
+        description: "A reverse-lookup person record with nested camelCase keys. Names are under profile (profile.firstName), not at the top level. Fields vary per record and may be null; records can include fields not listed here."
+      },
+      PeopleLead: {
         type: "object",
         additionalProperties: true,
+        description: "A public person record. Other public profile fields may be included; check for missing or null values before using them.",
         properties: {
           firstname: { type: ["string", "null"] },
           lastname: { type: ["string", "null"] },
           profileUrl: { type: ["string", "null"] },
+          headline: { type: ["string", "null"] },
+          description: { type: ["string", "null"], description: "Profile summary." },
+          address: { type: ["string", "null"], description: "Person location." },
           jobTitle: { type: ["string", "null"] },
+          jobDescription: { type: ["string", "null"] },
+          jobStartDate: { type: ["string", "null"] },
           companyName: { type: ["string", "null"] },
+          companyUrn: { type: ["string", "null"] },
+          companyUrl: { type: ["string", "null"], description: "LinkedIn company URL." },
+          companyWebsite: { type: ["string", "null"] },
+          companyDescription: { type: ["string", "null"] },
+          companySize: { type: ["integer", "string", "null"] },
+          companyIndustry: { type: ["string", "null"] },
+          companyAddress: { type: ["string", "null"] }
+        }
+      },
+      CompanyRow: {
+        type: "object",
+        additionalProperties: true,
+        description: "A public company record. Other public company fields may be included; check for missing or null values before using them.",
+        properties: {
           name: { type: ["string", "null"] },
           domain: { type: ["string", "null"] },
           website: { type: ["string", "null"] },
+          logo: { type: ["string", "null"] },
           countryName: { type: ["string", "null"] },
           cityName: { type: ["string", "null"] },
-          linkedinProfile: { type: ["string", "null"] }
+          linkedinProfile: { type: ["string", "null"] },
+          employeeRange: { type: ["string", "null"] },
+          revenueRange: { type: ["string", "null"] },
+          description: { type: ["string", "null"] },
+          naicsDescription: { type: ["string", "null"] },
+          sicCode: { type: ["string", "number", "null"] },
+          sicDescription: { type: ["string", "null"] },
+          location: { type: ["string", "null"], description: "Location text." },
+          region: { type: ["string", "null"] },
+          industry: { type: ["string", "null"] },
+          naics: { type: ["string", "number", "null"] },
+          events: { description: "Company events, when requested and available." },
+          businessIntentTopics: { description: "Business-intent topics, when requested and available." }
         }
       },
       LinkedInPersonUrl: {
@@ -136,31 +193,132 @@ export const baseSpec = {
       VariablePersonProfile: {
         type: "object",
         additionalProperties: true,
+        description: "A flat person profile. Field types can vary by data source; check for missing or null values before using them. List sections are paginated objects with totalElements, page, size, and contents.",
         properties: {
           url: { type: ["string", "null"] },
           identifier: { type: ["string", "null"] },
-          profile: { description: "Additional profile data, when available." },
-          link: { description: "Profile links, when available." },
+          entityUrn: { description: "Profile URN, when available." },
+          objectUrn: { description: "Numeric profile identifier, when available." },
           firstname: { description: "First name, when available." },
           lastname: { description: "Last name, when available." },
+          middleName: { description: "Middle name, when available." },
+          birthDate: { description: "Birth date, when public." },
           headline: { description: "Profile headline, when available." },
+          summary: { description: "Profile summary, when available." },
+          picture: { description: "Profile picture URL, when available." },
+          background: { description: "Background image URL, when available." },
           industry: { description: "Industry, when available." },
-          location: { description: "Location information, when available." }
+          openToWork: { description: "Open-to-work badge, when available." },
+          influencer: { description: "Influencer badge, when available." },
+          premium: { description: "Premium badge, when available." },
+          creator: { description: "Creator badge, when available." },
+          hiring: { description: "Hiring badge, when available." },
+          verified: { description: "Verified badge, when available." },
+          location: {
+            description: "Location information, when available.",
+            properties: {
+              country: { type: ["string", "null"] },
+              city: { type: ["string", "null"] },
+              state: { type: ["string", "null"] },
+              defaultValue: { type: ["string", "null"], description: "Full location text." },
+              shortValue: { type: ["string", "null"], description: "Short location text." }
+            }
+          },
+          positionGroups: pagedSection({
+            properties: {
+              company: { properties: { id: {}, name: {}, logo: {}, url: {}, domain: {}, profileType: {} } },
+              date: dateRange,
+              profilePositions: {
+                type: "array",
+                items: { properties: { company: {}, description: {}, title: {}, employmentType: {}, location: {}, date: dateRange } }
+              }
+            }
+          }, "Work history grouped by company, most recent first."),
+          educations: pagedSection({
+            properties: {
+              school: { properties: { id: {}, name: {}, logo: {}, url: {}, profileType: {} } },
+              degreeName: {},
+              fieldOfStudy: {},
+              grade: {},
+              date: dateRange
+            }
+          }),
+          certifications: pagedSection({
+            properties: {
+              name: {},
+              authority: {},
+              url: {},
+              licenseNumber: {},
+              displaySource: {},
+              company: { properties: { id: {}, name: {}, logo: {}, url: {}, profileType: {} } },
+              date: dateRange
+            }
+          }),
+          languages: pagedSection({ properties: { name: {}, proficiency: {} } }),
+          skills: pagedSection({ type: "string" }),
+          organizations: pagedSection({}),
+          patents: pagedSection({}),
+          awards: pagedSection({}),
+          projects: pagedSection({}),
+          publications: pagedSection({}),
+          courses: pagedSection({}),
+          testScores: pagedSection({}),
+          volunteerExperiences: pagedSection({}),
+          profile: { description: "Additional profile data, when available." },
+          link: { description: "Profile links, when available." }
         }
       },
       VariableCompanyProfile: {
         type: "object",
         additionalProperties: true,
+        description: "A company profile. Field types can vary by data source; check for missing or null values before using them.",
         properties: {
           url: { type: ["string", "null"] },
           name: { type: ["string", "null"] },
           universalName: { type: ["string", "null"] },
           website: { type: ["string", "null"] },
           description: { type: ["string", "null"] },
-          staff: { type: ["object", "null"], additionalProperties: true },
-          locations: { type: ["object", "null"], additionalProperties: true },
+          type: { description: "Company type, for example Public Company." },
+          objectUrn: { description: "Numeric company identifier, when available." },
+          phone: { description: "Company phone, when public." },
+          followers: { description: "Follower count, when available." },
+          logo: { description: "Logo URL, when available." },
+          cover: { description: "Cover image URL, when available." },
+          tagline: { description: "Tagline, when available." },
+          foundedYear: { description: "Founding year, when available." },
+          staff: {
+            type: ["object", "null"],
+            additionalProperties: true,
+            properties: {
+              total: { description: "Employee count on the profile." },
+              range: { description: "Headcount band.", properties: { start: {}, end: {} } }
+            }
+          },
+          locations: {
+            type: ["object", "null"],
+            additionalProperties: true,
+            properties: {
+              headquarter: { $ref: "#/components/schemas/CompanyAddress" },
+              other: { type: ["array", "null"], items: { $ref: "#/components/schemas/CompanyAddress" } }
+            }
+          },
+          fundingData: { description: "Funding details, when available." },
           industries: { type: ["array", "null"], items: {} },
-          specialities: { type: ["array", "null"], items: {} }
+          specialities: { type: ["array", "null"], items: {} },
+          hashtags: { description: "Company hashtags, when available." }
+        }
+      },
+      CompanyAddress: {
+        type: ["object", "null"],
+        additionalProperties: true,
+        properties: {
+          country: { type: ["string", "null"] },
+          geographicArea: { type: ["string", "null"] },
+          city: { type: ["string", "null"] },
+          postalCode: { type: ["string", "null"] },
+          line1: { type: ["string", "null"] },
+          line2: { type: ["string", "null"] },
+          isPrimary: { type: ["boolean", "null"] }
         }
       },
       NotFoundStatus: {

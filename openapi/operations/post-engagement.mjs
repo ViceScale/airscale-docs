@@ -107,6 +107,7 @@ const postEngagementItemSchema = {
       description: "Profile enrichment outcome for this engagement."
     },
     linkedin_url: { type: ["string", "null"] },
+    profile_picture_url: { type: ["string", "null"], description: "Profile picture URL, or null when unavailable." },
     first_name: { type: ["string", "null"] },
     last_name: { type: ["string", "null"] },
     full_name: { type: ["string", "null"] },
@@ -144,11 +145,6 @@ const postEngagementResponseSchema = {
         has_more: { type: "boolean" }
       }
     },
-    provider: {
-      type: "string",
-      enum: ["b2benrichment", "rapidapi", "rapidapi_pnd", "unipile"],
-      description: "The provider selected for this page. Treat this value as informational."
-    },
     retrieval: {
       type: "object",
       required: ["reported_total", "returned_count", "status", "stop_reason"],
@@ -157,8 +153,13 @@ const postEngagementResponseSchema = {
       properties: {
         reported_total: { type: ["integer", "null"], minimum: 0 },
         returned_count: { type: "integer", minimum: 0 },
-        status: { type: "string", enum: ["more_available", "provider_exhausted"] },
-        stop_reason: { type: "string", enum: ["page_limit", "provider_exhausted", "request_budget"] }
+        retrieved_total: { type: ["integer", "null"], minimum: 0, description: "Engagements retrieved so far, when reported." },
+        status: {
+          type: "string",
+          enum: ["more_available", "provider_exhausted", "partial"],
+          description: "partial means fewer engagements could be retrieved than the post reports."
+        },
+        stop_reason: { type: "string", enum: ["page_limit", "provider_exhausted", "request_budget", "provider_total_mismatch"] }
       }
     },
     billing: {
@@ -276,6 +277,7 @@ function responseExample(engagementType) {
     items: [{
       profile_status: "success",
       linkedin_url: "https://www.linkedin.com/in/example-person-000000",
+      profile_picture_url: "https://www.example.org/images/example-person.png",
       first_name: "Example",
       last_name: "Person",
       full_name: "Example Person",
@@ -290,6 +292,13 @@ function responseExample(engagementType) {
       post_url: POST_URL
     }],
     pagination: { next_cursor: "pje1.synthetic_cursor", has_more: true },
+    retrieval: {
+      reported_total: 120,
+      returned_count: 1,
+      retrieved_total: 1,
+      status: "more_available",
+      stop_reason: "page_limit"
+    },
     billing: {
       credits_consumed: 1,
       credits_refunded: 24,

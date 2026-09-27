@@ -1,0 +1,247 @@
+{
+  "operation": "POST /v1/profile",
+  "status": 200,
+  "source": "live",
+  "sourceRepository": "ViceScale/airscale-code",
+  "sourceSha": null,
+  "evidence": "One production request on 2026-09-27. Strings and numbers were replaced with synthetic values; enum values, structure and key names are preserved.",
+  "body": {
+    "url": "https://www.linkedin.com/in/example-person-000000",
+    "identifier": "example-person-000000",
+    "entityUrn": "example-id-000000",
+    "objectUrn": 10,
+    "firstname": "Example",
+    "lastname": "Person",
+    "middleName": null,
+    "birthDate": null,
+    "headline": "Example headline",
+    "picture": "https://www.example.org/example",
+    "background": "https://www.example.org/example",
+    "summary": null,
+    "openToWork": false,
+    "influencer": false,
+    "premium": true,
+    "creator": true,
+    "hiring": false,
+    "verified": null,
+    "industry": "Example industry",
+    "location": {
+      "country": "United States",
+      "city": "Example City",
+      "state": "Example State",
+      "defaultValue": "Example default value",
+      "shortValue": "Example short value"
+    },
+    "organizations": {
+      "totalElements": 10,
+      "page": 0,
+      "size": 20,
+      "contents": []
+    },
+    "educations": {
+      "totalElements": 10,
+      "page": 0,
+      "size": 20,
+      "contents": [
+        {
+          "school": {
+            "id": 10,
+            "name": "Example name",
+            "logo": "https://www.example.org/example",
+            "url": "https://www.linkedin.com/company/example-company-000000",
+            "profileType": "COMPANY"
+          },
+          "degreeName": "Example degree name",
+          "fieldOfStudy": "Example field of study",
+          "grade": null,
+          "date": {
+            "start": "2026-01-01",
+            "end": "2026-01-01"
+          }
+        },
+        {
+          "school": {
+            "id": 10,
+            "name": "Example name",
+            "logo": "https://www.example.org/example",
+            "url": "https://www.linkedin.com/company/example-company-000000",
+            "profileType": "COMPANY"
+          },
+          "degreeName": "Example degree name",
+          "fieldOfStudy": null,
+          "grade": null,
+          "date": {
+            "start": "2026-01-01",
+            "end": "2026-01-01"
+          }
+        }
+      ]
+    },
+    "patents": {
+      "totalElements": 10,
+      "page": 0,
+      "size": 20,
+      "contents": []
+    },
+    "awards": {
+      "totalElements": 10,
+      "page": 0,
+      "size": 20,
+      "contents": []
+    },
+    "certifications": {
+      "totalElements": 10,
+      "page": 0,
+      "size": 20,
+      "contents": [
+        {
+          "name": "Example name",
+          "authority": "Example authority",
+          "url": "https://www.example.org/example",
+          "licenseNumber": "Example license number",
+          "displaySource": "Example display source",
+          "company": {
+            "id": 10,
+            "name": "Example name",
+            "logo": "https://www.example.org/example",
+            "url": "https://www.linkedin.com/company/example-company-000000",
+            "profileType": "COMPANY"
+          },
+          "date": {
+            "start": "2026-01-01",
+            "end": null
+          }
+        },
+        {
+          "name": "Example name",
+          "authority": "Example authority",
+          "url": "https://www.example.org/example",
+          "licenseNumber": "Example license number",
+          "displaySource": "Example display source",
+          "company": {
+            "id": 10,
+            "name": "Example name",
+            "logo": "https://www.example.org/example",
+            "url": "https://www.linkedin.com/company/example-company-000000",
+            "profileType": "COMPANY"
+          },
+          "date": {
+            "start": "2026-01-01",
+            "end": null
+          }
+        }
+      ]
+    },
+    "projects": {
+      "totalElements": 10,
+      "page": 0,
+      "size": 20,
+      "contents": []
+    },
+    "publications": {
+      "totalElements": 10,
+      "page": 0,
+      "size": 20,
+      "contents": []
+    },
+    "courses": {
+      "totalElements": 10,
+      "page": 0,
+      "size": 20,
+      "contents": []
+    },
+    "testScores": {
+      "totalElements": 10,
+      "page": 0,
+      "size": 20,
+      "contents": []
+    },
+    "positionGroups": {
+      "totalElements": 10,
+      "page": 0,
+      "size": 10,
+      "contents": [
+        {
+          "company": {
+            "id": 10,
+            "name": "Example name",
+            "logo": "https://www.example.org/example",
+            "url": "https://www.linkedin.com/company/example-company-000000",
+            "domain": "example.org",
+            "profileType": "COMPANY"
+          },
+          "date": {
+            "start": "2026-01-01",
+            "end": null
+          },
+          "profilePositions": [
+            {
+              "company": "Example company",
+              "description": null,
+              "title": "Example title",
+              "employmentType": "Permanent",
+              "location": "Example location",
+              "date": {
+                "start": "2026-01-01",
+                "end": null
+              }
+            }
+          ]
+        },
+        {
+          "company": {
+            "id": 10,
+            "name": "Example name",
+            "logo": "https://www.example.org/example",
+            "url": "https://www.linkedin.com/company/example-company-000000",
+            "domain": "example.org",
+            "profileType": "COMPANY"
+          },
+          "date": {
+            "start": "2026-01-01",
+            "end": null
+          },
+          "profilePositions": [
+            {
+              "company": "Example company",
+              "description": null,
+              "title": "Example title",
+              "employmentType": "Permanent",
+              "location": "Example location",
+              "date": {
+                "start": "2026-01-01",
+                "end": null
+              }
+            }
+          ]
+        }
+      ]
+    },
+    "volunteerExperiences": {
+      "totalElements": 10,
+      "page": 0,
+      "size": 20,
+      "contents": []
+    },
+    "languages": {
+      "totalElements": 10,
+      "page": 0,
+      "size": 20,
+      "contents": [
+        {
+          "name": "Example name",
+          "proficiency": "NATIVE_OR_BILINGUAL"
+        }
+      ]
+    },
+    "skills": {
+      "totalElements": 10,
+      "page": 0,
+      "size": 20,
+      "contents": [
+        "Example contents",
+        "Example contents"
+      ]
+    }
+  }
+}

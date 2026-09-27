@@ -1,0 +1,12 @@
+{
+  "operation": "POST /v1/personal-email",
+  "status": 200,
+  "source": "code",
+  "sourceRepository": "ViceScale/airscale-code",
+  "sourceSha": "1c48fe7eeddb8cbebfa978a7464478252b4baa68",
+  "evidence": "workers/public-api/v2-waterfall-personal-email.test.mjs:1006",
+  "body": {
+    "status": "success",
+    "email": "person@example.com"
+  }
+}

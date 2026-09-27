@@ -1,0 +1,12 @@
+{
+  "operation": "POST /v1/url-search-people",
+  "status": 200,
+  "source": "live",
+  "sourceRepository": "ViceScale/airscale-code",
+  "sourceSha": null,
+  "evidence": "One production request on 2026-09-27. Strings and numbers were replaced with synthetic values; enum values, structure and key names are preserved.",
+  "body": {
+    "status": "success",
+    "url": "https://www.linkedin.com/in/example-person-000000"
+  }
+}

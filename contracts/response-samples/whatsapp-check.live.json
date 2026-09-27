@@ -1,0 +1,14 @@
+{
+  "operation": "POST /v1/whatsapp-check",
+  "status": 200,
+  "source": "live",
+  "sourceRepository": "ViceScale/airscale-code",
+  "sourceSha": null,
+  "evidence": "One production request on 2026-09-27. Strings and numbers were replaced with synthetic values; enum values, structure and key names are preserved.",
+  "body": {
+    "operation_id": "00000000-0000-4000-8000-000000000001",
+    "phone": "+12025550147",
+    "whatsapp": "yes",
+    "credits_consumed": 1
+  }
+}

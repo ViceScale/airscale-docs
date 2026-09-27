@@ -1,0 +1,15 @@
+{
+  "operation": "POST /v1/email-verifier",
+  "status": 201,
+  "source": "code",
+  "sourceRepository": "ViceScale/airscale-code",
+  "sourceSha": "1c48fe7eeddb8cbebfa978a7464478252b4baa68",
+  "evidence": "workers/public-api/email-verifier.test.mjs:170-200 (HTTP 201 passthrough)",
+  "body": {
+    "email": "person@example.com",
+    "status": "success",
+    "result": "deliverable",
+    "score": 95,
+    "credits_consumed": 0.5
+  }
+}

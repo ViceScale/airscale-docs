@@ -1,0 +1,28 @@
+{
+  "operation": "POST /v1/email-verifier",
+  "status": 200,
+  "source": "live",
+  "sourceRepository": "ViceScale/airscale-code",
+  "sourceSha": null,
+  "evidence": "One production request on 2026-09-27. Strings and numbers were replaced with synthetic values; enum values, structure and key names are preserved.",
+  "body": {
+    "credits_consumed": 0.5,
+    "credits_remaining": 100,
+    "email": "person@example.org",
+    "id": "example-id-000000",
+    "is_accept_all": true,
+    "is_disposable": false,
+    "is_free": false,
+    "is_role": false,
+    "mode": "regular",
+    "mx_records": [
+      "Example mx records",
+      "Example mx records"
+    ],
+    "result": "deliverable",
+    "score": 97,
+    "smtp_provider": "Example smtp provider",
+    "status": "success",
+    "verify_at": "2026-01-01"
+  }
+}

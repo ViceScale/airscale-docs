@@ -1,0 +1,17 @@
+{
+  "operation": "POST /v1/airsearch",
+  "status": 200,
+  "source": "code",
+  "sourceRepository": "ViceScale/airscale-code",
+  "sourceSha": "1c48fe7eeddb8cbebfa978a7464478252b4baa68",
+  "evidence": "workers/public-api/airsearch-worker.js:568-590 (certainty_tag and reasoning fall back to null; not-found response text) and airsearch-worker.result-status.test.mjs:79",
+  "body": {
+    "status": "not_found",
+    "response": "No relevant information found.",
+    "reasoning": null,
+    "sources": [],
+    "confidence_score": 0,
+    "certainty_tag": null,
+    "duration_ms": 1200
+  }
+}

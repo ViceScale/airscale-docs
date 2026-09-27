@@ -1,0 +1,30 @@
+{
+  "operation": "GET /v1/find-companies/filter-values",
+  "status": 200,
+  "source": "live",
+  "sourceRepository": "ViceScale/airscale-code",
+  "sourceSha": null,
+  "evidence": "One production request on 2026-09-27. Strings and numbers were replaced with synthetic values; enum values, structure and key names are preserved.",
+  "body": {
+    "filter": "region",
+    "query": "california",
+    "values": [
+      {
+        "query": "california",
+        "label": "California, US",
+        "value": "us-ca",
+        "region": "Example State",
+        "regionCode": "Example region code",
+        "countryCode": "Example country code"
+      },
+      {
+        "query": "california",
+        "label": "Baja California, MX",
+        "value": "mx-bcn",
+        "region": "Example State",
+        "regionCode": "Example region code",
+        "countryCode": "Example country code"
+      }
+    ]
+  }
+}
