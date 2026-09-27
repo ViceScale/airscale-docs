@@ -21,7 +21,7 @@ The counter uses a fixed minute window and resets at the next minute boundary. R
 
 Omit `cursor` on the first request. When `pagination.next_cursor` is not `null`, send it unchanged with the same post URL and `limit` to fetch the next page. The page size is 1–25 (default 25). New cursors expire after 10 minutes and are bound to the workspace, post, engagement type, and page size.
 
-Optional `retrieval` metadata contains `reported_total`, `returned_count`, `status`, and `stop_reason`. A `provider_exhausted` status means there are no more pages available for this request; it does not guarantee that every LinkedIn engagement was accessible. Reported totals can change, and comment events are not the same count as unique authors. Public pagination does not promise every reply returned by the dashboard's background extraction.
+Optional `retrieval` metadata contains `reported_total`, `returned_count`, `status`, and `stop_reason`, and can include `retrieved_total`. A `partial` status with `stop_reason: "provider_total_mismatch"` means fewer engagements could be retrieved than the post reports. A `provider_exhausted` status means there are no more pages available for this request; it does not guarantee that every LinkedIn engagement was accessible. Reported totals can change, and comment events are not the same count as unique authors. Public pagination does not promise every reply returned by the dashboard's background extraction.
 
 ## Safe retries
 

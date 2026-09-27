@@ -49,7 +49,7 @@ Textual tenure examples include `1 to 2 years`, `Less than 1 year`, and `More th
 
 ## Read results and paginate
 
-The response contains `rows`, `total`, `page`, and `size`. Rows are public lead records whose fields depend on available data. `total` can be `null` when a reliable count is unavailable or company/title correlation removes rows.
+The response contains `rows`, `total`, `page`, and `size`. Each row is a nested person record with **snake_case** keys: the name is under `profile` (`profile.first_name`, `profile.last_name`, `profile.headline`), the LinkedIn URL is `link.linkedin`, work history is `position_groups`, and the current employer is `company` (`company.summary.name`, `company.link.domain`). Fields depend on available data, can be `null` or absent, and rows can include fields not listed in the schema. `total` can be `null` when a reliable count is unavailable or company/title correlation removes rows.
 
 `size` defaults to 50 and accepts 1–100. Start at `page: 0` and increment the page while keeping the same filters and size. This operation does not return `next_cursor`. When company and title filters are combined, returned rows are checked for a matching title at the identified company; a page can contain fewer rows after that check, and a short page alone does not establish exhaustion.
 
