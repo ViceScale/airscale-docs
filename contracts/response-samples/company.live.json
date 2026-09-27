@@ -1,0 +1,58 @@
+{
+  "operation": "POST /v1/company",
+  "status": 200,
+  "source": "live",
+  "sourceRepository": "ViceScale/airscale-code",
+  "sourceSha": null,
+  "evidence": "One production request on 2026-09-27. Strings and numbers were replaced with synthetic values; enum values, structure and key names are preserved.",
+  "body": {
+    "url": "https://www.linkedin.com/company/example-company-000000",
+    "name": "Example name",
+    "universalName": "example-person-000000",
+    "type": "Public Company",
+    "objectUrn": 10,
+    "description": "Example description",
+    "phone": null,
+    "followers": 10,
+    "website": "https://www.example.org",
+    "logo": "https://www.example.org/example",
+    "cover": "https://www.example.org/example",
+    "tagline": "Example tagline",
+    "foundedYear": 10,
+    "staff": {
+      "total": 6,
+      "range": {
+        "start": 10,
+        "end": 10
+      }
+    },
+    "locations": {
+      "headquarter": {
+        "country": "United States",
+        "geographicArea": "Example State",
+        "city": "Example City",
+        "postalCode": "00000",
+        "line1": null,
+        "line2": null,
+        "isPrimary": null
+      },
+      "other": [
+        {
+          "country": "United States",
+          "geographicArea": "Example State",
+          "city": "Example City",
+          "postalCode": "00000",
+          "line1": null,
+          "line2": null,
+          "isPrimary": null
+        }
+      ]
+    },
+    "fundingData": null,
+    "specialities": null,
+    "industries": [
+      "Example industries"
+    ],
+    "hashtags": null
+  }
+}

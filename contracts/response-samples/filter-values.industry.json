@@ -1,0 +1,18 @@
+{
+  "operation": "GET /v1/find-companies/filter-values",
+  "status": 200,
+  "source": "code",
+  "sourceRepository": "ViceScale/airscale-code",
+  "sourceSha": "1c48fe7eeddb8cbebfa978a7464478252b4baa68",
+  "evidence": "workers/public-api/find-companies-worker.test.mjs:439-447 (label equals value)",
+  "body": {
+    "filter": "industry",
+    "query": "example",
+    "values": [
+      {
+        "label": "example industry",
+        "value": "example industry"
+      }
+    ]
+  }
+}

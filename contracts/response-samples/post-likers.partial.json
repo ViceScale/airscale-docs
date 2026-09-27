@@ -1,0 +1,49 @@
+{
+  "operation": "POST /v1/post-likers",
+  "status": 200,
+  "source": "code",
+  "sourceRepository": "ViceScale/airscale-code",
+  "sourceSha": "1c48fe7eeddb8cbebfa978a7464478252b4baa68",
+  "evidence": "workers/public-api/post-engagement-worker.js:653-718; post-engagement-worker.test.mjs:696 (partial retrieval) and :768-783 (profile_picture_url)",
+  "body": {
+    "items": [
+      {
+        "profile_status": "success",
+        "linkedin_url": "https://www.linkedin.com/in/example-person-000000",
+        "profile_picture_url": "https://www.example.org/images/example-person.png",
+        "first_name": "Example",
+        "last_name": "Person",
+        "full_name": "Example Person",
+        "company_name": "Example Company",
+        "job_title": "Founder",
+        "location": "Example City",
+        "domain": "example.org",
+        "linkedin_company_url": "https://www.linkedin.com/company/example-company-000000",
+        "headline": "Founder at Example Company",
+        "reaction_type": "LIKE",
+        "comment": null,
+        "post_url": "https://www.linkedin.com/posts/example_activity-7376356221991178240"
+      }
+    ],
+    "pagination": {
+      "next_cursor": null,
+      "has_more": false
+    },
+    "retrieval": {
+      "reported_total": 119,
+      "returned_count": 19,
+      "retrieved_total": 118,
+      "status": "partial",
+      "stop_reason": "provider_total_mismatch"
+    },
+    "billing": {
+      "credits_consumed": 1,
+      "credits_refunded": 0,
+      "outcomes": {
+        "success": 1,
+        "not_found": 0,
+        "error": 0
+      }
+    }
+  }
+}

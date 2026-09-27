@@ -1,0 +1,578 @@
+{
+  "operation": "POST /v1/reverse-phone",
+  "status": 200,
+  "source": "live",
+  "sourceRepository": "ViceScale/airscale-code",
+  "sourceSha": null,
+  "evidence": "One production request on 2026-09-27. Strings and numbers were replaced with synthetic values; enum values, structure and key names are preserved.",
+  "body": {
+    "id": "example-id-000000",
+    "identifier": "example-person-000000",
+    "profile": {
+      "firstName": "Example",
+      "lastName": "Person",
+      "fullName": "Example Person",
+      "headline": "Example headline",
+      "title": "Example title",
+      "picture": {
+        "source": "https://www.example.org/example"
+      },
+      "background": {
+        "source": "https://www.example.org/example"
+      },
+      "birthDate": null,
+      "summary": "Example summary"
+    },
+    "link": {
+      "linkedin": "https://www.linkedin.com/in/example-person-000000",
+      "twitter": null,
+      "github": null,
+      "facebook": null
+    },
+    "location": {
+      "country": "United States",
+      "state": "Example State",
+      "city": "Example City",
+      "position": null,
+      "default": "Example default",
+      "short": "Example short"
+    },
+    "languages": {
+      "primaryLocale": {
+        "country": "United States",
+        "language": "Example language"
+      },
+      "supportedLocales": [
+        {
+          "country": "United States",
+          "language": "Example language"
+        }
+      ],
+      "profileLanguages": [
+        {
+          "name": "Example name",
+          "proficiency": "NATIVE_OR_BILINGUAL"
+        }
+      ]
+    },
+    "industry": "Example industry",
+    "educations": [
+      {
+        "school": {
+          "id": "example-id-000000",
+          "name": "Example name",
+          "logo": "https://www.example.org/example",
+          "url": "https://www.linkedin.com/company/example-company-000000"
+        },
+        "degreeName": "Example degree name",
+        "fieldOfStudy": "Example field of study",
+        "grade": null,
+        "date": {
+          "start": "2026-01-01",
+          "end": "2026-01-01"
+        }
+      },
+      {
+        "school": {
+          "id": "example-id-000000",
+          "name": "Example name",
+          "logo": "https://www.example.org/example",
+          "url": "https://www.linkedin.com/company/example-company-000000"
+        },
+        "degreeName": "Example degree name",
+        "fieldOfStudy": null,
+        "grade": null,
+        "date": {
+          "start": "2026-01-01",
+          "end": "2026-01-01"
+        }
+      }
+    ],
+    "certifications": [
+      {
+        "name": "Example name",
+        "authority": "Example authority",
+        "url": "https://www.example.org/example",
+        "licenseNumber": "Example license number",
+        "displaySource": "Example display source",
+        "company": {
+          "id": "example-id-000000",
+          "name": "Example name",
+          "logo": "https://www.example.org/example",
+          "url": "https://www.linkedin.com/company/example-company-000000"
+        },
+        "date": {
+          "start": "2026-01-01",
+          "end": null
+        }
+      },
+      {
+        "name": "Example name",
+        "authority": "Example authority",
+        "url": "https://www.example.org/example",
+        "licenseNumber": "Example license number",
+        "displaySource": "Example display source",
+        "company": {
+          "id": "example-id-000000",
+          "name": "Example name",
+          "logo": "https://www.example.org/example",
+          "url": "https://www.linkedin.com/company/example-company-000000"
+        },
+        "date": {
+          "start": "2026-01-01",
+          "end": null
+        }
+      }
+    ],
+    "positionGroups": [
+      {
+        "company": {
+          "id": "example-id-000000",
+          "name": "Example name",
+          "logo": "https://www.example.org/example",
+          "url": "https://www.linkedin.com/company/example-company-000000",
+          "employees": {
+            "start": 10,
+            "end": 10
+          }
+        },
+        "date": {
+          "start": "2026-01-01",
+          "end": null
+        },
+        "profilePositions": [
+          {
+            "company": "Example company",
+            "description": null,
+            "title": "Example title",
+            "employmentType": "Permanent",
+            "location": "Example location",
+            "date": {
+              "start": "2026-01-01",
+              "end": null
+            }
+          }
+        ]
+      },
+      {
+        "company": {
+          "id": "example-id-000000",
+          "name": "Example name",
+          "logo": "https://www.example.org/example",
+          "url": "https://www.linkedin.com/company/example-company-000000",
+          "employees": {
+            "start": 10,
+            "end": 10
+          }
+        },
+        "date": {
+          "start": "2026-01-01",
+          "end": null
+        },
+        "profilePositions": [
+          {
+            "company": "Example company",
+            "description": null,
+            "title": "Example title",
+            "employmentType": "Permanent",
+            "location": "Example location",
+            "date": {
+              "start": "2026-01-01",
+              "end": null
+            }
+          }
+        ]
+      }
+    ],
+    "skills": [
+      "Example skills",
+      "Example skills"
+    ],
+    "memberBadges": {
+      "premium": true,
+      "creator": true,
+      "openToWork": false,
+      "hiring": false,
+      "verified": false,
+      "influencer": false
+    },
+    "company": {
+      "id": "example-id-000000",
+      "summary": {
+        "name": "Example name",
+        "legalName": "Example legal name",
+        "description": "Example description",
+        "foundedYear": 10,
+        "type": "PUBLIC_COMPANY",
+        "industry": "Example industry",
+        "staff": {
+          "total": 4,
+          "range": {
+            "start": 10,
+            "end": 10
+          }
+        },
+        "logo": {
+          "source": "https://www.example.org/example"
+        }
+      },
+      "link": {
+        "website": "https://www.example.org",
+        "domain": "example.org",
+        "linkedin": "https://www.linkedin.com/company/example-company-000000",
+        "crunchbase": "https://www.example.org/example"
+      },
+      "financial": {
+        "revenue": {
+          "annual": {
+            "start": 10,
+            "end": 10
+          }
+        }
+      },
+      "location": {
+        "headquarter": {
+          "continent": "Example continent",
+          "country": "United States",
+          "state": "Example State",
+          "city": "Example City",
+          "postalCode": "00000",
+          "rawAddress": "Example raw address",
+          "position": {
+            "lng": 10.5,
+            "lat": 10.5
+          }
+        },
+        "locations": [
+          {
+            "continent": "Example continent",
+            "country": "United States",
+            "state": "Example State",
+            "city": "Example City",
+            "postalCode": "00000",
+            "rawAddress": "Example raw address",
+            "position": {
+              "lng": 10.5,
+              "lat": 10.5
+            }
+          }
+        ]
+      },
+      "technologies": [
+        {
+          "name": "Example name",
+          "category": "Example category"
+        },
+        {
+          "name": "Example name",
+          "category": "Example category"
+        }
+      ],
+      "industries": [
+        "Example industries",
+        "Example industries"
+      ],
+      "languages": [
+        "Example languages"
+      ]
+    },
+    "department": {
+      "departments": [
+        "Example departments"
+      ],
+      "subDepartments": [
+        "Example sub departments"
+      ],
+      "functions": [
+        "Example functions"
+      ],
+      "seniority": "founder"
+    },
+    "url": "https://www.linkedin.com/in/example-person-000000",
+    "body": {
+      "id": "example-id-000000",
+      "identifier": "example-person-000000",
+      "profile": {
+        "firstName": "Example",
+        "lastName": "Person",
+        "fullName": "Example Person",
+        "headline": "Example headline",
+        "title": "Example title",
+        "picture": {
+          "source": "https://www.example.org/example"
+        },
+        "background": {
+          "source": "https://www.example.org/example"
+        },
+        "birthDate": null,
+        "summary": "Example summary"
+      },
+      "link": {
+        "linkedin": "https://www.linkedin.com/in/example-person-000000",
+        "twitter": null,
+        "github": null,
+        "facebook": null
+      },
+      "location": {
+        "country": "United States",
+        "state": "Example State",
+        "city": "Example City",
+        "position": null,
+        "default": "Example default",
+        "short": "Example short"
+      },
+      "languages": {
+        "primaryLocale": {
+          "country": "United States",
+          "language": "Example language"
+        },
+        "supportedLocales": [
+          {
+            "country": "United States",
+            "language": "Example language"
+          }
+        ],
+        "profileLanguages": [
+          {
+            "name": "Example name",
+            "proficiency": "NATIVE_OR_BILINGUAL"
+          }
+        ]
+      },
+      "industry": "Example industry",
+      "educations": [
+        {
+          "school": {
+            "id": "example-id-000000",
+            "name": "Example name",
+            "logo": "https://www.example.org/example",
+            "url": "https://www.linkedin.com/company/example-company-000000"
+          },
+          "degreeName": "Example degree name",
+          "fieldOfStudy": "Example field of study",
+          "grade": null,
+          "date": {
+            "start": "2026-01-01",
+            "end": "2026-01-01"
+          }
+        },
+        {
+          "school": {
+            "id": "example-id-000000",
+            "name": "Example name",
+            "logo": "https://www.example.org/example",
+            "url": "https://www.linkedin.com/company/example-company-000000"
+          },
+          "degreeName": "Example degree name",
+          "fieldOfStudy": null,
+          "grade": null,
+          "date": {
+            "start": "2026-01-01",
+            "end": "2026-01-01"
+          }
+        }
+      ],
+      "certifications": [
+        {
+          "name": "Example name",
+          "authority": "Example authority",
+          "url": "https://www.example.org/example",
+          "licenseNumber": "Example license number",
+          "displaySource": "Example display source",
+          "company": {
+            "id": "example-id-000000",
+            "name": "Example name",
+            "logo": "https://www.example.org/example",
+            "url": "https://www.linkedin.com/company/example-company-000000"
+          },
+          "date": {
+            "start": "2026-01-01",
+            "end": null
+          }
+        },
+        {
+          "name": "Example name",
+          "authority": "Example authority",
+          "url": "https://www.example.org/example",
+          "licenseNumber": "Example license number",
+          "displaySource": "Example display source",
+          "company": {
+            "id": "example-id-000000",
+            "name": "Example name",
+            "logo": "https://www.example.org/example",
+            "url": "https://www.linkedin.com/company/example-company-000000"
+          },
+          "date": {
+            "start": "2026-01-01",
+            "end": null
+          }
+        }
+      ],
+      "positionGroups": [
+        {
+          "company": {
+            "id": "example-id-000000",
+            "name": "Example name",
+            "logo": "https://www.example.org/example",
+            "url": "https://www.linkedin.com/company/example-company-000000",
+            "employees": {
+              "start": 10,
+              "end": 10
+            }
+          },
+          "date": {
+            "start": "2026-01-01",
+            "end": null
+          },
+          "profilePositions": [
+            {
+              "company": "Example company",
+              "description": null,
+              "title": "Example title",
+              "employmentType": "Permanent",
+              "location": "Example location",
+              "date": {
+                "start": "2026-01-01",
+                "end": null
+              }
+            }
+          ]
+        },
+        {
+          "company": {
+            "id": "example-id-000000",
+            "name": "Example name",
+            "logo": "https://www.example.org/example",
+            "url": "https://www.linkedin.com/company/example-company-000000",
+            "employees": {
+              "start": 10,
+              "end": 10
+            }
+          },
+          "date": {
+            "start": "2026-01-01",
+            "end": null
+          },
+          "profilePositions": [
+            {
+              "company": "Example company",
+              "description": null,
+              "title": "Example title",
+              "employmentType": "Permanent",
+              "location": "Example location",
+              "date": {
+                "start": "2026-01-01",
+                "end": null
+              }
+            }
+          ]
+        }
+      ],
+      "skills": [
+        "Example skills",
+        "Example skills"
+      ],
+      "memberBadges": {
+        "premium": true,
+        "creator": true,
+        "openToWork": false,
+        "hiring": false,
+        "verified": false,
+        "influencer": false
+      },
+      "company": {
+        "id": "example-id-000000",
+        "summary": {
+          "name": "Example name",
+          "legalName": "Example legal name",
+          "description": "Example description",
+          "foundedYear": 10,
+          "type": "PUBLIC_COMPANY",
+          "industry": "Example industry",
+          "staff": {
+            "total": 4,
+            "range": {
+              "start": 10,
+              "end": 10
+            }
+          },
+          "logo": {
+            "source": "https://www.example.org/example"
+          }
+        },
+        "link": {
+          "website": "https://www.example.org",
+          "domain": "example.org",
+          "linkedin": "https://www.linkedin.com/company/example-company-000000",
+          "crunchbase": "https://www.example.org/example"
+        },
+        "financial": {
+          "revenue": {
+            "annual": {
+              "start": 10,
+              "end": 10
+            }
+          }
+        },
+        "location": {
+          "headquarter": {
+            "continent": "Example continent",
+            "country": "United States",
+            "state": "Example State",
+            "city": "Example City",
+            "postalCode": "00000",
+            "rawAddress": "Example raw address",
+            "position": {
+              "lng": 10.5,
+              "lat": 10.5
+            }
+          },
+          "locations": [
+            {
+              "continent": "Example continent",
+              "country": "United States",
+              "state": "Example State",
+              "city": "Example City",
+              "postalCode": "00000",
+              "rawAddress": "Example raw address",
+              "position": {
+                "lng": 10.5,
+                "lat": 10.5
+              }
+            }
+          ]
+        },
+        "technologies": [
+          {
+            "name": "Example name",
+            "category": "Example category"
+          },
+          {
+            "name": "Example name",
+            "category": "Example category"
+          }
+        ],
+        "industries": [
+          "Example industries",
+          "Example industries"
+        ],
+        "languages": [
+          "Example languages"
+        ]
+      },
+      "department": {
+        "departments": [
+          "Example departments"
+        ],
+        "subDepartments": [
+          "Example sub departments"
+        ],
+        "functions": [
+          "Example functions"
+        ],
+        "seniority": "founder"
+      },
+      "url": "https://www.linkedin.com/in/example-person-000000"
+    }
+  }
+}

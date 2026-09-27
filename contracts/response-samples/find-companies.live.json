@@ -1,0 +1,37 @@
+{
+  "operation": "POST /v1/find-companies",
+  "status": 200,
+  "source": "live",
+  "sourceRepository": "ViceScale/airscale-code",
+  "sourceSha": null,
+  "evidence": "One production request on 2026-09-27. Strings and numbers were replaced with synthetic values; enum values, structure and key names are preserved.",
+  "body": {
+    "rows": [
+      {
+        "name": "Example name",
+        "domain": "example.org",
+        "logo": "https://www.example.org/example",
+        "countryName": "United States",
+        "cityName": null,
+        "employeeRange": null,
+        "revenueRange": null,
+        "website": "https://www.example.org",
+        "description": null,
+        "region": null,
+        "naics": null,
+        "naicsDescription": null,
+        "sicCode": null,
+        "sicDescription": null,
+        "businessIntentTopics": null,
+        "events": null,
+        "linkedinProfile": null,
+        "location": "Example location",
+        "industry": null
+      }
+    ],
+    "total": 5,
+    "page": 0,
+    "size": 1,
+    "next_cursor": "Example next cursor"
+  }
+}

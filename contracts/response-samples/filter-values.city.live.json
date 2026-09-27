@@ -1,0 +1,28 @@
+{
+  "operation": "GET /v1/find-companies/filter-values",
+  "status": 200,
+  "source": "live",
+  "sourceRepository": "ViceScale/airscale-code",
+  "sourceSha": null,
+  "evidence": "One production request on 2026-09-27. Strings and numbers were replaced with synthetic values; enum values, structure and key names are preserved.",
+  "body": {
+    "filter": "city",
+    "query": "paris",
+    "values": [
+      {
+        "query": "paris",
+        "label": "Paris, CA",
+        "value": "Paris, CA",
+        "city": "Example City",
+        "countryCode": "Example country code"
+      },
+      {
+        "query": "paris",
+        "label": "Paris, DE",
+        "value": "Paris, DE",
+        "city": "Example City",
+        "countryCode": "Example country code"
+      }
+    ]
+  }
+}

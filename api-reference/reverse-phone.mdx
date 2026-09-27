@@ -15,6 +15,10 @@ A `not_found` result can represent a true miss or lookup paths that were exhaust
 
 For temporary `502` or `503` responses, use a limited number of retries with increasing delays. If errors persist, stop retrying and contact support. A client timeout does not confirm whether the request completed or was charged.
 
+## Read the profile
+
+A match returns the same nested person record as [Reverse email](/api-reference/reverse-email), with **camelCase** keys such as `profile.firstName`, `link.linkedin`, and `positionGroups`. The response also has a `body` field holding a copy of the same record; read either one. When the match comes from a fallback lookup, the record uses the flat fields of [People profile](/api-reference/extract-people-profile) instead.
+
 ## Next step
 
 Use [People profile](/api-reference/extract-people-profile) when you already have a professional profile URL and want the structured profile directly.

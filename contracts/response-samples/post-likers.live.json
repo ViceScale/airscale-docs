@@ -1,0 +1,49 @@
+{
+  "operation": "POST /v1/post-likers",
+  "status": 200,
+  "source": "live",
+  "sourceRepository": "ViceScale/airscale-code",
+  "sourceSha": null,
+  "evidence": "One production request on 2026-09-27. Strings and numbers were replaced with synthetic values; enum values, structure and key names are preserved.",
+  "body": {
+    "items": [
+      {
+        "profile_status": "success",
+        "linkedin_url": "https://www.linkedin.com/in/example-person-000000",
+        "profile_picture_url": "https://www.example.org/example",
+        "first_name": "Example",
+        "last_name": "Person",
+        "full_name": "Example Person",
+        "company_name": null,
+        "job_title": "Example job title",
+        "location": "Example location",
+        "domain": null,
+        "linkedin_company_url": null,
+        "headline": "Example headline",
+        "reaction_type": "LIKE",
+        "comment": null,
+        "post_url": "https://www.linkedin.com/company/example-company-000000"
+      }
+    ],
+    "pagination": {
+      "next_cursor": "Example next cursor",
+      "has_more": true
+    },
+    "retrieval": {
+      "reported_total": 10,
+      "returned_count": 10,
+      "retrieved_total": 10,
+      "status": "more_available",
+      "stop_reason": "page_limit"
+    },
+    "billing": {
+      "credits_consumed": 1,
+      "credits_refunded": 10,
+      "outcomes": {
+        "success": 10,
+        "not_found": 10,
+        "error": 10
+      }
+    }
+  }
+}

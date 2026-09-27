@@ -1,0 +1,214 @@
+{
+  "operation": "POST /v1/meta-ads",
+  "status": 200,
+  "source": "live",
+  "sourceRepository": "ViceScale/airscale-code",
+  "sourceSha": null,
+  "evidence": "One production request on 2026-09-27. Strings and numbers were replaced with synthetic values; enum values, structure and key names are preserved.",
+  "body": {
+    "page_id": "example-id-000000",
+    "country_code": null,
+    "continuation_token": "example-id-000000",
+    "platform": [
+      "facebook",
+      "instagram"
+    ],
+    "media_types": "all",
+    "sort_data": "SORT_BY_TOTAL_IMPRESSIONS",
+    "active_status": "active",
+    "is_result_complete": false,
+    "number_of_ads": 3352,
+    "count_landing_pages": 10,
+    "unique_landing_pages": [
+      "https://www.example.org/example",
+      "https://www.example.org/example"
+    ],
+    "start_min_date": "2026-01-01",
+    "start_max_date": "2026-01-01",
+    "results": [
+      {
+        "ad_archive_id": "example-id-000000",
+        "collation_id": null,
+        "page_id": "example-id-000000",
+        "snapshot": {
+          "page_id": "example-id-000000",
+          "page_profile_uri": "https://www.example.org/example",
+          "page_name": "Example Company",
+          "page_profile_picture_url": "https://www.example.org/example",
+          "caption": "Example caption",
+          "cta_text": "Example cta text",
+          "cards": [
+            {
+              "body": "Example body",
+              "cta_type": "INSTALL_MOBILE_APP",
+              "caption": "Example caption",
+              "link_description": "Example link description",
+              "link_url": "https://www.example.org/example",
+              "title": "Example title",
+              "cta_text": "Example cta text",
+              "video_hd_url": null,
+              "video_preview_image_url": null,
+              "video_sd_url": null,
+              "watermarked_video_hd_url": null,
+              "watermarked_video_sd_url": null,
+              "image_crops": [],
+              "original_image_url": "https://www.example.org/example",
+              "resized_image_url": "https://www.example.org/example",
+              "watermarked_resized_image_url": "https://www.example.org/example"
+            },
+            {
+              "body": "Example body",
+              "cta_type": "INSTALL_MOBILE_APP",
+              "caption": "Example caption",
+              "link_description": "Example link description",
+              "link_url": "https://www.example.org/example",
+              "title": "Example title",
+              "cta_text": "Example cta text",
+              "video_hd_url": null,
+              "video_preview_image_url": null,
+              "video_sd_url": null,
+              "watermarked_video_hd_url": null,
+              "watermarked_video_sd_url": null,
+              "image_crops": [],
+              "original_image_url": "https://www.example.org/example",
+              "resized_image_url": "https://www.example.org/example",
+              "watermarked_resized_image_url": "https://www.example.org/example"
+            }
+          ],
+          "body": {
+            "text": "Example text"
+          },
+          "cta_type": "INSTALL_MOBILE_APP",
+          "display_format": "DPA",
+          "link_description": null,
+          "link_url": "https://www.example.org/example",
+          "images": [],
+          "page_categories": [
+            "Example page categories",
+            "Example page categories"
+          ],
+          "page_like_count": 10,
+          "title": "Example title",
+          "videos": [],
+          "extra_links": [],
+          "extra_texts": [],
+          "extra_images": [],
+          "extra_videos": [],
+          "current_page_name": null,
+          "page_entity_type": null,
+          "page_is_profile_page": null
+        },
+        "is_active": true,
+        "page_name": "Example Company",
+        "categories": [
+          "Example categories"
+        ],
+        "end_date": 10,
+        "publisher_platform": [
+          "FACEBOOK",
+          "INSTAGRAM",
+          "AUDIENCE_NETWORK",
+          "MESSENGER"
+        ],
+        "start_date": 10,
+        "total_active_time": null,
+        "entity_type": null,
+        "url": "https://www.example.org/example",
+        "start_date_string": "2026-01-01",
+        "end_date_string": "2026-01-01"
+      },
+      {
+        "ad_archive_id": "example-id-000000",
+        "collation_id": null,
+        "page_id": "example-id-000000",
+        "snapshot": {
+          "page_id": "example-id-000000",
+          "page_profile_uri": "https://www.example.org/example",
+          "page_name": "Example Company",
+          "page_profile_picture_url": "https://www.example.org/example",
+          "caption": "Example caption",
+          "cta_text": "Example cta text",
+          "cards": [
+            {
+              "body": "Example body",
+              "cta_type": "INSTALL_MOBILE_APP",
+              "caption": "Example caption",
+              "link_description": "Example link description",
+              "link_url": "https://www.example.org/example",
+              "title": "Example title",
+              "cta_text": "Example cta text",
+              "video_hd_url": null,
+              "video_preview_image_url": null,
+              "video_sd_url": null,
+              "watermarked_video_hd_url": null,
+              "watermarked_video_sd_url": null,
+              "image_crops": [],
+              "original_image_url": "https://www.example.org/example",
+              "resized_image_url": "https://www.example.org/example",
+              "watermarked_resized_image_url": "https://www.example.org/example"
+            },
+            {
+              "body": "Example body",
+              "cta_type": "INSTALL_MOBILE_APP",
+              "caption": "Example caption",
+              "link_description": "Example link description",
+              "link_url": "https://www.example.org/example",
+              "title": "Example title",
+              "cta_text": "Example cta text",
+              "video_hd_url": null,
+              "video_preview_image_url": null,
+              "video_sd_url": null,
+              "watermarked_video_hd_url": null,
+              "watermarked_video_sd_url": null,
+              "image_crops": [],
+              "original_image_url": "https://www.example.org/example",
+              "resized_image_url": "https://www.example.org/example",
+              "watermarked_resized_image_url": "https://www.example.org/example"
+            }
+          ],
+          "body": {
+            "text": "Example text"
+          },
+          "cta_type": "INSTALL_MOBILE_APP",
+          "display_format": "DPA",
+          "link_description": null,
+          "link_url": "https://www.example.org/example",
+          "images": [],
+          "page_categories": [
+            "Example page categories",
+            "Example page categories"
+          ],
+          "page_like_count": 10,
+          "title": "Example title",
+          "videos": [],
+          "extra_links": [],
+          "extra_texts": [],
+          "extra_images": [],
+          "extra_videos": [],
+          "current_page_name": null,
+          "page_entity_type": null,
+          "page_is_profile_page": null
+        },
+        "is_active": true,
+        "page_name": "Example Company",
+        "categories": [
+          "Example categories"
+        ],
+        "end_date": 10,
+        "publisher_platform": [
+          "FACEBOOK",
+          "INSTAGRAM",
+          "AUDIENCE_NETWORK",
+          "MESSENGER"
+        ],
+        "start_date": 10,
+        "total_active_time": null,
+        "entity_type": null,
+        "url": "https://www.example.org/example",
+        "start_date_string": "2026-01-01",
+        "end_date_string": "2026-01-01"
+      }
+    ],
+    "credits_consumed": 1
+  }
+}

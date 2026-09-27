@@ -1,0 +1,12 @@
+{
+  "operation": "GET /v1/whatsapp-check/operations/{operation_id}",
+  "status": 202,
+  "source": "code",
+  "sourceRepository": "ViceScale/airscale-code",
+  "sourceSha": "1c48fe7eeddb8cbebfa978a7464478252b4baa68",
+  "evidence": "workers/public-api/whatsapp-checker.test.mjs:297",
+  "body": {
+    "operation_id": "00000000-0000-4000-8000-000000000001",
+    "status": "unknown"
+  }
+}

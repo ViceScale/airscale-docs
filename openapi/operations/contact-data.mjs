@@ -264,7 +264,7 @@ export const contactDataOperations = [
                       },
                       provider: {
                         type: ["string", "null"],
-                        description: "A public source label when one is available."
+                        description: "The name of the source that returned the number. Present on successful results."
                       }
                     }
                   },
@@ -295,7 +295,7 @@ export const contactDataOperations = [
                     linkedin_profile_url: PROFILE_EXAMPLE,
                     phone_numbers: "+12025550147",
                     all_phone_numbers: ["+12025550147", "+12025550148"],
-                    provider: null
+                    provider: "<provider>"
                   }
                 },
                 notFound: {

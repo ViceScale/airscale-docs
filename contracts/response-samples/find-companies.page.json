@@ -1,0 +1,25 @@
+{
+  "operation": "POST /v1/find-companies",
+  "status": 200,
+  "source": "code",
+  "sourceRepository": "ViceScale/airscale-code",
+  "sourceSha": "1c48fe7eeddb8cbebfa978a7464478252b4baa68",
+  "evidence": "workers/public-api/find-companies-worker.test.mjs:655-667",
+  "body": {
+    "rows": [
+      {
+        "name": "Example Company",
+        "domain": "example.org",
+        "logo": "https://www.example.org/logo.png",
+        "website": "https://www.example.org",
+        "countryName": "Example Country",
+        "cityName": "Example City",
+        "linkedinProfile": "https://www.linkedin.com/company/example-company-000000"
+      }
+    ],
+    "total": 3,
+    "page": 0,
+    "size": 2,
+    "next_cursor": null
+  }
+}

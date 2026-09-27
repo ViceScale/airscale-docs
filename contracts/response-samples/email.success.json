@@ -1,0 +1,17 @@
+{
+  "operation": "POST /v1/email",
+  "status": 200,
+  "source": "code",
+  "sourceRepository": "ViceScale/airscale-code",
+  "sourceSha": "1c48fe7eeddb8cbebfa978a7464478252b4baa68",
+  "evidence": "workers/public-api/v2-waterfall-email.js:1516-1528",
+  "body": {
+    "status": "success",
+    "email": "person@example.org",
+    "email_status": "valid",
+    "provider": "<provider>",
+    "verifier": "<verifier>",
+    "catch_all": "no",
+    "linkedin_profile_url": "https://www.linkedin.com/in/example-person-000000"
+  }
+}

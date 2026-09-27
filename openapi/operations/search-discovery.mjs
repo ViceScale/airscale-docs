@@ -163,9 +163,21 @@ const findPeoplePageExample = {
     {
       firstname: "Example",
       lastname: "Person",
+      headline: "Revenue Operations Manager at Example Company",
+      description: "Synthetic profile summary for API documentation.",
       profileUrl: "https://www.linkedin.com/in/example-person-000000",
       jobTitle: "Revenue Operations Manager",
-      companyName: "Example Company"
+      jobDescription: "Synthetic role description.",
+      jobStartDate: "03-2021",
+      address: "Example City, Example State, United States",
+      companyName: "Example Company",
+      companyUrn: "urn:li:fsd_company:100000002",
+      companyUrl: "https://www.linkedin.com/company/example-company-000000",
+      companyWebsite: "https://www.example.com",
+      companyDescription: "Synthetic company description for API documentation.",
+      companySize: 4,
+      companyIndustry: "Software Development",
+      companyAddress: "1 Example Street, Example City, Example State, United States"
     }
   ],
   next_cursor: "fp_synthetic_cursor"
@@ -177,7 +189,7 @@ const findPeopleResponseSchema = {
   additionalProperties: false,
   properties: {
     total: { type: "number" },
-    leads: { type: "array", items: { $ref: "#/components/schemas/FlexibleResult" } },
+    leads: { type: "array", items: { $ref: "#/components/schemas/PeopleLead" } },
     next_cursor: { type: ["string", "null"] }
   }
 };
@@ -415,7 +427,7 @@ const airsearchResponseSchema = {
       }
     },
     confidence_score: { type: "number", minimum: 0, maximum: 1 },
-    certainty_tag: { type: "string", enum: ["low", "medium", "high"] },
+    certainty_tag: { type: ["string", "null"], enum: ["low", "medium", "high", null], description: "Null when no certainty tag could be derived." },
     duration_ms: { type: "number", minimum: 0 }
   },
   additionalProperties: { type: ["string", "null"] }
@@ -595,7 +607,7 @@ export const searchDiscoveryOperations = [
                 required: ["rows", "total", "page", "size", "next_cursor"],
                 additionalProperties: false,
                 properties: {
-                  rows: { type: "array", items: { $ref: "#/components/schemas/FlexibleResult" } },
+                  rows: { type: "array", items: { $ref: "#/components/schemas/CompanyRow" } },
                   total: { type: "number" },
                   page: { type: "number" },
                   size: { type: "number" },
@@ -610,9 +622,23 @@ export const searchDiscoveryOperations = [
                       {
                         name: "Example Company",
                         domain: "example.com",
+                        logo: "https://example.com/logo.png",
                         website: "https://example.com",
                         countryName: "Example Country",
-                        cityName: "Example City"
+                        cityName: "Example City",
+                        region: null,
+                        location: "Example City, Example Country",
+                        industry: null,
+                        linkedinProfile: null,
+                        employeeRange: null,
+                        revenueRange: null,
+                        description: null,
+                        naics: null,
+                        naicsDescription: null,
+                        sicCode: null,
+                        sicDescription: null,
+                        businessIntentTopics: null,
+                        events: null
                       }
                     ],
                     total: 240,
@@ -749,7 +775,7 @@ export const searchDiscoveryOperations = [
                     filter: "industry",
                     query: "example",
                     values: [
-                      { label: "Example industry", value: "example industry" }
+                      { label: "example industry", value: "example industry" }
                     ]
                   }
                 },

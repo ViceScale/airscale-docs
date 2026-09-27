@@ -1,0 +1,11 @@
+{
+  "operation": "POST /v1/domain-to-linkedin",
+  "status": 200,
+  "source": "code",
+  "sourceRepository": "ViceScale/airscale-code",
+  "sourceSha": "1c48fe7eeddb8cbebfa978a7464478252b4baa68",
+  "evidence": "workers/public-api/domain-linkedin-operation.js:48-50",
+  "body": {
+    "linkedin_company_url": "https://www.linkedin.com/company/example-company-000000"
+  }
+}

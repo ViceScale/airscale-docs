@@ -1,0 +1,13 @@
+{
+  "operation": "POST /v1/meta-ads",
+  "status": 200,
+  "source": "code",
+  "sourceRepository": "ViceScale/airscale-code",
+  "sourceSha": "1c48fe7eeddb8cbebfa978a7464478252b4baa68",
+  "evidence": "workers/public-api/meta-ads-checker.test.mjs:53-107",
+  "body": {
+    "page_id": "meta-123",
+    "number_of_ads": 4,
+    "credits_consumed": 1
+  }
+}

@@ -1,0 +1,33 @@
+{
+  "operation": "POST /v1/find-people",
+  "status": 200,
+  "source": "live",
+  "sourceRepository": "ViceScale/airscale-code",
+  "sourceSha": null,
+  "evidence": "One production request on 2026-09-27. Strings and numbers were replaced with synthetic values; enum values, structure and key names are preserved.",
+  "body": {
+    "total": 2,
+    "leads": [
+      {
+        "firstname": "Example",
+        "lastname": "Person",
+        "headline": "Example headline",
+        "description": "Example description",
+        "profileUrl": "https://www.linkedin.com/in/example-person-000000",
+        "jobTitle": "Example job title",
+        "jobDescription": "Example job description",
+        "jobStartDate": "2026-01-01",
+        "address": "Example address",
+        "companyName": "Example company name",
+        "companyUrn": "example-id-000000",
+        "companyUrl": "https://www.linkedin.com/company/example-company-000000",
+        "companyWebsite": "https://www.example.org",
+        "companyDescription": "Example company description",
+        "companySize": 10,
+        "companyIndustry": "Example company industry",
+        "companyAddress": "Example company address"
+      }
+    ],
+    "next_cursor": "Example next cursor"
+  }
+}

@@ -1,3 +1,5 @@
+import { reversePersonExample } from "../person-record.mjs";
+
 const TAG = "Profiles and reverse lookup";
 const PERSON_URL = "https://www.linkedin.com/in/example-person-000000";
 
@@ -63,33 +65,105 @@ const profileResponseSchema = {
   ]
 };
 
+const paged = (contents) => ({ totalElements: contents.length, page: 0, size: contents.length, contents });
+
 const personExample = {
   url: PERSON_URL,
   identifier: "example-person-000000",
+  entityUrn: "EXAMPLE000000",
+  objectUrn: 100000001,
   firstname: "Example",
   lastname: "Person",
-  headline: "Example role at Example Company",
+  middleName: null,
+  birthDate: null,
+  headline: "Founder at Example Company",
+  picture: "https://www.example.org/images/example-person.png",
+  background: "https://www.example.org/images/example-background.png",
+  summary: null,
+  openToWork: false,
+  influencer: false,
+  premium: true,
+  creator: false,
+  hiring: false,
+  verified: null,
   industry: "Software Development",
   location: {
     country: "United States",
     city: "Example City",
-    state: "Example State"
-  }
+    state: "Example State",
+    defaultValue: "Example City, Example State, United States",
+    shortValue: "Example City, United States"
+  },
+  organizations: paged([]),
+  educations: paged([{
+    school: { id: 100001, name: "Example University", logo: "https://www.example.org/images/example-university.png", url: "https://www.linkedin.com/school/example-university/", profileType: "SCHOOL" },
+    degreeName: "Master of Science",
+    fieldOfStudy: "Computer Science",
+    grade: null,
+    date: { start: "2014-01-01T00:00:00.000Z", end: "2016-01-01T00:00:00.000Z" }
+  }]),
+  patents: paged([]),
+  awards: paged([]),
+  certifications: paged([{
+    name: "Example Certification",
+    authority: "Example Institute",
+    url: "https://www.example.org/certificates/example",
+    licenseNumber: "EX-000001",
+    displaySource: "example.org",
+    company: { id: 100003, name: "Example Institute", logo: "https://www.example.org/images/example-institute.png", url: "https://www.linkedin.com/company/example-institute/", profileType: "COMPANY" },
+    date: { start: "2022-01-01T00:00:00.000Z", end: null }
+  }]),
+  projects: paged([]),
+  publications: paged([]),
+  courses: paged([]),
+  testScores: paged([]),
+  positionGroups: paged([{
+    company: { id: 100002, name: "Example Company", logo: "https://www.example.org/images/example-company.png", url: "https://www.linkedin.com/company/example-company-000000", domain: "example.org", profileType: "COMPANY" },
+    date: { start: "2021-03-01T00:00:00.000Z", end: null },
+    profilePositions: [{
+      company: "Example Company",
+      description: null,
+      title: "Founder",
+      employmentType: "Permanent",
+      location: "Example City, United States",
+      date: { start: "2021-03-01T00:00:00.000Z", end: null }
+    }]
+  }]),
+  volunteerExperiences: paged([]),
+  languages: paged([{ name: "English", proficiency: "NATIVE_OR_BILINGUAL" }]),
+  skills: paged(["Sales prospecting", "Data enrichment"])
+};
+
+const companyAddress = {
+  country: "US",
+  geographicArea: "Example State",
+  city: "Example City",
+  postalCode: "00000",
+  line1: null,
+  line2: null,
+  isPrimary: null
 };
 
 const companyExample = {
   url: "https://www.linkedin.com/company/example-company-000000",
   name: "Example Company",
   universalName: "example-company-000000",
-  website: "https://www.example.org",
+  type: "Privately Held",
+  objectUrn: 100000002,
   description: "Synthetic company profile for API documentation.",
-  staff: { total: 120, range: "51-200" },
-  locations: {
-    headquarter: { country: "United States", city: "Example City" },
-    other: []
-  },
+  phone: null,
+  followers: 1200,
+  website: "https://www.example.org",
+  logo: "https://www.example.org/images/example-company.png",
+  cover: "https://www.example.org/images/example-cover.png",
+  tagline: "Example tagline",
+  foundedYear: 2021,
+  staff: { total: 120, range: { start: 51, end: 200 } },
+  locations: { headquarter: companyAddress, other: [{ ...companyAddress, city: "Second Example City", postalCode: "00001" }] },
+  fundingData: null,
+  specialities: ["Synthetic data"],
   industries: ["Software Development"],
-  specialities: ["Synthetic data"]
+  hashtags: null
 };
 
 const profileRateLimit = "3,000 requests per minute per workspace.";
@@ -133,26 +207,29 @@ function profileOperation({ operationId, summary, description, requestExample, r
   };
 }
 
-const reversePhoneSuccessSchema = {
-  type: "object",
-  required: ["body"],
-  additionalProperties: true,
-  properties: {
-    body: { type: "object", additionalProperties: true },
-    url: { description: "Profile URL, when available." },
-    identifier: { description: "Profile identifier, when available." },
-    link: { description: "Profile links, when available. Check the value type before using it." },
-    firstname: { description: "First name, when available. Check the value type before using it." },
-    lastname: { description: "Last name, when available. Check the value type before using it." }
-  }
+// A match from a fallback lookup uses the flat /v1/profile fields instead, or
+// carries only url and identifier.
+const reversePersonAnyShape = {
+  anyOf: [
+    { $ref: "#/components/schemas/ReverseLookupPerson" },
+    { $ref: "#/components/schemas/VariablePersonProfile" }
+  ]
 };
 
-const reversePhonePerson = {
-  url: PERSON_URL,
-  identifier: "example-person-000000",
-  firstname: "Example",
-  lastname: "Person",
-  link: { linkedin: PERSON_URL }
+const reversePhoneSuccessSchema = {
+  allOf: [
+    reversePersonAnyShape,
+    {
+      type: "object",
+      required: ["body"],
+      properties: {
+        body: {
+          ...reversePersonAnyShape,
+          description: "A copy of the same profile object. It is kept at the top level too for existing integrations."
+        }
+      }
+    }
+  ]
 };
 
 export const profileLookupOperations = [
@@ -189,7 +266,7 @@ export const profileLookupOperations = [
       operationId: "reverseEmailLookup",
       tags: [TAG],
       summary: "Find a profile from an email",
-      description: "Resolves a public person profile from an email address, or returns the JSON string \"not found\" when no profile is available.",
+      description: "Resolves a public person profile from an email address, or returns the JSON string \"not found\" when no profile is available. A match usually returns a nested person record with camelCase keys: names are under profile (profile.firstName, profile.lastName), not at the top level. A match from a fallback lookup uses the flat fields of POST /v1/profile instead, or contains only url and identifier.",
       "x-airscale-rate-limit": "25 requests per second per workspace.",
       "x-airscale-credit-cost": "2 credits only when a profile is returned; \"not found\" and errors are not charged.",
       requestBody: requestBody(
@@ -219,20 +296,14 @@ export const profileLookupOperations = [
             "application/json": {
               schema: {
                 oneOf: [
-                  { $ref: "#/components/schemas/VariablePersonProfile" },
+                  reversePersonAnyShape,
                   { type: "string", enum: ["not found"] }
                 ]
               },
               examples: {
                 success: {
                   summary: "Profile found",
-                  value: {
-                    url: PERSON_URL,
-                    identifier: "example-person-000000",
-                    firstname: "Example",
-                    lastname: "Person",
-                    headline: "Example role at Example Company"
-                  }
+                  value: reversePersonExample
                 },
                 notFound: {
                   summary: "No profile found",
@@ -253,7 +324,7 @@ export const profileLookupOperations = [
       operationId: "reversePhoneLookup",
       tags: [TAG],
       summary: "Find a profile from a phone number",
-      description: "Resolves a public person profile from a phone-number string, or returns a not_found status when no profile is available.",
+      description: "Resolves a public person profile from a phone-number string, or returns a not_found status when no profile is available. A match returns the same nested person record as reverse email, plus a body field holding a copy of it.",
       "x-airscale-rate-limit": "2,000 requests per minute per workspace.",
       "x-airscale-credit-cost": "10 credits only when a profile is returned; not_found and errors are not charged.",
       requestBody: requestBody(
@@ -292,8 +363,8 @@ export const profileLookupOperations = [
                 success: {
                   summary: "Profile found",
                   value: {
-                    ...reversePhonePerson,
-                    body: reversePhonePerson
+                    ...reversePersonExample,
+                    body: reversePersonExample
                   }
                 },
                 notFound: {

@@ -1,0 +1,21 @@
+{
+  "operation": "POST /v1/airsearch",
+  "status": 200,
+  "source": "live",
+  "sourceRepository": "ViceScale/airscale-code",
+  "sourceSha": null,
+  "evidence": "One production request on 2026-09-27. Strings and numbers were replaced with synthetic values; enum values, structure and key names are preserved.",
+  "body": {
+    "status": "success",
+    "response": "Example answer.",
+    "category": "Example category",
+    "reasoning": "Example reasoning",
+    "sources": [
+      "https://www.example.org/example",
+      "https://www.example.org/example"
+    ],
+    "confidence_score": 0.9,
+    "certainty_tag": "high",
+    "duration_ms": 10
+  }
+}

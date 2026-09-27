@@ -1,0 +1,298 @@
+{
+  "operation": "POST /v1/leads-finder",
+  "status": 200,
+  "source": "live",
+  "sourceRepository": "ViceScale/airscale-code",
+  "sourceSha": null,
+  "evidence": "One production request on 2026-09-27. Every string and number was replaced with a synthetic value; structure and key names are preserved.",
+  "body": {
+    "rows": [
+      {
+        "profile": {
+          "first_name": "Example",
+          "middle_name": null,
+          "last_name": "Person",
+          "full_name": "Example Person",
+          "headline": "Founder at Example Company",
+          "title": "Founder at Example Company",
+          "background": {
+            "source": "https://www.example.org/images/example.png"
+          },
+          "birth_date": null,
+          "summary": "Example summary",
+          "profilePictureUrl": "https://www.example.org/images/example.png"
+        },
+        "link": {
+          "linkedin": "https://www.linkedin.com/in/example-person-000000",
+          "twitter": null,
+          "github": null,
+          "facebook": null
+        },
+        "location": {
+          "default": "Example City, Example State, United States",
+          "short": "Example City, United States",
+          "country": "United States",
+          "state": "Example State",
+          "city": "Example City",
+          "position": null
+        },
+        "languages": {
+          "primary_locale": {
+            "country": "United States",
+            "language": "en"
+          },
+          "supported_locales": [
+            {
+              "country": "United States",
+              "language": "en"
+            }
+          ],
+          "profile_languages": [
+            {
+              "name": "Example Company",
+              "proficiency": "Example proficiency"
+            }
+          ]
+        },
+        "industry": "Example industry",
+        "educations": [
+          {
+            "school": {
+              "name": "Example University",
+              "url": "https://www.linkedin.com/company/example-company-000000"
+            },
+            "degree_name": "Example degree name",
+            "field_of_study": "Example field of study",
+            "grade": null,
+            "date": {
+              "start": "2020-01",
+              "end": "2020-01"
+            }
+          },
+          {
+            "school": {
+              "name": "Example University",
+              "url": "https://www.linkedin.com/company/example-company-000000"
+            },
+            "degree_name": "Example degree name",
+            "field_of_study": null,
+            "grade": null,
+            "date": {
+              "start": "2020-01",
+              "end": "2020-01"
+            }
+          }
+        ],
+        "certifications": [
+          {
+            "name": "Example Company",
+            "authority": "Example authority",
+            "url": "https://www.linkedin.com/in/example-person-000000",
+            "license_number": "Example license number",
+            "display_source": "Example display source",
+            "company": {
+              "name": "Example Company",
+              "url": "https://www.linkedin.com/company/example-company-000000"
+            },
+            "date": {
+              "start": "2020-01",
+              "end": null
+            }
+          },
+          {
+            "name": "Example Company",
+            "authority": "Example authority",
+            "url": "https://www.linkedin.com/in/example-person-000000",
+            "license_number": "Example license number",
+            "display_source": "Example display source",
+            "company": {
+              "name": "Example Company",
+              "url": "https://www.linkedin.com/company/example-company-000000"
+            },
+            "date": {
+              "start": "2020-01",
+              "end": null
+            }
+          }
+        ],
+        "position_groups": [
+          {
+            "company": {
+              "name": "Example Company",
+              "url": "https://www.linkedin.com/company/example-company-000000",
+              "employees": {
+                "start": 10,
+                "end": 10
+              }
+            },
+            "date": {
+              "start": "2020-01",
+              "end": null
+            },
+            "profile_positions": [
+              {
+                "company": "Example Company",
+                "description": null,
+                "title": "Founder at Example Company",
+                "employment_type": "Example employment type",
+                "location": "Example location",
+                "date": {
+                  "start": "2020-01",
+                  "end": null
+                }
+              }
+            ]
+          },
+          {
+            "company": {
+              "name": "Example Company",
+              "url": "https://www.linkedin.com/company/example-company-000000",
+              "employees": {
+                "start": 10,
+                "end": 10
+              }
+            },
+            "date": {
+              "start": "2020-01",
+              "end": null
+            },
+            "profile_positions": [
+              {
+                "company": "Example Company",
+                "description": null,
+                "title": "Founder at Example Company",
+                "employment_type": "Example employment type",
+                "location": "Example location",
+                "date": {
+                  "start": "2020-01",
+                  "end": null
+                }
+              }
+            ]
+          }
+        ],
+        "skills": [
+          "Example skill"
+        ],
+        "member_badges": {
+          "premium": true,
+          "creator": true,
+          "open_to_work": false,
+          "hiring": false,
+          "verified": false,
+          "influencer": false
+        },
+        "statistics": {
+          "network": {
+            "influencer": false,
+            "followable": null,
+            "followers_count": 10,
+            "connections_count": 10
+          },
+          "experience": {
+            "prev_job_titles": null,
+            "tenure": {
+              "company": "Example Company",
+              "start": "Example start",
+              "title": "Founder at Example Company"
+            }
+          }
+        },
+        "company": {
+          "summary": {
+            "name": "Example Company",
+            "legal_name": "Example Company",
+            "description": "Example description",
+            "founded_year": 2020,
+            "type": "Example type",
+            "industry": "Example industry",
+            "staff": {
+              "total": 12,
+              "range": {
+                "start": 10,
+                "end": 10
+              }
+            },
+            "logo": {}
+          },
+          "link": {
+            "website": "https://www.example.org",
+            "domain": "example.org",
+            "linkedin": "https://www.linkedin.com/company/example-company-000000",
+            "crunchbase": "https://www.example.org/crunchbase/example-company"
+          },
+          "financial": {
+            "revenue": {
+              "annual": {
+                "start": 10,
+                "end": 10,
+                "amount": "1M-10M"
+              }
+            }
+          },
+          "location": {
+            "headquarter": {
+              "continent": "North America",
+              "country": "United States",
+              "state": "Example State",
+              "city": "Example City",
+              "postal_code": "00000",
+              "raw_address": "1 Example Street, Example City, Example State 00000",
+              "position": {
+                "lng": -74.0,
+                "lat": 40.0
+              }
+            },
+            "locations": [
+              {
+                "continent": "North America",
+                "country": "United States",
+                "state": "Example State",
+                "city": "Example City",
+                "postal_code": "00000",
+                "raw_address": "1 Example Street, Example City, Example State 00000",
+                "position": {
+                  "lng": -74.0,
+                  "lat": 40.0
+                }
+              }
+            ]
+          },
+          "technologies": [
+            {
+              "name": "Example Company",
+              "category": "Example category"
+            },
+            {
+              "name": "Example Company",
+              "category": "Example category"
+            }
+          ],
+          "industries": [
+            "Software Development"
+          ],
+          "languages": [
+            "English"
+          ],
+          "last_updated": "2026-01-01T00:00:00Z"
+        },
+        "department": {
+          "departments": [
+            "founder"
+          ],
+          "sub_departments": [
+            "founder"
+          ],
+          "functions": [
+            "executive"
+          ],
+          "seniority": "founder"
+        },
+        "last_updated": "2026-01-01T00:00:00Z"
+      }
+    ],
+    "total": 1,
+    "page": 0,
+    "size": 1
+  }
+}

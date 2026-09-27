@@ -1,5 +1,6 @@
 // Restored public operations verified from deployed Workers on 2026-09-22.
 // Provenance: contracts/deployed-public-api-evidence.json.
+import { leadsFinderRowExample } from "../person-record.mjs";
 const json = (schema, value) => ({ content: { "application/json": { schema, examples: { example: { value } } } } });
 const errors = (codes) => Object.fromEntries(codes.map((code) => [code, code === 401
   ? { $ref: "#/components/responses/Unauthorized" }
@@ -32,7 +33,7 @@ const leadsBody = {
   type: "object", required: ["filters"], additionalProperties: false,
   properties: { filters, page: { oneOf: [{ type: "integer", minimum: 0 },{ type: "string", pattern: "^(?:0|[1-9][0-9]*)$" }], default: 0 }, size: { oneOf: [{ type: "integer", minimum: 1, maximum: 100 }, { type: "string", pattern: "^(?:[1-9]|[1-9][0-9]|100)$" }], default: 50 } }
 };
-const leadsResponse = { type: "object", required: ["rows","total","page","size"], properties: { rows: { type: "array", items: { $ref: "#/components/schemas/FlexibleResult" } }, total: { type: ["number","null"], description: "May be null when a reliable total is unavailable or company/title correlation removes rows." }, page: { type: "integer" }, size: { type: "integer" } } };
+const leadsResponse = { type: "object", required: ["rows","total","page","size"], properties: { rows: { type: "array", description: "Nested person records with snake_case keys (for example profile.first_name, link.linkedin, position_groups). Fields vary per record and may be null.", items: { $ref: "#/components/schemas/LeadsFinderPerson" } }, total: { type: ["number","null"], description: "May be null when a reliable total is unavailable or company/title correlation removes rows." }, page: { type: "integer" }, size: { type: "integer" } } };
 function leadsOperation(operationId, summary) {
   return {
     operationId, tags: ["Search and discovery"], summary,
@@ -40,7 +41,7 @@ function leadsOperation(operationId, summary) {
     "x-airscale-rate-limit": "5 requests per second per workspace, shared by both Leads Finder routes.",
     "x-airscale-credit-cost": "0.1 credits per returned lead. The preview alias has the same cost. At least 0.1 credits are required to start.",
     requestBody: { required: true, ...json(leadsBody, { filters: { job: ["Founder"], company: "example.com", peopleLocation: ["United States"], searchMode: "SMART" }, page: 0, size: 25 }) },
-    responses: { 200: { description: "A page of public lead records. No cursor is returned.", ...json(leadsResponse, { rows: [{ firstname: "Example", lastname: "Person", profileUrl: "https://www.linkedin.com/in/example-person-000000" }], total: 1, page: 0, size: 25 }) }, ...errors([400,401,403,404,413,429,500,502,503]) }
+    responses: { 200: { description: "A page of public lead records. No cursor is returned.", ...json(leadsResponse, { rows: [leadsFinderRowExample], total: 1, page: 0, size: 25 }) }, ...errors([400,401,403,404,413,429,500,502,503]) }
   };
 }
 export const restoredOperations = [

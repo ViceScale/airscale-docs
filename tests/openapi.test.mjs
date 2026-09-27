@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import { reversePersonExample } from "../openapi/person-record.mjs";
 import test from "node:test";
 import Ajv2020 from "ajv/dist/2020.js";
 import addFormats from "ajv-formats";
@@ -600,7 +601,7 @@ test("Contact Mobile operation requires a profile and models success and miss en
     linkedin_profile_url: "https://www.linkedin.com/in/example-person-000000",
     phone_numbers: "+12025550147",
     all_phone_numbers: ["+12025550147", "+12025550148"],
-    provider: null
+    provider: "<provider>"
   });
   assert.deepEqual(successContent.examples.notFound.value, {
     status: "not_found",
@@ -785,11 +786,10 @@ test("profile and reverse lookup shared schemas preserve variable public payload
     assert.deepEqual(schemas.VariableCompanyProfile.properties[property], { type: ["string", "null"] });
   }
   for (const property of ["staff", "locations"]) {
-    assert.deepEqual(schemas.VariableCompanyProfile.properties[property], {
-      type: ["object", "null"],
-      additionalProperties: true
-    });
+    assert.deepEqual(schemas.VariableCompanyProfile.properties[property].type, ["object", "null"]);
+    assert.equal(schemas.VariableCompanyProfile.properties[property].additionalProperties, true);
   }
+  assert.deepEqual(Object.keys(schemas.VariableCompanyProfile.properties.staff.properties.range.properties), ["start", "end"]);
   for (const property of ["industries", "specialities"]) {
     assert.deepEqual(schemas.VariableCompanyProfile.properties[property], {
       type: ["array", "null"],
@@ -819,9 +819,11 @@ test("profile routes share URL-selected response semantics while keeping page-sp
         identifier: "example-person-000000",
         firstname: "Example",
         lastname: "Person",
-        headline: "Example role at Example Company",
+        headline: "Founder at Example Company",
         industry: "Software Development",
-        location: { country: "United States", city: "Example City", state: "Example State" }
+        location: { country: "United States", city: "Example City", state: "Example State",
+          defaultValue: "Example City, Example State, United States",
+          shortValue: "Example City, United States" }
       }
     },
     {
@@ -836,11 +838,7 @@ test("profile routes share URL-selected response semantics while keeping page-sp
         universalName: "example-company-000000",
         website: "https://www.example.org",
         description: "Synthetic company profile for API documentation.",
-        staff: { total: 120, range: "51-200" },
-        locations: {
-          headquarter: { country: "United States", city: "Example City" },
-          other: []
-        },
+        staff: { total: 120, range: { start: 51, end: 200 } },
         industries: ["Software Development"],
         specialities: ["Synthetic data"]
       }
@@ -883,7 +881,9 @@ test("profile routes share URL-selected response semantics while keeping page-sp
         { $ref: "#/components/schemas/VariableCompanyProfile" }
       ]
     });
-    assert.deepEqual(responseContent.examples.success.value, fixture.response);
+    for (const [field, value] of Object.entries(fixture.response)) {
+      assert.deepEqual(responseContent.examples.success.value[field], value, field);
+    }
     assert.deepEqual(errorStatuses(operation), ["400", "401", "403", "404", "413", "429", "500", "502", "503"]);
     assertUnauthorizedReference(operation);
     assertJsonErrors(operation, errorStatuses(operation));
@@ -914,22 +914,19 @@ test("reverse email models source-compatible input and object-or-string results"
   assert.equal(schema.additionalProperties, false);
   assert.equal(schema.properties.email.type, "string");
   assert.equal(schema.properties.email.format, undefined);
-  assert.deepEqual(responseContent.schema, {
-    oneOf: [
-      { $ref: "#/components/schemas/VariablePersonProfile" },
-      { type: "string", enum: ["not found"] }
-    ]
-  });
+  assert.equal(responseContent.schema.oneOf.length, 2);
+  assert.deepEqual(responseContent.schema.oneOf[1], { type: "string", enum: ["not found"] });
+  assert.deepEqual(responseContent.schema.oneOf[0].anyOf, [
+    { $ref: "#/components/schemas/ReverseLookupPerson" },
+    { $ref: "#/components/schemas/VariablePersonProfile" }
+  ]);
+  assert.match(operation.description, /profile\.firstName/);
   assert.deepEqual(operation.requestBody.content["application/json"].examples.email.value, {
     email: " Example.Person@Example.Org "
   });
-  assert.deepEqual(responseContent.examples.success.value, {
-    url: "https://www.linkedin.com/in/example-person-000000",
-    identifier: "example-person-000000",
-    firstname: "Example",
-    lastname: "Person",
-    headline: "Example role at Example Company"
-  });
+  assert.deepEqual(responseContent.examples.success.value, reversePersonExample);
+  assert.equal(responseContent.examples.success.value.profile.firstName, "Example");
+  assert.equal(responseContent.examples.success.value.firstname, undefined);
   assert.equal(responseContent.examples.notFound.value, "not found");
   assert.deepEqual(errorStatuses(operation), ["400", "401", "403", "413", "429", "500", "502", "503"]);
   assertUnauthorizedReference(operation);
@@ -990,32 +987,15 @@ test("reverse phone accepts non-E.164 inputs and models success or exact not_fou
     mobile_phone: "+12025550147"
   });
   assert.equal(responseContent.schema.oneOf.length, 2);
-  assert.equal(responseContent.schema.oneOf[0].type, "object");
-  assert.equal(responseContent.schema.oneOf[0].additionalProperties, true);
-  assert.deepEqual(responseContent.schema.oneOf[0].required, ["body"]);
-  assert.deepEqual(responseContent.schema.oneOf[0].properties.body, {
-    type: "object",
-    additionalProperties: true
-  });
-  for (const property of ["url", "identifier", "link", "firstname", "lastname"]) {
-    assert.equal(typeof responseContent.schema.oneOf[0].properties[property].description, "string", property);
-    assert.equal(responseContent.schema.oneOf[0].properties[property].type, undefined, property);
-  }
+  const [personShape, bodyEnvelope] = responseContent.schema.oneOf[0].allOf;
+  assert.deepEqual(personShape.anyOf, [
+    { $ref: "#/components/schemas/ReverseLookupPerson" },
+    { $ref: "#/components/schemas/VariablePersonProfile" }
+  ]);
+  assert.deepEqual(bodyEnvelope.required, ["body"]);
+  assert.deepEqual(bodyEnvelope.properties.body.anyOf, personShape.anyOf);
   assert.deepEqual(responseContent.schema.oneOf[1], { $ref: "#/components/schemas/NotFoundStatus" });
-  assert.deepEqual(responseContent.examples.success.value, {
-    url: "https://www.linkedin.com/in/example-person-000000",
-    identifier: "example-person-000000",
-    firstname: "Example",
-    lastname: "Person",
-    link: { linkedin: "https://www.linkedin.com/in/example-person-000000" },
-    body: {
-      url: "https://www.linkedin.com/in/example-person-000000",
-      identifier: "example-person-000000",
-      firstname: "Example",
-      lastname: "Person",
-      link: { linkedin: "https://www.linkedin.com/in/example-person-000000" }
-    }
-  });
+  assert.deepEqual(responseContent.examples.success.value, { ...reversePersonExample, body: reversePersonExample });
   assert.deepEqual(responseContent.examples.notFound.value, { status: "not_found" });
   assert.deepEqual(errorStatuses(operation), ["400", "401", "403", "413", "429", "500", "502", "503"]);
   assertUnauthorizedReference(operation);
@@ -1142,11 +1122,20 @@ test("search and discovery shared schemas preserve the public filter and result 
   const reversedGrowth = { min: 20, max: 10, timespan: "12months" };
   assert.equal(validateGrowth(reversedGrowth), true, "portable JSON Schema cannot compare sibling numeric properties");
   assert.equal(runtimeGrowthBoundsAreOrdered(reversedGrowth), false, "the pinned runtime rejects reversed growth bounds");
-  assert.equal(schemas.FlexibleResult.type, "object");
-  assert.equal(schemas.FlexibleResult.additionalProperties, true);
-  assert.equal(schemas.FlexibleResult.required, undefined);
-  for (const property of ["provider", "verifier", "provider_internal"]) {
-    assert.equal(schemas.FlexibleResult.properties[property], undefined);
+  for (const name of ["PeopleLead", "CompanyRow"]) {
+    assert.equal(schemas[name].type, "object");
+    assert.equal(schemas[name].additionalProperties, true);
+    assert.equal(schemas[name].required, undefined);
+    for (const property of ["provider", "verifier", "provider_internal"]) {
+      assert.equal(schemas[name].properties[property], undefined);
+    }
+  }
+  assert.equal(schemas.FlexibleResult, undefined, "people and company rows use separate schemas");
+  for (const property of ["name", "domain", "countryName", "linkedinProfile"]) {
+    assert.equal(schemas.PeopleLead.properties[property], undefined, property);
+  }
+  for (const property of ["firstname", "lastname", "profileUrl", "jobTitle"]) {
+    assert.equal(schemas.CompanyRow.properties[property], undefined, property);
   }
 });
 
@@ -1228,7 +1217,7 @@ test("Find People models the complete public query and page contract", () => {
     additionalProperties: false,
     properties: {
       total: { type: "number" },
-      leads: { type: "array", items: { $ref: "#/components/schemas/FlexibleResult" } },
+      leads: { type: "array", items: { $ref: "#/components/schemas/PeopleLead" } },
       next_cursor: { type: ["string", "null"] }
     }
   });
@@ -1385,7 +1374,7 @@ test("Find Companies models public filters, cursor precedence, and stable result
     required: ["rows", "total", "page", "size", "next_cursor"],
     additionalProperties: false,
     properties: {
-      rows: { type: "array", items: { $ref: "#/components/schemas/FlexibleResult" } },
+      rows: { type: "array", items: { $ref: "#/components/schemas/CompanyRow" } },
       total: { type: "number" },
       page: { type: "number" },
       size: { type: "number" },
@@ -1629,7 +1618,7 @@ test("Airsearch reserves envelope names and models all pinned string source valu
     }
   });
   assert.deepEqual(response.properties.confidence_score, { type: "number", minimum: 0, maximum: 1 });
-  assert.deepEqual(response.properties.certainty_tag, { type: "string", enum: ["low", "medium", "high"] });
+  assert.deepEqual(response.properties.certainty_tag, { type: ["string", "null"], enum: ["low", "medium", "high", null], description: "Null when no certainty tag could be derived." });
   assert.deepEqual(response.properties.duration_ms, { type: "number", minimum: 0 });
   assert.deepEqual(response.additionalProperties, { type: ["string", "null"] });
   const sourceBackedFixture = {
@@ -1777,10 +1766,13 @@ test("Post engagement operations model synchronous cursor pagination and enrichm
     const response = operation.responses["200"].content["application/json"];
     assert.equal(response.schema.type, "object");
     assert.deepEqual(response.schema.required, ["items", "pagination", "billing"]);
-    assert.deepEqual(response.schema.properties.provider.enum, ["b2benrichment", "rapidapi", "rapidapi_pnd", "unipile"]);
+    assert.equal(response.schema.properties.provider, undefined, "the public response never names the provider");
+    assert.deepEqual(response.schema.properties.items.items.properties.profile_picture_url, { type: ["string", "null"], description: "Profile picture URL, or null when unavailable." });
     assert.deepEqual(response.schema.properties.retrieval.required, ["reported_total", "returned_count", "status", "stop_reason"]);
     assert.equal(response.schema.required.includes("retrieval"), false);
-    assert.deepEqual(response.schema.properties.retrieval.properties.stop_reason.enum, ["page_limit", "provider_exhausted", "request_budget"]);
+    assert.deepEqual(response.schema.properties.retrieval.properties.stop_reason.enum, ["page_limit", "provider_exhausted", "request_budget", "provider_total_mismatch"]);
+    assert.deepEqual(response.schema.properties.retrieval.properties.status.enum, ["more_available", "provider_exhausted", "partial"]);
+    assert.deepEqual(response.schema.properties.retrieval.properties.retrieved_total.type, ["integer", "null"]);
     assert.deepEqual(response.schema.properties.pagination.required, ["next_cursor", "has_more"]);
     assert.deepEqual(response.schema.properties.billing.required, ["credits_consumed", "credits_refunded", "outcomes"]);
     assert.equal(response.examples.page.value.billing.credits_refunded, 24);
@@ -1788,6 +1780,7 @@ test("Post engagement operations model synchronous cursor pagination and enrichm
     assert.deepEqual(response.examples.page.value.items[0], {
       profile_status: "success",
       linkedin_url: "https://www.linkedin.com/in/example-person-000000",
+      profile_picture_url: "https://www.example.org/images/example-person.png",
       first_name: "Example",
       last_name: "Person",
       full_name: "Example Person",

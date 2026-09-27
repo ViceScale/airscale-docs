@@ -1,0 +1,11 @@
+{
+  "operation": "POST /v1/domain-to-linkedin",
+  "status": 200,
+  "source": "live",
+  "sourceRepository": "ViceScale/airscale-code",
+  "sourceSha": null,
+  "evidence": "One production request on 2026-09-27. Strings and numbers were replaced with synthetic values; enum values, structure and key names are preserved.",
+  "body": {
+    "linkedin_company_url": "https://www.linkedin.com/company/example-company-000000"
+  }
+}

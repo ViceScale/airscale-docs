@@ -1,0 +1,12 @@
+{
+  "operation": "POST /v1/url-search-people",
+  "status": 200,
+  "source": "code",
+  "sourceRepository": "ViceScale/airscale-code",
+  "sourceSha": "1c48fe7eeddb8cbebfa978a7464478252b4baa68",
+  "evidence": "workers/public-api/url-search-people.test.mjs:118",
+  "body": {
+    "status": "success",
+    "url": "https://linkedin.com/in/example-person-000000"
+  }
+}

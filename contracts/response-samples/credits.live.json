@@ -1,0 +1,14 @@
+{
+  "operation": "POST /v1/credits",
+  "status": 200,
+  "source": "live",
+  "sourceRepository": "ViceScale/airscale-code",
+  "sourceSha": null,
+  "evidence": "One production request on 2026-09-27; the balance value was replaced.",
+  "body": {
+    "status": "success",
+    "response": {
+      "credits": 100.5
+    }
+  }
+}
