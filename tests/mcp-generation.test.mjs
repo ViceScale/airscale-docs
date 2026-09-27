@@ -60,7 +60,9 @@ const CATEGORY_GROUPS = [
       "airscale_count_find_people",
       "airscale_find_companies",
       "airscale_find_companies_filter_values",
-      "airscale_airsearch"
+      "airscale_airsearch",
+      "airscale_leads_finder",
+      "airscale_leads_finder_preview"
     ]
   },
   {
@@ -75,7 +77,21 @@ const CATEGORY_GROUPS = [
       "airscale_extract_people_profile",
       "airscale_extract_company_profile",
       "airscale_reverse_email",
-      "airscale_reverse_phone"
+      "airscale_reverse_phone",
+      "airscale_domain_to_linkedin",
+      "airscale_post_likers",
+      "airscale_post_commenters"
+    ]
+  },
+  {
+    key: "checks_and_signals",
+    title: "Checks and signals",
+    names: [
+      "airscale_verify_email",
+      "airscale_check_whatsapp",
+      "airscale_get_whatsapp_check",
+      "airscale_check_dnc",
+      "airscale_meta_ads"
     ]
   },
   {
@@ -92,7 +108,7 @@ const CATEGORY_GROUPS = [
     ]
   }
 ];
-const CORE_TOOLS = new Set(CATEGORY_GROUPS.slice(0, 3).flatMap(({ names }) => names));
+const CORE_TOOLS = new Set(CATEGORY_GROUPS.slice(0, 4).flatMap(({ names }) => names));
 const PAID_EXPORT_STARTS = [
   "airscale_start_companies_export",
   "airscale_start_people_export",
@@ -414,12 +430,12 @@ function waitForChildExit(child, stdout, stderr) {
 test("catalog renderer emits the exact page framing, category order, headings, anchors, and summary links", () => {
   const contract = readContract();
   const source = renderCatalog(contract);
-  const expectedFrontmatter = `---\ntitle: "MCP tool catalog"\ndescription: "Browse all 22 typed tools exposed by the Airschool MCP server."\ncanonical: "https://airscale.mintlify.app/mcp/tools"\n---\n`;
+  const expectedFrontmatter = `---\ntitle: "MCP tool catalog"\ndescription: "Browse all 32 typed tools exposed by the Airschool MCP server."\ncanonical: "https://airscale.mintlify.app/mcp/tools"\n---\n`;
 
   assert.equal(source.startsWith(expectedFrontmatter), true);
   assert.match(
     source,
-    /Airschool MCP exposes 22 typed tools for workspace checks, search, enrichment, research, managed batches, and asynchronous exports\./
+    /Airschool MCP exposes 32 typed tools for workspace checks, search, enrichment, research, managed batches, and asynchronous exports\./
   );
   assert.match(source, /<Warning>[\s\S]*Review each tool's credit behavior[\s\S]*`confirm_credit_spend: true`[\s\S]*<\/Warning>/);
   assert.equal(source.endsWith("\n"), true);
@@ -487,7 +503,7 @@ test("catalog documents Airsearch cost, paid confirmations, core API links, and 
     assert.match(block, /credit_confirmation_required[\s\S]{0,180}(?:approval|approved)[\s\S]{0,180}(?:rerun|run the same request again)/i);
   }
 
-  assert.equal(occurrences(source, "**Related API reference:**"), 15);
+  assert.equal(occurrences(source, "**Related API reference:**"), 25);
   for (const tool of contract.tools) {
     const index = contract.tools.indexOf(tool);
     const block = toolBlock(source, tool, contract.tools[index + 1]);
@@ -509,7 +525,7 @@ test("every generated tools/call example parses, stays synthetic, and validates 
   const ajv = new Ajv2020({ strict: false });
   addFormats(ajv);
 
-  assert.equal(examples.length, 22);
+  assert.equal(examples.length, 32);
   for (const [index, example] of examples.entries()) {
     const tool = contract.tools[index];
     assert.deepEqual(
@@ -637,7 +653,7 @@ test("escaped-pipe-aware parsing proves exact input and summary table cell count
     }
   }
   assert.ok(inputRows > 22, "input headers and rendered field rows were parsed");
-  assert.equal(summaryRows, 26, "four category headers plus twenty-two tool summary rows were parsed");
+  assert.equal(summaryRows, 37, "five category headers plus thirty-two tool summary rows were parsed");
 
   const proseContract = readContract();
   proseContract.tools[0].description = "Backslash \\| pipe";
@@ -1196,11 +1212,11 @@ test("public manifest exposes only public metadata, exact schemas, and documenta
   ]);
   assert.equal(output.schemaVersion, "1.0");
   assert.equal(output.name, "Airschool MCP tools");
-  assert.equal(output.description, "Browse all 22 typed tools exposed by the Airschool MCP server.");
+  assert.equal(output.description, "Browse all 32 typed tools exposed by the Airschool MCP server.");
   assert.equal(output.serverUrl, "https://mcp.airscale.io/mcp");
-  assert.equal(output.toolCount, 22);
+  assert.equal(output.toolCount, 32);
   assert.equal(output.sourceSha, contract.sourceSha);
-  assert.equal(output.tools.length, 22);
+  assert.equal(output.tools.length, 32);
   assert.equal(Object.hasOwn(output, "sourceFiles"), false);
   assert.equal(Object.hasOwn(output, "sourceRepository"), false);
 
@@ -3003,7 +3019,7 @@ test("agent renderers publish only the platform-supported custom agent files", (
 
   assert.match(outputs["skill.md"], /^---\nname: airscale\ndescription: Search for people and companies, enrich professional contact data, run web research, and create asynchronous exports through the Airschool API or MCP server\./);
   assert.match(outputs["skill.md"], /version: "1\.0"/);
-  assert.match(outputs["skill.md"], /source_sha: "b06ea2c46276f8415a97721f6901437ce07f13fa"/);
+  assert.match(outputs["skill.md"], /source_sha: "6ae3cc2e6e93971f2172d240e0bc0b6c90dd3772"/);
   assert.match(outputs["skill.md"], /API authentication[\s\S]*MCP authentication/i);
   assert.match(outputs["skill.md"], /Airsearch costs 2 credits per call/);
   assert.match(outputs["skill.md"], /confirm_credit_spend[\s\S]*explicit/i);

@@ -34,11 +34,12 @@ import {
 const DEFAULT_CONTRACT_PATH = fileURLToPath(new URL("../contracts/mcp-tools.json", import.meta.url));
 const DEFAULT_CATALOG_PATH = fileURLToPath(new URL("../mcp/tools.mdx", import.meta.url));
 const DEFAULT_PUBLIC_PATH = fileURLToPath(new URL("../mcp-tools.txt", import.meta.url));
-const PUBLIC_DESCRIPTION = "Browse all 22 typed tools exposed by the Airschool MCP server.";
+const PUBLIC_DESCRIPTION = "Browse all 32 typed tools exposed by the Airschool MCP server.";
 const CATEGORY_GROUPS = [
   { key: "workspace", title: "Workspace", count: 1 },
-  { key: "search_and_research", title: "Search and research", count: 5 },
-  { key: "contact_and_profile_enrichment", title: "Contact and profile enrichment", count: 9 },
+  { key: "search_and_research", title: "Search and research", count: 7 },
+  { key: "contact_and_profile_enrichment", title: "Contact and profile enrichment", count: 12 },
+  { key: "checks_and_signals", title: "Checks and signals", count: 5 },
   { key: "async_exports_and_managed_batches", title: "Async exports and managed batches", count: 7 }
 ];
 const CATEGORY_TITLES = new Map(CATEGORY_GROUPS.map(({ key, title }) => [key, title]));
@@ -58,6 +59,16 @@ const RESULT_BEHAVIOR = {
   airscale_extract_company_profile: "Returns the extracted company or school profile for the supplied LinkedIn URL.",
   airscale_reverse_email: "Returns the enriched person profile resolved from the email address, not only a profile URL.",
   airscale_reverse_phone: "Returns the enriched person profile resolved from the phone number, not only a profile URL.",
+  airscale_leads_finder: "Returns one zero-based page of nested Leads Finder person records with total, page, and size.",
+  airscale_leads_finder_preview: "Returns the same page of Leads Finder person records as airscale_leads_finder; it is charged the same way.",
+  airscale_domain_to_linkedin: "Returns the LinkedIn company URL for the domain, or a not-found error when none matches.",
+  airscale_post_likers: "Returns one page of enriched post likers, pagination with a next cursor, and the page's credit outcome.",
+  airscale_post_commenters: "Returns one page of enriched post commenters, pagination with a next cursor, and the page's credit outcome.",
+  airscale_verify_email: "Returns the deliverability result, score, and address checks for the email.",
+  airscale_check_whatsapp: "Returns yes or no with an operation_id, or a pending or unknown status to look up later.",
+  airscale_get_whatsapp_check: "Returns the stored state of a previous WhatsApp check without starting a new one.",
+  airscale_check_dnc: "Returns whether the US number is listed on the Do Not Call list.",
+  airscale_meta_ads: "Returns the company's Meta ad count and, when ads are found, the ads themselves.",
   airscale_start_companies_export: "Returns `credit_confirmation_required` without creating an export. After explicit approval, rerun the same request with `confirm_credit_spend: true`.",
   airscale_start_people_export: "Returns `credit_confirmation_required` without creating an export. After explicit approval, rerun the same request with `confirm_credit_spend: true`.",
   airscale_create_contact_enrichment_batch: "Returns a managed `batch_id` that can receive contact chunks before enrichment starts.",
@@ -93,6 +104,42 @@ const SAFE_EXAMPLE_ARGUMENTS = Object.freeze({
   },
   airscale_extract_company_profile: {
     linkedin_profile_url: "https://www.linkedin.com/company/example-company"
+  },
+  airscale_leads_finder: {
+    filters: { job: ["Founder"], company: "example.com" },
+    page: 0,
+    size: 1
+  },
+  airscale_leads_finder_preview: {
+    filters: { job: ["Founder"], company: "example.com" },
+    page: 0,
+    size: 1
+  },
+  airscale_domain_to_linkedin: {
+    domain: "example.com"
+  },
+  airscale_post_likers: {
+    post_url: "https://www.linkedin.com/posts/example-company_activity-7376356221991178240",
+    limit: 1
+  },
+  airscale_post_commenters: {
+    post_url: "https://www.linkedin.com/posts/example-company_activity-7376356221991178240",
+    limit: 1
+  },
+  airscale_verify_email: {
+    email: "person@example.com"
+  },
+  airscale_check_whatsapp: {
+    phone: "+12025550147"
+  },
+  airscale_get_whatsapp_check: {
+    operation_id: "00000000-0000-4000-8000-000000000001"
+  },
+  airscale_check_dnc: {
+    phone: "+12025550147"
+  },
+  airscale_meta_ads: {
+    domain: "example.com"
   },
   airscale_start_companies_export: {
     filters: { companyName: "Example Company" },
@@ -192,8 +239,8 @@ function validateContract(contract) {
   if (typeof contract.sourceSha !== "string" || contract.sourceSha.length === 0) {
     throw new Error("MCP contract must include a source SHA");
   }
-  if (!Array.isArray(contract.tools) || contract.tools.length !== 22) {
-    throw new Error("MCP contract must contain exactly 22 tools");
+  if (!Array.isArray(contract.tools) || contract.tools.length !== 32) {
+    throw new Error("MCP contract must contain exactly 32 tools");
   }
 
   const names = new Set();
@@ -270,7 +317,7 @@ function validateContract(contract) {
   }
 
   const apiMappedCount = contract.tools.filter(({ operationId }) => operationId !== null).length;
-  if (apiMappedCount !== 15) throw new Error("Exactly 15 core MCP tools must map to the API reference");
+  if (apiMappedCount !== 25) throw new Error("Exactly 25 core MCP tools must map to the API reference");
 }
 
 function decodePointerSegment(value) {
@@ -298,7 +345,8 @@ const MAX_SYNTHESIS_REFERENCE_DEPTH = 32;
 const MAX_SYNTHESIS_COMBINATOR_BRANCHES = 128;
 const MAX_SYNTHESIS_ENUM_VALUES = 128;
 const MAX_SYNTHESIS_ARRAY_ITEMS = 1_000;
-const MAX_SYNTHESIS_STRING_LENGTH = 4_096;
+// Post-engagement cursors are documented up to 8,192 characters.
+const MAX_SYNTHESIS_STRING_LENGTH = 8_192;
 const MAX_SYNTHESIS_SERIALIZED_BYTES = 16_384;
 const MAX_SYNTHESIS_VISITED_SCHEMA_NODES = 4_096;
 const MAX_SYNTHESIS_REFERENCE_EXPANSIONS = 256;
@@ -1466,8 +1514,8 @@ function renderCategorySummary(tools) {
 export function renderCatalog(contract) {
   validateContract(contract);
   const sections = [
-    "---\ntitle: \"MCP tool catalog\"\ndescription: \"Browse all 22 typed tools exposed by the Airschool MCP server.\"\ncanonical: \"https://airscale.mintlify.app/mcp/tools\"\n---",
-    "Airschool MCP exposes 22 typed tools for workspace checks, search, enrichment, research, managed batches, and asynchronous exports.",
+    "---\ntitle: \"MCP tool catalog\"\ndescription: \"Browse all 32 typed tools exposed by the Airschool MCP server.\"\ncanonical: \"https://airscale.mintlify.app/mcp/tools\"\n---",
+    "Airschool MCP exposes 32 typed tools for workspace checks, search, enrichment, research, managed batches, and asynchronous exports.",
     "<Warning>\nReview each tool's credit behavior before approval. Paid export starts require `confirm_credit_spend: true`.\n</Warning>",
     "<Note>\nAuthenticate through the MCP connection. OAuth clients complete authentication in the browser; API keys never belong in tool arguments.\n</Note>"
   ];
@@ -1520,8 +1568,8 @@ function validateRenderedPair(contract, catalog, publicManifest) {
   } catch (error) {
     throw new Error(`Public MCP manifest is not valid JSON: ${error.message}`, { cause: error });
   }
-  if (parsed.toolCount !== 22 || !Array.isArray(parsed.tools) || parsed.tools.length !== 22) {
-    throw new Error("Public MCP manifest must contain exactly 22 tools");
+  if (parsed.toolCount !== 32 || !Array.isArray(parsed.tools) || parsed.tools.length !== 32) {
+    throw new Error("Public MCP manifest must contain exactly 32 tools");
   }
   if (Object.hasOwn(parsed, "sourceFiles") || Object.hasOwn(parsed, "sourceRepository")) {
     throw new Error("Public MCP manifest contains repository-only source metadata");

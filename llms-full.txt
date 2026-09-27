@@ -3637,12 +3637,14 @@ Prospect without leaving your AI chat. Airschool connects Claude, ChatGPT, and o
 
 ## What is the Airschool MCP?
 
-The Airschool MCP gives your assistant 22 typed tools that can:
+The Airschool MCP gives your assistant 32 typed tools that can:
 
 - Check your workspace credit balance.
-- Search for people and companies.
+- Search for people and companies, including with Leads Finder filters.
 - Discover valid Find Companies filters before searching.
 - Enrich contact details and person or company profiles.
+- Find a company's LinkedIn URL from its domain and list the people engaging with a LinkedIn post.
+- Verify emails, check WhatsApp and US Do Not Call status, and look up Meta ads.
 - Run Airsearch for structured web research.
 - Create downloadable CSV or JSONL exports.
 
@@ -3716,12 +3718,14 @@ https://mcp.airscale.io/mcp
 
 ## What ChatGPT can do with Airschool MCP
 
-Airschool MCP gives ChatGPT 22 typed tools that can:
+Airschool MCP gives ChatGPT 32 typed tools that can:
 
 - Check the authorized workspace's credit balance.
-- Search for people and companies.
+- Search for people and companies, including with Leads Finder filters.
 - Count matches and discover accepted filter values before a paid search.
 - Enrich work contact details and extract people or company profiles.
+- Find a company's LinkedIn URL from its domain and list the people who liked or commented on a LinkedIn post.
+- Verify emails, check WhatsApp availability and US Do Not Call status, and look up a company's Meta ads.
 - Run Airsearch web research.
 - Create downloadable people or company exports.
 
@@ -3751,7 +3755,7 @@ After OAuth, Airschool's MCP server resolves the authorized workspace's current 
     Under **Connection**, choose the public endpoint option and enter `https://mcp.airscale.io/mcp`, including the `/mcp` path. Create the connection. If prompted, complete browser OAuth, sign in to Airschool, select the intended workspace, and return to ChatGPT. Do not enter an API key or static authorization value.
   </Step>
   <Step title="Review discovered tools">
-    Review the tools and metadata discovered from the server. Confirm that the Airschool connection shows the expected 22 typed tools before testing it.
+    Review the tools and metadata discovered from the server. Confirm that the Airschool connection shows the expected 32 typed tools before testing it.
   </Step>
   <Step title="Verify the connection for free">
     Start a new conversation, add the Airschool MCP connection from the tools menu, and run `airscale_check_credits` without another tool. A returned balance confirms tool discovery and authentication to an Airschool workspace without debiting credits, but it does not identify which workspace. Separately verify the workspace shown during OAuth before paid actions.
@@ -3835,12 +3839,14 @@ https://mcp.airscale.io/mcp
 
 ## What Claude can do with Airschool MCP
 
-Airschool MCP gives Claude 22 typed tools that can:
+Airschool MCP gives Claude 32 typed tools that can:
 
 - Check the authorized workspace's credit balance.
-- Search for people and companies.
+- Search for people and companies, including with Leads Finder filters.
 - Count matches and discover accepted filter values before a paid search.
 - Enrich work contact details and extract people or company profiles.
+- Find a company's LinkedIn URL from its domain and list the people who liked or commented on a LinkedIn post.
+- Verify emails, check WhatsApp availability and US Do Not Call status, and look up a company's Meta ads.
 - Run Airsearch web research.
 - Create downloadable people or company exports.
 
@@ -4026,7 +4032,7 @@ These guides contain the client-specific connection steps; this page keeps the s
 - **Airsearch:** answer natural-language research questions with structured results.
 - **Downloadable exports:** create bounded people, company, or managed contact files and retrieve them when complete.
 
-The [MCP tool catalog](/mcp/tools) is the schema reference for all 22 typed tools. Managed contact enrichment is a work-email-only flow; it does not add mobile numbers, personal emails, or profile enrichment.
+The [MCP tool catalog](/mcp/tools) is the schema reference for all 32 typed tools. Managed contact enrichment is a work-email-only flow; it does not add mobile numbers, personal emails, or profile enrichment.
 
 ## Export lifecycle
 
@@ -4105,7 +4111,7 @@ Start once. While status is `queued` or `running`, poll status for the same expo
     For OAuth, restart browser sign-in and verify the intended workspace. For a header-capable developer client, confirm that its protected runtime can read the configured secret.
   </Accordion>
   <Accordion title="The Airschool tools do not appear">
-    Confirm that the server URL is exactly `https://mcp.airscale.io/mcp`, then disconnect and reconnect so the client refreshes all 22 tools.
+    Confirm that the server URL is exactly `https://mcp.airscale.io/mcp`, then disconnect and reconnect so the client refreshes all 32 tools.
   </Accordion>
   <Accordion title="A request reports insufficient credits">
     Run `airscale_check_credits`, reduce the paid scope, and review the maximum again. Do not repeatedly submit the same paid request.
@@ -6052,5 +6058,5 @@ When exporting to platforms like Lemlist, you can map Airschool columns to the c
 
 ## Machine-readable contracts
 
-- [MCP tool catalog](https://airscale.mintlify.app/mcp/tools.md): Hosted Markdown for all 22 operational MCP tools.
+- [MCP tool catalog](https://airscale.mintlify.app/mcp/tools.md): Hosted Markdown for all 32 operational MCP tools.
 - [Agent resource directory](https://airscale.mintlify.app/mcp/agent-resources.md): Human and machine entry points for Airschool agents and documentation consumers.

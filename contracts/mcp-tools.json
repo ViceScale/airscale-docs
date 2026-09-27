@@ -1,6 +1,6 @@
 {
   "sourceRepository": "ViceScale/airscale-code",
-  "sourceSha": "b06ea2c46276f8415a97721f6901437ce07f13fa",
+  "sourceSha": "6ae3cc2e6e93971f2172d240e0bc0b6c90dd3772",
   "sourceFiles": [
     "mcp/airscale-public-api/src/endpoints.ts",
     "mcp/airscale-public-api/src/exportJobs.ts",
@@ -79,7 +79,7 @@
                 "additionalProperties": false,
                 "description": "Include/exclude arrays of strings, max 200 values each"
               },
-              "JobTitle": {
+              "jobTitle": {
                 "type": "object",
                 "properties": {
                   "include": {
@@ -98,7 +98,7 @@
                   }
                 },
                 "additionalProperties": false,
-                "description": "Include/exclude arrays of strings, max 200 values each"
+                "description": "Current job title"
               },
               "companyDomain": {
                 "type": "object",
@@ -455,6 +455,261 @@
                 ],
                 "additionalProperties": false,
                 "description": "Headcount growth bounds from -100 to 10000 and a 6, 12, or 24 month timespan"
+              },
+              "pastJobTitle": {
+                "type": "object",
+                "properties": {
+                  "include": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    },
+                    "maxItems": 200
+                  },
+                  "exclude": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    },
+                    "maxItems": 200
+                  }
+                },
+                "additionalProperties": false,
+                "description": "Include/exclude arrays of strings, max 200 values each"
+              },
+              "pastCompanyName": {
+                "type": "object",
+                "properties": {
+                  "include": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    },
+                    "maxItems": 200
+                  },
+                  "exclude": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    },
+                    "maxItems": 200
+                  }
+                },
+                "additionalProperties": false,
+                "description": "Include/exclude arrays of strings, max 200 values each"
+              },
+              "pastCompanyId": {
+                "type": "object",
+                "properties": {
+                  "include": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    },
+                    "maxItems": 200
+                  },
+                  "exclude": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    },
+                    "maxItems": 200
+                  }
+                },
+                "additionalProperties": false,
+                "description": "Include/exclude arrays of strings, max 200 values each"
+              },
+              "pastCompanyWebsite": {
+                "type": "object",
+                "properties": {
+                  "include": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    },
+                    "maxItems": 200
+                  },
+                  "exclude": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    },
+                    "maxItems": 200
+                  }
+                },
+                "additionalProperties": false,
+                "description": "Include/exclude arrays of strings, max 200 values each"
+              },
+              "pastCompanyUrn": {
+                "type": "object",
+                "properties": {
+                  "include": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    },
+                    "maxItems": 200
+                  },
+                  "exclude": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    },
+                    "maxItems": 200
+                  }
+                },
+                "additionalProperties": false,
+                "description": "Include/exclude arrays of strings, max 200 values each"
+              },
+              "pastCompany.type": {
+                "type": "object",
+                "properties": {
+                  "include": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    },
+                    "maxItems": 200
+                  },
+                  "exclude": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    },
+                    "maxItems": 200
+                  }
+                },
+                "additionalProperties": false,
+                "description": "Include/exclude arrays of strings, max 200 values each"
+              },
+              "pastCompany.industry": {
+                "type": "object",
+                "properties": {
+                  "include": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    },
+                    "maxItems": 200
+                  },
+                  "exclude": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    },
+                    "maxItems": 200
+                  }
+                },
+                "additionalProperties": false,
+                "description": "Include/exclude arrays of strings, max 200 values each"
+              },
+              "pastCompany.location": {
+                "type": "object",
+                "properties": {
+                  "include": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    },
+                    "maxItems": 200
+                  },
+                  "exclude": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    },
+                    "maxItems": 200
+                  }
+                },
+                "additionalProperties": false,
+                "description": "Include/exclude arrays of strings, max 200 values each"
+              },
+              "pastCompany.keyword": {
+                "type": "object",
+                "properties": {
+                  "include": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    },
+                    "maxItems": 200
+                  },
+                  "exclude": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    },
+                    "maxItems": 200
+                  }
+                },
+                "additionalProperties": false,
+                "description": "Include/exclude arrays of strings, max 200 values each"
+              },
+              "pastCompany.headcount": {
+                "type": "object",
+                "properties": {
+                  ">": {
+                    "type": "integer"
+                  },
+                  ">=": {
+                    "type": "integer"
+                  },
+                  "<": {
+                    "type": "integer"
+                  },
+                  "<=": {
+                    "type": "integer"
+                  }
+                },
+                "additionalProperties": false,
+                "description": "Integer range using >, >=, <, and/or <= operators"
+              },
+              "pastCompany.revenue": {
+                "type": "object",
+                "properties": {
+                  ">": {
+                    "type": "integer"
+                  },
+                  ">=": {
+                    "type": "integer"
+                  },
+                  "<": {
+                    "type": "integer"
+                  },
+                  "<=": {
+                    "type": "integer"
+                  }
+                },
+                "additionalProperties": false,
+                "description": "Integer range using >, >=, <, and/or <= operators"
+              },
+              "pastCompany.headcountGrowth": {
+                "type": "object",
+                "properties": {
+                  "min": {
+                    "type": "number",
+                    "minimum": -100,
+                    "maximum": 10000
+                  },
+                  "max": {
+                    "type": "number",
+                    "minimum": -100,
+                    "maximum": 10000
+                  },
+                  "timespan": {
+                    "type": "string",
+                    "enum": [
+                      "6months",
+                      "12months",
+                      "24months"
+                    ]
+                  }
+                },
+                "required": [
+                  "timespan"
+                ],
+                "additionalProperties": false,
+                "description": "Headcount growth bounds from -100 to 10000 and a 6, 12, or 24 month timespan"
               }
             },
             "additionalProperties": false,
@@ -537,7 +792,7 @@
                 "additionalProperties": false,
                 "description": "Include/exclude arrays of strings, max 200 values each"
               },
-              "JobTitle": {
+              "jobTitle": {
                 "type": "object",
                 "properties": {
                   "include": {
@@ -556,7 +811,7 @@
                   }
                 },
                 "additionalProperties": false,
-                "description": "Include/exclude arrays of strings, max 200 values each"
+                "description": "Current job title"
               },
               "companyDomain": {
                 "type": "object",
@@ -887,6 +1142,261 @@
                 "description": "Integer range using >, >=, <, and/or <= operators"
               },
               "currentCompany.headcountGrowth": {
+                "type": "object",
+                "properties": {
+                  "min": {
+                    "type": "number",
+                    "minimum": -100,
+                    "maximum": 10000
+                  },
+                  "max": {
+                    "type": "number",
+                    "minimum": -100,
+                    "maximum": 10000
+                  },
+                  "timespan": {
+                    "type": "string",
+                    "enum": [
+                      "6months",
+                      "12months",
+                      "24months"
+                    ]
+                  }
+                },
+                "required": [
+                  "timespan"
+                ],
+                "additionalProperties": false,
+                "description": "Headcount growth bounds from -100 to 10000 and a 6, 12, or 24 month timespan"
+              },
+              "pastJobTitle": {
+                "type": "object",
+                "properties": {
+                  "include": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    },
+                    "maxItems": 200
+                  },
+                  "exclude": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    },
+                    "maxItems": 200
+                  }
+                },
+                "additionalProperties": false,
+                "description": "Include/exclude arrays of strings, max 200 values each"
+              },
+              "pastCompanyName": {
+                "type": "object",
+                "properties": {
+                  "include": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    },
+                    "maxItems": 200
+                  },
+                  "exclude": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    },
+                    "maxItems": 200
+                  }
+                },
+                "additionalProperties": false,
+                "description": "Include/exclude arrays of strings, max 200 values each"
+              },
+              "pastCompanyId": {
+                "type": "object",
+                "properties": {
+                  "include": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    },
+                    "maxItems": 200
+                  },
+                  "exclude": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    },
+                    "maxItems": 200
+                  }
+                },
+                "additionalProperties": false,
+                "description": "Include/exclude arrays of strings, max 200 values each"
+              },
+              "pastCompanyWebsite": {
+                "type": "object",
+                "properties": {
+                  "include": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    },
+                    "maxItems": 200
+                  },
+                  "exclude": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    },
+                    "maxItems": 200
+                  }
+                },
+                "additionalProperties": false,
+                "description": "Include/exclude arrays of strings, max 200 values each"
+              },
+              "pastCompanyUrn": {
+                "type": "object",
+                "properties": {
+                  "include": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    },
+                    "maxItems": 200
+                  },
+                  "exclude": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    },
+                    "maxItems": 200
+                  }
+                },
+                "additionalProperties": false,
+                "description": "Include/exclude arrays of strings, max 200 values each"
+              },
+              "pastCompany.type": {
+                "type": "object",
+                "properties": {
+                  "include": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    },
+                    "maxItems": 200
+                  },
+                  "exclude": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    },
+                    "maxItems": 200
+                  }
+                },
+                "additionalProperties": false,
+                "description": "Include/exclude arrays of strings, max 200 values each"
+              },
+              "pastCompany.industry": {
+                "type": "object",
+                "properties": {
+                  "include": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    },
+                    "maxItems": 200
+                  },
+                  "exclude": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    },
+                    "maxItems": 200
+                  }
+                },
+                "additionalProperties": false,
+                "description": "Include/exclude arrays of strings, max 200 values each"
+              },
+              "pastCompany.location": {
+                "type": "object",
+                "properties": {
+                  "include": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    },
+                    "maxItems": 200
+                  },
+                  "exclude": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    },
+                    "maxItems": 200
+                  }
+                },
+                "additionalProperties": false,
+                "description": "Include/exclude arrays of strings, max 200 values each"
+              },
+              "pastCompany.keyword": {
+                "type": "object",
+                "properties": {
+                  "include": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    },
+                    "maxItems": 200
+                  },
+                  "exclude": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    },
+                    "maxItems": 200
+                  }
+                },
+                "additionalProperties": false,
+                "description": "Include/exclude arrays of strings, max 200 values each"
+              },
+              "pastCompany.headcount": {
+                "type": "object",
+                "properties": {
+                  ">": {
+                    "type": "integer"
+                  },
+                  ">=": {
+                    "type": "integer"
+                  },
+                  "<": {
+                    "type": "integer"
+                  },
+                  "<=": {
+                    "type": "integer"
+                  }
+                },
+                "additionalProperties": false,
+                "description": "Integer range using >, >=, <, and/or <= operators"
+              },
+              "pastCompany.revenue": {
+                "type": "object",
+                "properties": {
+                  ">": {
+                    "type": "integer"
+                  },
+                  ">=": {
+                    "type": "integer"
+                  },
+                  "<": {
+                    "type": "integer"
+                  },
+                  "<=": {
+                    "type": "integer"
+                  }
+                },
+                "additionalProperties": false,
+                "description": "Integer range using >, >=, <, and/or <= operators"
+              },
+              "pastCompany.headcountGrowth": {
                 "type": "object",
                 "properties": {
                   "min": {
@@ -1274,6 +1784,1016 @@
       "apiPage": "/api-reference/airsearch"
     },
     {
+      "name": "airscale_leads_finder",
+      "anchor": "airscale-leads-finder",
+      "category": "search_and_research",
+      "description": "Search people with Leads Finder filters (job, company, location, seniority, skills, company size, funding, and more). Zero-based page pagination. Costs 0.1 credits per returned lead.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "filters": {
+            "type": "object",
+            "properties": {
+              "job": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  }
+                ],
+                "description": "Job titles to include"
+              },
+              "jobExclude": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  }
+                ]
+              },
+              "company": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  }
+                ],
+                "description": "Company names, domains, or LinkedIn company URLs"
+              },
+              "companyUrl": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  }
+                ]
+              },
+              "peopleLocation": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  }
+                ]
+              },
+              "peopleLocationExclude": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  }
+                ]
+              },
+              "jobFunction": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  }
+                ]
+              },
+              "jobFunctionExclude": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  }
+                ]
+              },
+              "seniority": {
+                "type": "string"
+              },
+              "seniorityExclude": {
+                "type": "string"
+              },
+              "yearsCurrentRole": {
+                "type": "string",
+                "description": "For example 1 to 2 years"
+              },
+              "yearsCurrentCompany": {
+                "type": "string"
+              },
+              "yearsWorkExperience": {
+                "type": "string"
+              },
+              "skills": {
+                "type": "string"
+              },
+              "skillsExclude": {
+                "type": "string"
+              },
+              "language": {
+                "type": "string"
+              },
+              "languageExclude": {
+                "type": "string"
+              },
+              "certification": {
+                "type": "string"
+              },
+              "certificationExclude": {
+                "type": "string"
+              },
+              "profileKeywords": {
+                "type": "string"
+              },
+              "profileKeywordsExclude": {
+                "type": "string"
+              },
+              "profileBadge": {
+                "type": "string"
+              },
+              "industry": {
+                "type": "string"
+              },
+              "industryExclude": {
+                "type": "string"
+              },
+              "size": {
+                "type": "string",
+                "description": "Company headcount range, for example 11-50"
+              },
+              "hq": {
+                "type": "string"
+              },
+              "hqExclude": {
+                "type": "string"
+              },
+              "type": {
+                "type": "string"
+              },
+              "typeExclude": {
+                "type": "string"
+              },
+              "revenue": {
+                "type": "string"
+              },
+              "companyKeywords": {
+                "type": "string"
+              },
+              "companyKeywordsExclude": {
+                "type": "string"
+              },
+              "founded": {
+                "type": "string"
+              },
+              "funding": {
+                "type": "string"
+              },
+              "fundingAmount": {
+                "type": "string"
+              },
+              "fundingDateMonths": {
+                "type": "string"
+              },
+              "department": {
+                "type": "string"
+              },
+              "growth": {
+                "type": "string"
+              },
+              "duration": {
+                "type": "object",
+                "properties": {
+                  "latestCompany": {
+                    "type": "object",
+                    "properties": {
+                      "min": {
+                        "type": "object",
+                        "properties": {
+                          "year": {
+                            "type": "integer",
+                            "minimum": 0
+                          },
+                          "month": {
+                            "type": "integer",
+                            "minimum": 0,
+                            "maximum": 11
+                          }
+                        },
+                        "additionalProperties": false
+                      },
+                      "max": {
+                        "type": "object",
+                        "properties": {
+                          "year": {
+                            "type": "integer",
+                            "minimum": 0
+                          },
+                          "month": {
+                            "type": "integer",
+                            "minimum": 0,
+                            "maximum": 11
+                          }
+                        },
+                        "additionalProperties": false
+                      }
+                    },
+                    "additionalProperties": false
+                  },
+                  "currentCompany": {
+                    "type": "object",
+                    "properties": {
+                      "min": {
+                        "type": "object",
+                        "properties": {
+                          "year": {
+                            "type": "integer",
+                            "minimum": 0
+                          },
+                          "month": {
+                            "type": "integer",
+                            "minimum": 0,
+                            "maximum": 11
+                          }
+                        },
+                        "additionalProperties": false
+                      },
+                      "max": {
+                        "type": "object",
+                        "properties": {
+                          "year": {
+                            "type": "integer",
+                            "minimum": 0
+                          },
+                          "month": {
+                            "type": "integer",
+                            "minimum": 0,
+                            "maximum": 11
+                          }
+                        },
+                        "additionalProperties": false
+                      }
+                    },
+                    "additionalProperties": false
+                  },
+                  "previousCompany": {
+                    "type": "object",
+                    "properties": {
+                      "min": {
+                        "type": "object",
+                        "properties": {
+                          "year": {
+                            "type": "integer",
+                            "minimum": 0
+                          },
+                          "month": {
+                            "type": "integer",
+                            "minimum": 0,
+                            "maximum": 11
+                          }
+                        },
+                        "additionalProperties": false
+                      },
+                      "max": {
+                        "type": "object",
+                        "properties": {
+                          "year": {
+                            "type": "integer",
+                            "minimum": 0
+                          },
+                          "month": {
+                            "type": "integer",
+                            "minimum": 0,
+                            "maximum": 11
+                          }
+                        },
+                        "additionalProperties": false
+                      }
+                    },
+                    "additionalProperties": false
+                  },
+                  "latestJob": {
+                    "type": "object",
+                    "properties": {
+                      "min": {
+                        "type": "object",
+                        "properties": {
+                          "year": {
+                            "type": "integer",
+                            "minimum": 0
+                          },
+                          "month": {
+                            "type": "integer",
+                            "minimum": 0,
+                            "maximum": 11
+                          }
+                        },
+                        "additionalProperties": false
+                      },
+                      "max": {
+                        "type": "object",
+                        "properties": {
+                          "year": {
+                            "type": "integer",
+                            "minimum": 0
+                          },
+                          "month": {
+                            "type": "integer",
+                            "minimum": 0,
+                            "maximum": 11
+                          }
+                        },
+                        "additionalProperties": false
+                      }
+                    },
+                    "additionalProperties": false
+                  },
+                  "currentJob": {
+                    "type": "object",
+                    "properties": {
+                      "min": {
+                        "type": "object",
+                        "properties": {
+                          "year": {
+                            "type": "integer",
+                            "minimum": 0
+                          },
+                          "month": {
+                            "type": "integer",
+                            "minimum": 0,
+                            "maximum": 11
+                          }
+                        },
+                        "additionalProperties": false
+                      },
+                      "max": {
+                        "type": "object",
+                        "properties": {
+                          "year": {
+                            "type": "integer",
+                            "minimum": 0
+                          },
+                          "month": {
+                            "type": "integer",
+                            "minimum": 0,
+                            "maximum": 11
+                          }
+                        },
+                        "additionalProperties": false
+                      }
+                    },
+                    "additionalProperties": false
+                  },
+                  "previousJob": {
+                    "type": "object",
+                    "properties": {
+                      "min": {
+                        "type": "object",
+                        "properties": {
+                          "year": {
+                            "type": "integer",
+                            "minimum": 0
+                          },
+                          "month": {
+                            "type": "integer",
+                            "minimum": 0,
+                            "maximum": 11
+                          }
+                        },
+                        "additionalProperties": false
+                      },
+                      "max": {
+                        "type": "object",
+                        "properties": {
+                          "year": {
+                            "type": "integer",
+                            "minimum": 0
+                          },
+                          "month": {
+                            "type": "integer",
+                            "minimum": 0,
+                            "maximum": 11
+                          }
+                        },
+                        "additionalProperties": false
+                      }
+                    },
+                    "additionalProperties": false
+                  },
+                  "total": {
+                    "type": "object",
+                    "properties": {
+                      "min": {
+                        "type": "object",
+                        "properties": {
+                          "year": {
+                            "type": "integer",
+                            "minimum": 0
+                          },
+                          "month": {
+                            "type": "integer",
+                            "minimum": 0,
+                            "maximum": 11
+                          }
+                        },
+                        "additionalProperties": false
+                      },
+                      "max": {
+                        "type": "object",
+                        "properties": {
+                          "year": {
+                            "type": "integer",
+                            "minimum": 0
+                          },
+                          "month": {
+                            "type": "integer",
+                            "minimum": 0,
+                            "maximum": 11
+                          }
+                        },
+                        "additionalProperties": false
+                      }
+                    },
+                    "additionalProperties": false
+                  }
+                },
+                "additionalProperties": false
+              },
+              "searchMode": {
+                "type": "string",
+                "enum": [
+                  "SMART",
+                  "WORD",
+                  "STRICT"
+                ],
+                "description": "Defaults to SMART"
+              }
+            },
+            "additionalProperties": false,
+            "description": "At least one filter other than searchMode"
+          },
+          "page": {
+            "type": "integer",
+            "minimum": 0,
+            "description": "Zero-based page. Defaults to 0"
+          },
+          "size": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 100,
+            "description": "Leads per page, 1..100. Defaults to 50"
+          }
+        },
+        "required": [
+          "filters"
+        ],
+        "additionalProperties": false
+      },
+      "spend": {
+        "kind": "variable",
+        "summary": "0.1 credits per returned lead"
+      },
+      "asynchronous": false,
+      "operationId": "searchLeadsFinder",
+      "apiPage": "/api-reference/leads-finder"
+    },
+    {
+      "name": "airscale_leads_finder_preview",
+      "anchor": "airscale-leads-finder-preview",
+      "category": "search_and_research",
+      "description": "Leads Finder preview alias: same filters, results, and cost as airscale_leads_finder (0.1 credits per returned lead). It is not a free count.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "filters": {
+            "type": "object",
+            "properties": {
+              "job": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  }
+                ],
+                "description": "Job titles to include"
+              },
+              "jobExclude": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  }
+                ]
+              },
+              "company": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  }
+                ],
+                "description": "Company names, domains, or LinkedIn company URLs"
+              },
+              "companyUrl": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  }
+                ]
+              },
+              "peopleLocation": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  }
+                ]
+              },
+              "peopleLocationExclude": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  }
+                ]
+              },
+              "jobFunction": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  }
+                ]
+              },
+              "jobFunctionExclude": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  }
+                ]
+              },
+              "seniority": {
+                "type": "string"
+              },
+              "seniorityExclude": {
+                "type": "string"
+              },
+              "yearsCurrentRole": {
+                "type": "string",
+                "description": "For example 1 to 2 years"
+              },
+              "yearsCurrentCompany": {
+                "type": "string"
+              },
+              "yearsWorkExperience": {
+                "type": "string"
+              },
+              "skills": {
+                "type": "string"
+              },
+              "skillsExclude": {
+                "type": "string"
+              },
+              "language": {
+                "type": "string"
+              },
+              "languageExclude": {
+                "type": "string"
+              },
+              "certification": {
+                "type": "string"
+              },
+              "certificationExclude": {
+                "type": "string"
+              },
+              "profileKeywords": {
+                "type": "string"
+              },
+              "profileKeywordsExclude": {
+                "type": "string"
+              },
+              "profileBadge": {
+                "type": "string"
+              },
+              "industry": {
+                "type": "string"
+              },
+              "industryExclude": {
+                "type": "string"
+              },
+              "size": {
+                "type": "string",
+                "description": "Company headcount range, for example 11-50"
+              },
+              "hq": {
+                "type": "string"
+              },
+              "hqExclude": {
+                "type": "string"
+              },
+              "type": {
+                "type": "string"
+              },
+              "typeExclude": {
+                "type": "string"
+              },
+              "revenue": {
+                "type": "string"
+              },
+              "companyKeywords": {
+                "type": "string"
+              },
+              "companyKeywordsExclude": {
+                "type": "string"
+              },
+              "founded": {
+                "type": "string"
+              },
+              "funding": {
+                "type": "string"
+              },
+              "fundingAmount": {
+                "type": "string"
+              },
+              "fundingDateMonths": {
+                "type": "string"
+              },
+              "department": {
+                "type": "string"
+              },
+              "growth": {
+                "type": "string"
+              },
+              "duration": {
+                "type": "object",
+                "properties": {
+                  "latestCompany": {
+                    "type": "object",
+                    "properties": {
+                      "min": {
+                        "type": "object",
+                        "properties": {
+                          "year": {
+                            "type": "integer",
+                            "minimum": 0
+                          },
+                          "month": {
+                            "type": "integer",
+                            "minimum": 0,
+                            "maximum": 11
+                          }
+                        },
+                        "additionalProperties": false
+                      },
+                      "max": {
+                        "type": "object",
+                        "properties": {
+                          "year": {
+                            "type": "integer",
+                            "minimum": 0
+                          },
+                          "month": {
+                            "type": "integer",
+                            "minimum": 0,
+                            "maximum": 11
+                          }
+                        },
+                        "additionalProperties": false
+                      }
+                    },
+                    "additionalProperties": false
+                  },
+                  "currentCompany": {
+                    "type": "object",
+                    "properties": {
+                      "min": {
+                        "type": "object",
+                        "properties": {
+                          "year": {
+                            "type": "integer",
+                            "minimum": 0
+                          },
+                          "month": {
+                            "type": "integer",
+                            "minimum": 0,
+                            "maximum": 11
+                          }
+                        },
+                        "additionalProperties": false
+                      },
+                      "max": {
+                        "type": "object",
+                        "properties": {
+                          "year": {
+                            "type": "integer",
+                            "minimum": 0
+                          },
+                          "month": {
+                            "type": "integer",
+                            "minimum": 0,
+                            "maximum": 11
+                          }
+                        },
+                        "additionalProperties": false
+                      }
+                    },
+                    "additionalProperties": false
+                  },
+                  "previousCompany": {
+                    "type": "object",
+                    "properties": {
+                      "min": {
+                        "type": "object",
+                        "properties": {
+                          "year": {
+                            "type": "integer",
+                            "minimum": 0
+                          },
+                          "month": {
+                            "type": "integer",
+                            "minimum": 0,
+                            "maximum": 11
+                          }
+                        },
+                        "additionalProperties": false
+                      },
+                      "max": {
+                        "type": "object",
+                        "properties": {
+                          "year": {
+                            "type": "integer",
+                            "minimum": 0
+                          },
+                          "month": {
+                            "type": "integer",
+                            "minimum": 0,
+                            "maximum": 11
+                          }
+                        },
+                        "additionalProperties": false
+                      }
+                    },
+                    "additionalProperties": false
+                  },
+                  "latestJob": {
+                    "type": "object",
+                    "properties": {
+                      "min": {
+                        "type": "object",
+                        "properties": {
+                          "year": {
+                            "type": "integer",
+                            "minimum": 0
+                          },
+                          "month": {
+                            "type": "integer",
+                            "minimum": 0,
+                            "maximum": 11
+                          }
+                        },
+                        "additionalProperties": false
+                      },
+                      "max": {
+                        "type": "object",
+                        "properties": {
+                          "year": {
+                            "type": "integer",
+                            "minimum": 0
+                          },
+                          "month": {
+                            "type": "integer",
+                            "minimum": 0,
+                            "maximum": 11
+                          }
+                        },
+                        "additionalProperties": false
+                      }
+                    },
+                    "additionalProperties": false
+                  },
+                  "currentJob": {
+                    "type": "object",
+                    "properties": {
+                      "min": {
+                        "type": "object",
+                        "properties": {
+                          "year": {
+                            "type": "integer",
+                            "minimum": 0
+                          },
+                          "month": {
+                            "type": "integer",
+                            "minimum": 0,
+                            "maximum": 11
+                          }
+                        },
+                        "additionalProperties": false
+                      },
+                      "max": {
+                        "type": "object",
+                        "properties": {
+                          "year": {
+                            "type": "integer",
+                            "minimum": 0
+                          },
+                          "month": {
+                            "type": "integer",
+                            "minimum": 0,
+                            "maximum": 11
+                          }
+                        },
+                        "additionalProperties": false
+                      }
+                    },
+                    "additionalProperties": false
+                  },
+                  "previousJob": {
+                    "type": "object",
+                    "properties": {
+                      "min": {
+                        "type": "object",
+                        "properties": {
+                          "year": {
+                            "type": "integer",
+                            "minimum": 0
+                          },
+                          "month": {
+                            "type": "integer",
+                            "minimum": 0,
+                            "maximum": 11
+                          }
+                        },
+                        "additionalProperties": false
+                      },
+                      "max": {
+                        "type": "object",
+                        "properties": {
+                          "year": {
+                            "type": "integer",
+                            "minimum": 0
+                          },
+                          "month": {
+                            "type": "integer",
+                            "minimum": 0,
+                            "maximum": 11
+                          }
+                        },
+                        "additionalProperties": false
+                      }
+                    },
+                    "additionalProperties": false
+                  },
+                  "total": {
+                    "type": "object",
+                    "properties": {
+                      "min": {
+                        "type": "object",
+                        "properties": {
+                          "year": {
+                            "type": "integer",
+                            "minimum": 0
+                          },
+                          "month": {
+                            "type": "integer",
+                            "minimum": 0,
+                            "maximum": 11
+                          }
+                        },
+                        "additionalProperties": false
+                      },
+                      "max": {
+                        "type": "object",
+                        "properties": {
+                          "year": {
+                            "type": "integer",
+                            "minimum": 0
+                          },
+                          "month": {
+                            "type": "integer",
+                            "minimum": 0,
+                            "maximum": 11
+                          }
+                        },
+                        "additionalProperties": false
+                      }
+                    },
+                    "additionalProperties": false
+                  }
+                },
+                "additionalProperties": false
+              },
+              "searchMode": {
+                "type": "string",
+                "enum": [
+                  "SMART",
+                  "WORD",
+                  "STRICT"
+                ],
+                "description": "Defaults to SMART"
+              }
+            },
+            "additionalProperties": false,
+            "description": "At least one filter other than searchMode"
+          },
+          "page": {
+            "type": "integer",
+            "minimum": 0,
+            "description": "Zero-based page. Defaults to 0"
+          },
+          "size": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 100,
+            "description": "Leads per page, 1..100. Defaults to 50"
+          }
+        },
+        "required": [
+          "filters"
+        ],
+        "additionalProperties": false
+      },
+      "spend": {
+        "kind": "variable",
+        "summary": "0.1 credits per returned lead; not a free count"
+      },
+      "asynchronous": false,
+      "operationId": "previewLeadsFinder",
+      "apiPage": "/api-reference/leads-finder/preview"
+    },
+    {
       "name": "airscale_find_email",
       "anchor": "airscale-find-email",
       "category": "contact_and_profile_enrichment",
@@ -1363,7 +2883,8 @@
               "additionalProperties": false
             },
             "minItems": 1,
-            "description": "Contacts to enrich"
+            "maxItems": 100,
+            "description": "Contacts to enrich, 1..100"
           }
         },
         "required": [
@@ -1419,6 +2940,13 @@
             "type": "string",
             "minLength": 1,
             "description": "LinkedIn profile URL of the contact"
+          },
+          "verification": {
+            "type": [
+              "boolean",
+              "string"
+            ],
+            "description": "Verify the email's deliverability before returning it"
           }
         },
         "required": [
@@ -1482,11 +3010,6 @@
             "type": "string",
             "minLength": 1,
             "description": "LinkedIn person profile URL"
-          },
-          "webhook_url": {
-            "type": "string",
-            "format": "uri",
-            "description": "Optional webhook to receive the profile"
           }
         },
         "required": [
@@ -1514,11 +3037,6 @@
             "type": "string",
             "minLength": 1,
             "description": "LinkedIn company page URL"
-          },
-          "webhook_url": {
-            "type": "string",
-            "format": "uri",
-            "description": "Optional webhook to receive the profile"
           }
         },
         "required": [
@@ -1587,6 +3105,271 @@
       "asynchronous": false,
       "operationId": "reversePhoneLookup",
       "apiPage": "/api-reference/reverse-phone"
+    },
+    {
+      "name": "airscale_domain_to_linkedin",
+      "anchor": "airscale-domain-to-linkedin",
+      "category": "contact_and_profile_enrichment",
+      "description": "Find a company's LinkedIn company URL from its domain. Costs 0.5 credits on success; no-result lookups are free. Allow up to 130 seconds.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "domain": {
+            "type": "string",
+            "minLength": 1,
+            "description": "Company domain, e.g. airscale.io"
+          },
+          "idempotency_key": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 200,
+            "pattern": "^[!-~]+$",
+            "description": "Reuse the same key when retrying the same request so it is not charged twice"
+          }
+        },
+        "required": [
+          "domain"
+        ],
+        "additionalProperties": false
+      },
+      "spend": {
+        "kind": "variable",
+        "summary": "0.5 credits on success; no-result lookups are free"
+      },
+      "asynchronous": false,
+      "operationId": "findCompanyLinkedinUrl",
+      "apiPage": "/api-reference/domain-to-linkedin"
+    },
+    {
+      "name": "airscale_post_likers",
+      "anchor": "airscale-post-likers",
+      "category": "contact_and_profile_enrichment",
+      "description": "List and enrich people who liked a LinkedIn post, one page (up to 25) at a time. Reserves 1 credit per requested slot and refunds unused, not-found, and failed slots.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "post_url": {
+            "type": "string",
+            "format": "uri",
+            "maxLength": 2048,
+            "description": "LinkedIn post URL"
+          },
+          "limit": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 25,
+            "description": "People per page, 1..25. Defaults to 25"
+          },
+          "cursor": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 8192,
+            "description": "pagination.next_cursor from the previous page"
+          },
+          "idempotency_key": {
+            "type": "string",
+            "format": "uuid",
+            "description": "A UUID. Reuse it when retrying the same request so it is not charged twice"
+          }
+        },
+        "required": [
+          "post_url"
+        ],
+        "additionalProperties": false
+      },
+      "spend": {
+        "kind": "variable",
+        "summary": "1 credit per enriched profile; unused, not-found, and failed slots are refunded"
+      },
+      "asynchronous": false,
+      "operationId": "listPostLikers",
+      "apiPage": "/api-reference/post-likers"
+    },
+    {
+      "name": "airscale_post_commenters",
+      "anchor": "airscale-post-commenters",
+      "category": "contact_and_profile_enrichment",
+      "description": "List and enrich people who commented on a LinkedIn post, one page (up to 25) at a time. Reserves 1 credit per requested slot and refunds unused, not-found, and failed slots.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "post_url": {
+            "type": "string",
+            "format": "uri",
+            "maxLength": 2048,
+            "description": "LinkedIn post URL"
+          },
+          "limit": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 25,
+            "description": "People per page, 1..25. Defaults to 25"
+          },
+          "cursor": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 8192,
+            "description": "pagination.next_cursor from the previous page"
+          },
+          "idempotency_key": {
+            "type": "string",
+            "format": "uuid",
+            "description": "A UUID. Reuse it when retrying the same request so it is not charged twice"
+          }
+        },
+        "required": [
+          "post_url"
+        ],
+        "additionalProperties": false
+      },
+      "spend": {
+        "kind": "variable",
+        "summary": "1 credit per enriched profile; unused, not-found, and failed slots are refunded"
+      },
+      "asynchronous": false,
+      "operationId": "listPostCommenters",
+      "apiPage": "/api-reference/post-commenters"
+    },
+    {
+      "name": "airscale_verify_email",
+      "anchor": "airscale-verify-email",
+      "category": "checks_and_signals",
+      "description": "Verify whether an email address is deliverable. Costs 0.5 credits. Allow up to 135 seconds.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "email": {
+            "type": "string",
+            "format": "email",
+            "maxLength": 320,
+            "description": "Email address to verify"
+          }
+        },
+        "required": [
+          "email"
+        ],
+        "additionalProperties": false
+      },
+      "spend": {
+        "kind": "variable",
+        "summary": "0.5 credits per verification"
+      },
+      "asynchronous": false,
+      "operationId": "verifyEmail",
+      "apiPage": "/api-reference/miscale-news/email-verifier"
+    },
+    {
+      "name": "airscale_check_whatsapp",
+      "anchor": "airscale-check-whatsapp",
+      "category": "checks_and_signals",
+      "description": "Check whether a phone number is on WhatsApp. Costs 1 credit for a definitive yes or no. A pending or unknown result returns an operation_id to look up with airscale_get_whatsapp_check.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "phone": {
+            "type": "string",
+            "pattern": "^\\+[1-9]\\d{6,14}$",
+            "description": "E.164 phone number, e.g. +12025550147"
+          },
+          "idempotency_key": {
+            "type": "string",
+            "format": "uuid",
+            "description": "A UUID. Reuse it when retrying the same request so it is not charged twice"
+          }
+        },
+        "required": [
+          "phone"
+        ],
+        "additionalProperties": false
+      },
+      "spend": {
+        "kind": "variable",
+        "summary": "1 credit for a definitive yes or no"
+      },
+      "asynchronous": false,
+      "operationId": "checkWhatsapp",
+      "apiPage": "/api-reference/miscale-news/whatsapp-check"
+    },
+    {
+      "name": "airscale_get_whatsapp_check",
+      "anchor": "airscale-get-whatsapp-check",
+      "category": "checks_and_signals",
+      "description": "Look up a previous WhatsApp check by its operation_id. Free; does not start a new check.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "operation_id": {
+            "type": "string",
+            "format": "uuid",
+            "description": "operation_id returned by airscale_check_whatsapp"
+          }
+        },
+        "required": [
+          "operation_id"
+        ],
+        "additionalProperties": false
+      },
+      "spend": {
+        "kind": "free",
+        "summary": "Free; no credits charged"
+      },
+      "asynchronous": false,
+      "operationId": "getWhatsappCheckOperation",
+      "apiPage": "/api-reference/miscale-news/whatsapp-check/status"
+    },
+    {
+      "name": "airscale_check_dnc",
+      "anchor": "airscale-check-dnc",
+      "category": "checks_and_signals",
+      "description": "Check whether a US phone number is on the Do Not Call list. Costs 1 credit per completed check.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "phone": {
+            "type": "string",
+            "minLength": 1,
+            "description": "US phone number, e.g. +12025550147"
+          }
+        },
+        "required": [
+          "phone"
+        ],
+        "additionalProperties": false
+      },
+      "spend": {
+        "kind": "variable",
+        "summary": "1 credit per completed check"
+      },
+      "asynchronous": false,
+      "operationId": "checkDnc",
+      "apiPage": "/api-reference/dnc-checker"
+    },
+    {
+      "name": "airscale_meta_ads",
+      "anchor": "airscale-meta-ads",
+      "category": "checks_and_signals",
+      "description": "Look up a company's Meta (Facebook and Instagram) ads from its domain. Costs 1 credit when ads are found; otherwise free.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "domain": {
+            "type": "string",
+            "minLength": 1,
+            "description": "Company domain or website URL, e.g. airscale.io"
+          }
+        },
+        "required": [
+          "domain"
+        ],
+        "additionalProperties": false
+      },
+      "spend": {
+        "kind": "variable",
+        "summary": "1 credit when ads are found; otherwise free"
+      },
+      "asynchronous": false,
+      "operationId": "lookupMetaAds",
+      "apiPage": "/api-reference/miscale-news/meta-ads"
     },
     {
       "name": "airscale_start_companies_export",
@@ -1908,7 +3691,7 @@
                 "additionalProperties": false,
                 "description": "Include/exclude arrays of strings, max 200 values each"
               },
-              "JobTitle": {
+              "jobTitle": {
                 "type": "object",
                 "properties": {
                   "include": {
@@ -1927,7 +3710,7 @@
                   }
                 },
                 "additionalProperties": false,
-                "description": "Include/exclude arrays of strings, max 200 values each"
+                "description": "Current job title"
               },
               "companyDomain": {
                 "type": "object",
@@ -2258,6 +4041,261 @@
                 "description": "Integer range using >, >=, <, and/or <= operators"
               },
               "currentCompany.headcountGrowth": {
+                "type": "object",
+                "properties": {
+                  "min": {
+                    "type": "number",
+                    "minimum": -100,
+                    "maximum": 10000
+                  },
+                  "max": {
+                    "type": "number",
+                    "minimum": -100,
+                    "maximum": 10000
+                  },
+                  "timespan": {
+                    "type": "string",
+                    "enum": [
+                      "6months",
+                      "12months",
+                      "24months"
+                    ]
+                  }
+                },
+                "required": [
+                  "timespan"
+                ],
+                "additionalProperties": false,
+                "description": "Headcount growth bounds from -100 to 10000 and a 6, 12, or 24 month timespan"
+              },
+              "pastJobTitle": {
+                "type": "object",
+                "properties": {
+                  "include": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    },
+                    "maxItems": 200
+                  },
+                  "exclude": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    },
+                    "maxItems": 200
+                  }
+                },
+                "additionalProperties": false,
+                "description": "Include/exclude arrays of strings, max 200 values each"
+              },
+              "pastCompanyName": {
+                "type": "object",
+                "properties": {
+                  "include": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    },
+                    "maxItems": 200
+                  },
+                  "exclude": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    },
+                    "maxItems": 200
+                  }
+                },
+                "additionalProperties": false,
+                "description": "Include/exclude arrays of strings, max 200 values each"
+              },
+              "pastCompanyId": {
+                "type": "object",
+                "properties": {
+                  "include": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    },
+                    "maxItems": 200
+                  },
+                  "exclude": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    },
+                    "maxItems": 200
+                  }
+                },
+                "additionalProperties": false,
+                "description": "Include/exclude arrays of strings, max 200 values each"
+              },
+              "pastCompanyWebsite": {
+                "type": "object",
+                "properties": {
+                  "include": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    },
+                    "maxItems": 200
+                  },
+                  "exclude": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    },
+                    "maxItems": 200
+                  }
+                },
+                "additionalProperties": false,
+                "description": "Include/exclude arrays of strings, max 200 values each"
+              },
+              "pastCompanyUrn": {
+                "type": "object",
+                "properties": {
+                  "include": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    },
+                    "maxItems": 200
+                  },
+                  "exclude": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    },
+                    "maxItems": 200
+                  }
+                },
+                "additionalProperties": false,
+                "description": "Include/exclude arrays of strings, max 200 values each"
+              },
+              "pastCompany.type": {
+                "type": "object",
+                "properties": {
+                  "include": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    },
+                    "maxItems": 200
+                  },
+                  "exclude": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    },
+                    "maxItems": 200
+                  }
+                },
+                "additionalProperties": false,
+                "description": "Include/exclude arrays of strings, max 200 values each"
+              },
+              "pastCompany.industry": {
+                "type": "object",
+                "properties": {
+                  "include": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    },
+                    "maxItems": 200
+                  },
+                  "exclude": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    },
+                    "maxItems": 200
+                  }
+                },
+                "additionalProperties": false,
+                "description": "Include/exclude arrays of strings, max 200 values each"
+              },
+              "pastCompany.location": {
+                "type": "object",
+                "properties": {
+                  "include": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    },
+                    "maxItems": 200
+                  },
+                  "exclude": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    },
+                    "maxItems": 200
+                  }
+                },
+                "additionalProperties": false,
+                "description": "Include/exclude arrays of strings, max 200 values each"
+              },
+              "pastCompany.keyword": {
+                "type": "object",
+                "properties": {
+                  "include": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    },
+                    "maxItems": 200
+                  },
+                  "exclude": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    },
+                    "maxItems": 200
+                  }
+                },
+                "additionalProperties": false,
+                "description": "Include/exclude arrays of strings, max 200 values each"
+              },
+              "pastCompany.headcount": {
+                "type": "object",
+                "properties": {
+                  ">": {
+                    "type": "integer"
+                  },
+                  ">=": {
+                    "type": "integer"
+                  },
+                  "<": {
+                    "type": "integer"
+                  },
+                  "<=": {
+                    "type": "integer"
+                  }
+                },
+                "additionalProperties": false,
+                "description": "Integer range using >, >=, <, and/or <= operators"
+              },
+              "pastCompany.revenue": {
+                "type": "object",
+                "properties": {
+                  ">": {
+                    "type": "integer"
+                  },
+                  ">=": {
+                    "type": "integer"
+                  },
+                  "<": {
+                    "type": "integer"
+                  },
+                  "<=": {
+                    "type": "integer"
+                  }
+                },
+                "additionalProperties": false,
+                "description": "Integer range using >, >=, <, and/or <= operators"
+              },
+              "pastCompany.headcountGrowth": {
                 "type": "object",
                 "properties": {
                   "min": {

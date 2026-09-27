@@ -1,10 +1,10 @@
 ---
 title: "MCP tool catalog"
-description: "Browse all 22 typed tools exposed by the Airschool MCP server."
+description: "Browse all 32 typed tools exposed by the Airschool MCP server."
 canonical: "https://airscale.mintlify.app/mcp/tools"
 ---
 
-Airschool MCP exposes 22 typed tools for workspace checks, search, enrichment, research, managed batches, and asynchronous exports.
+Airschool MCP exposes 32 typed tools for workspace checks, search, enrichment, research, managed batches, and asynchronous exports.
 
 <Warning>
 Review each tool's credit behavior before approval. Paid export starts require `confirm_credit_spend: true`.
@@ -77,6 +77,8 @@ Returns the workspace's current Airschool credit balance without spending credit
 | [`airscale_find_companies`](#airscale-find-companies) | Search companies by firmographic, location, event, intent, technology, and website keyword filters. Costs 0.1 credits per returned company. Use airscale_find_companies_filter_values to discover accepted values. | 0.1 credits per returned company | Sync |
 | [`airscale_find_companies_filter_values`](#airscale-find-companies-filter-values) | Discover accepted values for find-companies filters (city, region, industry, topics, techStack). Free, no credits charged. | Free; no credits charged | Sync |
 | [`airscale_airsearch`](#airscale-airsearch) | AI web research agent: ask a natural-language question and optionally specify structured fields to extract. Costs 2 credits per call. | 2 credits per call | Sync |
+| [`airscale_leads_finder`](#airscale-leads-finder) | Search people with Leads Finder filters (job, company, location, seniority, skills, company size, funding, and more). Zero-based page pagination. Costs 0.1 credits per returned lead. | 0.1 credits per returned lead | Sync |
+| [`airscale_leads_finder_preview`](#airscale-leads-finder-preview) | Leads Finder preview alias: same filters, results, and cost as airscale_leads_finder (0.1 credits per returned lead). It is not a free count. | 0.1 credits per returned lead; not a free count | Sync |
 
 <a id="airscale-find-people"></a>
 
@@ -104,7 +106,7 @@ Credit behavior: 0.1 credits per returned lead.
 
 | Field | Type | Required | Description | Constraints |
 | --- | --- | --- | --- | --- |
-| `query` | `object` | Yes | At least one filter required | allowed properties: `firstname`, `lastname`, `JobTitle`, `companyDomain`, `companyLinkedinUrl`, `school`, `languages`, `skills`, `location`, `keyword`, `currentCompanyName`, `currentCompany.type`, `currentCompany.industry`, `currentCompany.location`, `currentCompany.keyword`, `totalYearsOfExperience`, `timeInCurrentCompany`, `currentCompany.headcount`, `currentCompany.revenue`, `currentCompany.headcountGrowth`; nested required fields: `currentCompany.headcountGrowth.timespan`; additional properties are not allowed |
+| `query` | `object` | Yes | At least one filter required | allowed properties: `firstname`, `lastname`, `jobTitle`, `companyDomain`, `companyLinkedinUrl`, `school`, `languages`, `skills`, `location`, `keyword`, `currentCompanyName`, `currentCompany.type`, `currentCompany.industry`, `currentCompany.location`, `currentCompany.keyword`, `totalYearsOfExperience`, `timeInCurrentCompany`, `currentCompany.headcount`, `currentCompany.revenue`, `currentCompany.headcountGrowth`, `pastJobTitle`, `pastCompanyName`, `pastCompanyId`, `pastCompanyWebsite`, `pastCompanyUrn`, `pastCompany.type`, `pastCompany.industry`, `pastCompany.location`, `pastCompany.keyword`, `pastCompany.headcount`, `pastCompany.revenue`, `pastCompany.headcountGrowth`; nested required fields: `currentCompany.headcountGrowth.timespan`, `pastCompany.headcountGrowth.timespan`; additional properties are not allowed |
 | `size` | `integer` | No | Results per page, 1..100. Defaults to 100 | minimum: 1; maximum: 100 |
 | `cursor` | `string` | No | next_cursor from the previous response | — |
 
@@ -163,7 +165,7 @@ Credit behavior: Free; no credits charged.
 
 | Field | Type | Required | Description | Constraints |
 | --- | --- | --- | --- | --- |
-| `query` | `object` | Yes | At least one filter required | allowed properties: `firstname`, `lastname`, `JobTitle`, `companyDomain`, `companyLinkedinUrl`, `school`, `languages`, `skills`, `location`, `keyword`, `currentCompanyName`, `currentCompany.type`, `currentCompany.industry`, `currentCompany.location`, `currentCompany.keyword`, `totalYearsOfExperience`, `timeInCurrentCompany`, `currentCompany.headcount`, `currentCompany.revenue`, `currentCompany.headcountGrowth`; nested required fields: `currentCompany.headcountGrowth.timespan`; additional properties are not allowed |
+| `query` | `object` | Yes | At least one filter required | allowed properties: `firstname`, `lastname`, `jobTitle`, `companyDomain`, `companyLinkedinUrl`, `school`, `languages`, `skills`, `location`, `keyword`, `currentCompanyName`, `currentCompany.type`, `currentCompany.industry`, `currentCompany.location`, `currentCompany.keyword`, `totalYearsOfExperience`, `timeInCurrentCompany`, `currentCompany.headcount`, `currentCompany.revenue`, `currentCompany.headcountGrowth`, `pastJobTitle`, `pastCompanyName`, `pastCompanyId`, `pastCompanyWebsite`, `pastCompanyUrn`, `pastCompany.type`, `pastCompany.industry`, `pastCompany.location`, `pastCompany.keyword`, `pastCompany.headcount`, `pastCompany.revenue`, `pastCompany.headcountGrowth`; nested required fields: `currentCompany.headcountGrowth.timespan`, `pastCompany.headcountGrowth.timespan`; additional properties are not allowed |
 
 #### Minimal `tools/call` example
 
@@ -355,6 +357,124 @@ Returns the research answer and any structured fields requested in the prompt sc
 
 **Related API reference:** [airsearch](/api-reference/airsearch)
 
+<a id="airscale-leads-finder"></a>
+
+### `airscale_leads_finder`
+
+**MCP tool**
+
+Search people with Leads Finder filters (job, company, location, seniority, skills, company size, funding, and more). Zero-based page pagination. Costs 0.1 credits per returned lead.
+
+- **Category:** Search and research
+
+- **Spend classification:** Variable credit cost
+
+- **Credit behavior:** 0.1 credits per returned lead
+
+- **Execution:** Synchronous
+
+- **Authentication:** Uses the credentials configured on the MCP connection; never include an API key in tool arguments.
+
+<Note>
+Credit behavior: 0.1 credits per returned lead.
+</Note>
+
+#### Inputs
+
+| Field | Type | Required | Description | Constraints |
+| --- | --- | --- | --- | --- |
+| `filters` | `object` | Yes | At least one filter other than searchMode | allowed properties: `job`, `jobExclude`, `company`, `companyUrl`, `peopleLocation`, `peopleLocationExclude`, `jobFunction`, `jobFunctionExclude`, `seniority`, `seniorityExclude`, `yearsCurrentRole`, `yearsCurrentCompany`, `yearsWorkExperience`, `skills`, `skillsExclude`, `language`, `languageExclude`, `certification`, `certificationExclude`, `profileKeywords`, `profileKeywordsExclude`, `profileBadge`, `industry`, `industryExclude`, `size`, `hq`, `hqExclude`, `type`, `typeExclude`, `revenue`, `companyKeywords`, `companyKeywordsExclude`, `founded`, `funding`, `fundingAmount`, `fundingDateMonths`, `department`, `growth`, `duration`, `searchMode`; additional properties are not allowed |
+| `page` | `integer` | No | Zero-based page. Defaults to 0 | minimum: 0 |
+| `size` | `integer` | No | Leads per page, 1..100. Defaults to 50 | minimum: 1; maximum: 100 |
+
+#### Minimal `tools/call` example
+
+```json
+{
+  "jsonrpc": "2.0",
+  "id": 1,
+  "method": "tools/call",
+  "params": {
+    "name": "airscale_leads_finder",
+    "arguments": {
+      "filters": {
+        "job": [
+          "Founder"
+        ],
+        "company": "example.com"
+      },
+      "page": 0,
+      "size": 1
+    }
+  }
+}
+```
+
+#### Expected result
+
+Returns one zero-based page of nested Leads Finder person records with total, page, and size.
+
+**Related API reference:** [searchLeadsFinder](/api-reference/leads-finder)
+
+<a id="airscale-leads-finder-preview"></a>
+
+### `airscale_leads_finder_preview`
+
+**MCP tool**
+
+Leads Finder preview alias: same filters, results, and cost as airscale_leads_finder (0.1 credits per returned lead). It is not a free count.
+
+- **Category:** Search and research
+
+- **Spend classification:** Variable credit cost
+
+- **Credit behavior:** 0.1 credits per returned lead; not a free count
+
+- **Execution:** Synchronous
+
+- **Authentication:** Uses the credentials configured on the MCP connection; never include an API key in tool arguments.
+
+<Note>
+Credit behavior: 0.1 credits per returned lead; not a free count.
+</Note>
+
+#### Inputs
+
+| Field | Type | Required | Description | Constraints |
+| --- | --- | --- | --- | --- |
+| `filters` | `object` | Yes | At least one filter other than searchMode | allowed properties: `job`, `jobExclude`, `company`, `companyUrl`, `peopleLocation`, `peopleLocationExclude`, `jobFunction`, `jobFunctionExclude`, `seniority`, `seniorityExclude`, `yearsCurrentRole`, `yearsCurrentCompany`, `yearsWorkExperience`, `skills`, `skillsExclude`, `language`, `languageExclude`, `certification`, `certificationExclude`, `profileKeywords`, `profileKeywordsExclude`, `profileBadge`, `industry`, `industryExclude`, `size`, `hq`, `hqExclude`, `type`, `typeExclude`, `revenue`, `companyKeywords`, `companyKeywordsExclude`, `founded`, `funding`, `fundingAmount`, `fundingDateMonths`, `department`, `growth`, `duration`, `searchMode`; additional properties are not allowed |
+| `page` | `integer` | No | Zero-based page. Defaults to 0 | minimum: 0 |
+| `size` | `integer` | No | Leads per page, 1..100. Defaults to 50 | minimum: 1; maximum: 100 |
+
+#### Minimal `tools/call` example
+
+```json
+{
+  "jsonrpc": "2.0",
+  "id": 1,
+  "method": "tools/call",
+  "params": {
+    "name": "airscale_leads_finder_preview",
+    "arguments": {
+      "filters": {
+        "job": [
+          "Founder"
+        ],
+        "company": "example.com"
+      },
+      "page": 0,
+      "size": 1
+    }
+  }
+}
+```
+
+#### Expected result
+
+Returns the same page of Leads Finder person records as airscale_leads_finder; it is charged the same way.
+
+**Related API reference:** [previewLeadsFinder](/api-reference/leads-finder/preview)
+
 ## Contact and profile enrichment
 
 | Tool | Purpose | Credit behavior | Execution |
@@ -368,6 +488,9 @@ Returns the research answer and any structured fields requested in the prompt sc
 | [`airscale_extract_company_profile`](#airscale-extract-company-profile) | Extract a full LinkedIn company profile from its URL. | URL-selected pricing; company or school-profile successes cost 0.5 credits and workspace-specific pricing may differ | Sync |
 | [`airscale_reverse_email`](#airscale-reverse-email) | Resolve an email address to a LinkedIn profile. Returns the entire enriched profile, not only the URL. | 2 credits per returned profile | Sync |
 | [`airscale_reverse_phone`](#airscale-reverse-phone) | Resolve a phone number to a LinkedIn profile. Returns the entire enriched profile, not only the URL. | 10 credits per returned profile | Sync |
+| [`airscale_domain_to_linkedin`](#airscale-domain-to-linkedin) | Find a company's LinkedIn company URL from its domain. Costs 0.5 credits on success; no-result lookups are free. Allow up to 130 seconds. | 0.5 credits on success; no-result lookups are free | Sync |
+| [`airscale_post_likers`](#airscale-post-likers) | List and enrich people who liked a LinkedIn post, one page (up to 25) at a time. Reserves 1 credit per requested slot and refunds unused, not-found, and failed slots. | 1 credit per enriched profile; unused, not-found, and failed slots are refunded | Sync |
+| [`airscale_post_commenters`](#airscale-post-commenters) | List and enrich people who commented on a LinkedIn post, one page (up to 25) at a time. Reserves 1 credit per requested slot and refunds unused, not-found, and failed slots. | 1 credit per enriched profile; unused, not-found, and failed slots are refunded | Sync |
 
 <a id="airscale-find-email"></a>
 
@@ -452,7 +575,7 @@ Credit behavior: 2 credits per successful input.
 | Field | Type | Required | Description | Constraints |
 | --- | --- | --- | --- | --- |
 | `webhook_url` | `string` | Yes | Results are POSTed here, one payload per input | format: `uri` |
-| `inputs` | `array<object>` | Yes | Contacts to enrich | minimum items: 1; item type: `object` |
+| `inputs` | `array<object>` | Yes | Contacts to enrich, 1..100 | minimum items: 1; maximum items: 100; item type: `object` |
 
 #### Minimal `tools/call` example
 
@@ -561,6 +684,7 @@ Credit behavior: 3-12 credits per successful result.
 | Field | Type | Required | Description | Constraints |
 | --- | --- | --- | --- | --- |
 | `linkedin_profile_url` | `string` | Yes | LinkedIn profile URL of the contact | minimum length: 1 |
+| `verification` | `boolean or string` | No | Verify the email's deliverability before returning it | — |
 
 #### Minimal `tools/call` example
 
@@ -665,7 +789,6 @@ Credit behavior: URL-selected pricing; person-profile successes cost 1 credit by
 | Field | Type | Required | Description | Constraints |
 | --- | --- | --- | --- | --- |
 | `linkedin_profile_url` | `string` | Yes | LinkedIn person profile URL | minimum length: 1 |
-| `webhook_url` | `string` | No | Optional webhook to receive the profile | format: `uri` |
 
 #### Minimal `tools/call` example
 
@@ -716,7 +839,6 @@ Credit behavior: URL-selected pricing; company or school-profile successes cost 
 | Field | Type | Required | Description | Constraints |
 | --- | --- | --- | --- | --- |
 | `linkedin_profile_url` | `string` | Yes | LinkedIn company page URL | minimum length: 1 |
-| `webhook_url` | `string` | No | Optional webhook to receive the profile | format: `uri` |
 
 #### Minimal `tools/call` example
 
@@ -840,6 +962,426 @@ Returns the enriched person profile resolved from the phone number, not only a p
 
 **Related API reference:** [reversePhoneLookup](/api-reference/reverse-phone)
 
+<a id="airscale-domain-to-linkedin"></a>
+
+### `airscale_domain_to_linkedin`
+
+**MCP tool**
+
+Find a company's LinkedIn company URL from its domain. Costs 0.5 credits on success; no-result lookups are free. Allow up to 130 seconds.
+
+- **Category:** Contact and profile enrichment
+
+- **Spend classification:** Variable credit cost
+
+- **Credit behavior:** 0.5 credits on success; no-result lookups are free
+
+- **Execution:** Synchronous
+
+- **Authentication:** Uses the credentials configured on the MCP connection; never include an API key in tool arguments.
+
+<Note>
+Credit behavior: 0.5 credits on success; no-result lookups are free.
+</Note>
+
+#### Inputs
+
+| Field | Type | Required | Description | Constraints |
+| --- | --- | --- | --- | --- |
+| `domain` | `string` | Yes | Company domain, e.g. airscale.io | minimum length: 1 |
+| `idempotency_key` | `string` | No | Reuse the same key when retrying the same request so it is not charged twice | minimum length: 1; maximum length: 200; pattern: `^[!-~]+$` |
+
+#### Minimal `tools/call` example
+
+```json
+{
+  "jsonrpc": "2.0",
+  "id": 1,
+  "method": "tools/call",
+  "params": {
+    "name": "airscale_domain_to_linkedin",
+    "arguments": {
+      "domain": "example.com"
+    }
+  }
+}
+```
+
+#### Expected result
+
+Returns the LinkedIn company URL for the domain, or a not-found error when none matches.
+
+**Related API reference:** [findCompanyLinkedinUrl](/api-reference/domain-to-linkedin)
+
+<a id="airscale-post-likers"></a>
+
+### `airscale_post_likers`
+
+**MCP tool**
+
+List and enrich people who liked a LinkedIn post, one page (up to 25) at a time. Reserves 1 credit per requested slot and refunds unused, not-found, and failed slots.
+
+- **Category:** Contact and profile enrichment
+
+- **Spend classification:** Variable credit cost
+
+- **Credit behavior:** 1 credit per enriched profile; unused, not-found, and failed slots are refunded
+
+- **Execution:** Synchronous
+
+- **Authentication:** Uses the credentials configured on the MCP connection; never include an API key in tool arguments.
+
+<Note>
+Credit behavior: 1 credit per enriched profile; unused, not-found, and failed slots are refunded.
+</Note>
+
+#### Inputs
+
+| Field | Type | Required | Description | Constraints |
+| --- | --- | --- | --- | --- |
+| `post_url` | `string` | Yes | LinkedIn post URL | format: `uri`; maximum length: 2048 |
+| `limit` | `integer` | No | People per page, 1..25. Defaults to 25 | minimum: 1; maximum: 25 |
+| `cursor` | `string` | No | pagination.next_cursor from the previous page | minimum length: 1; maximum length: 8192 |
+| `idempotency_key` | `string` | No | A UUID. Reuse it when retrying the same request so it is not charged twice | format: `uuid` |
+
+#### Minimal `tools/call` example
+
+```json
+{
+  "jsonrpc": "2.0",
+  "id": 1,
+  "method": "tools/call",
+  "params": {
+    "name": "airscale_post_likers",
+    "arguments": {
+      "post_url": "https://www.linkedin.com/posts/example-company_activity-7376356221991178240",
+      "limit": 1
+    }
+  }
+}
+```
+
+#### Expected result
+
+Returns one page of enriched post likers, pagination with a next cursor, and the page's credit outcome.
+
+**Related API reference:** [listPostLikers](/api-reference/post-likers)
+
+<a id="airscale-post-commenters"></a>
+
+### `airscale_post_commenters`
+
+**MCP tool**
+
+List and enrich people who commented on a LinkedIn post, one page (up to 25) at a time. Reserves 1 credit per requested slot and refunds unused, not-found, and failed slots.
+
+- **Category:** Contact and profile enrichment
+
+- **Spend classification:** Variable credit cost
+
+- **Credit behavior:** 1 credit per enriched profile; unused, not-found, and failed slots are refunded
+
+- **Execution:** Synchronous
+
+- **Authentication:** Uses the credentials configured on the MCP connection; never include an API key in tool arguments.
+
+<Note>
+Credit behavior: 1 credit per enriched profile; unused, not-found, and failed slots are refunded.
+</Note>
+
+#### Inputs
+
+| Field | Type | Required | Description | Constraints |
+| --- | --- | --- | --- | --- |
+| `post_url` | `string` | Yes | LinkedIn post URL | format: `uri`; maximum length: 2048 |
+| `limit` | `integer` | No | People per page, 1..25. Defaults to 25 | minimum: 1; maximum: 25 |
+| `cursor` | `string` | No | pagination.next_cursor from the previous page | minimum length: 1; maximum length: 8192 |
+| `idempotency_key` | `string` | No | A UUID. Reuse it when retrying the same request so it is not charged twice | format: `uuid` |
+
+#### Minimal `tools/call` example
+
+```json
+{
+  "jsonrpc": "2.0",
+  "id": 1,
+  "method": "tools/call",
+  "params": {
+    "name": "airscale_post_commenters",
+    "arguments": {
+      "post_url": "https://www.linkedin.com/posts/example-company_activity-7376356221991178240",
+      "limit": 1
+    }
+  }
+}
+```
+
+#### Expected result
+
+Returns one page of enriched post commenters, pagination with a next cursor, and the page's credit outcome.
+
+**Related API reference:** [listPostCommenters](/api-reference/post-commenters)
+
+## Checks and signals
+
+| Tool | Purpose | Credit behavior | Execution |
+| --- | --- | --- | --- |
+| [`airscale_verify_email`](#airscale-verify-email) | Verify whether an email address is deliverable. Costs 0.5 credits. Allow up to 135 seconds. | 0.5 credits per verification | Sync |
+| [`airscale_check_whatsapp`](#airscale-check-whatsapp) | Check whether a phone number is on WhatsApp. Costs 1 credit for a definitive yes or no. A pending or unknown result returns an operation_id to look up with airscale_get_whatsapp_check. | 1 credit for a definitive yes or no | Sync |
+| [`airscale_get_whatsapp_check`](#airscale-get-whatsapp-check) | Look up a previous WhatsApp check by its operation_id. Free; does not start a new check. | Free; no credits charged | Sync |
+| [`airscale_check_dnc`](#airscale-check-dnc) | Check whether a US phone number is on the Do Not Call list. Costs 1 credit per completed check. | 1 credit per completed check | Sync |
+| [`airscale_meta_ads`](#airscale-meta-ads) | Look up a company's Meta (Facebook and Instagram) ads from its domain. Costs 1 credit when ads are found; otherwise free. | 1 credit when ads are found; otherwise free | Sync |
+
+<a id="airscale-verify-email"></a>
+
+### `airscale_verify_email`
+
+**MCP tool**
+
+Verify whether an email address is deliverable. Costs 0.5 credits. Allow up to 135 seconds.
+
+- **Category:** Checks and signals
+
+- **Spend classification:** Variable credit cost
+
+- **Credit behavior:** 0.5 credits per verification
+
+- **Execution:** Synchronous
+
+- **Authentication:** Uses the credentials configured on the MCP connection; never include an API key in tool arguments.
+
+<Note>
+Credit behavior: 0.5 credits per verification.
+</Note>
+
+#### Inputs
+
+| Field | Type | Required | Description | Constraints |
+| --- | --- | --- | --- | --- |
+| `email` | `string` | Yes | Email address to verify | format: `email`; maximum length: 320 |
+
+#### Minimal `tools/call` example
+
+```json
+{
+  "jsonrpc": "2.0",
+  "id": 1,
+  "method": "tools/call",
+  "params": {
+    "name": "airscale_verify_email",
+    "arguments": {
+      "email": "person@example.com"
+    }
+  }
+}
+```
+
+#### Expected result
+
+Returns the deliverability result, score, and address checks for the email.
+
+**Related API reference:** [verifyEmail](/api-reference/miscale-news/email-verifier)
+
+<a id="airscale-check-whatsapp"></a>
+
+### `airscale_check_whatsapp`
+
+**MCP tool**
+
+Check whether a phone number is on WhatsApp. Costs 1 credit for a definitive yes or no. A pending or unknown result returns an operation_id to look up with airscale_get_whatsapp_check.
+
+- **Category:** Checks and signals
+
+- **Spend classification:** Variable credit cost
+
+- **Credit behavior:** 1 credit for a definitive yes or no
+
+- **Execution:** Synchronous
+
+- **Authentication:** Uses the credentials configured on the MCP connection; never include an API key in tool arguments.
+
+<Note>
+Credit behavior: 1 credit for a definitive yes or no.
+</Note>
+
+#### Inputs
+
+| Field | Type | Required | Description | Constraints |
+| --- | --- | --- | --- | --- |
+| `phone` | `string` | Yes | E.164 phone number, e.g. +12025550147 | pattern: `^\+[1-9]\d{6,14}$` |
+| `idempotency_key` | `string` | No | A UUID. Reuse it when retrying the same request so it is not charged twice | format: `uuid` |
+
+#### Minimal `tools/call` example
+
+```json
+{
+  "jsonrpc": "2.0",
+  "id": 1,
+  "method": "tools/call",
+  "params": {
+    "name": "airscale_check_whatsapp",
+    "arguments": {
+      "phone": "+12025550147"
+    }
+  }
+}
+```
+
+#### Expected result
+
+Returns yes or no with an operation_id, or a pending or unknown status to look up later.
+
+**Related API reference:** [checkWhatsapp](/api-reference/miscale-news/whatsapp-check)
+
+<a id="airscale-get-whatsapp-check"></a>
+
+### `airscale_get_whatsapp_check`
+
+**MCP tool**
+
+Look up a previous WhatsApp check by its operation_id. Free; does not start a new check.
+
+- **Category:** Checks and signals
+
+- **Spend classification:** Free
+
+- **Credit behavior:** Free; no credits charged
+
+- **Execution:** Synchronous
+
+- **Authentication:** Uses the credentials configured on the MCP connection; never include an API key in tool arguments.
+
+<Note>
+Credit behavior: Free; no credits charged.
+</Note>
+
+#### Inputs
+
+| Field | Type | Required | Description | Constraints |
+| --- | --- | --- | --- | --- |
+| `operation_id` | `string` | Yes | operation_id returned by airscale_check_whatsapp | format: `uuid` |
+
+#### Minimal `tools/call` example
+
+```json
+{
+  "jsonrpc": "2.0",
+  "id": 1,
+  "method": "tools/call",
+  "params": {
+    "name": "airscale_get_whatsapp_check",
+    "arguments": {
+      "operation_id": "00000000-0000-4000-8000-000000000001"
+    }
+  }
+}
+```
+
+#### Expected result
+
+Returns the stored state of a previous WhatsApp check without starting a new one.
+
+**Related API reference:** [getWhatsappCheckOperation](/api-reference/miscale-news/whatsapp-check/status)
+
+<a id="airscale-check-dnc"></a>
+
+### `airscale_check_dnc`
+
+**MCP tool**
+
+Check whether a US phone number is on the Do Not Call list. Costs 1 credit per completed check.
+
+- **Category:** Checks and signals
+
+- **Spend classification:** Variable credit cost
+
+- **Credit behavior:** 1 credit per completed check
+
+- **Execution:** Synchronous
+
+- **Authentication:** Uses the credentials configured on the MCP connection; never include an API key in tool arguments.
+
+<Note>
+Credit behavior: 1 credit per completed check.
+</Note>
+
+#### Inputs
+
+| Field | Type | Required | Description | Constraints |
+| --- | --- | --- | --- | --- |
+| `phone` | `string` | Yes | US phone number, e.g. +12025550147 | minimum length: 1 |
+
+#### Minimal `tools/call` example
+
+```json
+{
+  "jsonrpc": "2.0",
+  "id": 1,
+  "method": "tools/call",
+  "params": {
+    "name": "airscale_check_dnc",
+    "arguments": {
+      "phone": "+12025550147"
+    }
+  }
+}
+```
+
+#### Expected result
+
+Returns whether the US number is listed on the Do Not Call list.
+
+**Related API reference:** [checkDnc](/api-reference/dnc-checker)
+
+<a id="airscale-meta-ads"></a>
+
+### `airscale_meta_ads`
+
+**MCP tool**
+
+Look up a company's Meta (Facebook and Instagram) ads from its domain. Costs 1 credit when ads are found; otherwise free.
+
+- **Category:** Checks and signals
+
+- **Spend classification:** Variable credit cost
+
+- **Credit behavior:** 1 credit when ads are found; otherwise free
+
+- **Execution:** Synchronous
+
+- **Authentication:** Uses the credentials configured on the MCP connection; never include an API key in tool arguments.
+
+<Note>
+Credit behavior: 1 credit when ads are found; otherwise free.
+</Note>
+
+#### Inputs
+
+| Field | Type | Required | Description | Constraints |
+| --- | --- | --- | --- | --- |
+| `domain` | `string` | Yes | Company domain or website URL, e.g. airscale.io | minimum length: 1 |
+
+#### Minimal `tools/call` example
+
+```json
+{
+  "jsonrpc": "2.0",
+  "id": 1,
+  "method": "tools/call",
+  "params": {
+    "name": "airscale_meta_ads",
+    "arguments": {
+      "domain": "example.com"
+    }
+  }
+}
+```
+
+#### Expected result
+
+Returns the company's Meta ad count and, when ads are found, the ads themselves.
+
+**Related API reference:** [lookupMetaAds](/api-reference/miscale-news/meta-ads)
+
 ## Async exports and managed batches
 
 | Tool | Purpose | Credit behavior | Execution |
@@ -942,7 +1484,7 @@ This starts paid export work only after confirmation. The example deliberately o
 
 | Field | Type | Required | Description | Constraints |
 | --- | --- | --- | --- | --- |
-| `query` | `object` | Yes | Same query as airscale_find_people. | allowed properties: `firstname`, `lastname`, `JobTitle`, `companyDomain`, `companyLinkedinUrl`, `school`, `languages`, `skills`, `location`, `keyword`, `currentCompanyName`, `currentCompany.type`, `currentCompany.industry`, `currentCompany.location`, `currentCompany.keyword`, `totalYearsOfExperience`, `timeInCurrentCompany`, `currentCompany.headcount`, `currentCompany.revenue`, `currentCompany.headcountGrowth`; nested required fields: `currentCompany.headcountGrowth.timespan`; additional properties are not allowed |
+| `query` | `object` | Yes | Same query as airscale_find_people. | allowed properties: `firstname`, `lastname`, `jobTitle`, `companyDomain`, `companyLinkedinUrl`, `school`, `languages`, `skills`, `location`, `keyword`, `currentCompanyName`, `currentCompany.type`, `currentCompany.industry`, `currentCompany.location`, `currentCompany.keyword`, `totalYearsOfExperience`, `timeInCurrentCompany`, `currentCompany.headcount`, `currentCompany.revenue`, `currentCompany.headcountGrowth`, `pastJobTitle`, `pastCompanyName`, `pastCompanyId`, `pastCompanyWebsite`, `pastCompanyUrn`, `pastCompany.type`, `pastCompany.industry`, `pastCompany.location`, `pastCompany.keyword`, `pastCompany.headcount`, `pastCompany.revenue`, `pastCompany.headcountGrowth`; nested required fields: `currentCompany.headcountGrowth.timespan`, `pastCompany.headcountGrowth.timespan`; additional properties are not allowed |
 | `max_rows` | `integer` | No | Maximum rows to export, 1..10000. Defaults to 1000. | minimum: 1; maximum: 10000 |
 | `format` | `string` | No | Export file format. Defaults to csv. | allowed values: `"csv"`, `"jsonl"` |
 | `fields` | `array<string>` | No | Optional top-level fields to include. | maximum items: 100; item type: `string` |
