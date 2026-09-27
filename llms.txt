@@ -150,6 +150,6 @@
 ## Machine-readable contracts
 
 - [OpenAPI specification](https://docs.airscale.io/openapi.json): HTTP API operations, schemas, authentication, and responses.
-- [MCP tool catalog](https://docs.airscale.io/mcp/tools.md): Hosted Markdown with names, input schemas, credit behavior, examples, and API mappings for all 22 operational MCP tools.
+- [MCP tool catalog](https://docs.airscale.io/mcp/tools.md): Hosted Markdown with names, input schemas, credit behavior, examples, and API mappings for all 32 operational MCP tools.
 - [Agent resource directory](https://docs.airscale.io/mcp/agent-resources.md): Human and machine entry points for Airschool agents and documentation consumers.
 - [Agent skill](https://docs.airscale.io/skill.md): Capability, authentication, credit, and approval guidance for agents.

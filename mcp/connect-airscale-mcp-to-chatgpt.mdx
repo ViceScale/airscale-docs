@@ -16,12 +16,14 @@ https://mcp.airscale.io/mcp
 
 ## What ChatGPT can do with Airschool MCP
 
-Airschool MCP gives ChatGPT 22 typed tools that can:
+Airschool MCP gives ChatGPT 32 typed tools that can:
 
 - Check the authorized workspace's credit balance.
-- Search for people and companies.
+- Search for people and companies, including with Leads Finder filters.
 - Count matches and discover accepted filter values before a paid search.
 - Enrich work contact details and extract people or company profiles.
+- Find a company's LinkedIn URL from its domain and list the people who liked or commented on a LinkedIn post.
+- Verify emails, check WhatsApp availability and US Do Not Call status, and look up a company's Meta ads.
 - Run Airsearch web research.
 - Create downloadable people or company exports.
 
@@ -51,7 +53,7 @@ After OAuth, Airschool's MCP server resolves the authorized workspace's current 
     Under **Connection**, choose the public endpoint option and enter `https://mcp.airscale.io/mcp`, including the `/mcp` path. Create the connection. If prompted, complete browser OAuth, sign in to Airschool, select the intended workspace, and return to ChatGPT. Do not enter an API key or static authorization value.
   </Step>
   <Step title="Review discovered tools">
-    Review the tools and metadata discovered from the server. Confirm that the Airschool connection shows the expected 22 typed tools before testing it.
+    Review the tools and metadata discovered from the server. Confirm that the Airschool connection shows the expected 32 typed tools before testing it.
   </Step>
   <Step title="Verify the connection for free">
     Start a new conversation, add the Airschool MCP connection from the tools menu, and run `airscale_check_credits` without another tool. A returned balance confirms tool discovery and authentication to an Airschool workspace without debiting credits, but it does not identify which workspace. Separately verify the workspace shown during OAuth before paid actions.
