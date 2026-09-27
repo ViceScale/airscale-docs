@@ -4,7 +4,7 @@ import { readFileSync } from "node:fs";
 import test from "node:test";
 import Ajv2020 from "ajv/dist/2020.js";
 
-const SOURCE_SHA = "6ae3cc2e6e93971f2172d240e0bc0b6c90dd3772";
+const SOURCE_SHA = "c55176dba55f958f89048a51408f2170caef41de";
 const GROUPS = {
   workspace: [
     "airscale_check_credits"
@@ -15,8 +15,7 @@ const GROUPS = {
     "airscale_find_companies",
     "airscale_find_companies_filter_values",
     "airscale_airsearch",
-    "airscale_leads_finder",
-    "airscale_leads_finder_preview"
+    "airscale_leads_finder"
   ],
   contact_and_profile_enrichment: [
     "airscale_find_email",
@@ -74,7 +73,6 @@ const EXPECTED_SCHEMA_HASHES = {
   airscale_find_companies_filter_values: "bc868bbb5c9ee36188a6a05c716d18711e2072ad712f62d3ab0ece8849d6fdc7",
   airscale_airsearch: "03d1d9e646f17c1679efb8d051e055536dc26d355742693b02e85df56c8a9bd9",
   airscale_leads_finder: "8f87c9e74709c5aec2a29c27f06a23272549479e7b5663b4d72a2e3fea39a2dc",
-  airscale_leads_finder_preview: "8f87c9e74709c5aec2a29c27f06a23272549479e7b5663b4d72a2e3fea39a2dc",
   airscale_find_email: "d585708df6024251db2bba2f87c355219725c2393b91f0e4b559f3c7579de0de",
   airscale_find_email_bulk: "3e0b3f975f4bcb181c9a04fca2edba5375ffa8bf1d2aa02e6edce327267ee946",
   airscale_find_mobile_phone: "fa383c5f1537d9487c87885da08613bafe384bd948cd91350c03dc72be07d85b",
@@ -141,12 +139,6 @@ const EXPECTED_TOOL_METADATA = {
     description:
       "Search people with Leads Finder filters (job, company, location, seniority, skills, company size, funding, and more). Zero-based page pagination. Costs 0.1 credits per returned lead.",
     spend: { kind: "variable", summary: "0.1 credits per returned lead" },
-    asynchronous: false
-  },
-  airscale_leads_finder_preview: {
-    description:
-      "Leads Finder preview alias: same filters, results, and cost as airscale_leads_finder (0.1 credits per returned lead). It is not a free count.",
-    spend: { kind: "variable", summary: "0.1 credits per returned lead; not a free count" },
     asynchronous: false
   },
   airscale_find_email: {
@@ -302,7 +294,6 @@ const CORE_OPERATION_IDS = {
   airscale_find_companies_filter_values: "listFindCompanyFilterValues",
   airscale_airsearch: "airsearch",
   airscale_leads_finder: "searchLeadsFinder",
-  airscale_leads_finder_preview: "previewLeadsFinder",
   airscale_find_email: "findProfessionalEmail",
   airscale_find_email_bulk: "findProfessionalEmailsBulk",
   airscale_find_mobile_phone: "findMobilePhone",
@@ -389,16 +380,16 @@ test("MCP contract is pinned to the approved Airscale source", () => {
   ]);
 });
 
-test("MCP contract contains the exact thirty-two tools in approved groups", () => {
+test("MCP contract contains the exact thirty-one tools in approved groups", () => {
   const tools = contract().tools;
-  assert.equal(tools.length, 32);
-  assert.equal(new Set(tools.map(({ name }) => name)).size, 32);
+  assert.equal(tools.length, 31);
+  assert.equal(new Set(tools.map(({ name }) => name)).size, 31);
   assert.deepEqual(tools.map(({ name }) => name), EXPECTED_NAMES);
   assert.deepEqual(Object.keys(EXPECTED_TOOL_METADATA), EXPECTED_NAMES);
   assert.deepEqual(Object.keys(EXPECTED_SCHEMA_HASHES).sort(), [...EXPECTED_NAMES].sort());
   assert.deepEqual(
     Object.fromEntries(Object.keys(GROUPS).map((category) => [category, tools.filter((tool) => tool.category === category).length])),
-    { workspace: 1, search_and_research: 7, contact_and_profile_enrichment: 12, checks_and_signals: 5, async_exports_and_managed_batches: 7 }
+    { workspace: 1, search_and_research: 6, contact_and_profile_enrichment: 12, checks_and_signals: 5, async_exports_and_managed_batches: 7 }
   );
   for (const [category, names] of Object.entries(GROUPS)) {
     assert.deepEqual(tools.filter((tool) => tool.category === category).map(({ name }) => name), names);
@@ -486,9 +477,9 @@ test("core tools map one-to-one to approved OpenAPI operations and batch tools m
   const coreOperationIds = new Set(tools.map(({ operationId }) => operationId));
   const coreOperations = operations.filter(({ operationId }) => coreOperationIds.has(operationId));
 
-  assert.equal(tools.length, 25);
-  assert.equal(new Set(tools.map(({ operationId }) => operationId)).size, 25);
-  assert.equal(coreOperations.length, 25);
+  assert.equal(tools.length, 24);
+  assert.equal(new Set(tools.map(({ operationId }) => operationId)).size, 24);
+  assert.equal(coreOperations.length, 24);
   assert.deepEqual(Object.fromEntries(tools.map(({ name, operationId }) => [name, operationId])), CORE_OPERATION_IDS);
   assert.deepEqual(
     tools.map(({ operationId }) => operationId).sort(),

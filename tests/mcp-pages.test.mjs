@@ -672,7 +672,7 @@ test("connection guides follow distinct ChatGPT and Claude setup narratives", ()
     assert.match(body, /https:\/\/mcp\.airscale\.io\/mcp/);
     assert.match(body, /browser[\s\S]*sign[ -]?in|sign[ -]?in[\s\S]*browser/i);
     assert.match(body, /<Steps>[\s\S]*(?:<Step\b[\s\S]*){4,}<\/Steps>/);
-    assert.match(body, /32 typed tools/);
+    assert.match(body, /31 typed tools/);
     assert.match(body, /airscale_check_credits/);
     assert.match(body, /free|does not debit credits/i);
     assert.match(body, /Airsearch costs 2 credits per call/);
@@ -882,7 +882,7 @@ test("MCP entry page mirrors the AirSchool Claude-demo narrative", () => {
     body.indexOf("## How credits work")
   );
   assert.equal((capabilitySection.match(/^- /gm) ?? []).length, 8);
-  assert.match(body, /32 typed tools/);
+  assert.match(body, /31 typed tools/);
   assert.match(body, /\[MCP tool catalog\]\(\/mcp\/tools\)/);
   assert.match(body, /Find People costs 0\.1 credit per returned person/);
   assert.match(body, /Find Companies costs 0\.1 credit per returned company/);

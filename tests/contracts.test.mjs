@@ -27,7 +27,6 @@ const EXPECTED_OPERATIONS = [
   ["POST", "/v1/meta-ads", "lookupMetaAds", "api-reference/miscale-news/meta-ads", "Miscellaneous"],
   ["POST", "/v1/email-verifier", "verifyEmail", "api-reference/miscale-news/email-verifier", "Miscellaneous"],
   ["POST", "/v1/leads-finder", "searchLeadsFinder", "api-reference/leads-finder", "Search and discovery"],
-  ["POST", "/v1/leads-finder/preview", "previewLeadsFinder", "api-reference/leads-finder/preview", "Search and discovery"],
   ["POST", "/v1/dnc-check", "checkDnc", "api-reference/dnc-checker", "Miscellaneous"]
 ];
 const EXPECTED_PAGES = [
@@ -219,10 +218,6 @@ const EXPECTED_CONTRACTS = deepFreeze({
     {
       "method": "POST",
       "path": "/v1/leads-finder"
-    },
-    {
-      "method": "POST",
-      "path": "/v1/leads-finder/preview"
     }
   ],
   "sourceFiles": [
@@ -299,14 +294,14 @@ test("operation catalog preserves the approved operation order and routing metad
   const catalog = JSON.parse(readFileSync("contracts/public-api-operations.json", "utf8"));
   assert.equal(catalog.sourceRepository, "ViceScale/airscale-code");
   assert.equal(catalog.sourceSha, EXPECTED_SOURCE_SHA);
-  assert.equal(catalog.operations.length, 25);
+  assert.equal(catalog.operations.length, 24);
   assert.deepEqual(
     catalog.operations.map(({ method, path, operationId, page, tag }) => [method, path, operationId, page, tag]),
     EXPECTED_OPERATIONS
   );
-  assert.equal(new Set(catalog.operations.map(({ method, path }) => `${method} ${path}`)).size, 25);
-  assert.equal(new Set(catalog.operations.map(({ operationId }) => operationId)).size, 25);
-  assert.equal(new Set(catalog.operations.map(({ page }) => page)).size, 25);
+  assert.equal(new Set(catalog.operations.map(({ method, path }) => `${method} ${path}`)).size, 24);
+  assert.equal(new Set(catalog.operations.map(({ operationId }) => operationId)).size, 24);
+  assert.equal(new Set(catalog.operations.map(({ page }) => page)).size, 24);
 });
 
 test("operation catalog links each operation to matching source-page evidence", () => {

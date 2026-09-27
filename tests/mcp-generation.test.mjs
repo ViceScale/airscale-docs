@@ -61,8 +61,7 @@ const CATEGORY_GROUPS = [
       "airscale_find_companies",
       "airscale_find_companies_filter_values",
       "airscale_airsearch",
-      "airscale_leads_finder",
-      "airscale_leads_finder_preview"
+      "airscale_leads_finder"
     ]
   },
   {
@@ -430,12 +429,12 @@ function waitForChildExit(child, stdout, stderr) {
 test("catalog renderer emits the exact page framing, category order, headings, anchors, and summary links", () => {
   const contract = readContract();
   const source = renderCatalog(contract);
-  const expectedFrontmatter = `---\ntitle: "MCP tool catalog"\ndescription: "Browse all 32 typed tools exposed by the Airschool MCP server."\ncanonical: "https://airscale.mintlify.app/mcp/tools"\n---\n`;
+  const expectedFrontmatter = `---\ntitle: "MCP tool catalog"\ndescription: "Browse all 31 typed tools exposed by the Airschool MCP server."\ncanonical: "https://airscale.mintlify.app/mcp/tools"\n---\n`;
 
   assert.equal(source.startsWith(expectedFrontmatter), true);
   assert.match(
     source,
-    /Airschool MCP exposes 32 typed tools for workspace checks, search, enrichment, research, managed batches, and asynchronous exports\./
+    /Airschool MCP exposes 31 typed tools for workspace checks, search, enrichment, research, managed batches, and asynchronous exports\./
   );
   assert.match(source, /<Warning>[\s\S]*Review each tool's credit behavior[\s\S]*`confirm_credit_spend: true`[\s\S]*<\/Warning>/);
   assert.equal(source.endsWith("\n"), true);
@@ -503,7 +502,7 @@ test("catalog documents Airsearch cost, paid confirmations, core API links, and 
     assert.match(block, /credit_confirmation_required[\s\S]{0,180}(?:approval|approved)[\s\S]{0,180}(?:rerun|run the same request again)/i);
   }
 
-  assert.equal(occurrences(source, "**Related API reference:**"), 25);
+  assert.equal(occurrences(source, "**Related API reference:**"), 24);
   for (const tool of contract.tools) {
     const index = contract.tools.indexOf(tool);
     const block = toolBlock(source, tool, contract.tools[index + 1]);
@@ -525,7 +524,7 @@ test("every generated tools/call example parses, stays synthetic, and validates 
   const ajv = new Ajv2020({ strict: false });
   addFormats(ajv);
 
-  assert.equal(examples.length, 32);
+  assert.equal(examples.length, 31);
   for (const [index, example] of examples.entries()) {
     const tool = contract.tools[index];
     assert.deepEqual(
@@ -653,7 +652,7 @@ test("escaped-pipe-aware parsing proves exact input and summary table cell count
     }
   }
   assert.ok(inputRows > 22, "input headers and rendered field rows were parsed");
-  assert.equal(summaryRows, 37, "five category headers plus thirty-two tool summary rows were parsed");
+  assert.equal(summaryRows, 36, "five category headers plus thirty-one tool summary rows were parsed");
 
   const proseContract = readContract();
   proseContract.tools[0].description = "Backslash \\| pipe";
@@ -1212,11 +1211,11 @@ test("public manifest exposes only public metadata, exact schemas, and documenta
   ]);
   assert.equal(output.schemaVersion, "1.0");
   assert.equal(output.name, "Airschool MCP tools");
-  assert.equal(output.description, "Browse all 32 typed tools exposed by the Airschool MCP server.");
+  assert.equal(output.description, "Browse all 31 typed tools exposed by the Airschool MCP server.");
   assert.equal(output.serverUrl, "https://mcp.airscale.io/mcp");
-  assert.equal(output.toolCount, 32);
+  assert.equal(output.toolCount, 31);
   assert.equal(output.sourceSha, contract.sourceSha);
-  assert.equal(output.tools.length, 32);
+  assert.equal(output.tools.length, 31);
   assert.equal(Object.hasOwn(output, "sourceFiles"), false);
   assert.equal(Object.hasOwn(output, "sourceRepository"), false);
 
@@ -3019,7 +3018,7 @@ test("agent renderers publish only the platform-supported custom agent files", (
 
   assert.match(outputs["skill.md"], /^---\nname: airscale\ndescription: Search for people and companies, enrich professional contact data, run web research, and create asynchronous exports through the Airschool API or MCP server\./);
   assert.match(outputs["skill.md"], /version: "1\.0"/);
-  assert.match(outputs["skill.md"], /source_sha: "6ae3cc2e6e93971f2172d240e0bc0b6c90dd3772"/);
+  assert.match(outputs["skill.md"], /source_sha: "c55176dba55f958f89048a51408f2170caef41de"/);
   assert.match(outputs["skill.md"], /API authentication[\s\S]*MCP authentication/i);
   assert.match(outputs["skill.md"], /Airsearch costs 2 credits per call/);
   assert.match(outputs["skill.md"], /confirm_credit_spend[\s\S]*explicit/i);
