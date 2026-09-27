@@ -42,7 +42,7 @@ These guides contain the client-specific connection steps; this page keeps the s
 - **Airsearch:** answer natural-language research questions with structured results.
 - **Downloadable exports:** create bounded people, company, or managed contact files and retrieve them when complete.
 
-The [MCP tool catalog](/mcp/tools) is the schema reference for all 32 typed tools. Managed contact enrichment is a work-email-only flow; it does not add mobile numbers, personal emails, or profile enrichment.
+The [MCP tool catalog](/mcp/tools) is the schema reference for all 31 typed tools. Managed contact enrichment is a work-email-only flow; it does not add mobile numbers, personal emails, or profile enrichment.
 
 ## Export lifecycle
 
@@ -121,7 +121,7 @@ Start once. While status is `queued` or `running`, poll status for the same expo
     For OAuth, restart browser sign-in and verify the intended workspace. For a header-capable developer client, confirm that its protected runtime can read the configured secret.
   </Accordion>
   <Accordion title="The Airschool tools do not appear">
-    Confirm that the server URL is exactly `https://mcp.airscale.io/mcp`, then disconnect and reconnect so the client refreshes all 32 tools.
+    Confirm that the server URL is exactly `https://mcp.airscale.io/mcp`, then disconnect and reconnect so the client refreshes all 31 tools.
   </Accordion>
   <Accordion title="A request reports insufficient credits">
     Run `airscale_check_credits`, reduce the paid scope, and review the maximum again. Do not repeatedly submit the same paid request.

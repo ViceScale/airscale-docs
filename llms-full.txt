@@ -2748,8 +2748,7 @@ All numeric limits below apply per workspace. A shared limit is one combined all
 | [WhatsApp check status](/api-reference/miscale-news/whatsapp-check/status) | No endpoint-specific GET throttle. |
 | [Meta Ads](/api-reference/miscale-news/meta-ads) | 60 requests per minute per workspace. |
 | [Email verifier](/api-reference/miscale-news/email-verifier) | No endpoint-specific throttle. |
-| [Leads Finder](/api-reference/leads-finder) | 5 requests per second per workspace, shared by both Leads Finder routes. |
-| [Leads Finder preview alias](/api-reference/leads-finder/preview) | 5 requests per second per workspace, shared by both Leads Finder routes. |
+| [Leads Finder](/api-reference/leads-finder) | 5 requests per second per workspace. |
 | [DNC Checker](/api-reference/dnc-checker) | 5 requests per second per workspace. |
 
 Find people shares its **6 requests per second** with Count people. Find companies shares its **6 requests per second** with Company filter values. These are separate limits for the two endpoint families.
@@ -2880,12 +2879,12 @@ Use the same `query` to retrieve the counted audience, [Find companies](/api-ref
 
 Source: https://docs.airscale.io/api-reference/leads-finder.md
 
-Description: Search people with Leads Finder filters and page-based pagination. Rate limit: 5 requests per second per workspace, shared by both Leads Finder routes.
+Description: Search people with Leads Finder filters and page-based pagination. Rate limit: 5 requests per second per workspace.
 
 Search for people using person and company filters. This operation uses a `filters` object and zero-based `page` pagination. [Find people](/api-reference/find-people) uses a different `query` model and cursor pagination; their request bodies are not interchangeable.
 
 <Note>
-The limit is 5 requests per second per workspace, shared with the [preview alias](/api-reference/leads-finder/preview). Both routes cost 0.1 credits per returned lead; empty pages cost zero credits. At least 0.1 credits must be available before searching; credit admission can reserve up to `size × 0.1` credits before the request runs. The preview alias is not a free count operation.
+The limit is 5 requests per second per workspace. Each returned lead costs 0.1 credits; empty pages cost zero credits. At least 0.1 credits must be available before searching; credit admission can reserve up to `size × 0.1` credits before the request runs.
 </Note>
 
 ## Choose filters
@@ -3637,7 +3636,7 @@ Prospect without leaving your AI chat. Airschool connects Claude, ChatGPT, and o
 
 ## What is the Airschool MCP?
 
-The Airschool MCP gives your assistant 32 typed tools that can:
+The Airschool MCP gives your assistant 31 typed tools that can:
 
 - Check your workspace credit balance.
 - Search for people and companies, including with Leads Finder filters.
@@ -3718,7 +3717,7 @@ https://mcp.airscale.io/mcp
 
 ## What ChatGPT can do with Airschool MCP
 
-Airschool MCP gives ChatGPT 32 typed tools that can:
+Airschool MCP gives ChatGPT 31 typed tools that can:
 
 - Check the authorized workspace's credit balance.
 - Search for people and companies, including with Leads Finder filters.
@@ -3755,7 +3754,7 @@ After OAuth, Airschool's MCP server resolves the authorized workspace's current 
     Under **Connection**, choose the public endpoint option and enter `https://mcp.airscale.io/mcp`, including the `/mcp` path. Create the connection. If prompted, complete browser OAuth, sign in to Airschool, select the intended workspace, and return to ChatGPT. Do not enter an API key or static authorization value.
   </Step>
   <Step title="Review discovered tools">
-    Review the tools and metadata discovered from the server. Confirm that the Airschool connection shows the expected 32 typed tools before testing it.
+    Review the tools and metadata discovered from the server. Confirm that the Airschool connection shows the expected 31 typed tools before testing it.
   </Step>
   <Step title="Verify the connection for free">
     Start a new conversation, add the Airschool MCP connection from the tools menu, and run `airscale_check_credits` without another tool. A returned balance confirms tool discovery and authentication to an Airschool workspace without debiting credits, but it does not identify which workspace. Separately verify the workspace shown during OAuth before paid actions.
@@ -3839,7 +3838,7 @@ https://mcp.airscale.io/mcp
 
 ## What Claude can do with Airschool MCP
 
-Airschool MCP gives Claude 32 typed tools that can:
+Airschool MCP gives Claude 31 typed tools that can:
 
 - Check the authorized workspace's credit balance.
 - Search for people and companies, including with Leads Finder filters.
@@ -4032,7 +4031,7 @@ These guides contain the client-specific connection steps; this page keeps the s
 - **Airsearch:** answer natural-language research questions with structured results.
 - **Downloadable exports:** create bounded people, company, or managed contact files and retrieve them when complete.
 
-The [MCP tool catalog](/mcp/tools) is the schema reference for all 32 typed tools. Managed contact enrichment is a work-email-only flow; it does not add mobile numbers, personal emails, or profile enrichment.
+The [MCP tool catalog](/mcp/tools) is the schema reference for all 31 typed tools. Managed contact enrichment is a work-email-only flow; it does not add mobile numbers, personal emails, or profile enrichment.
 
 ## Export lifecycle
 
@@ -4111,7 +4110,7 @@ Start once. While status is `queued` or `running`, poll status for the same expo
     For OAuth, restart browser sign-in and verify the intended workspace. For a header-capable developer client, confirm that its protected runtime can read the configured secret.
   </Accordion>
   <Accordion title="The Airschool tools do not appear">
-    Confirm that the server URL is exactly `https://mcp.airscale.io/mcp`, then disconnect and reconnect so the client refreshes all 32 tools.
+    Confirm that the server URL is exactly `https://mcp.airscale.io/mcp`, then disconnect and reconnect so the client refreshes all 31 tools.
   </Accordion>
   <Accordion title="A request reports insufficient credits">
     Run `airscale_check_credits`, reduce the paid scope, and review the maximum again. Do not repeatedly submit the same paid request.
@@ -6058,5 +6057,5 @@ When exporting to platforms like Lemlist, you can map Airschool columns to the c
 
 ## Machine-readable contracts
 
-- [MCP tool catalog](https://docs.airscale.io/mcp/tools.md): Hosted Markdown for all 32 operational MCP tools.
+- [MCP tool catalog](https://docs.airscale.io/mcp/tools.md): Hosted Markdown for all 31 operational MCP tools.
 - [Agent resource directory](https://docs.airscale.io/mcp/agent-resources.md): Human and machine entry points for Airschool agents and documentation consumers.

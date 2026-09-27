@@ -1,6 +1,6 @@
 ---
 title: "Leads Finder"
-description: "Search people with Leads Finder filters and page-based pagination. Rate limit: 5 requests per second per workspace, shared by both Leads Finder routes."
+description: "Search people with Leads Finder filters and page-based pagination. Rate limit: 5 requests per second per workspace."
 canonical: "https://docs.airscale.io/api-reference/leads-finder"
 openapi: "/openapi.json POST /v1/leads-finder"
 ---
@@ -8,7 +8,7 @@ openapi: "/openapi.json POST /v1/leads-finder"
 Search for people using person and company filters. This operation uses a `filters` object and zero-based `page` pagination. [Find people](/api-reference/find-people) uses a different `query` model and cursor pagination; their request bodies are not interchangeable.
 
 <Note>
-The limit is 5 requests per second per workspace, shared with the [preview alias](/api-reference/leads-finder/preview). Both routes cost 0.1 credits per returned lead; empty pages cost zero credits. At least 0.1 credits must be available before searching; credit admission can reserve up to `size × 0.1` credits before the request runs. The preview alias is not a free count operation.
+The limit is 5 requests per second per workspace. Each returned lead costs 0.1 credits; empty pages cost zero credits. At least 0.1 credits must be available before searching; credit admission can reserve up to `size × 0.1` credits before the request runs.
 </Note>
 
 ## Choose filters
