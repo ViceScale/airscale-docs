@@ -3,8 +3,8 @@
   "status": 200,
   "source": "code",
   "sourceRepository": "ViceScale/airscale-code",
-  "sourceSha": "3ba4f580f0d2bc5cad30d8fe87caf73585ba5cbd",
-  "evidence": "workers/public-api/linkedin-content-worker.js:233-244,606-620; workers/public-api/linkedin-content-worker.test.mjs:282-300",
+  "sourceSha": "6ec34a03d63308d639833e388d41488fb40c8df6",
+  "evidence": "workers/public-api/linkedin-content-worker.js:247-258,647-661; workers/public-api/linkedin-content-worker.test.mjs:326-344",
   "body": {
     "items": [
       {

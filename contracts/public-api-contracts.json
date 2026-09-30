@@ -107,11 +107,13 @@
       ]
     },
     "linkedin-content": {
-      "sourceSha": "3ba4f580f0d2bc5cad30d8fe87caf73585ba5cbd",
+      "sourceSha": "6ec34a03d63308d639833e388d41488fb40c8df6",
       "endpoints": [
         { "method": "POST", "path": "/v1/post-search" },
         { "method": "POST", "path": "/v1/profile-comments" },
-        { "method": "POST", "path": "/v1/comment-likers" }
+        { "method": "POST", "path": "/v1/comment-likers" },
+        { "method": "POST", "path": "/v1/profile-posts" },
+        { "method": "POST", "path": "/v1/company-posts" }
       ],
       "sourceFiles": [
         "workers/public-api/linkedin-content-worker.js",

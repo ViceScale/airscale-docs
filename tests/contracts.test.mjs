@@ -25,6 +25,8 @@ const EXPECTED_OPERATIONS = [
   ["POST", "/v1/post-search", "searchLinkedinPosts", "api-reference/post-search", "LinkedIn content"],
   ["POST", "/v1/profile-comments", "listLinkedinProfileComments", "api-reference/profile-comments", "LinkedIn content"],
   ["POST", "/v1/comment-likers", "listLinkedinCommentLikers", "api-reference/comment-likers", "LinkedIn content"],
+  ["POST", "/v1/profile-posts", "listLinkedinProfilePosts", "api-reference/profile-posts", "LinkedIn content"],
+  ["POST", "/v1/company-posts", "listLinkedinCompanyPosts", "api-reference/company-posts", "LinkedIn content"],
   ["POST", "/v1/whatsapp-check", "checkWhatsapp", "api-reference/miscellaneous/whatsapp-check", "Miscellaneous"],
   ["GET", "/v1/whatsapp-check/operations/{operation_id}", "getWhatsappCheckOperation", "api-reference/miscellaneous/whatsapp-check/status", "Miscellaneous"],
   ["POST", "/v1/meta-ads", "lookupMetaAds", "api-reference/miscellaneous/meta-ads", "Miscellaneous"],
@@ -171,11 +173,13 @@ const EXPECTED_CONTRACTS = deepFreeze({
       ]
     },
     "linkedin-content": {
-      sourceSha: "3ba4f580f0d2bc5cad30d8fe87caf73585ba5cbd",
+      sourceSha: "6ec34a03d63308d639833e388d41488fb40c8df6",
       endpoints: [
         { method: "POST", path: "/v1/post-search" },
         { method: "POST", path: "/v1/profile-comments" },
-        { method: "POST", path: "/v1/comment-likers" }
+        { method: "POST", path: "/v1/comment-likers" },
+        { method: "POST", path: "/v1/profile-posts" },
+        { method: "POST", path: "/v1/company-posts" }
       ],
       sourceFiles: [
         "workers/public-api/linkedin-content-worker.js",
@@ -310,14 +314,14 @@ test("operation catalog preserves the approved operation order and routing metad
   const catalog = JSON.parse(readFileSync("contracts/public-api-operations.json", "utf8"));
   assert.equal(catalog.sourceRepository, "ViceScale/airscale-code");
   assert.equal(catalog.sourceSha, EXPECTED_SOURCE_SHA);
-  assert.equal(catalog.operations.length, 27);
+  assert.equal(catalog.operations.length, 29);
   assert.deepEqual(
     catalog.operations.map(({ method, path, operationId, page, tag }) => [method, path, operationId, page, tag]),
     EXPECTED_OPERATIONS
   );
-  assert.equal(new Set(catalog.operations.map(({ method, path }) => `${method} ${path}`)).size, 27);
-  assert.equal(new Set(catalog.operations.map(({ operationId }) => operationId)).size, 27);
-  assert.equal(new Set(catalog.operations.map(({ page }) => page)).size, 27);
+  assert.equal(new Set(catalog.operations.map(({ method, path }) => `${method} ${path}`)).size, 29);
+  assert.equal(new Set(catalog.operations.map(({ operationId }) => operationId)).size, 29);
+  assert.equal(new Set(catalog.operations.map(({ page }) => page)).size, 29);
 });
 
 test("operation catalog links each operation to matching source-page evidence", () => {

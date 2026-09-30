@@ -330,7 +330,7 @@ test("base spec identifies the Airscale public API", () => {
     { name: "Contact data", description: "Find professional and personal contact data." },
     { name: "Profiles and reverse lookup", description: "Extract profiles or resolve a person from known contact data." },
     { name: "Post engagement", description: "Retrieve and enrich people who liked or commented on LinkedIn posts." },
-    { name: "LinkedIn content", description: "Search LinkedIn posts and retrieve profile comments and comment reactions." },
+    { name: "LinkedIn content", description: "Search LinkedIn posts, read profile and company feeds, and retrieve profile comments and comment reactions." },
     { name: "Account", description: "Inspect workspace account state." },
     { name: "Miscellaneous", description: "Check WhatsApp availability, Meta ads, and email deliverability." }
   ]);
@@ -1810,12 +1810,14 @@ test("LinkedIn content operations model per-request billing, cursors, and unconf
   assert.deepEqual(linkedinContentOperations.map(({ method, path }) => `${method} ${path}`), [
     "POST /v1/post-search",
     "POST /v1/profile-comments",
-    "POST /v1/comment-likers"
+    "POST /v1/comment-likers",
+    "POST /v1/profile-posts",
+    "POST /v1/company-posts"
   ]);
   for (const entry of linkedinContentOperations) {
     const operation = entry.operation;
     assert.equal(operation.tags[0], "LinkedIn content");
-    assert.equal(operation["x-airscale-source-sha"], "3ba4f580f0d2bc5cad30d8fe87caf73585ba5cbd");
+    assert.equal(operation["x-airscale-source-sha"], "6ec34a03d63308d639833e388d41488fb40c8df6");
     assert.equal(operation["x-airscale-rate-limit"], "180 requests per fixed minute per workspace, counted separately for each LinkedIn content endpoint; pagination requests and retries count.");
     assert.match(operation["x-airscale-credit-cost"], /^1 credit per successful request, including empty pages/);
     assert.equal(operation.parameters, undefined, "there is no caller idempotency header");
@@ -1832,15 +1834,26 @@ test("LinkedIn content operations model per-request billing, cursors, and unconf
     assert.doesNotMatch(JSON.stringify(operation), /harvest/i, "the public contract never names the data source");
     assertUnauthorizedReference(operation);
   }
-  const [search, comments, likers] = linkedinContentOperations.map(({ operation }) => operation);
+  const [search, comments, likers, profilePosts, companyPosts] = linkedinContentOperations.map(({ operation }) => operation);
   assert.equal(requestSchema(search).required, undefined);
   assert.deepEqual(requestSchema(comments).required, ["profile_url"]);
   assert.deepEqual(requestSchema(comments).properties.posted_within.enum, ["24h", "week", "month", null]);
   assert.deepEqual(requestSchema(likers).required, ["comment_url"]);
   assert.equal(comments.responses["200"].content["application/json"].examples.page.value.pagination.total, null);
+  assert.deepEqual(requestSchema(profilePosts).required, ["profile_url"]);
+  assert.deepEqual(requestSchema(companyPosts).required, ["company_url"]);
+  for (const feed of [profilePosts, companyPosts]) {
+    assert.deepEqual(requestSchema(feed).properties.posted_within.enum, ["1h", "24h", "week", "month", "3months", "6months", "year", null]);
+  }
+  assert.equal(profilePosts.responses["200"].content["application/json"].examples.page.value.pagination.total, null);
+  for (const postOperation of [search, profilePosts, companyPosts]) {
+    const post = postOperation.responses["200"].content["application/json"].schema.properties.items.items;
+    assert.ok(post.required.includes("feed_context"), "post rows carry feed_context");
+    assert.deepEqual(post.properties.feed_context.type, ["string", "null"]);
+  }
 });
 
-test("committed OpenAPI 3.1 artifact matches the pinned 27-operation catalog exactly", async () => {
+test("committed OpenAPI 3.1 artifact matches the pinned 29-operation catalog exactly", async () => {
   const parsed = await SwaggerParser.validate("openapi.json");
   const generated = buildSpec();
   const committed = committedSpec();
@@ -1851,7 +1864,7 @@ test("committed OpenAPI 3.1 artifact matches the pinned 27-operation catalog exa
   assert.deepEqual(committed.servers, baseSpec.servers);
   assert.deepEqual(committed.security, baseSpec.security);
   assert.equal(approvedCatalog.sourceSha, SOURCE_SHA);
-  assert.equal(approvedCatalog.operations.length, 27);
+  assert.equal(approvedCatalog.operations.length, 29);
 
   const actualOperations = [];
   for (const [path, pathItem] of Object.entries(committed.paths)) {
@@ -1859,8 +1872,8 @@ test("committed OpenAPI 3.1 artifact matches the pinned 27-operation catalog exa
       if (pathItem[method]) actualOperations.push({ method: method.toUpperCase(), path, operation: pathItem[method] });
     }
   }
-  assert.equal(actualOperations.length, 27);
-  assert.equal(actualOperations.filter(({ method }) => method === "POST").length, 25);
+  assert.equal(actualOperations.length, 29);
+  assert.equal(actualOperations.filter(({ method }) => method === "POST").length, 27);
   assert.equal(actualOperations.filter(({ method }) => method === "GET").length, 2);
   assert.equal(actualOperations.filter(({ method }) => method === "PATCH").length, 0);
   assert.equal(actualOperations.filter(({ method }) => method === "DELETE").length, 0);

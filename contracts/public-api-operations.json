@@ -245,7 +245,7 @@
       "page": "api-reference/post-search",
       "tag": "LinkedIn content",
       "sourcePage": "linkedin-content",
-      "sourceSha": "3ba4f580f0d2bc5cad30d8fe87caf73585ba5cbd",
+      "sourceSha": "6ec34a03d63308d639833e388d41488fb40c8df6",
       "sourceFiles": [
         "workers/public-api/linkedin-content-worker.js",
         "workers/public-api/linkedin-content-worker.test.mjs"
@@ -258,7 +258,7 @@
       "page": "api-reference/profile-comments",
       "tag": "LinkedIn content",
       "sourcePage": "linkedin-content",
-      "sourceSha": "3ba4f580f0d2bc5cad30d8fe87caf73585ba5cbd",
+      "sourceSha": "6ec34a03d63308d639833e388d41488fb40c8df6",
       "sourceFiles": [
         "workers/public-api/linkedin-content-worker.js",
         "workers/public-api/linkedin-content-worker.test.mjs"
@@ -271,7 +271,33 @@
       "page": "api-reference/comment-likers",
       "tag": "LinkedIn content",
       "sourcePage": "linkedin-content",
-      "sourceSha": "3ba4f580f0d2bc5cad30d8fe87caf73585ba5cbd",
+      "sourceSha": "6ec34a03d63308d639833e388d41488fb40c8df6",
+      "sourceFiles": [
+        "workers/public-api/linkedin-content-worker.js",
+        "workers/public-api/linkedin-content-worker.test.mjs"
+      ]
+    },
+    {
+      "method": "POST",
+      "path": "/v1/profile-posts",
+      "operationId": "listLinkedinProfilePosts",
+      "page": "api-reference/profile-posts",
+      "tag": "LinkedIn content",
+      "sourcePage": "linkedin-content",
+      "sourceSha": "6ec34a03d63308d639833e388d41488fb40c8df6",
+      "sourceFiles": [
+        "workers/public-api/linkedin-content-worker.js",
+        "workers/public-api/linkedin-content-worker.test.mjs"
+      ]
+    },
+    {
+      "method": "POST",
+      "path": "/v1/company-posts",
+      "operationId": "listLinkedinCompanyPosts",
+      "page": "api-reference/company-posts",
+      "tag": "LinkedIn content",
+      "sourcePage": "linkedin-content",
+      "sourceSha": "6ec34a03d63308d639833e388d41488fb40c8df6",
       "sourceFiles": [
         "workers/public-api/linkedin-content-worker.js",
         "workers/public-api/linkedin-content-worker.test.mjs"

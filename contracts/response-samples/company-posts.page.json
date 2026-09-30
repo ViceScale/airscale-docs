@@ -1,0 +1,58 @@
+{
+  "operation": "POST /v1/company-posts",
+  "status": 200,
+  "source": "code",
+  "sourceRepository": "ViceScale/airscale-code",
+  "sourceSha": "6ec34a03d63308d639833e388d41488fb40c8df6",
+  "evidence": "workers/public-api/linkedin-content-worker.js:72-78,247-258,366-375,571-588,599-619; workers/public-api/linkedin-content-worker.test.mjs:285-289,314-323",
+  "body": {
+    "items": [
+      {
+        "post_url": "https://www.linkedin.com/posts/example-company_launch-activity-7511035039397339137-abcd",
+        "post_id": "7511035039397339137",
+        "content": "Launch day",
+        "posted_at": "2026-09-30T11:00:00.000Z",
+        "author": {
+          "type": "company",
+          "name": "Example Company",
+          "linkedin_url": "https://www.linkedin.com/company/example-company",
+          "headline": "1,117 followers",
+          "picture_url": "https://www.example.org/images/example-company.png"
+        },
+        "likes": 0,
+        "comments": 0,
+        "shares": 0,
+        "feed_context": null,
+        "image_urls": []
+      },
+      {
+        "post_url": "https://www.linkedin.com/posts/example-company_partners-activity-7511035039397339138-efgh",
+        "post_id": "7511035039397339138",
+        "content": "Our partner launch.",
+        "posted_at": "2026-09-29T09:30:00.000Z",
+        "author": {
+          "type": "company",
+          "name": "Example Company",
+          "linkedin_url": "https://www.linkedin.com/company/example-company",
+          "headline": "1,117 followers",
+          "picture_url": "https://www.example.org/images/example-company.png"
+        },
+        "likes": 12,
+        "comments": 3,
+        "shares": 1,
+        "feed_context": "Example Company collaborated on this",
+        "image_urls": [
+          "https://www.example.org/images/example-post.png"
+        ]
+      }
+    ],
+    "pagination": {
+      "has_more": true,
+      "next_cursor": "eyJ2IjoxLCJyIjoiZXhhbXBsZSJ9",
+      "total": 500
+    },
+    "billing": {
+      "credits_consumed": 1
+    }
+  }
+}

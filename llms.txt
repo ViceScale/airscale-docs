@@ -111,6 +111,8 @@
 - [Post search](https://airscale.mintlify.app/api-reference/post-search.md): Search LinkedIn posts by keywords, authors, companies, mentions, groups, content type, and date. Rate limit: 180 requests per fixed minute per workspace, counted separately for each LinkedIn content endpoint; pagination requests and retries count.
 - [Profile comments](https://airscale.mintlify.app/api-reference/profile-comments.md): Retrieve the comments a LinkedIn profile wrote, each with the post it was left on. Rate limit: 180 requests per fixed minute per workspace, counted separately for each LinkedIn content endpoint; pagination requests and retries count.
 - [Comment likers](https://airscale.mintlify.app/api-reference/comment-likers.md): Retrieve the people who reacted to one LinkedIn comment. Rate limit: 180 requests per fixed minute per workspace, counted separately for each LinkedIn content endpoint; pagination requests and retries count.
+- [Profile posts](https://airscale.mintlify.app/api-reference/profile-posts.md): Retrieve a LinkedIn profile's feed, newest first, including the person's posts and reposts. Rate limit: 180 requests per fixed minute per workspace, counted separately for each LinkedIn content endpoint; pagination requests and retries count.
+- [Company posts](https://airscale.mintlify.app/api-reference/company-posts.md): Retrieve a LinkedIn company page's feed, newest first. Rate limit: 180 requests per fixed minute per workspace, counted separately for each LinkedIn content endpoint; pagination requests and retries count.
 
 ## API Reference — Miscellaneous
 

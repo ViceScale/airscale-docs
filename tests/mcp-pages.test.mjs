@@ -63,7 +63,9 @@ const API_REFERENCE_TAB = {
         "api-reference/post-commenters",
         "api-reference/post-search",
         "api-reference/profile-comments",
-        "api-reference/comment-likers"
+        "api-reference/comment-likers",
+        "api-reference/profile-posts",
+        "api-reference/company-posts"
       ],
       expanded: false
     },
