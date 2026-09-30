@@ -1,0 +1,41 @@
+{
+  "operation": "POST /v1/profile-comments",
+  "status": 200,
+  "source": "code",
+  "sourceRepository": "ViceScale/airscale-code",
+  "sourceSha": "3ba4f580f0d2bc5cad30d8fe87caf73585ba5cbd",
+  "evidence": "workers/public-api/linkedin-content-worker.js:233-244,580-604; workers/public-api/linkedin-content-worker.test.mjs:236-280",
+  "body": {
+    "items": [
+      {
+        "comment_url": "https://www.linkedin.com/posts/example-person_sales-activity-7511035039397339136-8myb?commentUrn=urn%3Ali%3Acomment%3A%28activity%3A7511035039397339136%2C7511040000000000000%29",
+        "comment_id": "7511040000000000000",
+        "comment": "Great point, thanks for sharing.",
+        "commented_at": "2026-09-25T22:03:41.169Z",
+        "likes": 104,
+        "replies": 4,
+        "post": {
+          "post_url": "https://www.linkedin.com/posts/example-person_sales-activity-7511035039397339136-8myb",
+          "post_id": "7511035039397339136",
+          "content": "We automate sales.",
+          "posted_at": "2026-09-24T10:00:00.000Z",
+          "author": {
+            "type": "person",
+            "name": "Example Person",
+            "linkedin_url": "https://www.linkedin.com/in/example-person",
+            "headline": null,
+            "picture_url": null
+          }
+        }
+      }
+    ],
+    "pagination": {
+      "has_more": true,
+      "next_cursor": "eyJ2IjoxLCJyIjoiZXhhbXBsZSJ9",
+      "total": null
+    },
+    "billing": {
+      "credits_consumed": 1
+    }
+  }
+}

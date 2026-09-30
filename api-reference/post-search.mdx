@@ -1,0 +1,64 @@
+---
+title: "Post search"
+description: "Search LinkedIn posts by keywords, authors, companies, mentions, groups, content type, and date. Rate limit: 180 requests per fixed minute per workspace, counted separately for each LinkedIn content endpoint; pagination requests and retries count."
+canonical: "https://airscale.mintlify.app/api-reference/post-search"
+openapi: "/openapi.json POST /v1/post-search"
+---
+
+Search LinkedIn posts and retrieve one synchronous page of up to 50 posts, each with its author, content, publication date, engagement counts, and image URLs. Rows are returned as found on LinkedIn, without profile enrichment.
+
+<Note>
+Each successful request costs **1 credit**, whatever the number of posts returned. A successful empty page is also charged. Invalid input and failed requests are not charged. The workspace needs at least 1 credit to start a request.
+</Note>
+
+## Authentication
+
+Send your Airscale workspace API key as a Bearer token. Both V1 and V2 workspace API keys are accepted.
+
+## Filters
+
+Provide `keywords` (up to 200 characters) or at least one author, mention, or group filter. All filters you send combine, so a post must match every one of them.
+
+| Field | Matches |
+| --- | --- |
+| `keywords` | Words in the post. |
+| `author_keywords` | Words in the authors' profiles (up to 200 characters). |
+| `author_profile_urls` | Posts written by these profiles (`linkedin.com/in/...`). |
+| `author_company_urls` | Posts published by these company pages (URL or numeric ID). |
+| `author_employer_company_urls` | Posts whose authors work at these companies (URL or numeric ID). |
+| `author_industry_ids` | Authors' company industry, as numeric LinkedIn industry IDs. |
+| `mentioning_profile_urls` | Posts that mention these profiles. |
+| `mentioning_company_urls` | Posts that mention these companies (URL or numeric ID). |
+| `group_url` | Posts inside one LinkedIn group (`linkedin.com/groups/...` or numeric ID). |
+| `content_type` | `videos`, `images`, `live_videos`, `documents`, `collaborative_articles`, or `jobs`. |
+| `sort_by` | `date` (default) or `relevance`. |
+| `posted_within` | `24h`, `week`, or `month`, filtered by LinkedIn; or `1h`, `3months`, `6months`, or `year`, which require `sort_by: "date"`. |
+
+List filters accept a string or an array of up to 10 values. Unknown fields are rejected with `400`. With `posted_within` set to `1h`, `3months`, `6months`, or `year`, the period is applied to each fetched page, so a page can hold fewer than 50 posts. LinkedIn search can return fewer posts per author than that author's full feed.
+
+## Rate limit
+
+The limit is **180 requests per minute per workspace** for Post search, including requests made with different API keys for the same workspace. [Profile comments](/api-reference/profile-comments) and [Comment likers](/api-reference/comment-likers) each have their own separate 180-request allowance. Pagination requests and retries count toward the limit.
+
+The counter uses a fixed minute window and resets at the next minute boundary. Requests above the limit receive HTTP `429` and are not charged. When LinkedIn content capacity is busy for all workspaces, the response is a free `503` with `Retry-After: 5`.
+
+## Pagination
+
+Omit `cursor` on the first request. When `pagination.next_cursor` is not `null`, send it unchanged together with the same filters to fetch the next page. A cursor sent with different filters, or to another endpoint, returns `400`. `pagination.total` is the number of matching posts reported by LinkedIn, or `null` when unavailable.
+
+## Retries
+
+This endpoint does not accept an idempotency key. Retrying a request fetches the page again and is charged again. Retry only responses that were not charged:
+
+| Response | Next action |
+| --- | --- |
+| `400 Bad Request` | Correct the body or cursor. The `message` field names the problem. |
+| `403 Forbidden` | Add credits to the workspace before retrying. |
+| `413 Payload Too Large` | Keep the JSON body under 16 KiB. |
+| `429 Too Many Requests` | Wait for the next minute boundary, then retry with bounded exponential backoff. |
+| `502 Bad Gateway` or `504 Gateway Timeout` | Retry with increasing delays and a fixed retry limit. |
+| `503 Service Unavailable` | Wait for `Retry-After` when present, then retry with bounded backoff. |
+
+## Next step
+
+Use [Profile comments](/api-reference/profile-comments) to see what a post author comments on, or [Post likers](/api-reference/post-likers) to retrieve enriched people who liked a post.

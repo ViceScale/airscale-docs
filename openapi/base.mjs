@@ -29,6 +29,7 @@ export const baseSpec = {
     { name: "Contact data", description: "Find professional and personal contact data." },
     { name: "Profiles and reverse lookup", description: "Extract profiles or resolve a person from known contact data." },
     { name: "Post engagement", description: "Retrieve and enrich people who liked or commented on LinkedIn posts." },
+    { name: "LinkedIn content", description: "Search LinkedIn posts and retrieve profile comments and comment reactions." },
     { name: "Account", description: "Inspect workspace account state." },
     { name: "Miscellaneous", description: "Check WhatsApp availability, Meta ads, and email deliverability." }
   ],

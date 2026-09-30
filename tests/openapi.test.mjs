@@ -10,6 +10,7 @@ import { contactDataOperations } from "../openapi/operations/contact-data.mjs";
 import { profileLookupOperations } from "../openapi/operations/profile-lookup.mjs";
 import { searchDiscoveryOperations } from "../openapi/operations/search-discovery.mjs";
 import { postEngagementOperations } from "../openapi/operations/post-engagement.mjs";
+import { linkedinContentOperations } from "../openapi/operations/linkedin-content.mjs";
 import { buildSpec } from "../scripts/build-openapi.mjs";
 import { outputMatchesSerialized } from "../scripts/build-openapi.mjs";
 import { existsSync, mkdtempSync, readFileSync, readdirSync, rmSync, writeFileSync } from "node:fs";
@@ -329,6 +330,7 @@ test("base spec identifies the Airscale public API", () => {
     { name: "Contact data", description: "Find professional and personal contact data." },
     { name: "Profiles and reverse lookup", description: "Extract profiles or resolve a person from known contact data." },
     { name: "Post engagement", description: "Retrieve and enrich people who liked or commented on LinkedIn posts." },
+    { name: "LinkedIn content", description: "Search LinkedIn posts and retrieve profile comments and comment reactions." },
     { name: "Account", description: "Inspect workspace account state." },
     { name: "Miscellaneous", description: "Check WhatsApp availability, Meta ads, and email deliverability." }
   ]);
@@ -1804,7 +1806,41 @@ test("Post engagement operations model synchronous cursor pagination and enrichm
   }
 });
 
-test("committed OpenAPI 3.1 artifact matches the pinned 24-operation catalog exactly", async () => {
+test("LinkedIn content operations model per-request billing, cursors, and unconfirmed-free errors", () => {
+  assert.deepEqual(linkedinContentOperations.map(({ method, path }) => `${method} ${path}`), [
+    "POST /v1/post-search",
+    "POST /v1/profile-comments",
+    "POST /v1/comment-likers"
+  ]);
+  for (const entry of linkedinContentOperations) {
+    const operation = entry.operation;
+    assert.equal(operation.tags[0], "LinkedIn content");
+    assert.equal(operation["x-airscale-source-sha"], "3ba4f580f0d2bc5cad30d8fe87caf73585ba5cbd");
+    assert.equal(operation["x-airscale-rate-limit"], "180 requests per fixed minute per workspace, counted separately for each LinkedIn content endpoint; pagination requests and retries count.");
+    assert.match(operation["x-airscale-credit-cost"], /^1 credit per successful request, including empty pages/);
+    assert.equal(operation.parameters, undefined, "there is no caller idempotency header");
+    const request = requestSchema(operation);
+    assert.equal(request.additionalProperties, false);
+    assert.equal(request.properties.cursor.maxLength, 2048);
+    assert.deepEqual(Object.keys(operation.responses), ["200", "400", "401", "403", "413", "429", "502", "503", "504"]);
+    assert.equal(operation.responses["503"].headers["Retry-After"].example, "5");
+    const response = operation.responses["200"].content["application/json"];
+    assert.deepEqual(response.schema.required, ["items", "pagination", "billing"]);
+    assert.deepEqual(response.schema.properties.pagination.required, ["has_more", "next_cursor", "total"]);
+    assert.deepEqual(response.schema.properties.billing.properties.credits_consumed, { type: "integer", const: 1 });
+    assert.equal(response.examples.page.value.billing.credits_consumed, 1);
+    assert.doesNotMatch(JSON.stringify(operation), /harvest/i, "the public contract never names the data source");
+    assertUnauthorizedReference(operation);
+  }
+  const [search, comments, likers] = linkedinContentOperations.map(({ operation }) => operation);
+  assert.equal(requestSchema(search).required, undefined);
+  assert.deepEqual(requestSchema(comments).required, ["profile_url"]);
+  assert.deepEqual(requestSchema(comments).properties.posted_within.enum, ["24h", "week", "month", null]);
+  assert.deepEqual(requestSchema(likers).required, ["comment_url"]);
+  assert.equal(comments.responses["200"].content["application/json"].examples.page.value.pagination.total, null);
+});
+
+test("committed OpenAPI 3.1 artifact matches the pinned 27-operation catalog exactly", async () => {
   const parsed = await SwaggerParser.validate("openapi.json");
   const generated = buildSpec();
   const committed = committedSpec();
@@ -1815,7 +1851,7 @@ test("committed OpenAPI 3.1 artifact matches the pinned 24-operation catalog exa
   assert.deepEqual(committed.servers, baseSpec.servers);
   assert.deepEqual(committed.security, baseSpec.security);
   assert.equal(approvedCatalog.sourceSha, SOURCE_SHA);
-  assert.equal(approvedCatalog.operations.length, 24);
+  assert.equal(approvedCatalog.operations.length, 27);
 
   const actualOperations = [];
   for (const [path, pathItem] of Object.entries(committed.paths)) {
@@ -1823,8 +1859,8 @@ test("committed OpenAPI 3.1 artifact matches the pinned 24-operation catalog exa
       if (pathItem[method]) actualOperations.push({ method: method.toUpperCase(), path, operation: pathItem[method] });
     }
   }
-  assert.equal(actualOperations.length, 24);
-  assert.equal(actualOperations.filter(({ method }) => method === "POST").length, 22);
+  assert.equal(actualOperations.length, 27);
+  assert.equal(actualOperations.filter(({ method }) => method === "POST").length, 25);
   assert.equal(actualOperations.filter(({ method }) => method === "GET").length, 2);
   assert.equal(actualOperations.filter(({ method }) => method === "PATCH").length, 0);
   assert.equal(actualOperations.filter(({ method }) => method === "DELETE").length, 0);

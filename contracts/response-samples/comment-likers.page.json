@@ -1,0 +1,27 @@
+{
+  "operation": "POST /v1/comment-likers",
+  "status": 200,
+  "source": "code",
+  "sourceRepository": "ViceScale/airscale-code",
+  "sourceSha": "3ba4f580f0d2bc5cad30d8fe87caf73585ba5cbd",
+  "evidence": "workers/public-api/linkedin-content-worker.js:233-244,606-620; workers/public-api/linkedin-content-worker.test.mjs:282-300",
+  "body": {
+    "items": [
+      {
+        "linkedin_url": "https://www.linkedin.com/in/ACoAAExample",
+        "full_name": "Example Person",
+        "headline": "CEO",
+        "profile_picture_url": "https://www.example.org/images/example-person.png",
+        "reaction_type": "LIKE"
+      }
+    ],
+    "pagination": {
+      "has_more": true,
+      "next_cursor": "eyJ2IjoxLCJyIjoiZXhhbXBsZSJ9",
+      "total": 104
+    },
+    "billing": {
+      "credits_consumed": 1
+    }
+  }
+}
