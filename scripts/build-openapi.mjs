@@ -7,6 +7,7 @@ import { contactDataOperations } from "../openapi/operations/contact-data.mjs";
 import { profileLookupOperations } from "../openapi/operations/profile-lookup.mjs";
 import { searchDiscoveryOperations } from "../openapi/operations/search-discovery.mjs";
 import { postEngagementOperations } from "../openapi/operations/post-engagement.mjs";
+import { linkedinContentOperations } from "../openapi/operations/linkedin-content.mjs";
 
 import { miscellaneousOperations } from "../openapi/operations/miscellaneous.mjs";
 
@@ -19,6 +20,7 @@ const defaultOperationModules = [
   profileLookupOperations,
   searchDiscoveryOperations,
   postEngagementOperations,
+  linkedinContentOperations,
   miscellaneousOperations,
   restoredOperations
 ];

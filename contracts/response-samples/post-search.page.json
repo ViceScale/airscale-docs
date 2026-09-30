@@ -1,0 +1,56 @@
+{
+  "operation": "POST /v1/post-search",
+  "status": 200,
+  "source": "code",
+  "sourceRepository": "ViceScale/airscale-code",
+  "sourceSha": "3ba4f580f0d2bc5cad30d8fe87caf73585ba5cbd",
+  "evidence": "workers/public-api/linkedin-content-worker.js:233-244,559-578,622-633; workers/public-api/linkedin-content-worker.test.mjs:113-161",
+  "body": {
+    "items": [
+      {
+        "post_url": "https://www.linkedin.com/posts/example-person_sales-activity-7511035039397339136-8myb",
+        "post_id": "7511035039397339136",
+        "content": "We automate sales.",
+        "posted_at": "2026-09-30T12:11:41.675Z",
+        "author": {
+          "type": "person",
+          "name": "Example Person",
+          "linkedin_url": "https://www.linkedin.com/in/example-person",
+          "headline": "Head of Sales",
+          "picture_url": "https://www.example.org/images/example-person.png"
+        },
+        "likes": 4,
+        "comments": 1,
+        "shares": 0,
+        "image_urls": [
+          "https://www.example.org/images/example-post.png"
+        ]
+      },
+      {
+        "post_url": "https://www.linkedin.com/posts/example-company_launch-activity-7511035039397339137-abcd",
+        "post_id": "7511035039397339137",
+        "content": "Launch day",
+        "posted_at": "2026-09-30T11:00:00.000Z",
+        "author": {
+          "type": "company",
+          "name": "Example Company",
+          "linkedin_url": "https://www.linkedin.com/company/example-company",
+          "headline": "1,117 followers",
+          "picture_url": "https://www.example.org/images/example-company.png"
+        },
+        "likes": 0,
+        "comments": 0,
+        "shares": 0,
+        "image_urls": []
+      }
+    ],
+    "pagination": {
+      "has_more": true,
+      "next_cursor": "eyJ2IjoxLCJyIjoiZXhhbXBsZSJ9",
+      "total": 3
+    },
+    "billing": {
+      "credits_consumed": 1
+    }
+  }
+}

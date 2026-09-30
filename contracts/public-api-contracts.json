@@ -106,6 +106,18 @@
         "api/src/lib/publicPostEngagementBilling.test.ts"
       ]
     },
+    "linkedin-content": {
+      "sourceSha": "3ba4f580f0d2bc5cad30d8fe87caf73585ba5cbd",
+      "endpoints": [
+        { "method": "POST", "path": "/v1/post-search" },
+        { "method": "POST", "path": "/v1/profile-comments" },
+        { "method": "POST", "path": "/v1/comment-likers" }
+      ],
+      "sourceFiles": [
+        "workers/public-api/linkedin-content-worker.js",
+        "workers/public-api/linkedin-content-worker.test.mjs"
+      ]
+    },
     "whatsapp-check": {
       "sourceSha": "282e64878898b4f7082e6ce00b740d76aca787f1",
       "endpoints": [

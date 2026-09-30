@@ -22,6 +22,9 @@ const EXPECTED_OPERATIONS = [
   ["POST", "/v1/airsearch", "airsearch", "api-reference/airsearch", "Search and discovery"],
   ["POST", "/v1/post-likers", "listPostLikers", "api-reference/post-likers", "Post engagement"],
   ["POST", "/v1/post-commenters", "listPostCommenters", "api-reference/post-commenters", "Post engagement"],
+  ["POST", "/v1/post-search", "searchLinkedinPosts", "api-reference/post-search", "LinkedIn content"],
+  ["POST", "/v1/profile-comments", "listLinkedinProfileComments", "api-reference/profile-comments", "LinkedIn content"],
+  ["POST", "/v1/comment-likers", "listLinkedinCommentLikers", "api-reference/comment-likers", "LinkedIn content"],
   ["POST", "/v1/whatsapp-check", "checkWhatsapp", "api-reference/miscellaneous/whatsapp-check", "Miscellaneous"],
   ["GET", "/v1/whatsapp-check/operations/{operation_id}", "getWhatsappCheckOperation", "api-reference/miscellaneous/whatsapp-check/status", "Miscellaneous"],
   ["POST", "/v1/meta-ads", "lookupMetaAds", "api-reference/miscellaneous/meta-ads", "Miscellaneous"],
@@ -48,6 +51,7 @@ const EXPECTED_PAGES = [
   "find-companies",
   "airsearch",
   "post-engagement",
+  "linkedin-content",
   "whatsapp-check", "meta-ads", "email-verifier",
   "leads-finder", "dnc-checker"
 ];
@@ -164,6 +168,18 @@ const EXPECTED_CONTRACTS = deepFreeze({
         "api/src/lib/publicPostEngagementService.test.ts",
         "api/src/lib/publicPostEngagementBilling.ts",
         "api/src/lib/publicPostEngagementBilling.test.ts"
+      ]
+    },
+    "linkedin-content": {
+      sourceSha: "3ba4f580f0d2bc5cad30d8fe87caf73585ba5cbd",
+      endpoints: [
+        { method: "POST", path: "/v1/post-search" },
+        { method: "POST", path: "/v1/profile-comments" },
+        { method: "POST", path: "/v1/comment-likers" }
+      ],
+      sourceFiles: [
+        "workers/public-api/linkedin-content-worker.js",
+        "workers/public-api/linkedin-content-worker.test.mjs"
       ]
     },
   "whatsapp-check": {
@@ -294,14 +310,14 @@ test("operation catalog preserves the approved operation order and routing metad
   const catalog = JSON.parse(readFileSync("contracts/public-api-operations.json", "utf8"));
   assert.equal(catalog.sourceRepository, "ViceScale/airscale-code");
   assert.equal(catalog.sourceSha, EXPECTED_SOURCE_SHA);
-  assert.equal(catalog.operations.length, 24);
+  assert.equal(catalog.operations.length, 27);
   assert.deepEqual(
     catalog.operations.map(({ method, path, operationId, page, tag }) => [method, path, operationId, page, tag]),
     EXPECTED_OPERATIONS
   );
-  assert.equal(new Set(catalog.operations.map(({ method, path }) => `${method} ${path}`)).size, 24);
-  assert.equal(new Set(catalog.operations.map(({ operationId }) => operationId)).size, 24);
-  assert.equal(new Set(catalog.operations.map(({ page }) => page)).size, 24);
+  assert.equal(new Set(catalog.operations.map(({ method, path }) => `${method} ${path}`)).size, 27);
+  assert.equal(new Set(catalog.operations.map(({ operationId }) => operationId)).size, 27);
+  assert.equal(new Set(catalog.operations.map(({ page }) => page)).size, 27);
 });
 
 test("operation catalog links each operation to matching source-page evidence", () => {

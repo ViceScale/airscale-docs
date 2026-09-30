@@ -240,6 +240,45 @@
     },
     {
       "method": "POST",
+      "path": "/v1/post-search",
+      "operationId": "searchLinkedinPosts",
+      "page": "api-reference/post-search",
+      "tag": "LinkedIn content",
+      "sourcePage": "linkedin-content",
+      "sourceSha": "3ba4f580f0d2bc5cad30d8fe87caf73585ba5cbd",
+      "sourceFiles": [
+        "workers/public-api/linkedin-content-worker.js",
+        "workers/public-api/linkedin-content-worker.test.mjs"
+      ]
+    },
+    {
+      "method": "POST",
+      "path": "/v1/profile-comments",
+      "operationId": "listLinkedinProfileComments",
+      "page": "api-reference/profile-comments",
+      "tag": "LinkedIn content",
+      "sourcePage": "linkedin-content",
+      "sourceSha": "3ba4f580f0d2bc5cad30d8fe87caf73585ba5cbd",
+      "sourceFiles": [
+        "workers/public-api/linkedin-content-worker.js",
+        "workers/public-api/linkedin-content-worker.test.mjs"
+      ]
+    },
+    {
+      "method": "POST",
+      "path": "/v1/comment-likers",
+      "operationId": "listLinkedinCommentLikers",
+      "page": "api-reference/comment-likers",
+      "tag": "LinkedIn content",
+      "sourcePage": "linkedin-content",
+      "sourceSha": "3ba4f580f0d2bc5cad30d8fe87caf73585ba5cbd",
+      "sourceFiles": [
+        "workers/public-api/linkedin-content-worker.js",
+        "workers/public-api/linkedin-content-worker.test.mjs"
+      ]
+    },
+    {
+      "method": "POST",
       "path": "/v1/whatsapp-check",
       "operationId": "checkWhatsapp",
       "page": "api-reference/miscellaneous/whatsapp-check",

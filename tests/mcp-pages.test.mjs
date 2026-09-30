@@ -60,7 +60,10 @@ const API_REFERENCE_TAB = {
       group: "Post engagement",
       pages: [
         "api-reference/post-likers",
-        "api-reference/post-commenters"
+        "api-reference/post-commenters",
+        "api-reference/post-search",
+        "api-reference/profile-comments",
+        "api-reference/comment-likers"
       ],
       expanded: false
     },

@@ -34,7 +34,7 @@ const GROUPS = [
     "api-reference/reverse-email",
     "api-reference/reverse-phone"
   ]],
-  ["Post engagement", ["api-reference/post-likers", "api-reference/post-commenters"], { expanded: false }],
+  ["Post engagement", ["api-reference/post-likers", "api-reference/post-commenters", "api-reference/post-search", "api-reference/profile-comments", "api-reference/comment-likers"], { expanded: false }],
   ["Miscellaneous", ["api-reference/miscellaneous/whatsapp-check", "api-reference/miscellaneous/whatsapp-check/status", "api-reference/miscellaneous/meta-ads", "api-reference/miscellaneous/email-verifier", "api-reference/dnc-checker"], { expanded: false }]
 ];
 
@@ -533,9 +533,9 @@ test("every public operation has one exact OpenAPI-backed wrapper", () => {
     assert.ok(body.split(/\n\s*\n/)[0].trim(), `${page} must retain a purpose statement`);
   }
 
-  assert.equal(expectedBindings.size, 24);
-  assert.equal(new Set(expectedBindings.values()).size, 24);
-  assert.equal(actualBindings.size, 24);
+  assert.equal(expectedBindings.size, 27);
+  assert.equal(new Set(expectedBindings.values()).size, 27);
+  assert.equal(actualBindings.size, 27);
   assert.deepEqual(actualBindings, expectedBindings);
 });
 
@@ -555,7 +555,7 @@ test("every wrapper binding resolves to its cataloged generated OpenAPI operatio
     resolved.push(`${method} ${path}`);
   }
 
-  assert.equal(new Set(resolved).size, 24);
+  assert.equal(new Set(resolved).size, 27);
   assert.deepEqual(resolved.sort(), catalog.operations.map(({ method, path }) => `${method} ${path}`).sort());
 });
 
@@ -639,10 +639,13 @@ const DURABLE_OPERATION_GUIDANCE = {
   "api-reference/airsearch": [/300 requests per minute/i, /1 credit/i, /`not_found` and `timeout` are not charged/i, /Credits reserved.*are returned/i, /timeout.*`504 Gateway Timeout`/i],
   "api-reference/post-likers": [/synchronous/i, /one credit/i, /next_cursor/i, /same post URL and `limit`/i, /failed.*refunded/i, /Idempotency-Key/i, /202.*pending/is, /account_restart_required/, /reported_total/],
   "api-reference/post-commenters": [/synchronous/i, /one credit/i, /next_cursor/i, /same post URL and `limit`/i, /failed.*refunded/i, /Idempotency-Key/i, /202.*pending/is, /account_restart_required/, /reported_total/],
+  "api-reference/post-search": [/1 credit/, /empty page is also charged/i, /up to 50 posts/i, /180 requests per minute per workspace/, /separate/i, /same filters/i, /charged again/i, /Retry-After: 5/, /V1 and V2/],
+  "api-reference/profile-comments": [/1 credit/, /empty page is also charged/i, /100 comments/i, /180 requests per minute per workspace/, /separate/i, /`pagination.total` is always `null`/, /charged again/i, /Retry-After: 5/, /V1 and V2/],
+  "api-reference/comment-likers": [/1 credit/, /empty page is also charged/i, /up to 100 people/i, /180 requests per minute per workspace/, /separate/i, /member-ID URL/, /charged again/i, /Retry-After: 5/, /V1 and V2/],
 };
 
 test("operation wrappers retain durable rate, credit, retry, and asynchronous guidance", () => {
-  assert.equal(Object.keys(DURABLE_OPERATION_GUIDANCE).length, 24);
+  assert.equal(Object.keys(DURABLE_OPERATION_GUIDANCE).length, 27);
   for (const [page, patterns] of Object.entries(DURABLE_OPERATION_GUIDANCE)) {
     const { body } = readPage(page);
     for (const pattern of patterns) assert.match(body, pattern, `${page} must retain ${pattern}`);
