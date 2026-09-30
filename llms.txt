@@ -111,10 +111,10 @@
 
 ## API Reference — Miscellaneous
 
-- [WhatsApp checker](https://docs.airscale.io/api-reference/miscale-news/whatsapp-check.md): Check whether one phone number is available on WhatsApp. Rate limit: 60 requests per minute per workspace for POST, including replays.
-- [WhatsApp check status](https://docs.airscale.io/api-reference/miscale-news/whatsapp-check/status.md): Reconcile a WhatsApp check using its operation ID. Rate limit: No endpoint-specific GET throttle.
-- [Meta Ads](https://docs.airscale.io/api-reference/miscale-news/meta-ads.md): Look up Meta ads for a company domain. Rate limit: 60 requests per minute per workspace.
-- [Email verifier](https://docs.airscale.io/api-reference/miscale-news/email-verifier.md): Verify the deliverability of one email address. Rate limit: No endpoint-specific throttle.
+- [WhatsApp checker](https://docs.airscale.io/api-reference/miscellaneous/whatsapp-check.md): Check whether one phone number is available on WhatsApp. Rate limit: 60 requests per minute per workspace for POST, including replays.
+- [WhatsApp check status](https://docs.airscale.io/api-reference/miscellaneous/whatsapp-check/status.md): Reconcile a WhatsApp check using its operation ID. Rate limit: No endpoint-specific GET throttle.
+- [Meta Ads](https://docs.airscale.io/api-reference/miscellaneous/meta-ads.md): Look up Meta ads for a company domain. Rate limit: 60 requests per minute per workspace.
+- [Email verifier](https://docs.airscale.io/api-reference/miscellaneous/email-verifier.md): Verify the deliverability of one email address. Rate limit: No endpoint-specific throttle.
 - [DNC Checker](https://docs.airscale.io/api-reference/dnc-checker.md): Check whether a US phone number is listed on DNC. Rate limit: 5 requests per second per workspace.
 
 ## MCP & Agents — Getting started

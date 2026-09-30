@@ -220,10 +220,10 @@
           {
             "group": "Miscellaneous",
             "pages": [
-              "api-reference/miscale-news/whatsapp-check",
-              "api-reference/miscale-news/whatsapp-check/status",
-              "api-reference/miscale-news/meta-ads",
-              "api-reference/miscale-news/email-verifier",
+              "api-reference/miscellaneous/whatsapp-check",
+              "api-reference/miscellaneous/whatsapp-check/status",
+              "api-reference/miscellaneous/meta-ads",
+              "api-reference/miscellaneous/email-verifier",
               "api-reference/dnc-checker"
             ],
             "expanded": false
@@ -288,6 +288,26 @@
     ]
   },
   "redirects": [
+    {
+      "source": "/api-reference/miscale-news/whatsapp-check",
+      "destination": "/api-reference/miscellaneous/whatsapp-check",
+      "permanent": true
+    },
+    {
+      "source": "/api-reference/miscale-news/whatsapp-check/status",
+      "destination": "/api-reference/miscellaneous/whatsapp-check/status",
+      "permanent": true
+    },
+    {
+      "source": "/api-reference/miscale-news/meta-ads",
+      "destination": "/api-reference/miscellaneous/meta-ads",
+      "permanent": true
+    },
+    {
+      "source": "/api-reference/miscale-news/email-verifier",
+      "destination": "/api-reference/miscellaneous/email-verifier",
+      "permanent": true
+    },
     {
       "source": "/api-reference/airscale-mcp-server",
       "destination": "/mcp/airscale-mcp-server",
