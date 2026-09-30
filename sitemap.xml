@@ -5,6 +5,7 @@
   <url><loc>https://docs.airscale.io/api-reference/api-overview</loc></url>
   <url><loc>https://docs.airscale.io/api-reference/authentication</loc></url>
   <url><loc>https://docs.airscale.io/api-reference/comment-likers</loc></url>
+  <url><loc>https://docs.airscale.io/api-reference/company-posts</loc></url>
   <url><loc>https://docs.airscale.io/api-reference/credit-count</loc></url>
   <url><loc>https://docs.airscale.io/api-reference/dnc-checker</loc></url>
   <url><loc>https://docs.airscale.io/api-reference/domain-to-linkedin</loc></url>
@@ -27,6 +28,7 @@
   <url><loc>https://docs.airscale.io/api-reference/post-likers</loc></url>
   <url><loc>https://docs.airscale.io/api-reference/post-search</loc></url>
   <url><loc>https://docs.airscale.io/api-reference/profile-comments</loc></url>
+  <url><loc>https://docs.airscale.io/api-reference/profile-posts</loc></url>
   <url><loc>https://docs.airscale.io/api-reference/rate-limits</loc></url>
   <url><loc>https://docs.airscale.io/api-reference/reverse-email</loc></url>
   <url><loc>https://docs.airscale.io/api-reference/reverse-phone</loc></url>

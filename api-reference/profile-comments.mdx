@@ -21,7 +21,7 @@ Send `profile_url` as a LinkedIn profile URL (`linkedin.com/in/...`). Optionally
 
 ## Rate limit
 
-The limit is **180 requests per minute per workspace** for Profile comments, including requests made with different API keys for the same workspace. [Post search](/api-reference/post-search) and [Comment likers](/api-reference/comment-likers) each have their own separate 180-request allowance. Pagination requests and retries count toward the limit.
+The limit is **180 requests per minute per workspace** for Profile comments, including requests made with different API keys for the same workspace. [Post search](/api-reference/post-search), [Comment likers](/api-reference/comment-likers), [Profile posts](/api-reference/profile-posts), and [Company posts](/api-reference/company-posts) each have their own separate 180-request allowance. Pagination requests and retries count toward the limit.
 
 The counter uses a fixed minute window and resets at the next minute boundary. Requests above the limit receive HTTP `429` and are not charged. When LinkedIn content capacity is busy for all workspaces, the response is a free `503` with `Retry-After: 5`.
 
