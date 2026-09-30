@@ -33,6 +33,8 @@ All numeric limits below apply per workspace. A shared limit is one combined all
 | [Post search](/api-reference/post-search) | 180 requests per fixed minute per workspace, counted separately for each LinkedIn content endpoint; pagination requests and retries count. |
 | [Profile comments](/api-reference/profile-comments) | 180 requests per fixed minute per workspace, counted separately for each LinkedIn content endpoint; pagination requests and retries count. |
 | [Comment likers](/api-reference/comment-likers) | 180 requests per fixed minute per workspace, counted separately for each LinkedIn content endpoint; pagination requests and retries count. |
+| [Profile posts](/api-reference/profile-posts) | 180 requests per fixed minute per workspace, counted separately for each LinkedIn content endpoint; pagination requests and retries count. |
+| [Company posts](/api-reference/company-posts) | 180 requests per fixed minute per workspace, counted separately for each LinkedIn content endpoint; pagination requests and retries count. |
 | [WhatsApp checker](/api-reference/miscellaneous/whatsapp-check) | 60 requests per minute per workspace for POST, including replays. |
 | [WhatsApp check status](/api-reference/miscellaneous/whatsapp-check/status) | No endpoint-specific GET throttle. |
 | [Meta Ads](/api-reference/miscellaneous/meta-ads) | 60 requests per minute per workspace. |
@@ -40,7 +42,7 @@ All numeric limits below apply per workspace. A shared limit is one combined all
 | [Leads Finder](/api-reference/leads-finder) | 5 requests per second per workspace. |
 | [DNC Checker](/api-reference/dnc-checker) | 5 requests per second per workspace. |
 
-Find people shares its **6 requests per second** with Count people. Find companies shares its **6 requests per second** with Company filter values. These are separate limits for the two endpoint families. Post search, Profile comments, and Comment likers each have their own 180-request allowance; they do not share it with each other or with Post likers and Post commenters.
+Find people shares its **6 requests per second** with Count people. Find companies shares its **6 requests per second** with Company filter values. These are separate limits for the two endpoint families. Post search, Profile comments, Comment likers, Profile posts, and Company posts each have their own 180-request allowance; they do not share it with each other or with Post likers and Post commenters.
 
 For bulk email, the allowance counts **input items**, not HTTP requests. An endpoint without a documented numeric limit should not be treated as unlimited; use bounded concurrency and handle `429` responses.
 

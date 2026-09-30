@@ -32,7 +32,7 @@
     },
     {
       "name": "LinkedIn content",
-      "description": "Search LinkedIn posts and retrieve profile comments and comment reactions."
+      "description": "Search LinkedIn posts, read profile and company feeds, and retrieve profile comments and comment reactions."
     },
     {
       "name": "Account",
@@ -6513,7 +6513,7 @@
         ],
         "summary": "Search LinkedIn posts",
         "description": "Returns one page of up to 50 LinkedIn posts matching keywords, author, mention, group, content-type, and date filters. Costs 1 credit per successful request.",
-        "x-airscale-source-sha": "3ba4f580f0d2bc5cad30d8fe87caf73585ba5cbd",
+        "x-airscale-source-sha": "6ec34a03d63308d639833e388d41488fb40c8df6",
         "x-airscale-rate-limit": "180 requests per fixed minute per workspace, counted separately for each LinkedIn content endpoint; pagination requests and retries count.",
         "x-airscale-credit-cost": "1 credit per successful request, including empty pages; invalid input and failed requests are not charged.",
         "requestBody": {
@@ -6764,6 +6764,7 @@
                           "likes",
                           "comments",
                           "shares",
+                          "feed_context",
                           "image_urls"
                         ],
                         "additionalProperties": false,
@@ -6859,6 +6860,13 @@
                             ],
                             "minimum": 0
                           },
+                          "feed_context": {
+                            "type": [
+                              "string",
+                              "null"
+                            ],
+                            "description": "LinkedIn's feed label when the row is not a plain post by the author, such as \"Example Person reposted this\" or \"Example Company collaborated on this\". Null for a plain post."
+                          },
                           "image_urls": {
                             "type": "array",
                             "items": {
@@ -6933,6 +6941,7 @@
                           "likes": 4,
                           "comments": 1,
                           "shares": 0,
+                          "feed_context": null,
                           "image_urls": [
                             "https://www.example.org/images/example-post.png"
                           ]
@@ -7045,7 +7054,7 @@
         ],
         "summary": "List a LinkedIn profile's comments",
         "description": "Returns one page of comments written by a LinkedIn profile, each with the post it was left on. Costs 1 credit per successful request.",
-        "x-airscale-source-sha": "3ba4f580f0d2bc5cad30d8fe87caf73585ba5cbd",
+        "x-airscale-source-sha": "6ec34a03d63308d639833e388d41488fb40c8df6",
         "x-airscale-rate-limit": "180 requests per fixed minute per workspace, counted separately for each LinkedIn content endpoint; pagination requests and retries count.",
         "x-airscale-credit-cost": "1 credit per successful request, including empty pages; invalid input and failed requests are not charged.",
         "requestBody": {
@@ -7442,7 +7451,7 @@
         ],
         "summary": "List LinkedIn comment likers",
         "description": "Returns one page of up to 100 people who reacted to one LinkedIn comment. Costs 1 credit per successful request.",
-        "x-airscale-source-sha": "3ba4f580f0d2bc5cad30d8fe87caf73585ba5cbd",
+        "x-airscale-source-sha": "6ec34a03d63308d639833e388d41488fb40c8df6",
         "x-airscale-rate-limit": "180 requests per fixed minute per workspace, counted separately for each LinkedIn content endpoint; pagination requests and retries count.",
         "x-airscale-credit-cost": "1 credit per successful request, including empty pages; invalid input and failed requests are not charged.",
         "requestBody": {
@@ -7616,6 +7625,797 @@
                         "has_more": true,
                         "next_cursor": "eyJ2IjoxLCJyIjoiZXhhbXBsZSJ9",
                         "total": 104
+                      },
+                      "billing": {
+                        "credits_consumed": 1
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "The JSON body is invalid, contains an unsupported field, or carries a cursor that is malformed or belongs to a different request. Not charged.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "description": "The workspace does not have enough credits for this request. Not charged.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "The JSON request body exceeds the 16 KiB limit.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "The workspace has exceeded 180 requests per minute for this endpoint. Each LinkedIn content endpoint has its own counter. Wait until the next minute boundary, then retry with bounded backoff. Not charged.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "502": {
+            "description": "The LinkedIn content lookup failed. Not charged; retry with increasing delays.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "The lookup is busy (the response includes Retry-After: 5) or a required service is unavailable. Not charged; wait and retry with bounded backoff.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "headers": {
+              "Retry-After": {
+                "description": "Seconds to wait before retrying when the lookup is busy.",
+                "schema": {
+                  "type": "string"
+                },
+                "example": "5"
+              }
+            }
+          },
+          "504": {
+            "description": "The LinkedIn content lookup timed out. Not charged; retry later.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/profile-posts": {
+      "post": {
+        "operationId": "listLinkedinProfilePosts",
+        "tags": [
+          "LinkedIn content"
+        ],
+        "summary": "List a LinkedIn profile's posts",
+        "description": "Returns one page of up to 50 posts from a LinkedIn profile's feed, newest first, including the person's posts and reposts. Costs 1 credit per successful request.",
+        "x-airscale-source-sha": "6ec34a03d63308d639833e388d41488fb40c8df6",
+        "x-airscale-rate-limit": "180 requests per fixed minute per workspace, counted separately for each LinkedIn content endpoint; pagination requests and retries count.",
+        "x-airscale-credit-cost": "1 credit per successful request, including empty pages; invalid input and failed requests are not charged.",
+        "requestBody": {
+          "required": true,
+          "description": "A LinkedIn profile URL, an optional period, and an optional cursor. The JSON body must not exceed 16 KiB.",
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "profile_url"
+                ],
+                "additionalProperties": false,
+                "properties": {
+                  "profile_url": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 2048,
+                    "description": "LinkedIn profile URL (linkedin.com/in/...)."
+                  },
+                  "posted_within": {
+                    "type": [
+                      "string",
+                      "null"
+                    ],
+                    "enum": [
+                      "1h",
+                      "24h",
+                      "week",
+                      "month",
+                      "3months",
+                      "6months",
+                      "year",
+                      null
+                    ],
+                    "description": "Only return posts from this period. The period is applied to each fetched page, so pages can hold fewer than 50 posts, and pagination stops at the first page with no post inside the period."
+                  },
+                  "cursor": {
+                    "type": [
+                      "string",
+                      "null"
+                    ],
+                    "minLength": 1,
+                    "maxLength": 2048,
+                    "description": "The opaque `pagination.next_cursor` from the previous page. Send it unchanged with the same filters as the first page."
+                  }
+                }
+              },
+              "examples": {
+                "firstPage": {
+                  "summary": "First page",
+                  "value": {
+                    "profile_url": "https://www.linkedin.com/in/example-person",
+                    "posted_within": "3months"
+                  }
+                },
+                "nextPage": {
+                  "summary": "Next page",
+                  "value": {
+                    "profile_url": "https://www.linkedin.com/in/example-person",
+                    "posted_within": "3months",
+                    "cursor": "eyJ2IjoxLCJyIjoiZXhhbXBsZSJ9"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "A page of posts from the profile's feed, newest first.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "items",
+                    "pagination",
+                    "billing"
+                  ],
+                  "additionalProperties": false,
+                  "properties": {
+                    "items": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "required": [
+                          "post_url",
+                          "post_id",
+                          "content",
+                          "posted_at",
+                          "author",
+                          "likes",
+                          "comments",
+                          "shares",
+                          "feed_context",
+                          "image_urls"
+                        ],
+                        "additionalProperties": false,
+                        "properties": {
+                          "post_url": {
+                            "type": "string"
+                          },
+                          "post_id": {
+                            "type": [
+                              "string",
+                              "null"
+                            ]
+                          },
+                          "content": {
+                            "type": [
+                              "string",
+                              "null"
+                            ]
+                          },
+                          "posted_at": {
+                            "type": [
+                              "string",
+                              "null"
+                            ],
+                            "format": "date-time"
+                          },
+                          "author": {
+                            "type": [
+                              "object",
+                              "null"
+                            ],
+                            "required": [
+                              "type",
+                              "name",
+                              "linkedin_url",
+                              "headline",
+                              "picture_url"
+                            ],
+                            "additionalProperties": false,
+                            "properties": {
+                              "type": {
+                                "type": "string",
+                                "enum": [
+                                  "person",
+                                  "company"
+                                ]
+                              },
+                              "name": {
+                                "type": [
+                                  "string",
+                                  "null"
+                                ]
+                              },
+                              "linkedin_url": {
+                                "type": [
+                                  "string",
+                                  "null"
+                                ],
+                                "description": "Canonical LinkedIn profile or company URL."
+                              },
+                              "headline": {
+                                "type": [
+                                  "string",
+                                  "null"
+                                ]
+                              },
+                              "picture_url": {
+                                "type": [
+                                  "string",
+                                  "null"
+                                ]
+                              }
+                            }
+                          },
+                          "likes": {
+                            "type": [
+                              "integer",
+                              "null"
+                            ],
+                            "minimum": 0
+                          },
+                          "comments": {
+                            "type": [
+                              "integer",
+                              "null"
+                            ],
+                            "minimum": 0
+                          },
+                          "shares": {
+                            "type": [
+                              "integer",
+                              "null"
+                            ],
+                            "minimum": 0
+                          },
+                          "feed_context": {
+                            "type": [
+                              "string",
+                              "null"
+                            ],
+                            "description": "LinkedIn's feed label when the row is not a plain post by the author, such as \"Example Person reposted this\" or \"Example Company collaborated on this\". Null for a plain post."
+                          },
+                          "image_urls": {
+                            "type": "array",
+                            "items": {
+                              "type": "string"
+                            }
+                          }
+                        }
+                      },
+                      "description": "Posts and reposts from the profile's feed, newest first."
+                    },
+                    "pagination": {
+                      "type": "object",
+                      "required": [
+                        "has_more",
+                        "next_cursor",
+                        "total"
+                      ],
+                      "additionalProperties": false,
+                      "properties": {
+                        "has_more": {
+                          "type": "boolean"
+                        },
+                        "next_cursor": {
+                          "type": [
+                            "string",
+                            "null"
+                          ],
+                          "description": "Opaque cursor for the next page, or null when no further page is available."
+                        },
+                        "total": {
+                          "type": [
+                            "integer",
+                            "null"
+                          ],
+                          "minimum": 0,
+                          "description": "Always null: no reliable total is reported for profile posts."
+                        }
+                      }
+                    },
+                    "billing": {
+                      "type": "object",
+                      "required": [
+                        "credits_consumed"
+                      ],
+                      "additionalProperties": false,
+                      "properties": {
+                        "credits_consumed": {
+                          "type": "integer",
+                          "const": 1
+                        }
+                      }
+                    }
+                  }
+                },
+                "examples": {
+                  "page": {
+                    "summary": "Synthetic page",
+                    "value": {
+                      "items": [
+                        {
+                          "post_url": "https://www.linkedin.com/posts/example-person_sales-activity-7511035039397339136-8myb",
+                          "post_id": "7511035039397339136",
+                          "content": "Example post about sales automation.",
+                          "posted_at": "2026-09-30T12:11:41.675Z",
+                          "author": {
+                            "type": "person",
+                            "name": "Example Person",
+                            "linkedin_url": "https://www.linkedin.com/in/example-person",
+                            "headline": "Head of Sales at Example Company",
+                            "picture_url": "https://www.example.org/images/example-person.png"
+                          },
+                          "likes": 4,
+                          "comments": 1,
+                          "shares": 0,
+                          "feed_context": null,
+                          "image_urls": [
+                            "https://www.example.org/images/example-post.png"
+                          ]
+                        },
+                        {
+                          "post_url": "https://www.linkedin.com/posts/example-company_launch-activity-7511035039397339137-abcd",
+                          "post_id": "7511035039397339137",
+                          "content": "Launch day",
+                          "posted_at": "2026-09-30T11:00:00.000Z",
+                          "author": {
+                            "type": "company",
+                            "name": "Example Company",
+                            "linkedin_url": "https://www.linkedin.com/company/example-company",
+                            "headline": "1,117 followers",
+                            "picture_url": "https://www.example.org/images/example-company.png"
+                          },
+                          "likes": 0,
+                          "comments": 0,
+                          "shares": 0,
+                          "feed_context": "Example Person reposted this",
+                          "image_urls": []
+                        }
+                      ],
+                      "pagination": {
+                        "has_more": true,
+                        "next_cursor": "eyJ2IjoxLCJyIjoiZXhhbXBsZSJ9",
+                        "total": null
+                      },
+                      "billing": {
+                        "credits_consumed": 1
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "The JSON body is invalid, contains an unsupported field, or carries a cursor that is malformed or belongs to a different request. Not charged.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "description": "The workspace does not have enough credits for this request. Not charged.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "The JSON request body exceeds the 16 KiB limit.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "The workspace has exceeded 180 requests per minute for this endpoint. Each LinkedIn content endpoint has its own counter. Wait until the next minute boundary, then retry with bounded backoff. Not charged.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "502": {
+            "description": "The LinkedIn content lookup failed. Not charged; retry with increasing delays.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "The lookup is busy (the response includes Retry-After: 5) or a required service is unavailable. Not charged; wait and retry with bounded backoff.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "headers": {
+              "Retry-After": {
+                "description": "Seconds to wait before retrying when the lookup is busy.",
+                "schema": {
+                  "type": "string"
+                },
+                "example": "5"
+              }
+            }
+          },
+          "504": {
+            "description": "The LinkedIn content lookup timed out. Not charged; retry later.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/company-posts": {
+      "post": {
+        "operationId": "listLinkedinCompanyPosts",
+        "tags": [
+          "LinkedIn content"
+        ],
+        "summary": "List a LinkedIn company's posts",
+        "description": "Returns one page of up to 50 posts from a LinkedIn company page's feed, newest first. Costs 1 credit per successful request.",
+        "x-airscale-source-sha": "6ec34a03d63308d639833e388d41488fb40c8df6",
+        "x-airscale-rate-limit": "180 requests per fixed minute per workspace, counted separately for each LinkedIn content endpoint; pagination requests and retries count.",
+        "x-airscale-credit-cost": "1 credit per successful request, including empty pages; invalid input and failed requests are not charged.",
+        "requestBody": {
+          "required": true,
+          "description": "A LinkedIn company URL or numeric company ID, an optional period, and an optional cursor. The JSON body must not exceed 16 KiB.",
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "company_url"
+                ],
+                "additionalProperties": false,
+                "properties": {
+                  "company_url": {
+                    "type": [
+                      "string",
+                      "integer"
+                    ],
+                    "description": "LinkedIn company URL (linkedin.com/company/...) or numeric company ID."
+                  },
+                  "posted_within": {
+                    "type": [
+                      "string",
+                      "null"
+                    ],
+                    "enum": [
+                      "1h",
+                      "24h",
+                      "week",
+                      "month",
+                      "3months",
+                      "6months",
+                      "year",
+                      null
+                    ],
+                    "description": "Only return posts from this period. The period is applied to each fetched page, so pages can hold fewer than 50 posts, and pagination stops at the first page with no post inside the period."
+                  },
+                  "cursor": {
+                    "type": [
+                      "string",
+                      "null"
+                    ],
+                    "minLength": 1,
+                    "maxLength": 2048,
+                    "description": "The opaque `pagination.next_cursor` from the previous page. Send it unchanged with the same filters as the first page."
+                  }
+                }
+              },
+              "examples": {
+                "firstPage": {
+                  "summary": "First page",
+                  "value": {
+                    "company_url": "https://www.linkedin.com/company/example-company",
+                    "posted_within": "week"
+                  }
+                },
+                "nextPage": {
+                  "summary": "Next page",
+                  "value": {
+                    "company_url": "https://www.linkedin.com/company/example-company",
+                    "posted_within": "week",
+                    "cursor": "eyJ2IjoxLCJyIjoiZXhhbXBsZSJ9"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "A page of posts from the company page's feed, newest first.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "items",
+                    "pagination",
+                    "billing"
+                  ],
+                  "additionalProperties": false,
+                  "properties": {
+                    "items": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "required": [
+                          "post_url",
+                          "post_id",
+                          "content",
+                          "posted_at",
+                          "author",
+                          "likes",
+                          "comments",
+                          "shares",
+                          "feed_context",
+                          "image_urls"
+                        ],
+                        "additionalProperties": false,
+                        "properties": {
+                          "post_url": {
+                            "type": "string"
+                          },
+                          "post_id": {
+                            "type": [
+                              "string",
+                              "null"
+                            ]
+                          },
+                          "content": {
+                            "type": [
+                              "string",
+                              "null"
+                            ]
+                          },
+                          "posted_at": {
+                            "type": [
+                              "string",
+                              "null"
+                            ],
+                            "format": "date-time"
+                          },
+                          "author": {
+                            "type": [
+                              "object",
+                              "null"
+                            ],
+                            "required": [
+                              "type",
+                              "name",
+                              "linkedin_url",
+                              "headline",
+                              "picture_url"
+                            ],
+                            "additionalProperties": false,
+                            "properties": {
+                              "type": {
+                                "type": "string",
+                                "enum": [
+                                  "person",
+                                  "company"
+                                ]
+                              },
+                              "name": {
+                                "type": [
+                                  "string",
+                                  "null"
+                                ]
+                              },
+                              "linkedin_url": {
+                                "type": [
+                                  "string",
+                                  "null"
+                                ],
+                                "description": "Canonical LinkedIn profile or company URL."
+                              },
+                              "headline": {
+                                "type": [
+                                  "string",
+                                  "null"
+                                ]
+                              },
+                              "picture_url": {
+                                "type": [
+                                  "string",
+                                  "null"
+                                ]
+                              }
+                            }
+                          },
+                          "likes": {
+                            "type": [
+                              "integer",
+                              "null"
+                            ],
+                            "minimum": 0
+                          },
+                          "comments": {
+                            "type": [
+                              "integer",
+                              "null"
+                            ],
+                            "minimum": 0
+                          },
+                          "shares": {
+                            "type": [
+                              "integer",
+                              "null"
+                            ],
+                            "minimum": 0
+                          },
+                          "feed_context": {
+                            "type": [
+                              "string",
+                              "null"
+                            ],
+                            "description": "LinkedIn's feed label when the row is not a plain post by the author, such as \"Example Person reposted this\" or \"Example Company collaborated on this\". Null for a plain post."
+                          },
+                          "image_urls": {
+                            "type": "array",
+                            "items": {
+                              "type": "string"
+                            }
+                          }
+                        }
+                      },
+                      "description": "Posts from the company page's feed, newest first."
+                    },
+                    "pagination": {
+                      "type": "object",
+                      "required": [
+                        "has_more",
+                        "next_cursor",
+                        "total"
+                      ],
+                      "additionalProperties": false,
+                      "properties": {
+                        "has_more": {
+                          "type": "boolean"
+                        },
+                        "next_cursor": {
+                          "type": [
+                            "string",
+                            "null"
+                          ],
+                          "description": "Opaque cursor for the next page, or null when no further page is available."
+                        },
+                        "total": {
+                          "type": [
+                            "integer",
+                            "null"
+                          ],
+                          "minimum": 0,
+                          "description": "Total posts reported by LinkedIn for the company page, or null when unavailable."
+                        }
+                      }
+                    },
+                    "billing": {
+                      "type": "object",
+                      "required": [
+                        "credits_consumed"
+                      ],
+                      "additionalProperties": false,
+                      "properties": {
+                        "credits_consumed": {
+                          "type": "integer",
+                          "const": 1
+                        }
+                      }
+                    }
+                  }
+                },
+                "examples": {
+                  "page": {
+                    "summary": "Synthetic page",
+                    "value": {
+                      "items": [
+                        {
+                          "post_url": "https://www.linkedin.com/posts/example-company_launch-activity-7511035039397339137-abcd",
+                          "post_id": "7511035039397339137",
+                          "content": "Launch day",
+                          "posted_at": "2026-09-30T11:00:00.000Z",
+                          "author": {
+                            "type": "company",
+                            "name": "Example Company",
+                            "linkedin_url": "https://www.linkedin.com/company/example-company",
+                            "headline": "1,117 followers",
+                            "picture_url": "https://www.example.org/images/example-company.png"
+                          },
+                          "likes": 12,
+                          "comments": 3,
+                          "shares": 1,
+                          "feed_context": null,
+                          "image_urls": [
+                            "https://www.example.org/images/example-post.png"
+                          ]
+                        }
+                      ],
+                      "pagination": {
+                        "has_more": true,
+                        "next_cursor": "eyJ2IjoxLCJyIjoiZXhhbXBsZSJ9",
+                        "total": 500
                       },
                       "billing": {
                         "credits_consumed": 1
