@@ -65,8 +65,12 @@ test("docs configuration identifies the Airscale knowledge base and keeps the pr
   assert.equal(config.search.prompt, "Search Airschool...");
 });
 
-test("foundation config does not declare live-domain redirects", () => {
-  assert.equal(Object.hasOwn(config, "redirects"), false);
+test("source redirects only correct the four miscellaneous slugs", () => {
+  assert.deepEqual(config.redirects, ["whatsapp-check", "whatsapp-check/status", "meta-ads", "email-verifier"].map(slug => ({
+    source: `/api-reference/miscale-news/${slug}`,
+    destination: `/api-reference/miscellaneous/${slug}`,
+    permanent: true
+  })));
   assert.equal(policy.dnsChangesAllowed, false);
   assert.equal(policy.liveRedirectsAllowed, false);
   assert.equal(policy.liveSiteWritesAllowed, false);

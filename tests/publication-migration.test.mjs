@@ -79,7 +79,7 @@ test("staging candidate preserves permanent redirects while remaining noindex on
   assert.equal(config.seo.metatags.canonical, "https://airscale.mintlify.app");
   assert.equal(manifest.documentationOrigin, "https://airscale.mintlify.app");
   assert.equal(manifest.indexing, "noindex");
-  assert.equal(config.redirects.length, 3);
+  assert.equal(config.redirects.length, 7);
   for (const redirect of config.redirects) assert.equal(redirect.permanent, true);
   assert.match(files.get("index.mdx").toString(), /^canonical: "https:\/\/airscale\.mintlify\.app\/"$/m);
   assert.match(files.get("robots.txt").toString(), /Sitemap: https:\/\/airscale\.mintlify\.app\/sitemap.xml/);

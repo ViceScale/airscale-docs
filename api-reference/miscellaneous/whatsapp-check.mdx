@@ -1,7 +1,7 @@
 ---
 title: "WhatsApp checker"
 description: "Check whether one phone number is available on WhatsApp. Rate limit: 60 requests per minute per workspace for POST, including replays."
-canonical: "https://airscale.mintlify.app/api-reference/miscale-news/whatsapp-check"
+canonical: "https://airscale.mintlify.app/api-reference/miscellaneous/whatsapp-check"
 openapi: "/openapi.json POST /v1/whatsapp-check"
 ---
 
@@ -15,10 +15,10 @@ The limit is **60 requests per minute per workspace**, including POST retries. A
 
 `Idempotency-Key` is optional. Use a UUID (versions 1–5) and reuse the same key and phone for retries of one logical check. Changing the phone with the same key returns `409`. Without a key, the server generates an operation ID; save the returned `operation_id`.
 
-After a `202` response, use [WhatsApp check status](/api-reference/miscale-news/whatsapp-check/status) to reconcile the operation before submitting another check. Repeating a headerless POST creates a new operation and can incur another charge.
+After a `202` response, use [WhatsApp check status](/api-reference/miscellaneous/whatsapp-check/status) to reconcile the operation before submitting another check. Repeating a headerless POST creates a new operation and can incur another charge.
 
 A recorded insufficient-credit rejection returns `403`; a known unavailable check returns `503`. Both can include an `operation_id`. Reuse the original key when reconciling a lost response. Use bounded backoff for temporary errors and rate limits.
 
 ## Next step
 
-[Look up the operation status](/api-reference/miscale-news/whatsapp-check/status) using the same workspace API key.
+[Look up the operation status](/api-reference/miscellaneous/whatsapp-check/status) using the same workspace API key.

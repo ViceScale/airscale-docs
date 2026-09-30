@@ -2744,10 +2744,10 @@ All numeric limits below apply per workspace. A shared limit is one combined all
 | [Airsearch](/api-reference/airsearch) | 300 requests per minute per workspace. |
 | [Post likers](/api-reference/post-likers) | 180 requests per fixed minute per workspace, shared by post-likers and post-commenters; pagination requests and retries count. |
 | [Post commenters](/api-reference/post-commenters) | 180 requests per fixed minute per workspace, shared by post-likers and post-commenters; pagination requests and retries count. |
-| [WhatsApp checker](/api-reference/miscale-news/whatsapp-check) | 60 requests per minute per workspace for POST, including replays. |
-| [WhatsApp check status](/api-reference/miscale-news/whatsapp-check/status) | No endpoint-specific GET throttle. |
-| [Meta Ads](/api-reference/miscale-news/meta-ads) | 60 requests per minute per workspace. |
-| [Email verifier](/api-reference/miscale-news/email-verifier) | No endpoint-specific throttle. |
+| [WhatsApp checker](/api-reference/miscellaneous/whatsapp-check) | 60 requests per minute per workspace for POST, including replays. |
+| [WhatsApp check status](/api-reference/miscellaneous/whatsapp-check/status) | No endpoint-specific GET throttle. |
+| [Meta Ads](/api-reference/miscellaneous/meta-ads) | 60 requests per minute per workspace. |
+| [Email verifier](/api-reference/miscellaneous/email-verifier) | No endpoint-specific throttle. |
 | [Leads Finder](/api-reference/leads-finder) | 5 requests per second per workspace. |
 | [DNC Checker](/api-reference/dnc-checker) | 5 requests per second per workspace. |
 
@@ -3476,7 +3476,7 @@ Use [Post likers](/api-reference/post-likers) for the other engagement type, or 
 
 ## WhatsApp checker
 
-Source: https://airscale.mintlify.app/api-reference/miscale-news/whatsapp-check.md
+Source: https://airscale.mintlify.app/api-reference/miscellaneous/whatsapp-check.md
 
 Description: Check whether one phone number is available on WhatsApp. Rate limit: 60 requests per minute per workspace for POST, including replays.
 
@@ -3490,19 +3490,19 @@ The limit is **60 requests per minute per workspace**, including POST retries. A
 
 `Idempotency-Key` is optional. Use a UUID (versions 1–5) and reuse the same key and phone for retries of one logical check. Changing the phone with the same key returns `409`. Without a key, the server generates an operation ID; save the returned `operation_id`.
 
-After a `202` response, use [WhatsApp check status](/api-reference/miscale-news/whatsapp-check/status) to reconcile the operation before submitting another check. Repeating a headerless POST creates a new operation and can incur another charge.
+After a `202` response, use [WhatsApp check status](/api-reference/miscellaneous/whatsapp-check/status) to reconcile the operation before submitting another check. Repeating a headerless POST creates a new operation and can incur another charge.
 
 A recorded insufficient-credit rejection returns `403`; a known unavailable check returns `503`. Both can include an `operation_id`. Reuse the original key when reconciling a lost response. Use bounded backoff for temporary errors and rate limits.
 
 ## Next step
 
-[Look up the operation status](/api-reference/miscale-news/whatsapp-check/status) using the same workspace API key.
+[Look up the operation status](/api-reference/miscellaneous/whatsapp-check/status) using the same workspace API key.
 
 ---
 
 ## WhatsApp check status
 
-Source: https://airscale.mintlify.app/api-reference/miscale-news/whatsapp-check/status.md
+Source: https://airscale.mintlify.app/api-reference/miscellaneous/whatsapp-check/status.md
 
 Description: Reconcile a WhatsApp check using its operation ID. Rate limit: No endpoint-specific GET throttle.
 
@@ -3518,13 +3518,13 @@ Read a WhatsApp check in the authenticated workspace using the returned `operati
 
 ## Next step
 
-Return to [WhatsApp checker](/api-reference/miscale-news/whatsapp-check). Keep the original idempotency key when reconciling the same logical check.
+Return to [WhatsApp checker](/api-reference/miscellaneous/whatsapp-check). Keep the original idempotency key when reconciling the same logical check.
 
 ---
 
 ## Meta Ads
 
-Source: https://airscale.mintlify.app/api-reference/miscale-news/meta-ads.md
+Source: https://airscale.mintlify.app/api-reference/miscellaneous/meta-ads.md
 
 Description: Look up Meta ads for a company domain. Rate limit: 60 requests per minute per workspace.
 
@@ -3550,7 +3550,7 @@ Review [credit balance](/api-reference/credit-count) or [rate limits](/api-refer
 
 ## Email verifier
 
-Source: https://airscale.mintlify.app/api-reference/miscale-news/email-verifier.md
+Source: https://airscale.mintlify.app/api-reference/miscellaneous/email-verifier.md
 
 Description: Verify the deliverability of one email address. Rate limit: No endpoint-specific throttle.
 

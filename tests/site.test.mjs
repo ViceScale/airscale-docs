@@ -35,7 +35,7 @@ const GROUPS = [
     "api-reference/reverse-phone"
   ]],
   ["Post engagement", ["api-reference/post-likers", "api-reference/post-commenters"], { expanded: false }],
-  ["Miscellaneous", ["api-reference/miscale-news/whatsapp-check", "api-reference/miscale-news/whatsapp-check/status", "api-reference/miscale-news/meta-ads", "api-reference/miscale-news/email-verifier", "api-reference/dnc-checker"], { expanded: false }]
+  ["Miscellaneous", ["api-reference/miscellaneous/whatsapp-check", "api-reference/miscellaneous/whatsapp-check/status", "api-reference/miscellaneous/meta-ads", "api-reference/miscellaneous/email-verifier", "api-reference/dnc-checker"], { expanded: false }]
 ];
 
 // Keep the legacy Count URL covered even though it is no longer in navigation.
@@ -605,10 +605,10 @@ test("guide pages teach authentication, safe retries, and a first request", () =
 const DURABLE_OPERATION_GUIDANCE = {
   "api-reference/leads-finder": [/5 requests per second/, /0.1 credits/, /page/, /not interchangeable/],
   "api-reference/dnc-checker": [/5 requests per second/, /1 credit/, /unsupported_phone_region/, /not charged/],
-  "api-reference/miscale-news/whatsapp-check": [/60 requests per minute/, /1 credit/, /Idempotency-Key/, /202/],
-  "api-reference/miscale-news/whatsapp-check/status": [/read-only/, /bounded backoff/, /unavailable/, /rejected/],
-  "api-reference/miscale-news/meta-ads": [/60 requests per minute/, /1 credit/, /504/, /idempotency/],
-  "api-reference/miscale-news/email-verifier": [/0.5 credits/, /135 seconds/, /body/, /refund/],
+  "api-reference/miscellaneous/whatsapp-check": [/60 requests per minute/, /1 credit/, /Idempotency-Key/, /202/],
+  "api-reference/miscellaneous/whatsapp-check/status": [/read-only/, /bounded backoff/, /unavailable/, /rejected/],
+  "api-reference/miscellaneous/meta-ads": [/60 requests per minute/, /1 credit/, /504/, /idempotency/],
+  "api-reference/miscellaneous/email-verifier": [/0.5 credits/, /135 seconds/, /body/, /refund/],
   "api-reference/credit-count": [/no request body/i, /does not debit Airscale credits/i],
   "api-reference/email-finder": [/3,000 requests per minute/i, /2 credits/i, /`not_found` is not charged/i, /limited number of retries with increasing delays/i],
   "api-reference/email-finder-(bulk)": [
