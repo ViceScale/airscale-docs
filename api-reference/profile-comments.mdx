@@ -1,0 +1,49 @@
+---
+title: "Profile comments"
+description: "Retrieve the comments a LinkedIn profile wrote, each with the post it was left on. Rate limit: 180 requests per fixed minute per workspace, counted separately for each LinkedIn content endpoint; pagination requests and retries count."
+canonical: "https://docs.airscale.io/api-reference/profile-comments"
+openapi: "/openapi.json POST /v1/profile-comments"
+---
+
+Retrieve one synchronous page of comments written by a LinkedIn profile, with each comment's text, date, like and reply counts, and the post it was left on. Rows are returned as found on LinkedIn, without profile enrichment.
+
+<Note>
+Each successful request costs **1 credit**, whatever the number of comments returned. A successful empty page is also charged. Invalid input and failed requests are not charged. The workspace needs at least 1 credit to start a request.
+</Note>
+
+## Authentication
+
+Send your Airscale workspace API key as a Bearer token. Both V1 and V2 workspace API keys are accepted.
+
+## Request fields
+
+Send `profile_url` as a LinkedIn profile URL (`linkedin.com/in/...`). Optionally set `posted_within` to `24h`, `week`, or `month` to return only recent comments. Unknown fields are rejected with `400`.
+
+## Rate limit
+
+The limit is **180 requests per minute per workspace** for Profile comments, including requests made with different API keys for the same workspace. [Post search](/api-reference/post-search) and [Comment likers](/api-reference/comment-likers) each have their own separate 180-request allowance. Pagination requests and retries count toward the limit.
+
+The counter uses a fixed minute window and resets at the next minute boundary. Requests above the limit receive HTTP `429` and are not charged. When LinkedIn content capacity is busy for all workspaces, the response is a free `503` with `Retry-After: 5`.
+
+## Pagination
+
+A page holds up to about 100 comments. Omit `cursor` on the first request. When `pagination.next_cursor` is not `null`, send it unchanged together with the same `profile_url` and `posted_within` to fetch the next page. A cursor sent with different fields, or to another endpoint, returns `400`.
+
+`pagination.total` is always `null` for this endpoint because no reliable total is reported. Use `has_more` and `next_cursor` to decide whether to continue.
+
+## Retries
+
+This endpoint does not accept an idempotency key. Retrying a request fetches the page again and is charged again. Retry only responses that were not charged:
+
+| Response | Next action |
+| --- | --- |
+| `400 Bad Request` | Correct the body or cursor. The `message` field names the problem. |
+| `403 Forbidden` | Add credits to the workspace before retrying. |
+| `413 Payload Too Large` | Keep the JSON body under 16 KiB. |
+| `429 Too Many Requests` | Wait for the next minute boundary, then retry with bounded exponential backoff. |
+| `502 Bad Gateway` or `504 Gateway Timeout` | Retry with increasing delays and a fixed retry limit. |
+| `503 Service Unavailable` | Wait for `Retry-After` when present, then retry with bounded backoff. |
+
+## Next step
+
+Send a returned `comment_url` to [Comment likers](/api-reference/comment-likers) to see who reacted to that comment.
