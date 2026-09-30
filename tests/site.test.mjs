@@ -508,6 +508,7 @@ test("Post engagement and Miscellaneous use the collapsible sidebar script", () 
   assert.match(script, /Miscellaneous/);
   assert.match(script, /aria-expanded/);
   assert.match(script, /MutationObserver/);
+  assert.match(script, /"\/api-reference\/find-companies": \["body-filters"\]/, "Find Companies filters open by default");
 });
 
 test("every public operation has one exact OpenAPI-backed wrapper", () => {

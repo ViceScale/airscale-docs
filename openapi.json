@@ -4109,93 +4109,100 @@
                         "description": "Matches companies by public-company status; null leaves this criterion unset."
                       }
                     },
-                    "anyOf": [
-                      {
-                        "required": [
-                          "country"
-                        ]
-                      },
-                      {
-                        "required": [
-                          "region"
-                        ]
-                      },
-                      {
-                        "required": [
-                          "city"
-                        ]
-                      },
-                      {
-                        "required": [
-                          "industry"
-                        ]
-                      },
-                      {
-                        "required": [
-                          "techStack"
-                        ]
-                      },
-                      {
-                        "required": [
-                          "keywords"
-                        ]
-                      },
-                      {
-                        "required": [
-                          "topics"
-                        ]
-                      },
-                      {
-                        "required": [
-                          "companyName"
-                        ]
-                      },
-                      {
-                        "required": [
-                          "size"
-                        ]
-                      },
-                      {
-                        "required": [
-                          "revenue"
-                        ]
-                      },
-                      {
-                        "required": [
-                          "age"
-                        ]
-                      },
-                      {
-                        "required": [
-                          "events"
-                        ]
-                      },
-                      {
-                        "required": [
-                          "locations"
-                        ]
-                      },
-                      {
-                        "required": [
-                          "hasWebsite"
-                        ],
-                        "properties": {
-                          "hasWebsite": {
-                            "type": "boolean"
+                    "if": {
+                      "not": {
+                        "anyOf": [
+                          {
+                            "required": [
+                              "country"
+                            ]
+                          },
+                          {
+                            "required": [
+                              "region"
+                            ]
+                          },
+                          {
+                            "required": [
+                              "city"
+                            ]
+                          },
+                          {
+                            "required": [
+                              "industry"
+                            ]
+                          },
+                          {
+                            "required": [
+                              "techStack"
+                            ]
+                          },
+                          {
+                            "required": [
+                              "keywords"
+                            ]
+                          },
+                          {
+                            "required": [
+                              "topics"
+                            ]
+                          },
+                          {
+                            "required": [
+                              "companyName"
+                            ]
+                          },
+                          {
+                            "required": [
+                              "size"
+                            ]
+                          },
+                          {
+                            "required": [
+                              "revenue"
+                            ]
+                          },
+                          {
+                            "required": [
+                              "age"
+                            ]
+                          },
+                          {
+                            "required": [
+                              "events"
+                            ]
+                          },
+                          {
+                            "required": [
+                              "locations"
+                            ]
+                          },
+                          {
+                            "required": [
+                              "hasWebsite"
+                            ],
+                            "properties": {
+                              "hasWebsite": {
+                                "type": "boolean"
+                              }
+                            }
+                          },
+                          {
+                            "required": [
+                              "isPublicCompany"
+                            ],
+                            "properties": {
+                              "isPublicCompany": {
+                                "type": "boolean"
+                              }
+                            }
                           }
-                        }
-                      },
-                      {
-                        "required": [
-                          "isPublicCompany"
-                        ],
-                        "properties": {
-                          "isPublicCompany": {
-                            "type": "boolean"
-                          }
-                        }
+                        ]
                       }
-                    ]
+                    },
+                    "then": {
+                      "not": {}
+                    }
                   },
                   "page": {
                     "description": "A zero-based page supplied as an integer JSON number or one of the equivalent canonical decimal strings. OpenAPI intentionally uses canonical decimal strings even though runtime Number() accepts additional spellings.",

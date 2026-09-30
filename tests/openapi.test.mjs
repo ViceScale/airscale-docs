@@ -1326,6 +1326,8 @@ test("Find Companies models public filters, cursor precedence, and stable result
   assert.equal(filters.type, "object");
   assert.equal(filters.minProperties, 1);
   assert.equal(filters.additionalProperties, false);
+  assert.equal(filters.anyOf, undefined, "top-level alternatives render as misleading Option tabs");
+  assert.equal(filters.oneOf, undefined);
   assert.deepEqual(Object.keys(filters.properties), [
     "country", "region", "city", "industry", "size", "revenue", "age", "techStack", "keywords",
     "topics", "events", "locations", "companyName", "eventWindow", "locationMatch", "hasWebsite",
@@ -1408,6 +1410,10 @@ test("Find Companies models canonical public coercions and fixed presets", () =>
   assert.equal(validate({ ...base, size: "100", cursor: "fc_synthetic" }), true);
   assert.equal(validate({ ...base, cursor: "not-a-company-cursor" }), false);
   assert.equal(validate({ filters: { eventWindow: "30 days" } }), false, "defaults alone are not a real filter");
+  assert.equal(validate({ filters: { eventWindow: "30 days", locationMatch: "hqOnly" } }), false, "defaults alone are not a real filter");
+  assert.equal(validate({ filters: { hasWebsite: null } }), false, "null booleans are not a real filter");
+  assert.equal(validate({ filters: { hasWebsite: true } }), true);
+  assert.equal(validate({ filters: { isPublicCompany: false, eventWindow: "30 days" } }), true);
   for (const eventWindow of [null, "", "   ", "30 days", "60 days", "90 days"]) {
     assert.equal(validate({ filters: { country: "FR", eventWindow } }), true, `eventWindow ${JSON.stringify(eventWindow)}`);
   }
