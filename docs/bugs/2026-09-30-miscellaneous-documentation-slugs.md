@@ -1,8 +1,9 @@
 # Bug: Miscellaneous API documentation uses miscale-news slugs
 
 Date reported: 2026-09-30
-Status: fixed locally
+Status: fixed and deployed; old custom-domain URLs remain cached
 Area: documentation URLs
+Related PRs: https://github.com/ViceScale/airscale-docs/pull/50 (source), https://github.com/ViceScale/airscale-docs/pull/51 (publication)
 Related tests: tests/preview-safety.test.mjs, tests/publication-migration.test.mjs, tests/site.test.mjs, tests/contracts.test.mjs, tests/mcp-pages.test.mjs, tests/api-reference-presentation.test.mjs
 
 ## User Report
@@ -32,10 +33,19 @@ Manual hosted smoke path: request each old URL without following redirects; requ
 - Browser reproduction confirmed the reported typo.
 - `npm run publication:check`: passed; all 21 legacy API routes preserved.
 - `npm run mint:validate`: passed for the source.
-- `npm run validate`: passed, including the full test suite, generated-file checks, and source Mintlify build.
+- `npm run validate`: passed, including 443 passing tests, generated-file checks, and source Mintlify build.
 - Production artifact `mint validate`: passed.
 - Focused route, contract, and publication tests: 88 passed, 0 failed.
 
 ## Watch Later
 
 Hosted redirects must be verified after publication; source configuration alone does not prove live redirect behavior.
+
+## Live verification — 2026-09-30 00:33 UTC
+
+- Source merge: `f8439d0a52910d79af23ed42f5f43a95ab55c1b6`.
+- Production merge: `2e895b91bdeaed85a1115e2622451216e24fc464` on `docs/production-release-20260923`; Mintlify Deployment check completed successfully.
+- All four new `docs.airscale.io/api-reference/miscellaneous/` URLs returned HTTP 200.
+- Chrome rendered the new Meta Ads URL and all four corrected sidebar links.
+- All four old URLs on `airscale.mintlify.app` returned HTTP 308 with the exact new path in Location.
+- The old custom-domain URLs still returned HTTP 200 from Cloudflare cache (HIT, age about 22,800 seconds), including a cache-busting query. They remain accessible, but custom-domain redirects will only take effect after cache refresh or purge. No cache purge credential was present in the environment.
