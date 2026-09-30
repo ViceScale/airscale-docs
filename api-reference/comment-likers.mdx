@@ -1,0 +1,49 @@
+---
+title: "Comment likers"
+description: "Retrieve the people who reacted to one LinkedIn comment. Rate limit: 180 requests per fixed minute per workspace, counted separately for each LinkedIn content endpoint; pagination requests and retries count."
+canonical: "https://docs.airscale.io/api-reference/comment-likers"
+openapi: "/openapi.json POST /v1/comment-likers"
+---
+
+Retrieve one synchronous page of up to 100 people who reacted to a LinkedIn comment, with their name, headline, profile picture, and reaction type. Rows are returned as found on LinkedIn, without profile enrichment.
+
+<Note>
+Each successful request costs **1 credit**, whatever the number of people returned. A successful empty page is also charged. Invalid input and failed requests are not charged. The workspace needs at least 1 credit to start a request.
+</Note>
+
+## Authentication
+
+Send your Airscale workspace API key as a Bearer token. Both V1 and V2 workspace API keys are accepted.
+
+## Request fields
+
+Send `comment_url` as a LinkedIn URL that identifies one comment: it must contain a `urn:li:comment:(...)` reference, for example in a `commentUrn` query parameter. The `comment_url` values returned by [Profile comments](/api-reference/profile-comments) can be sent unchanged. Unknown fields are rejected with `400`.
+
+Each person's `linkedin_url` can be a member-ID URL (`/in/ACoAA...`) rather than a vanity URL. Both forms identify the same LinkedIn profile.
+
+## Rate limit
+
+The limit is **180 requests per minute per workspace** for Comment likers, including requests made with different API keys for the same workspace. [Post search](/api-reference/post-search) and [Profile comments](/api-reference/profile-comments) each have their own separate 180-request allowance. Pagination requests and retries count toward the limit.
+
+The counter uses a fixed minute window and resets at the next minute boundary. Requests above the limit receive HTTP `429` and are not charged. When LinkedIn content capacity is busy for all workspaces, the response is a free `503` with `Retry-After: 5`.
+
+## Pagination
+
+Omit `cursor` on the first request. When `pagination.next_cursor` is not `null`, send it unchanged together with the same `comment_url` to fetch the next page. A cursor sent with a different comment, or to another endpoint, returns `400`. `pagination.total` is the number of reactions reported by LinkedIn, or `null` when unavailable.
+
+## Retries
+
+This endpoint does not accept an idempotency key. Retrying a request fetches the page again and is charged again. Retry only responses that were not charged:
+
+| Response | Next action |
+| --- | --- |
+| `400 Bad Request` | Correct the body or cursor. The `message` field names the problem. |
+| `403 Forbidden` | Add credits to the workspace before retrying. |
+| `413 Payload Too Large` | Keep the JSON body under 16 KiB. |
+| `429 Too Many Requests` | Wait for the next minute boundary, then retry with bounded exponential backoff. |
+| `502 Bad Gateway` or `504 Gateway Timeout` | Retry with increasing delays and a fixed retry limit. |
+| `503 Service Unavailable` | Wait for `Retry-After` when present, then retry with bounded backoff. |
+
+## Next step
+
+Use [Post likers](/api-reference/post-likers) or [Post commenters](/api-reference/post-commenters) to retrieve enriched people who engaged with a whole post.
