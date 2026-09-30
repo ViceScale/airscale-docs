@@ -34,11 +34,13 @@ Provide `keywords` (up to 200 characters) or at least one author, mention, or gr
 | `sort_by` | `date` (default) or `relevance`. |
 | `posted_within` | `24h`, `week`, or `month`, filtered by LinkedIn; or `1h`, `3months`, `6months`, or `year`, which require `sort_by: "date"`. |
 
-List filters accept a string or an array of up to 10 values. Unknown fields are rejected with `400`. With `posted_within` set to `1h`, `3months`, `6months`, or `year`, the period is applied to each fetched page, so a page can hold fewer than 50 posts. LinkedIn search can return fewer posts per author than that author's full feed.
+List filters accept a string or an array of up to 10 values. Unknown fields are rejected with `400`. With `posted_within` set to `1h`, `3months`, `6months`, or `year`, the period is applied to each fetched page, so a page can hold fewer than 50 posts. LinkedIn search can return fewer posts per author than that author's full feed; use [Profile posts](/api-reference/profile-posts) or [Company posts](/api-reference/company-posts) to read one author's feed.
+
+Each post row includes `feed_context`, LinkedIn's feed label when the row is not a plain post by the author, such as `"Example Person reposted this"` or `"Example Company collaborated on this"`. It is `null` for a plain post.
 
 ## Rate limit
 
-The limit is **180 requests per minute per workspace** for Post search, including requests made with different API keys for the same workspace. [Profile comments](/api-reference/profile-comments) and [Comment likers](/api-reference/comment-likers) each have their own separate 180-request allowance. Pagination requests and retries count toward the limit.
+The limit is **180 requests per minute per workspace** for Post search, including requests made with different API keys for the same workspace. [Profile comments](/api-reference/profile-comments), [Comment likers](/api-reference/comment-likers), [Profile posts](/api-reference/profile-posts), and [Company posts](/api-reference/company-posts) each have their own separate 180-request allowance. Pagination requests and retries count toward the limit.
 
 The counter uses a fixed minute window and resets at the next minute boundary. Requests above the limit receive HTTP `429` and are not charged. When LinkedIn content capacity is busy for all workspaces, the response is a free `503` with `Retry-After: 5`.
 

@@ -1,10 +1,10 @@
 {
-  "operation": "POST /v1/post-search",
+  "operation": "POST /v1/profile-posts",
   "status": 200,
   "source": "code",
   "sourceRepository": "ViceScale/airscale-code",
   "sourceSha": "6ec34a03d63308d639833e388d41488fb40c8df6",
-  "evidence": "workers/public-api/linkedin-content-worker.js:247-258,599-619,663-674; workers/public-api/linkedin-content-worker.test.mjs:115-164",
+  "evidence": "workers/public-api/linkedin-content-worker.js:65-71,247-258,353-364,571-588,599-619; workers/public-api/linkedin-content-worker.test.mjs:285-312",
   "body": {
     "items": [
       {
@@ -42,14 +42,14 @@
         "likes": 0,
         "comments": 0,
         "shares": 0,
-        "feed_context": null,
+        "feed_context": "Example Person reposted this",
         "image_urls": []
       }
     ],
     "pagination": {
       "has_more": true,
       "next_cursor": "eyJ2IjoxLCJyIjoiZXhhbXBsZSJ9",
-      "total": 3
+      "total": null
     },
     "billing": {
       "credits_consumed": 1

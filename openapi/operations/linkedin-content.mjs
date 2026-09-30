@@ -1,11 +1,12 @@
 const TAG = "LinkedIn content";
-const SOURCE_SHA = "3ba4f580f0d2bc5cad30d8fe87caf73585ba5cbd";
+const SOURCE_SHA = "6ec34a03d63308d639833e388d41488fb40c8df6";
 const RATE_LIMIT = "180 requests per fixed minute per workspace, counted separately for each LinkedIn content endpoint; pagination requests and retries count.";
 const CREDIT_COST = "1 credit per successful request, including empty pages; invalid input and failed requests are not charged.";
 const CURSOR = "eyJ2IjoxLCJyIjoiZXhhbXBsZSJ9";
 const PROFILE_URL = "https://www.linkedin.com/in/example-person";
 const COMPANY_URL = "https://www.linkedin.com/company/example-company";
 const POST_URL = "https://www.linkedin.com/posts/example-person_sales-activity-7511035039397339136-8myb";
+const COMPANY_POST_URL = "https://www.linkedin.com/posts/example-company_launch-activity-7511035039397339137-abcd";
 const COMMENT_URL = "https://www.linkedin.com/posts/example-person_sales-activity-7511035039397339136-8myb?commentUrn=urn%3Ali%3Acomment%3A%28activity%3A7511035039397339136%2C7511040000000000000%29";
 const PICTURE_URL = "https://www.example.org/images/example-person.png";
 
@@ -84,7 +85,7 @@ const authorSchema = {
 
 const postSchema = {
   type: "object",
-  required: ["post_url", "post_id", "content", "posted_at", "author", "likes", "comments", "shares", "image_urls"],
+  required: ["post_url", "post_id", "content", "posted_at", "author", "likes", "comments", "shares", "feed_context", "image_urls"],
   additionalProperties: false,
   properties: {
     post_url: { type: "string" },
@@ -95,6 +96,10 @@ const postSchema = {
     likes: nullableCount,
     comments: nullableCount,
     shares: nullableCount,
+    feed_context: {
+      type: ["string", "null"],
+      description: "LinkedIn's feed label when the row is not a plain post by the author, such as \"Example Person reposted this\" or \"Example Company collaborated on this\". Null for a plain post."
+    },
     image_urls: { type: "array", items: { type: "string" } }
   }
 };
@@ -201,6 +206,20 @@ const postSearchRequestSchema = {
   }
 };
 
+const feedPostedWithinProperty = {
+  type: ["string", "null"],
+  enum: ["1h", "24h", "week", "month", "3months", "6months", "year", null],
+  description: "Only return posts from this period. The period is applied to each fetched page, so pages can hold fewer than 50 posts, and pagination stops at the first page with no post inside the period."
+};
+
+const exampleCompanyAuthor = {
+  type: "company",
+  name: "Example Company",
+  linkedin_url: COMPANY_URL,
+  headline: "1,117 followers",
+  picture_url: "https://www.example.org/images/example-company.png"
+};
+
 const operations = [
   {
     path: "/v1/post-search",
@@ -225,6 +244,7 @@ const operations = [
         likes: 4,
         comments: 1,
         shares: 0,
+        feed_context: null,
         image_urls: ["https://www.example.org/images/example-post.png"]
       }],
       pagination: { has_more: true, next_cursor: CURSOR, total: 178 },
@@ -303,6 +323,98 @@ const operations = [
         reaction_type: "LIKE"
       }],
       pagination: { has_more: true, next_cursor: CURSOR, total: 104 },
+      billing: { credits_consumed: 1 }
+    }
+  },
+  {
+    path: "/v1/profile-posts",
+    operationId: "listLinkedinProfilePosts",
+    summary: "List a LinkedIn profile's posts",
+    description: "Returns one page of up to 50 posts from a LinkedIn profile's feed, newest first, including the person's posts and reposts. Costs 1 credit per successful request.",
+    requestSchema: {
+      type: "object",
+      required: ["profile_url"],
+      additionalProperties: false,
+      properties: {
+        profile_url: { type: "string", minLength: 1, maxLength: 2048, description: "LinkedIn profile URL (linkedin.com/in/...)." },
+        posted_within: feedPostedWithinProperty,
+        cursor: cursorProperty
+      }
+    },
+    requestDescription: "A LinkedIn profile URL, an optional period, and an optional cursor. The JSON body must not exceed 16 KiB.",
+    requestExamples: {
+      firstPage: { summary: "First page", value: { profile_url: PROFILE_URL, posted_within: "3months" } },
+      nextPage: { summary: "Next page", value: { profile_url: PROFILE_URL, posted_within: "3months", cursor: CURSOR } }
+    },
+    responseDescription: "A page of posts from the profile's feed, newest first.",
+    responseSchema: pageSchema(postSchema, "Posts and reposts from the profile's feed, newest first.", "Always null: no reliable total is reported for profile posts."),
+    responseExample: {
+      items: [
+        {
+          post_url: POST_URL,
+          post_id: "7511035039397339136",
+          content: "Example post about sales automation.",
+          posted_at: "2026-09-30T12:11:41.675Z",
+          author: exampleAuthor,
+          likes: 4,
+          comments: 1,
+          shares: 0,
+          feed_context: null,
+          image_urls: ["https://www.example.org/images/example-post.png"]
+        },
+        {
+          post_url: COMPANY_POST_URL,
+          post_id: "7511035039397339137",
+          content: "Launch day",
+          posted_at: "2026-09-30T11:00:00.000Z",
+          author: exampleCompanyAuthor,
+          likes: 0,
+          comments: 0,
+          shares: 0,
+          feed_context: "Example Person reposted this",
+          image_urls: []
+        }
+      ],
+      pagination: { has_more: true, next_cursor: CURSOR, total: null },
+      billing: { credits_consumed: 1 }
+    }
+  },
+  {
+    path: "/v1/company-posts",
+    operationId: "listLinkedinCompanyPosts",
+    summary: "List a LinkedIn company's posts",
+    description: "Returns one page of up to 50 posts from a LinkedIn company page's feed, newest first. Costs 1 credit per successful request.",
+    requestSchema: {
+      type: "object",
+      required: ["company_url"],
+      additionalProperties: false,
+      properties: {
+        company_url: { type: ["string", "integer"], description: "LinkedIn company URL (linkedin.com/company/...) or numeric company ID." },
+        posted_within: feedPostedWithinProperty,
+        cursor: cursorProperty
+      }
+    },
+    requestDescription: "A LinkedIn company URL or numeric company ID, an optional period, and an optional cursor. The JSON body must not exceed 16 KiB.",
+    requestExamples: {
+      firstPage: { summary: "First page", value: { company_url: COMPANY_URL, posted_within: "week" } },
+      nextPage: { summary: "Next page", value: { company_url: COMPANY_URL, posted_within: "week", cursor: CURSOR } }
+    },
+    responseDescription: "A page of posts from the company page's feed, newest first.",
+    responseSchema: pageSchema(postSchema, "Posts from the company page's feed, newest first.", "Total posts reported by LinkedIn for the company page, or null when unavailable."),
+    responseExample: {
+      items: [{
+        post_url: COMPANY_POST_URL,
+        post_id: "7511035039397339137",
+        content: "Launch day",
+        posted_at: "2026-09-30T11:00:00.000Z",
+        author: exampleCompanyAuthor,
+        likes: 12,
+        comments: 3,
+        shares: 1,
+        feed_context: null,
+        image_urls: ["https://www.example.org/images/example-post.png"]
+      }],
+      pagination: { has_more: true, next_cursor: CURSOR, total: 500 },
       billing: { credits_consumed: 1 }
     }
   }
