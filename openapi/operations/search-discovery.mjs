@@ -325,11 +325,18 @@ const findCompaniesFiltersSchema = {
     hasWebsite: { type: ["boolean", "null"], description: findCompaniesFilterDescriptions.hasWebsite },
     isPublicCompany: { type: ["boolean", "null"], description: findCompaniesFilterDescriptions.isPublicCompany }
   },
-  anyOf: companyRealFilterNames.map((name) => (
-    name === "hasWebsite" || name === "isPublicCompany"
-      ? { required: [name], properties: { [name]: { type: "boolean" } } }
-      : { required: [name] }
-  ))
+  // Top-level alternatives render as Option tabs that hide the filter list, so
+  // the at-least-one-real-filter rule lives in if/then, which Mintlify ignores.
+  if: {
+    not: {
+      anyOf: companyRealFilterNames.map((name) => (
+        name === "hasWebsite" || name === "isPublicCompany"
+          ? { required: [name], properties: { [name]: { type: "boolean" } } }
+          : { required: [name] }
+      ))
+    }
+  },
+  then: { not: {} }
 };
 
 const filterValuesFilterSchema = {
