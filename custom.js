@@ -36,6 +36,22 @@
     document.querySelectorAll("#sidebar .sidebar-group-header").forEach(makeCollapsible);
   }
 
+  // Mintlify collapses nested OpenAPI objects; open the ones whose child
+  // attributes are the point of the page. Each is opened once per render, so a
+  // reader who collapses it again keeps it collapsed.
+  const expandedByDefault = { "/api-reference/find-companies": ["body-filters"] };
+
+  function applyDefaultExpanded() {
+    const path = window.location.pathname.replace(/\/+$/, "");
+    const fields = Object.entries(expandedByDefault).find(([page]) => path.endsWith(page))?.[1] ?? [];
+    for (const field of fields) {
+      const details = document.querySelector(`details[data-testid="${field}-children"]`);
+      if (!(details instanceof HTMLDetailsElement) || details.dataset.airscaleDefaultExpanded === "true") continue;
+      details.dataset.airscaleDefaultExpanded = "true";
+      if (!details.open) details.querySelector(":scope > summary")?.click();
+    }
+  }
+
   // Delegate to Mintlify's native search so results, keyboard shortcuts, and
   // navigation stay in sync with the rest of the documentation site.
   function openHomepageSearch(event) {
@@ -48,7 +64,11 @@
   function start() {
     document.addEventListener("click", openHomepageSearch);
     applyCollapsibleGroups();
-    new MutationObserver(applyCollapsibleGroups).observe(document.body, { childList: true, subtree: true });
+    applyDefaultExpanded();
+    new MutationObserver(() => {
+      applyCollapsibleGroups();
+      applyDefaultExpanded();
+    }).observe(document.body, { childList: true, subtree: true });
   }
 
   if (document.readyState === "loading") {
