@@ -22,10 +22,10 @@ const EXPECTED_OPERATIONS = [
   ["POST", "/v1/airsearch", "airsearch", "api-reference/airsearch", "Search and discovery"],
   ["POST", "/v1/post-likers", "listPostLikers", "api-reference/post-likers", "Post engagement"],
   ["POST", "/v1/post-commenters", "listPostCommenters", "api-reference/post-commenters", "Post engagement"],
-  ["POST", "/v1/whatsapp-check", "checkWhatsapp", "api-reference/miscale-news/whatsapp-check", "Miscellaneous"],
-  ["GET", "/v1/whatsapp-check/operations/{operation_id}", "getWhatsappCheckOperation", "api-reference/miscale-news/whatsapp-check/status", "Miscellaneous"],
-  ["POST", "/v1/meta-ads", "lookupMetaAds", "api-reference/miscale-news/meta-ads", "Miscellaneous"],
-  ["POST", "/v1/email-verifier", "verifyEmail", "api-reference/miscale-news/email-verifier", "Miscellaneous"],
+  ["POST", "/v1/whatsapp-check", "checkWhatsapp", "api-reference/miscellaneous/whatsapp-check", "Miscellaneous"],
+  ["GET", "/v1/whatsapp-check/operations/{operation_id}", "getWhatsappCheckOperation", "api-reference/miscellaneous/whatsapp-check/status", "Miscellaneous"],
+  ["POST", "/v1/meta-ads", "lookupMetaAds", "api-reference/miscellaneous/meta-ads", "Miscellaneous"],
+  ["POST", "/v1/email-verifier", "verifyEmail", "api-reference/miscellaneous/email-verifier", "Miscellaneous"],
   ["POST", "/v1/leads-finder", "searchLeadsFinder", "api-reference/leads-finder", "Search and discovery"],
   ["POST", "/v1/dnc-check", "checkDnc", "api-reference/dnc-checker", "Miscellaneous"]
 ];

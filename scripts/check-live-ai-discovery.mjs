@@ -8,7 +8,7 @@ const { previewOrigin: origin } = JSON.parse(readFileSync(new URL("../contracts/
 const allowedOrigins = new Set([origin, origin.replace(/\.mintlify\.app$/, ".mintlify.site")]);
 const pages = [
   "/api-reference/email-finder.md",
-  "/api-reference/miscale-news/whatsapp-check.md",
+  "/api-reference/miscellaneous/whatsapp-check.md",
   "/cli/overview.md",
   "/mcp/airscale-mcp-server.md",
   "/docs/sales-navigator.md",

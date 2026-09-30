@@ -93,6 +93,6 @@ test("simplified engagement and verification copy retains billing and retry limi
     assert.doesNotMatch(source, /pinned provider|continuation account|bridge|settlement|discovery attempt/i);
     for (const required of [/results have already been saved.*cursor expiry/, /Idempotency-Key/, /24 hours/, /10 minutes/, /Retry-After/, /new billable request/, /does not automatically become a refund/, /account_restart_required/]) assert.match(source, required);
   }
-  const verifier = readFileSync("api-reference/miscale-news/email-verifier.mdx", "utf8");
+  const verifier = readFileSync("api-reference/miscellaneous/email-verifier.mdx", "utf8");
   for (const required of [/135 seconds/, /`body`/, /non-JSON/, /another charge/, /`503`/, /does not support caller idempotency keys/]) assert.match(verifier, required);
 });

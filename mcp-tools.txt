@@ -2749,7 +2749,7 @@
       },
       "asynchronous": false,
       "operationId": "verifyEmail",
-      "apiPage": "/api-reference/miscale-news/email-verifier"
+      "apiPage": "/api-reference/miscellaneous/email-verifier"
     },
     {
       "name": "airscale_check_whatsapp",
@@ -2781,7 +2781,7 @@
       },
       "asynchronous": false,
       "operationId": "checkWhatsapp",
-      "apiPage": "/api-reference/miscale-news/whatsapp-check"
+      "apiPage": "/api-reference/miscellaneous/whatsapp-check"
     },
     {
       "name": "airscale_get_whatsapp_check",
@@ -2808,7 +2808,7 @@
       },
       "asynchronous": false,
       "operationId": "getWhatsappCheckOperation",
-      "apiPage": "/api-reference/miscale-news/whatsapp-check/status"
+      "apiPage": "/api-reference/miscellaneous/whatsapp-check/status"
     },
     {
       "name": "airscale_check_dnc",
@@ -2862,7 +2862,7 @@
       },
       "asynchronous": false,
       "operationId": "lookupMetaAds",
-      "apiPage": "/api-reference/miscale-news/meta-ads"
+      "apiPage": "/api-reference/miscellaneous/meta-ads"
     },
     {
       "name": "airscale_start_companies_export",
