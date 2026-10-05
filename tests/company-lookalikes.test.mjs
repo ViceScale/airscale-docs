@@ -39,7 +39,7 @@ test("company lookalikes navigation, rate limits, credits and retry guidance agr
   const page = readFileSync("api-reference/company-lookalikes.mdx", "utf8");
   const limits = readFileSync("api-reference/rate-limits.mdx", "utf8");
   for (const source of [page, limits]) assert.ok(source.includes(operation["x-airscale-rate-limit"]));
-  for (const pattern of [/Do not automatically retry/, /another charge/, /2,500/, /100 seconds/, /32 MiB/]) assert.match(page, pattern);
+  for (const pattern of [/Do not automatically retry/, /another charge/, /2,500/, /100 seconds/]) assert.match(page, pattern);
   assert.equal(operation.parameters, undefined);
   assert.equal(operation.responses["202"], undefined);
   assert.ok(operation.responses["402"]);
@@ -52,4 +52,11 @@ test("copyable curl keeps the explicit ten-result limit and sufficient timeout",
   assert.match(sample.source, /--max-time 100/);
   assert.match(sample.source, /\$AIRSCALE_API_KEY/);
   assert.doesNotMatch(sample.source, /--retry/);
+});
+
+test("public lookalikes documentation omits providers and internal implementation details", () => {
+  const page = readFileSync("api-reference/company-lookalikes.mdx", "utf8");
+  const publicContent = page + JSON.stringify(operation);
+  assert.doesNotMatch(publicContent, /extruct|company[ _-]?enrich|prospeo|icypeas|rapidapi|leadmagic|salesql|limadata|contactout|wiza|forager|bounceban|findymail|trykitt|explorium|upcell|adyntel|ai[ _-]?ark|harvest|unipile|b2b[ _-]?enrichment|serper|jina|bubble|supabase|cloudflare/i);
+  assert.doesNotMatch(publicContent, /idempotenc|limitPerCompany|KiB|MiB|request.body.limit|body.{0,20}limited|settlement|90-second|80 seconds/i);
 });

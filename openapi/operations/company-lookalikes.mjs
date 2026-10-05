@@ -8,16 +8,13 @@ const filters = {
 };
 const errors = {
   400: "Invalid JSON, unsupported content type, unknown fields, or invalid filters or limits.",
-  401: "Missing, invalid, or revoked current-app workspace API key.",
+  401: "Missing, invalid, or revoked workspace API key.",
   402: "Not enough available credits to reserve limit × 0.5 credits.",
   404: "None of the reference companies could be found (reference_company_not_found).",
-  409: "The operation state changed before the search could proceed.",
-  413: "The JSON request body exceeds 128 KiB.",
   422: "A location filter could not be resolved.",
   429: "The workspace has reached five starts per rolling minute, already has an active search, or search capacity is temporarily unavailable. Inspect Retry-After when present.",
-  499: "The caller cancelled the request.",
-  502: "A search service failed or returned an invalid response. A response exceeding 32 MiB fails with a full refund; request fewer results.",
-  503: "Authentication, storage, billing, or search service temporarily unavailable. Credit settlement may still be pending.",
+  502: "The search could not be completed.",
+  503: "Company search is temporarily unavailable.",
   504: "The search deadline was exceeded (company_lookalikes_timeout)."
 };
 export const companyLookalikesOperation = {
@@ -27,7 +24,7 @@ export const companyLookalikesOperation = {
     operationId: "findCompanyLookalikes",
     tags: ["Search and discovery"],
     summary: "Find company lookalikes",
-    description: "Finds companies similar to 1–10 reference domains and returns a synchronous JSON response. Authenticate with a current-app workspace API key. The JSON body is limited to 128 KiB. Every POST is an independent, potentially billable search; do not automatically retry after a lost response. There is no pagination, polling, or result-retrieval endpoint. Allow at least 100 seconds for the client timeout; the server has a 90-second overall budget.",
+    description: "Finds companies similar to 1–10 reference domains and returns all results in a single response. Use your workspace API key and allow at least 100 seconds for the client timeout. Repeating a request can cause another charge; do not automatically retry after a lost response.",
     "x-airscale-rate-limit": "5 requests per rolling minute per workspace. Maximum 1 active search per workspace.",
     "x-airscale-credit-cost": "0.5 credits per unique returned company. Reserves limit × 0.5 credits before searching and refunds the unused amount. Empty results cost zero credits.",
     "x-codeSamples": [
