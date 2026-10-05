@@ -541,7 +541,7 @@ test("server page is the final concise AirSchool reference", () => {
     creditsSection,
     new RegExp(`Find People and Find Companies each cost ${escapeRegExp(findPeopleRate)} credits? per returned row`)
   );
-  assert.match(creditsSection, new RegExp(`Airsearch costs ${escapeRegExp(airsearchRate)} credits? per call`));
+  assert.match(creditsSection, new RegExp(`Airsearch costs ${escapeRegExp(airsearchRate)} credits? per successful call`));
   assert.match(creditsSection, /work-email-only/i);
   assert.match(creditsSection, new RegExp(`up to ${escapeRegExp(contactExportRate)} credits? per contact`, "i"));
   assert.match(creditsSection, new RegExp(`\`${escapeRegExp(confirmationField)}\``));
@@ -678,10 +678,10 @@ test("connection guides follow distinct ChatGPT and Claude setup narratives", ()
     assert.match(body, /https:\/\/mcp\.airscale\.io\/mcp/);
     assert.match(body, /browser[\s\S]*sign[ -]?in|sign[ -]?in[\s\S]*browser/i);
     assert.match(body, /<Steps>[\s\S]*(?:<Step\b[\s\S]*){4,}<\/Steps>/);
-    assert.match(body, /31 typed tools/);
+    assert.match(body, /37 typed tools/);
     assert.match(body, /airscale_check_credits/);
     assert.match(body, /free|does not debit credits/i);
-    assert.match(body, /Airsearch costs 2 credits per call/);
+    assert.match(body, /Airsearch costs 1 credit per successful call/);
     assert.match(body, /work-email-only/i);
     assert.match(body, /confirm_credit_spend/);
     assert.match(body, /\[MCP tool catalog\]\(\/mcp\/tools\)/);
@@ -887,12 +887,12 @@ test("MCP entry page mirrors the AirSchool Claude-demo narrative", () => {
     body.indexOf("## What is the Airschool MCP?"),
     body.indexOf("## How credits work")
   );
-  assert.equal((capabilitySection.match(/^- /gm) ?? []).length, 8);
-  assert.match(body, /31 typed tools/);
+  assert.equal((capabilitySection.match(/^- /gm) ?? []).length, 9);
+  assert.match(body, /37 typed tools/);
   assert.match(body, /\[MCP tool catalog\]\(\/mcp\/tools\)/);
   assert.match(body, /Find People costs 0\.1 credit per returned person/);
   assert.match(body, /Find Companies costs 0\.1 credit per returned company/);
-  assert.match(body, /Airsearch costs 2 credits per call/);
+  assert.match(body, /Airsearch costs 1 credit per successful call/);
   assert.match(body, /free planning tools/i);
   assert.match(body, /paid export[\s\S]{0,180}filters[\s\S]{0,120}row limit[\s\S]{0,120}maximum spend[\s\S]{0,120}(?:explicitly confirm|confirmation)/i);
   assert.match(body, /> Find up to five cybersecurity companies in France with 51–200 employees\.[^\n]*proposed tool[^\n]*maximum cost[^\n]*wait for my approval\./i);
@@ -956,7 +956,7 @@ test("MCP entry page mirrors the AirSchool Claude-demo narrative", () => {
   }
   assert.match(MCP_TOOLS.get("airscale_find_people").description, /Costs 0\.1 credits per returned lead/);
   assert.match(MCP_TOOLS.get("airscale_find_companies").description, /Costs 0\.1 credits per returned company/);
-  assert.match(MCP_TOOLS.get("airscale_airsearch").description, /Costs 2 credits per call/);
+  assert.match(MCP_TOOLS.get("airscale_airsearch").description, /Costs 1 credit per successful call/);
   assert.doesNotMatch(body, /^## (?:Start the export|Poll status|Retrieve the file)$/m);
   assert.doesNotMatch(body, /```json|"tool"\s*:/i);
   assert.doesNotMatch(body, /["']api_key["']/i);

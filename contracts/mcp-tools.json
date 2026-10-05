@@ -1,6 +1,6 @@
 {
   "sourceRepository": "ViceScale/airscale-code",
-  "sourceSha": "c55176dba55f958f89048a51408f2170caef41de",
+  "sourceSha": "3a42948758f2c1b68052af8c405e842e487feee3",
   "sourceFiles": [
     "mcp/airscale-public-api/src/endpoints.ts",
     "mcp/airscale-public-api/src/exportJobs.ts",
@@ -1512,44 +1512,110 @@
               "size": {
                 "anyOf": [
                   {
-                    "type": "string"
+                    "type": "string",
+                    "enum": [
+                      "1-10",
+                      "11-50",
+                      "51-200",
+                      "201-500",
+                      "501-1000",
+                      "1001-5000",
+                      "5001-10000",
+                      "10001+"
+                    ]
                   },
                   {
                     "type": "array",
                     "items": {
-                      "type": "string"
+                      "type": "string",
+                      "enum": [
+                        "1-10",
+                        "11-50",
+                        "51-200",
+                        "201-500",
+                        "501-1000",
+                        "1001-5000",
+                        "5001-10000",
+                        "10001+"
+                      ]
                     }
                   }
                 ],
-                "description": "Employee size ranges, e.g. [\"11-50\"]"
+                "description": "Employee headcount ranges; only the listed buckets are accepted, e.g. [\"11-50\", \"51-200\"]. Select every bucket that overlaps the wanted range"
               },
               "revenue": {
                 "anyOf": [
                   {
-                    "type": "string"
+                    "type": "string",
+                    "enum": [
+                      "0-500K",
+                      "500K-1M",
+                      "1M-5M",
+                      "5M-10M",
+                      "10M-25M",
+                      "25M-75M",
+                      "75M-200M",
+                      "200M-500M",
+                      "500M-1B",
+                      "1B-10B",
+                      "10B-100B",
+                      "100B-1T",
+                      "1T-10T",
+                      "10T+"
+                    ]
                   },
                   {
                     "type": "array",
                     "items": {
-                      "type": "string"
+                      "type": "string",
+                      "enum": [
+                        "0-500K",
+                        "500K-1M",
+                        "1M-5M",
+                        "5M-10M",
+                        "10M-25M",
+                        "25M-75M",
+                        "75M-200M",
+                        "200M-500M",
+                        "500M-1B",
+                        "1B-10B",
+                        "10B-100B",
+                        "100B-1T",
+                        "1T-10T",
+                        "10T+"
+                      ]
                     }
                   }
                 ],
-                "description": "Revenue ranges, e.g. [\"1M-5M\"]"
+                "description": "Annual revenue ranges in USD; only the listed buckets are accepted, e.g. [\"10M-25M\", \"25M-75M\"]. Select every bucket that overlaps the wanted range"
               },
               "age": {
                 "anyOf": [
                   {
-                    "type": "string"
+                    "type": "string",
+                    "enum": [
+                      "0-3",
+                      "3-6",
+                      "6-10",
+                      "10-20",
+                      "20+"
+                    ]
                   },
                   {
                     "type": "array",
                     "items": {
-                      "type": "string"
+                      "type": "string",
+                      "enum": [
+                        "0-3",
+                        "3-6",
+                        "6-10",
+                        "10-20",
+                        "20+"
+                      ]
                     }
                   }
                 ],
-                "description": "Company age ranges in years, e.g. [\"3-6\"]"
+                "description": "Company age ranges in years; only the listed buckets are accepted, e.g. [\"3-6\"]"
               },
               "techStack": {
                 "anyOf": [
@@ -1596,30 +1662,132 @@
               "events": {
                 "anyOf": [
                   {
-                    "type": "string"
+                    "type": "string",
+                    "enum": [
+                      "increase_in_customer_service_department",
+                      "hiring_in_finance_department",
+                      "hiring_in_support_department",
+                      "increase_in_engineering_department",
+                      "decrease_in_customer_service_department",
+                      "hiring_in_operations_department",
+                      "hiring_in_creative_department",
+                      "decrease_in_engineering_department",
+                      "hiring_in_sales_department",
+                      "increase_in_operations_department",
+                      "hiring_in_trade_department",
+                      "decrease_in_marketing_department",
+                      "increase_in_marketing_department",
+                      "hiring_in_marketing_department",
+                      "hiring_in_health_department",
+                      "hiring_in_education_department",
+                      "increase_in_all_departments",
+                      "decrease_in_all_departments",
+                      "decrease_in_sales_department",
+                      "decrease_in_operations_department",
+                      "hiring_in_professional_service_department",
+                      "hiring_in_human_resources_department",
+                      "increase_in_sales_department",
+                      "hiring_in_legal_department",
+                      "hiring_in_unknown_department",
+                      "hiring_in_engineering_department",
+                      "company_award",
+                      "new_product",
+                      "employee_joined_company",
+                      "merger_and_acquisitions",
+                      "lawsuits_and_legal_issues",
+                      "outages_and_security_breaches",
+                      "closing_office",
+                      "new_investment",
+                      "new_office",
+                      "new_partnership",
+                      "cost_cutting",
+                      "new_funding_round",
+                      "award",
+                      "ipo_announcement"
+                    ]
                   },
                   {
                     "type": "array",
                     "items": {
-                      "type": "string"
+                      "type": "string",
+                      "enum": [
+                        "increase_in_customer_service_department",
+                        "hiring_in_finance_department",
+                        "hiring_in_support_department",
+                        "increase_in_engineering_department",
+                        "decrease_in_customer_service_department",
+                        "hiring_in_operations_department",
+                        "hiring_in_creative_department",
+                        "decrease_in_engineering_department",
+                        "hiring_in_sales_department",
+                        "increase_in_operations_department",
+                        "hiring_in_trade_department",
+                        "decrease_in_marketing_department",
+                        "increase_in_marketing_department",
+                        "hiring_in_marketing_department",
+                        "hiring_in_health_department",
+                        "hiring_in_education_department",
+                        "increase_in_all_departments",
+                        "decrease_in_all_departments",
+                        "decrease_in_sales_department",
+                        "decrease_in_operations_department",
+                        "hiring_in_professional_service_department",
+                        "hiring_in_human_resources_department",
+                        "increase_in_sales_department",
+                        "hiring_in_legal_department",
+                        "hiring_in_unknown_department",
+                        "hiring_in_engineering_department",
+                        "company_award",
+                        "new_product",
+                        "employee_joined_company",
+                        "merger_and_acquisitions",
+                        "lawsuits_and_legal_issues",
+                        "outages_and_security_breaches",
+                        "closing_office",
+                        "new_investment",
+                        "new_office",
+                        "new_partnership",
+                        "cost_cutting",
+                        "new_funding_round",
+                        "award",
+                        "ipo_announcement"
+                      ]
                     }
                   }
                 ],
-                "description": "Recent company events, e.g. [\"new_funding_round\"]"
+                "description": "Recent company events; only the listed values are accepted, e.g. [\"new_funding_round\", \"hiring_in_sales_department\"]"
               },
               "locations": {
                 "anyOf": [
                   {
-                    "type": "string"
+                    "type": "string",
+                    "enum": [
+                      "0-1",
+                      "2-5",
+                      "6-20",
+                      "21-50",
+                      "51-100",
+                      "101-1000",
+                      "1001+"
+                    ]
                   },
                   {
                     "type": "array",
                     "items": {
-                      "type": "string"
+                      "type": "string",
+                      "enum": [
+                        "0-1",
+                        "2-5",
+                        "6-20",
+                        "21-50",
+                        "51-100",
+                        "101-1000",
+                        "1001+"
+                      ]
                     }
                   }
                 ],
-                "description": "Number of company locations, e.g. [\"2-5\"]"
+                "description": "Number of office locations the company has, e.g. [\"2-5\"]. Not employee headcount: use size for headcount"
               },
               "companyName": {
                 "anyOf": [
@@ -1750,10 +1918,162 @@
       "apiPage": "/api-reference/find-companies/filter-values"
     },
     {
+      "name": "airscale_company_lookalikes",
+      "anchor": "airscale-company-lookalikes",
+      "category": "search_and_research",
+      "description": "Find companies similar to 1–10 reference company websites, with optional location, employee-size and founding-year filters. Returns company data and warnings synchronously. Costs 0.5 credits per unique returned company; unused reserved credits are refunded. Limit defaults to 2000; use an explicit smaller limit for a small search. Maximum 15 searches per rolling minute and 5 concurrent searches per workspace, shared with the API. Allow at least 100 seconds. Do not automatically retry: repeating a search can cause another charge.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "domains": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 2048
+            },
+            "minItems": 1,
+            "maxItems": 10,
+            "description": "Reference company domains or website URLs. The API normalizes and deduplicates them; LinkedIn URLs and IP addresses are not accepted."
+          },
+          "limit": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 5000,
+            "description": "Maximum companies in the entire response. Defaults to 2000. Maximum 2000 for one distinct reference, 4000 for two, 5000 for three or more. Reserves limit × 0.5 credits; use a small explicit limit for a small search."
+          },
+          "include": {
+            "type": "object",
+            "properties": {
+              "country": {
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 120
+                },
+                "maxItems": 100,
+                "description": "Country names or ISO alpha-2 codes"
+              },
+              "city": {
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 120
+                },
+                "maxItems": 100
+              },
+              "size": {
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "enum": [
+                    "1-10",
+                    "11-50",
+                    "51-200",
+                    "201-500",
+                    "501-1000",
+                    "1001-5000",
+                    "5001-10000",
+                    "10001+"
+                  ]
+                },
+                "maxItems": 8,
+                "description": "Employee-count bands"
+              }
+            },
+            "additionalProperties": false
+          },
+          "exclude": {
+            "type": "object",
+            "properties": {
+              "country": {
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 120
+                },
+                "maxItems": 100,
+                "description": "Country names or ISO alpha-2 codes"
+              },
+              "city": {
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 120
+                },
+                "maxItems": 100
+              },
+              "size": {
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "enum": [
+                    "1-10",
+                    "11-50",
+                    "51-200",
+                    "201-500",
+                    "501-1000",
+                    "1001-5000",
+                    "5001-10000",
+                    "10001+"
+                  ]
+                },
+                "maxItems": 8,
+                "description": "Employee-count bands"
+              },
+              "domains": {
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 2048
+                },
+                "maxItems": 900,
+                "description": "Company websites to omit"
+              }
+            },
+            "additionalProperties": false
+          },
+          "founded": {
+            "type": "object",
+            "properties": {
+              "min": {
+                "type": "integer",
+                "minimum": 1000,
+                "maximum": 9999
+              },
+              "max": {
+                "type": "integer",
+                "minimum": 1000,
+                "maximum": 9999
+              }
+            },
+            "additionalProperties": false,
+            "description": "Inclusive founding-year bounds"
+          }
+        },
+        "required": [
+          "domains"
+        ],
+        "additionalProperties": false
+      },
+      "spend": {
+        "kind": "variable",
+        "summary": "0.5 credits per unique returned company; reserves limit × 0.5 credits and refunds unused credits"
+      },
+      "asynchronous": false,
+      "operationId": "findCompanyLookalikes",
+      "apiPage": "/api-reference/company-lookalikes"
+    },
+    {
       "name": "airscale_airsearch",
       "anchor": "airscale-airsearch",
       "category": "search_and_research",
-      "description": "AI web research agent: ask a natural-language question and optionally specify structured fields to extract. Costs 2 credits per call.",
+      "description": "AI web research agent: ask a natural-language question and optionally specify structured fields to extract. Costs 1 credit per successful call.",
       "inputSchema": {
         "type": "object",
         "properties": {
@@ -1777,7 +2097,7 @@
       },
       "spend": {
         "kind": "variable",
-        "summary": "2 credits per call"
+        "summary": "1 credit per successful call"
       },
       "asynchronous": false,
       "operationId": "airsearch",
@@ -2289,6 +2609,187 @@
       "apiPage": "/api-reference/leads-finder"
     },
     {
+      "name": "airscale_post_search",
+      "anchor": "airscale-post-search",
+      "category": "search_and_research",
+      "description": "Search LinkedIn posts by keywords, author, author's employer or industry, mentions, or group, newest first by default. Returns raw post rows (text, author, engagement counts, URL) one page at a time with pagination.next_cursor. Costs 1 credit per successful page, empty pages included; invalid input and failures are free.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "keywords": {
+            "type": "string",
+            "maxLength": 200,
+            "description": "Keywords to search post text for"
+          },
+          "author_keywords": {
+            "type": "string",
+            "maxLength": 200,
+            "description": "Keywords matched against the post author"
+          },
+          "author_profile_urls": {
+            "anyOf": [
+              {
+                "type": "string",
+                "minLength": 1
+              },
+              {
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "minItems": 1,
+                "maxItems": 10
+              }
+            ],
+            "description": "Posts by these LinkedIn profile URLs (linkedin.com/in/...); at most 10 values"
+          },
+          "author_company_urls": {
+            "anyOf": [
+              {
+                "type": "string",
+                "minLength": 1
+              },
+              {
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "minItems": 1,
+                "maxItems": 10
+              }
+            ],
+            "description": "Posts by these LinkedIn company pages (URLs or numeric company IDs); at most 10 values"
+          },
+          "author_employer_company_urls": {
+            "anyOf": [
+              {
+                "type": "string",
+                "minLength": 1
+              },
+              {
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "minItems": 1,
+                "maxItems": 10
+              }
+            ],
+            "description": "Posts by people who work at these companies (URLs or numeric company IDs); at most 10 values"
+          },
+          "author_industry_ids": {
+            "anyOf": [
+              {
+                "type": "string",
+                "minLength": 1
+              },
+              {
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "minItems": 1,
+                "maxItems": 10
+              }
+            ],
+            "description": "Posts by authors in these numeric LinkedIn industry IDs; at most 10 values"
+          },
+          "mentioning_profile_urls": {
+            "anyOf": [
+              {
+                "type": "string",
+                "minLength": 1
+              },
+              {
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "minItems": 1,
+                "maxItems": 10
+              }
+            ],
+            "description": "Posts mentioning these LinkedIn profile URLs; at most 10 values"
+          },
+          "mentioning_company_urls": {
+            "anyOf": [
+              {
+                "type": "string",
+                "minLength": 1
+              },
+              {
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "minItems": 1,
+                "maxItems": 10
+              }
+            ],
+            "description": "Posts mentioning these companies (URLs or numeric company IDs); at most 10 values"
+          },
+          "group_url": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 2048,
+            "description": "LinkedIn group URL (linkedin.com/groups/...) or numeric group ID"
+          },
+          "sort_by": {
+            "type": "string",
+            "enum": [
+              "date",
+              "relevance"
+            ],
+            "description": "Defaults to date"
+          },
+          "posted_within": {
+            "type": "string",
+            "enum": [
+              "1h",
+              "24h",
+              "week",
+              "month",
+              "3months",
+              "6months",
+              "year"
+            ],
+            "description": "Only posts from this window. 1h, 3months, 6months and year require sort_by \"date\" and can return short or empty pages"
+          },
+          "content_type": {
+            "type": "string",
+            "enum": [
+              "videos",
+              "images",
+              "live_videos",
+              "documents",
+              "collaborative_articles",
+              "jobs"
+            ]
+          },
+          "cursor": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 2048,
+            "description": "pagination.next_cursor from the previous page; send the same other inputs"
+          }
+        },
+        "additionalProperties": false
+      },
+      "spend": {
+        "kind": "variable",
+        "summary": "1 credit per successful page, including empty pages; invalid input and failures are free"
+      },
+      "asynchronous": false,
+      "operationId": "searchLinkedinPosts",
+      "apiPage": "/api-reference/post-search"
+    },
+    {
       "name": "airscale_find_email",
       "anchor": "airscale-find-email",
       "category": "contact_and_profile_enrichment",
@@ -2639,7 +3140,7 @@
       "name": "airscale_post_likers",
       "anchor": "airscale-post-likers",
       "category": "contact_and_profile_enrichment",
-      "description": "List and enrich people who liked a LinkedIn post, one page (up to 25) at a time. Reserves 1 credit per requested slot and refunds unused, not-found, and failed slots.",
+      "description": "List and enrich people who liked a LinkedIn post, one page (up to 25) at a time. Reserves 0.2 credits per requested slot and refunds unused, not-found, and failed slots.",
       "inputSchema": {
         "type": "object",
         "properties": {
@@ -2674,7 +3175,7 @@
       },
       "spend": {
         "kind": "variable",
-        "summary": "1 credit per enriched profile; unused, not-found, and failed slots are refunded"
+        "summary": "0.2 credits per enriched profile; unused, not-found, and failed slots are refunded"
       },
       "asynchronous": false,
       "operationId": "listPostLikers",
@@ -2684,7 +3185,7 @@
       "name": "airscale_post_commenters",
       "anchor": "airscale-post-commenters",
       "category": "contact_and_profile_enrichment",
-      "description": "List and enrich people who commented on a LinkedIn post, one page (up to 25) at a time. Reserves 1 credit per requested slot and refunds unused, not-found, and failed slots.",
+      "description": "List and enrich people who commented on a LinkedIn post, one page (up to 25) at a time. Reserves 0.2 credits per requested slot and refunds unused, not-found, and failed slots.",
       "inputSchema": {
         "type": "object",
         "properties": {
@@ -2719,11 +3220,182 @@
       },
       "spend": {
         "kind": "variable",
-        "summary": "1 credit per enriched profile; unused, not-found, and failed slots are refunded"
+        "summary": "0.2 credits per enriched profile; unused, not-found, and failed slots are refunded"
       },
       "asynchronous": false,
       "operationId": "listPostCommenters",
       "apiPage": "/api-reference/post-commenters"
+    },
+    {
+      "name": "airscale_profile_posts",
+      "anchor": "airscale-profile-posts",
+      "category": "contact_and_profile_enrichment",
+      "description": "List the recent LinkedIn posts published by one person (profile URL), one page at a time with pagination.next_cursor. Costs 1 credit per successful page, empty pages included; invalid input and failures are free.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "profile_url": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 2048,
+            "description": "LinkedIn profile URL (linkedin.com/in/...)"
+          },
+          "posted_within": {
+            "type": "string",
+            "enum": [
+              "1h",
+              "24h",
+              "week",
+              "month",
+              "3months",
+              "6months",
+              "year"
+            ],
+            "description": "Only posts from this window; pages can come back short or empty"
+          },
+          "cursor": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 2048,
+            "description": "pagination.next_cursor from the previous page; send the same other inputs"
+          }
+        },
+        "required": [
+          "profile_url"
+        ],
+        "additionalProperties": false
+      },
+      "spend": {
+        "kind": "variable",
+        "summary": "1 credit per successful page, including empty pages; invalid input and failures are free"
+      },
+      "asynchronous": false,
+      "operationId": "listLinkedinProfilePosts",
+      "apiPage": "/api-reference/profile-posts"
+    },
+    {
+      "name": "airscale_company_posts",
+      "anchor": "airscale-company-posts",
+      "category": "contact_and_profile_enrichment",
+      "description": "List the recent LinkedIn posts published by one company page (company URL or numeric ID), one page at a time with pagination.next_cursor. Costs 1 credit per successful page, empty pages included; invalid input and failures are free.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "company_url": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 2048,
+            "description": "LinkedIn company URL (linkedin.com/company/...) or numeric company ID"
+          },
+          "posted_within": {
+            "type": "string",
+            "enum": [
+              "1h",
+              "24h",
+              "week",
+              "month",
+              "3months",
+              "6months",
+              "year"
+            ],
+            "description": "Only posts from this window; pages can come back short or empty"
+          },
+          "cursor": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 2048,
+            "description": "pagination.next_cursor from the previous page; send the same other inputs"
+          }
+        },
+        "required": [
+          "company_url"
+        ],
+        "additionalProperties": false
+      },
+      "spend": {
+        "kind": "variable",
+        "summary": "1 credit per successful page, including empty pages; invalid input and failures are free"
+      },
+      "asynchronous": false,
+      "operationId": "listLinkedinCompanyPosts",
+      "apiPage": "/api-reference/company-posts"
+    },
+    {
+      "name": "airscale_profile_comments",
+      "anchor": "airscale-profile-comments",
+      "category": "contact_and_profile_enrichment",
+      "description": "List the recent comments one person (profile URL) wrote on LinkedIn posts, with the comment and post URLs, one page at a time with pagination.next_cursor. Costs 1 credit per successful page, empty pages included; invalid input and failures are free.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "profile_url": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 2048,
+            "description": "LinkedIn profile URL (linkedin.com/in/...)"
+          },
+          "posted_within": {
+            "type": "string",
+            "enum": [
+              "24h",
+              "week",
+              "month"
+            ],
+            "description": "Only comments from this window"
+          },
+          "cursor": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 2048,
+            "description": "pagination.next_cursor from the previous page; send the same other inputs"
+          }
+        },
+        "required": [
+          "profile_url"
+        ],
+        "additionalProperties": false
+      },
+      "spend": {
+        "kind": "variable",
+        "summary": "1 credit per successful page, including empty pages; invalid input and failures are free"
+      },
+      "asynchronous": false,
+      "operationId": "listLinkedinProfileComments",
+      "apiPage": "/api-reference/profile-comments"
+    },
+    {
+      "name": "airscale_comment_likers",
+      "anchor": "airscale-comment-likers",
+      "category": "contact_and_profile_enrichment",
+      "description": "List the people who reacted to one LinkedIn comment (comment URL, e.g. from airscale_profile_comments), one page at a time with pagination.next_cursor. Returns raw rows, not enriched contacts. Costs 1 credit per successful page, empty pages included; invalid input and failures are free.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "comment_url": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 4096,
+            "description": "LinkedIn comment URL (or urn:li:comment URN), as returned in profile-comments or post comment links"
+          },
+          "cursor": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 2048,
+            "description": "pagination.next_cursor from the previous page; send the same other inputs"
+          }
+        },
+        "required": [
+          "comment_url"
+        ],
+        "additionalProperties": false
+      },
+      "spend": {
+        "kind": "variable",
+        "summary": "1 credit per successful page, including empty pages; invalid input and failures are free"
+      },
+      "asynchronous": false,
+      "operationId": "listLinkedinCommentLikers",
+      "apiPage": "/api-reference/comment-likers"
     },
     {
       "name": "airscale_verify_email",
@@ -2936,44 +3608,110 @@
               "size": {
                 "anyOf": [
                   {
-                    "type": "string"
+                    "type": "string",
+                    "enum": [
+                      "1-10",
+                      "11-50",
+                      "51-200",
+                      "201-500",
+                      "501-1000",
+                      "1001-5000",
+                      "5001-10000",
+                      "10001+"
+                    ]
                   },
                   {
                     "type": "array",
                     "items": {
-                      "type": "string"
+                      "type": "string",
+                      "enum": [
+                        "1-10",
+                        "11-50",
+                        "51-200",
+                        "201-500",
+                        "501-1000",
+                        "1001-5000",
+                        "5001-10000",
+                        "10001+"
+                      ]
                     }
                   }
                 ],
-                "description": "Employee size ranges, e.g. [\"11-50\"]"
+                "description": "Employee headcount ranges; only the listed buckets are accepted, e.g. [\"11-50\", \"51-200\"]. Select every bucket that overlaps the wanted range"
               },
               "revenue": {
                 "anyOf": [
                   {
-                    "type": "string"
+                    "type": "string",
+                    "enum": [
+                      "0-500K",
+                      "500K-1M",
+                      "1M-5M",
+                      "5M-10M",
+                      "10M-25M",
+                      "25M-75M",
+                      "75M-200M",
+                      "200M-500M",
+                      "500M-1B",
+                      "1B-10B",
+                      "10B-100B",
+                      "100B-1T",
+                      "1T-10T",
+                      "10T+"
+                    ]
                   },
                   {
                     "type": "array",
                     "items": {
-                      "type": "string"
+                      "type": "string",
+                      "enum": [
+                        "0-500K",
+                        "500K-1M",
+                        "1M-5M",
+                        "5M-10M",
+                        "10M-25M",
+                        "25M-75M",
+                        "75M-200M",
+                        "200M-500M",
+                        "500M-1B",
+                        "1B-10B",
+                        "10B-100B",
+                        "100B-1T",
+                        "1T-10T",
+                        "10T+"
+                      ]
                     }
                   }
                 ],
-                "description": "Revenue ranges, e.g. [\"1M-5M\"]"
+                "description": "Annual revenue ranges in USD; only the listed buckets are accepted, e.g. [\"10M-25M\", \"25M-75M\"]. Select every bucket that overlaps the wanted range"
               },
               "age": {
                 "anyOf": [
                   {
-                    "type": "string"
+                    "type": "string",
+                    "enum": [
+                      "0-3",
+                      "3-6",
+                      "6-10",
+                      "10-20",
+                      "20+"
+                    ]
                   },
                   {
                     "type": "array",
                     "items": {
-                      "type": "string"
+                      "type": "string",
+                      "enum": [
+                        "0-3",
+                        "3-6",
+                        "6-10",
+                        "10-20",
+                        "20+"
+                      ]
                     }
                   }
                 ],
-                "description": "Company age ranges in years, e.g. [\"3-6\"]"
+                "description": "Company age ranges in years; only the listed buckets are accepted, e.g. [\"3-6\"]"
               },
               "techStack": {
                 "anyOf": [
@@ -3020,30 +3758,132 @@
               "events": {
                 "anyOf": [
                   {
-                    "type": "string"
+                    "type": "string",
+                    "enum": [
+                      "increase_in_customer_service_department",
+                      "hiring_in_finance_department",
+                      "hiring_in_support_department",
+                      "increase_in_engineering_department",
+                      "decrease_in_customer_service_department",
+                      "hiring_in_operations_department",
+                      "hiring_in_creative_department",
+                      "decrease_in_engineering_department",
+                      "hiring_in_sales_department",
+                      "increase_in_operations_department",
+                      "hiring_in_trade_department",
+                      "decrease_in_marketing_department",
+                      "increase_in_marketing_department",
+                      "hiring_in_marketing_department",
+                      "hiring_in_health_department",
+                      "hiring_in_education_department",
+                      "increase_in_all_departments",
+                      "decrease_in_all_departments",
+                      "decrease_in_sales_department",
+                      "decrease_in_operations_department",
+                      "hiring_in_professional_service_department",
+                      "hiring_in_human_resources_department",
+                      "increase_in_sales_department",
+                      "hiring_in_legal_department",
+                      "hiring_in_unknown_department",
+                      "hiring_in_engineering_department",
+                      "company_award",
+                      "new_product",
+                      "employee_joined_company",
+                      "merger_and_acquisitions",
+                      "lawsuits_and_legal_issues",
+                      "outages_and_security_breaches",
+                      "closing_office",
+                      "new_investment",
+                      "new_office",
+                      "new_partnership",
+                      "cost_cutting",
+                      "new_funding_round",
+                      "award",
+                      "ipo_announcement"
+                    ]
                   },
                   {
                     "type": "array",
                     "items": {
-                      "type": "string"
+                      "type": "string",
+                      "enum": [
+                        "increase_in_customer_service_department",
+                        "hiring_in_finance_department",
+                        "hiring_in_support_department",
+                        "increase_in_engineering_department",
+                        "decrease_in_customer_service_department",
+                        "hiring_in_operations_department",
+                        "hiring_in_creative_department",
+                        "decrease_in_engineering_department",
+                        "hiring_in_sales_department",
+                        "increase_in_operations_department",
+                        "hiring_in_trade_department",
+                        "decrease_in_marketing_department",
+                        "increase_in_marketing_department",
+                        "hiring_in_marketing_department",
+                        "hiring_in_health_department",
+                        "hiring_in_education_department",
+                        "increase_in_all_departments",
+                        "decrease_in_all_departments",
+                        "decrease_in_sales_department",
+                        "decrease_in_operations_department",
+                        "hiring_in_professional_service_department",
+                        "hiring_in_human_resources_department",
+                        "increase_in_sales_department",
+                        "hiring_in_legal_department",
+                        "hiring_in_unknown_department",
+                        "hiring_in_engineering_department",
+                        "company_award",
+                        "new_product",
+                        "employee_joined_company",
+                        "merger_and_acquisitions",
+                        "lawsuits_and_legal_issues",
+                        "outages_and_security_breaches",
+                        "closing_office",
+                        "new_investment",
+                        "new_office",
+                        "new_partnership",
+                        "cost_cutting",
+                        "new_funding_round",
+                        "award",
+                        "ipo_announcement"
+                      ]
                     }
                   }
                 ],
-                "description": "Recent company events, e.g. [\"new_funding_round\"]"
+                "description": "Recent company events; only the listed values are accepted, e.g. [\"new_funding_round\", \"hiring_in_sales_department\"]"
               },
               "locations": {
                 "anyOf": [
                   {
-                    "type": "string"
+                    "type": "string",
+                    "enum": [
+                      "0-1",
+                      "2-5",
+                      "6-20",
+                      "21-50",
+                      "51-100",
+                      "101-1000",
+                      "1001+"
+                    ]
                   },
                   {
                     "type": "array",
                     "items": {
-                      "type": "string"
+                      "type": "string",
+                      "enum": [
+                        "0-1",
+                        "2-5",
+                        "6-20",
+                        "21-50",
+                        "51-100",
+                        "101-1000",
+                        "1001+"
+                      ]
                     }
                   }
                 ],
-                "description": "Number of company locations, e.g. [\"2-5\"]"
+                "description": "Number of office locations the company has, e.g. [\"2-5\"]. Not employee headcount: use size for headcount"
               },
               "companyName": {
                 "anyOf": [

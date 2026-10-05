@@ -156,6 +156,6 @@
 ## Machine-readable contracts
 
 - [OpenAPI specification](https://airscale.mintlify.app/openapi.json): HTTP API operations, schemas, authentication, and responses.
-- [MCP tool catalog](https://airscale.mintlify.app/mcp/tools.md): Hosted Markdown with names, input schemas, credit behavior, examples, and API mappings for all 31 operational MCP tools.
+- [MCP tool catalog](https://airscale.mintlify.app/mcp/tools.md): Hosted Markdown with names, input schemas, credit behavior, examples, and API mappings for all 37 operational MCP tools.
 - [Agent resource directory](https://airscale.mintlify.app/mcp/agent-resources.md): Human and machine entry points for Airschool agents and documentation consumers.
 - [Agent skill](https://airscale.mintlify.app/skill.md): Capability, authentication, credit, and approval guidance for agents.

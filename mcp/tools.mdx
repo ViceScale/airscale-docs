@@ -1,10 +1,10 @@
 ---
 title: "MCP tool catalog"
-description: "Browse all 31 typed tools exposed by the Airschool MCP server."
+description: "Browse all 37 typed tools exposed by the Airschool MCP server."
 canonical: "https://airscale.mintlify.app/mcp/tools"
 ---
 
-Airschool MCP exposes 31 typed tools for workspace checks, search, enrichment, research, managed batches, and asynchronous exports.
+Airschool MCP exposes 37 typed tools for workspace checks, search, enrichment, research, managed batches, and asynchronous exports.
 
 <Warning>
 Review each tool's credit behavior before approval. Paid export starts require `confirm_credit_spend: true`.
@@ -76,8 +76,10 @@ Returns the workspace's current Airschool credit balance without spending credit
 | [`airscale_count_find_people`](#airscale-count-find-people) | Count people matching find-people query filters. Free, no credits charged. | Free; no credits charged | Sync |
 | [`airscale_find_companies`](#airscale-find-companies) | Search companies by firmographic, location, event, intent, technology, and website keyword filters. Costs 0.1 credits per returned company. Use airscale_find_companies_filter_values to discover accepted values. | 0.1 credits per returned company | Sync |
 | [`airscale_find_companies_filter_values`](#airscale-find-companies-filter-values) | Discover accepted values for find-companies filters (city, region, industry, topics, techStack). Free, no credits charged. | Free; no credits charged | Sync |
-| [`airscale_airsearch`](#airscale-airsearch) | AI web research agent: ask a natural-language question and optionally specify structured fields to extract. Costs 2 credits per call. | 2 credits per call | Sync |
+| [`airscale_company_lookalikes`](#airscale-company-lookalikes) | Find companies similar to 1–10 reference company websites, with optional location, employee-size and founding-year filters. Returns company data and warnings synchronously. Costs 0.5 credits per unique returned company; unused reserved credits are refunded. Limit defaults to 2000; use an explicit smaller limit for a small search. Maximum 15 searches per rolling minute and 5 concurrent searches per workspace, shared with the API. Allow at least 100 seconds. Do not automatically retry: repeating a search can cause another charge. | 0.5 credits per unique returned company; reserves limit × 0.5 credits and refunds unused credits | Sync |
+| [`airscale_airsearch`](#airscale-airsearch) | AI web research agent: ask a natural-language question and optionally specify structured fields to extract. Costs 1 credit per successful call. | 1 credit per successful call | Sync |
 | [`airscale_leads_finder`](#airscale-leads-finder) | Search people with Leads Finder filters (job, company, location, seniority, skills, company size, funding, and more). Zero-based page pagination. Costs 0.1 credits per returned lead. | 0.1 credits per returned lead | Sync |
+| [`airscale_post_search`](#airscale-post-search) | Search LinkedIn posts by keywords, author, author's employer or industry, mentions, or group, newest first by default. Returns raw post rows (text, author, engagement counts, URL) one page at a time with pagination.next_cursor. Costs 1 credit per successful page, empty pages included; invalid input and failures are free. | 1 credit per successful page, including empty pages; invalid input and failures are free | Sync |
 
 <a id="airscale-find-people"></a>
 
@@ -305,26 +307,83 @@ Returns accepted values for the selected company filter and search text.
 
 **Related API reference:** [listFindCompanyFilterValues](/api-reference/find-companies/filter-values)
 
-<a id="airscale-airsearch"></a>
+<a id="airscale-company-lookalikes"></a>
 
-### `airscale_airsearch`
+### `airscale_company_lookalikes`
 
 **MCP tool**
 
-AI web research agent: ask a natural-language question and optionally specify structured fields to extract. Costs 2 credits per call.
+Find companies similar to 1–10 reference company websites, with optional location, employee-size and founding-year filters. Returns company data and warnings synchronously. Costs 0.5 credits per unique returned company; unused reserved credits are refunded. Limit defaults to 2000; use an explicit smaller limit for a small search. Maximum 15 searches per rolling minute and 5 concurrent searches per workspace, shared with the API. Allow at least 100 seconds. Do not automatically retry: repeating a search can cause another charge.
 
 - **Category:** Search and research
 
 - **Spend classification:** Variable credit cost
 
-- **Credit behavior:** 2 credits per call
+- **Credit behavior:** 0.5 credits per unique returned company; reserves limit × 0.5 credits and refunds unused credits
 
 - **Execution:** Synchronous
 
 - **Authentication:** Uses the credentials configured on the MCP connection; never include an API key in tool arguments.
 
 <Note>
-Credit behavior: 2 credits per call.
+Credit behavior: 0.5 credits per unique returned company; reserves limit × 0.5 credits and refunds unused credits.
+</Note>
+
+#### Inputs
+
+| Field | Type | Required | Description | Constraints |
+| --- | --- | --- | --- | --- |
+| `domains` | `array<string>` | Yes | Reference company domains or website URLs. The API normalizes and deduplicates them; LinkedIn URLs and IP addresses are not accepted. | minimum items: 1; maximum items: 10; item type: `string` |
+| `limit` | `integer` | No | Maximum companies in the entire response. Defaults to 2000. Maximum 2000 for one distinct reference, 4000 for two, 5000 for three or more. Reserves limit × 0.5 credits; use a small explicit limit for a small search. | minimum: 1; maximum: 5000 |
+| `include` | `object` | No | No runtime description supplied. | allowed properties: `country`, `city`, `size`; additional properties are not allowed |
+| `exclude` | `object` | No | No runtime description supplied. | allowed properties: `country`, `city`, `size`, `domains`; additional properties are not allowed |
+| `founded` | `object` | No | Inclusive founding-year bounds | allowed properties: `min`, `max`; additional properties are not allowed |
+
+#### Minimal `tools/call` example
+
+```json
+{
+  "jsonrpc": "2.0",
+  "id": 1,
+  "method": "tools/call",
+  "params": {
+    "name": "airscale_company_lookalikes",
+    "arguments": {
+      "domains": [
+        "example.com"
+      ],
+      "limit": 1
+    }
+  }
+}
+```
+
+#### Expected result
+
+Returns all unique matching companies synchronously with total_results, credits_used, and warnings. Costs 0.5 credits per unique returned company; reserves limit × 0.5 credits and refunds the unused amount. The total limit defaults to 2,000, with a maximum of 2,000 for one distinct reference, 4,000 for two, and 5,000 for three through ten. Shares 15 starts per rolling minute and 5 active searches per workspace with the API. Do not automatically retry: a completed search can still be charged when its response is lost, and repeating it can cause another charge.
+
+**Related API reference:** [findCompanyLookalikes](/api-reference/company-lookalikes)
+
+<a id="airscale-airsearch"></a>
+
+### `airscale_airsearch`
+
+**MCP tool**
+
+AI web research agent: ask a natural-language question and optionally specify structured fields to extract. Costs 1 credit per successful call.
+
+- **Category:** Search and research
+
+- **Spend classification:** Variable credit cost
+
+- **Credit behavior:** 1 credit per successful call
+
+- **Execution:** Synchronous
+
+- **Authentication:** Uses the credentials configured on the MCP connection; never include an API key in tool arguments.
+
+<Note>
+Credit behavior: 1 credit per successful call.
 </Note>
 
 #### Inputs
@@ -415,6 +474,68 @@ Returns one zero-based page of nested Leads Finder person records with total, pa
 
 **Related API reference:** [searchLeadsFinder](/api-reference/leads-finder)
 
+<a id="airscale-post-search"></a>
+
+### `airscale_post_search`
+
+**MCP tool**
+
+Search LinkedIn posts by keywords, author, author's employer or industry, mentions, or group, newest first by default. Returns raw post rows (text, author, engagement counts, URL) one page at a time with pagination.next_cursor. Costs 1 credit per successful page, empty pages included; invalid input and failures are free.
+
+- **Category:** Search and research
+
+- **Spend classification:** Variable credit cost
+
+- **Credit behavior:** 1 credit per successful page, including empty pages; invalid input and failures are free
+
+- **Execution:** Synchronous
+
+- **Authentication:** Uses the credentials configured on the MCP connection; never include an API key in tool arguments.
+
+<Note>
+Credit behavior: 1 credit per successful page, including empty pages; invalid input and failures are free.
+</Note>
+
+#### Inputs
+
+| Field | Type | Required | Description | Constraints |
+| --- | --- | --- | --- | --- |
+| `keywords` | `string` | No | Keywords to search post text for | maximum length: 200 |
+| `author_keywords` | `string` | No | Keywords matched against the post author | maximum length: 200 |
+| `author_profile_urls` | `string or array<string>` | No | Posts by these LinkedIn profile URLs (linkedin.com/in/...); at most 10 values | — |
+| `author_company_urls` | `string or array<string>` | No | Posts by these LinkedIn company pages (URLs or numeric company IDs); at most 10 values | — |
+| `author_employer_company_urls` | `string or array<string>` | No | Posts by people who work at these companies (URLs or numeric company IDs); at most 10 values | — |
+| `author_industry_ids` | `string or array<string>` | No | Posts by authors in these numeric LinkedIn industry IDs; at most 10 values | — |
+| `mentioning_profile_urls` | `string or array<string>` | No | Posts mentioning these LinkedIn profile URLs; at most 10 values | — |
+| `mentioning_company_urls` | `string or array<string>` | No | Posts mentioning these companies (URLs or numeric company IDs); at most 10 values | — |
+| `group_url` | `string` | No | LinkedIn group URL (linkedin.com/groups/...) or numeric group ID | minimum length: 1; maximum length: 2048 |
+| `sort_by` | `string` | No | Defaults to date | allowed values: `"date"`, `"relevance"` |
+| `posted_within` | `string` | No | Only posts from this window. 1h, 3months, 6months and year require sort_by "date" and can return short or empty pages | allowed values: `"1h"`, `"24h"`, `"week"`, `"month"`, `"3months"`, `"6months"`, `"year"` |
+| `content_type` | `string` | No | No runtime description supplied. | allowed values: `"videos"`, `"images"`, `"live_videos"`, `"documents"`, `"collaborative_articles"`, `"jobs"` |
+| `cursor` | `string` | No | pagination.next_cursor from the previous page; send the same other inputs | minimum length: 1; maximum length: 2048 |
+
+#### Minimal `tools/call` example
+
+```json
+{
+  "jsonrpc": "2.0",
+  "id": 1,
+  "method": "tools/call",
+  "params": {
+    "name": "airscale_post_search",
+    "arguments": {
+      "keywords": "Example Company"
+    }
+  }
+}
+```
+
+#### Expected result
+
+Returns one page of LinkedIn posts matching the filters and a next cursor when more results are available.
+
+**Related API reference:** [searchLinkedinPosts](/api-reference/post-search)
+
 ## Contact and profile enrichment
 
 | Tool | Purpose | Credit behavior | Execution |
@@ -429,8 +550,12 @@ Returns one zero-based page of nested Leads Finder person records with total, pa
 | [`airscale_reverse_email`](#airscale-reverse-email) | Resolve an email address to a LinkedIn profile. Returns the entire enriched profile, not only the URL. | 2 credits per returned profile | Sync |
 | [`airscale_reverse_phone`](#airscale-reverse-phone) | Resolve a phone number to a LinkedIn profile. Returns the entire enriched profile, not only the URL. | 10 credits per returned profile | Sync |
 | [`airscale_domain_to_linkedin`](#airscale-domain-to-linkedin) | Find a company's LinkedIn company URL from its domain. Costs 0.5 credits on success; no-result lookups are free. Allow up to 130 seconds. | 0.5 credits on success; no-result lookups are free | Sync |
-| [`airscale_post_likers`](#airscale-post-likers) | List and enrich people who liked a LinkedIn post, one page (up to 25) at a time. Reserves 1 credit per requested slot and refunds unused, not-found, and failed slots. | 1 credit per enriched profile; unused, not-found, and failed slots are refunded | Sync |
-| [`airscale_post_commenters`](#airscale-post-commenters) | List and enrich people who commented on a LinkedIn post, one page (up to 25) at a time. Reserves 1 credit per requested slot and refunds unused, not-found, and failed slots. | 1 credit per enriched profile; unused, not-found, and failed slots are refunded | Sync |
+| [`airscale_post_likers`](#airscale-post-likers) | List and enrich people who liked a LinkedIn post, one page (up to 25) at a time. Reserves 0.2 credits per requested slot and refunds unused, not-found, and failed slots. | 0.2 credits per enriched profile; unused, not-found, and failed slots are refunded | Sync |
+| [`airscale_post_commenters`](#airscale-post-commenters) | List and enrich people who commented on a LinkedIn post, one page (up to 25) at a time. Reserves 0.2 credits per requested slot and refunds unused, not-found, and failed slots. | 0.2 credits per enriched profile; unused, not-found, and failed slots are refunded | Sync |
+| [`airscale_profile_posts`](#airscale-profile-posts) | List the recent LinkedIn posts published by one person (profile URL), one page at a time with pagination.next_cursor. Costs 1 credit per successful page, empty pages included; invalid input and failures are free. | 1 credit per successful page, including empty pages; invalid input and failures are free | Sync |
+| [`airscale_company_posts`](#airscale-company-posts) | List the recent LinkedIn posts published by one company page (company URL or numeric ID), one page at a time with pagination.next_cursor. Costs 1 credit per successful page, empty pages included; invalid input and failures are free. | 1 credit per successful page, including empty pages; invalid input and failures are free | Sync |
+| [`airscale_profile_comments`](#airscale-profile-comments) | List the recent comments one person (profile URL) wrote on LinkedIn posts, with the comment and post URLs, one page at a time with pagination.next_cursor. Costs 1 credit per successful page, empty pages included; invalid input and failures are free. | 1 credit per successful page, including empty pages; invalid input and failures are free | Sync |
+| [`airscale_comment_likers`](#airscale-comment-likers) | List the people who reacted to one LinkedIn comment (comment URL, e.g. from airscale_profile_comments), one page at a time with pagination.next_cursor. Returns raw rows, not enriched contacts. Costs 1 credit per successful page, empty pages included; invalid input and failures are free. | 1 credit per successful page, including empty pages; invalid input and failures are free | Sync |
 
 <a id="airscale-find-email"></a>
 
@@ -959,20 +1084,20 @@ Returns the LinkedIn company URL for the domain, or a not-found error when none 
 
 **MCP tool**
 
-List and enrich people who liked a LinkedIn post, one page (up to 25) at a time. Reserves 1 credit per requested slot and refunds unused, not-found, and failed slots.
+List and enrich people who liked a LinkedIn post, one page (up to 25) at a time. Reserves 0.2 credits per requested slot and refunds unused, not-found, and failed slots.
 
 - **Category:** Contact and profile enrichment
 
 - **Spend classification:** Variable credit cost
 
-- **Credit behavior:** 1 credit per enriched profile; unused, not-found, and failed slots are refunded
+- **Credit behavior:** 0.2 credits per enriched profile; unused, not-found, and failed slots are refunded
 
 - **Execution:** Synchronous
 
 - **Authentication:** Uses the credentials configured on the MCP connection; never include an API key in tool arguments.
 
 <Note>
-Credit behavior: 1 credit per enriched profile; unused, not-found, and failed slots are refunded.
+Credit behavior: 0.2 credits per enriched profile; unused, not-found, and failed slots are refunded.
 </Note>
 
 #### Inputs
@@ -1013,20 +1138,20 @@ Returns one page of enriched post likers, pagination with a next cursor, and the
 
 **MCP tool**
 
-List and enrich people who commented on a LinkedIn post, one page (up to 25) at a time. Reserves 1 credit per requested slot and refunds unused, not-found, and failed slots.
+List and enrich people who commented on a LinkedIn post, one page (up to 25) at a time. Reserves 0.2 credits per requested slot and refunds unused, not-found, and failed slots.
 
 - **Category:** Contact and profile enrichment
 
 - **Spend classification:** Variable credit cost
 
-- **Credit behavior:** 1 credit per enriched profile; unused, not-found, and failed slots are refunded
+- **Credit behavior:** 0.2 credits per enriched profile; unused, not-found, and failed slots are refunded
 
 - **Execution:** Synchronous
 
 - **Authentication:** Uses the credentials configured on the MCP connection; never include an API key in tool arguments.
 
 <Note>
-Credit behavior: 1 credit per enriched profile; unused, not-found, and failed slots are refunded.
+Credit behavior: 0.2 credits per enriched profile; unused, not-found, and failed slots are refunded.
 </Note>
 
 #### Inputs
@@ -1060,6 +1185,213 @@ Credit behavior: 1 credit per enriched profile; unused, not-found, and failed sl
 Returns one page of enriched post commenters, pagination with a next cursor, and the page's credit outcome.
 
 **Related API reference:** [listPostCommenters](/api-reference/post-commenters)
+
+<a id="airscale-profile-posts"></a>
+
+### `airscale_profile_posts`
+
+**MCP tool**
+
+List the recent LinkedIn posts published by one person (profile URL), one page at a time with pagination.next_cursor. Costs 1 credit per successful page, empty pages included; invalid input and failures are free.
+
+- **Category:** Contact and profile enrichment
+
+- **Spend classification:** Variable credit cost
+
+- **Credit behavior:** 1 credit per successful page, including empty pages; invalid input and failures are free
+
+- **Execution:** Synchronous
+
+- **Authentication:** Uses the credentials configured on the MCP connection; never include an API key in tool arguments.
+
+<Note>
+Credit behavior: 1 credit per successful page, including empty pages; invalid input and failures are free.
+</Note>
+
+#### Inputs
+
+| Field | Type | Required | Description | Constraints |
+| --- | --- | --- | --- | --- |
+| `profile_url` | `string` | Yes | LinkedIn profile URL (linkedin.com/in/...) | minimum length: 1; maximum length: 2048 |
+| `posted_within` | `string` | No | Only posts from this window; pages can come back short or empty | allowed values: `"1h"`, `"24h"`, `"week"`, `"month"`, `"3months"`, `"6months"`, `"year"` |
+| `cursor` | `string` | No | pagination.next_cursor from the previous page; send the same other inputs | minimum length: 1; maximum length: 2048 |
+
+#### Minimal `tools/call` example
+
+```json
+{
+  "jsonrpc": "2.0",
+  "id": 1,
+  "method": "tools/call",
+  "params": {
+    "name": "airscale_profile_posts",
+    "arguments": {
+      "profile_url": "https://www.linkedin.com/in/example-person"
+    }
+  }
+}
+```
+
+#### Expected result
+
+Returns one page of recent LinkedIn posts from a person and a next cursor when more results are available.
+
+**Related API reference:** [listLinkedinProfilePosts](/api-reference/profile-posts)
+
+<a id="airscale-company-posts"></a>
+
+### `airscale_company_posts`
+
+**MCP tool**
+
+List the recent LinkedIn posts published by one company page (company URL or numeric ID), one page at a time with pagination.next_cursor. Costs 1 credit per successful page, empty pages included; invalid input and failures are free.
+
+- **Category:** Contact and profile enrichment
+
+- **Spend classification:** Variable credit cost
+
+- **Credit behavior:** 1 credit per successful page, including empty pages; invalid input and failures are free
+
+- **Execution:** Synchronous
+
+- **Authentication:** Uses the credentials configured on the MCP connection; never include an API key in tool arguments.
+
+<Note>
+Credit behavior: 1 credit per successful page, including empty pages; invalid input and failures are free.
+</Note>
+
+#### Inputs
+
+| Field | Type | Required | Description | Constraints |
+| --- | --- | --- | --- | --- |
+| `company_url` | `string` | Yes | LinkedIn company URL (linkedin.com/company/...) or numeric company ID | minimum length: 1; maximum length: 2048 |
+| `posted_within` | `string` | No | Only posts from this window; pages can come back short or empty | allowed values: `"1h"`, `"24h"`, `"week"`, `"month"`, `"3months"`, `"6months"`, `"year"` |
+| `cursor` | `string` | No | pagination.next_cursor from the previous page; send the same other inputs | minimum length: 1; maximum length: 2048 |
+
+#### Minimal `tools/call` example
+
+```json
+{
+  "jsonrpc": "2.0",
+  "id": 1,
+  "method": "tools/call",
+  "params": {
+    "name": "airscale_company_posts",
+    "arguments": {
+      "company_url": "https://www.linkedin.com/company/example-company"
+    }
+  }
+}
+```
+
+#### Expected result
+
+Returns one page of recent LinkedIn posts from a company and a next cursor when more results are available.
+
+**Related API reference:** [listLinkedinCompanyPosts](/api-reference/company-posts)
+
+<a id="airscale-profile-comments"></a>
+
+### `airscale_profile_comments`
+
+**MCP tool**
+
+List the recent comments one person (profile URL) wrote on LinkedIn posts, with the comment and post URLs, one page at a time with pagination.next_cursor. Costs 1 credit per successful page, empty pages included; invalid input and failures are free.
+
+- **Category:** Contact and profile enrichment
+
+- **Spend classification:** Variable credit cost
+
+- **Credit behavior:** 1 credit per successful page, including empty pages; invalid input and failures are free
+
+- **Execution:** Synchronous
+
+- **Authentication:** Uses the credentials configured on the MCP connection; never include an API key in tool arguments.
+
+<Note>
+Credit behavior: 1 credit per successful page, including empty pages; invalid input and failures are free.
+</Note>
+
+#### Inputs
+
+| Field | Type | Required | Description | Constraints |
+| --- | --- | --- | --- | --- |
+| `profile_url` | `string` | Yes | LinkedIn profile URL (linkedin.com/in/...) | minimum length: 1; maximum length: 2048 |
+| `posted_within` | `string` | No | Only comments from this window | allowed values: `"24h"`, `"week"`, `"month"` |
+| `cursor` | `string` | No | pagination.next_cursor from the previous page; send the same other inputs | minimum length: 1; maximum length: 2048 |
+
+#### Minimal `tools/call` example
+
+```json
+{
+  "jsonrpc": "2.0",
+  "id": 1,
+  "method": "tools/call",
+  "params": {
+    "name": "airscale_profile_comments",
+    "arguments": {
+      "profile_url": "https://www.linkedin.com/in/example-person"
+    }
+  }
+}
+```
+
+#### Expected result
+
+Returns one page of recent comments from a person, including comment and post URLs, with a next cursor when available.
+
+**Related API reference:** [listLinkedinProfileComments](/api-reference/profile-comments)
+
+<a id="airscale-comment-likers"></a>
+
+### `airscale_comment_likers`
+
+**MCP tool**
+
+List the people who reacted to one LinkedIn comment (comment URL, e.g. from airscale_profile_comments), one page at a time with pagination.next_cursor. Returns raw rows, not enriched contacts. Costs 1 credit per successful page, empty pages included; invalid input and failures are free.
+
+- **Category:** Contact and profile enrichment
+
+- **Spend classification:** Variable credit cost
+
+- **Credit behavior:** 1 credit per successful page, including empty pages; invalid input and failures are free
+
+- **Execution:** Synchronous
+
+- **Authentication:** Uses the credentials configured on the MCP connection; never include an API key in tool arguments.
+
+<Note>
+Credit behavior: 1 credit per successful page, including empty pages; invalid input and failures are free.
+</Note>
+
+#### Inputs
+
+| Field | Type | Required | Description | Constraints |
+| --- | --- | --- | --- | --- |
+| `comment_url` | `string` | Yes | LinkedIn comment URL (or urn:li:comment URN), as returned in profile-comments or post comment links | minimum length: 1; maximum length: 4096 |
+| `cursor` | `string` | No | pagination.next_cursor from the previous page; send the same other inputs | minimum length: 1; maximum length: 2048 |
+
+#### Minimal `tools/call` example
+
+```json
+{
+  "jsonrpc": "2.0",
+  "id": 1,
+  "method": "tools/call",
+  "params": {
+    "name": "airscale_comment_likers",
+    "arguments": {
+      "comment_url": "urn:li:comment:(activity:7376356221991178240,7376356221991178241)"
+    }
+  }
+}
+```
+
+#### Expected result
+
+Returns one page of raw people rows for reactions to a comment, with a next cursor when available. These are not enriched contacts.
+
+**Related API reference:** [listLinkedinCommentLikers](/api-reference/comment-likers)
 
 ## Checks and signals
 
