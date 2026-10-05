@@ -2741,6 +2741,7 @@ All numeric limits below apply per workspace. A shared limit is one combined all
 | [Count people](/api-reference/find-people/count) | 6 requests per second per workspace. |
 | [Find companies](/api-reference/find-companies) | 6 requests per second per workspace. |
 | [Company filter values](/api-reference/find-companies/filter-values) | 6 requests per second per workspace. |
+| [Company lookalikes](/api-reference/company-lookalikes) | 5 requests per rolling minute per workspace. Maximum 1 active search per workspace. |
 | [Airsearch](/api-reference/airsearch) | 300 requests per minute per workspace. |
 | [Post likers](/api-reference/post-likers) | 180 requests per fixed minute per workspace, shared by post-likers and post-commenters; pagination requests and retries count. |
 | [Post commenters](/api-reference/post-commenters) | 180 requests per fixed minute per workspace, shared by post-likers and post-commenters; pagination requests and retries count. |
@@ -2757,6 +2758,8 @@ All numeric limits below apply per workspace. A shared limit is one combined all
 | [DNC Checker](/api-reference/dnc-checker) | 5 requests per second per workspace. |
 
 Find people shares its **6 requests per second** with Count people. Find companies shares its **6 requests per second** with Company filter values. These are separate limits for the two endpoint families. Post search, Profile comments, Comment likers, Profile posts, and Company posts each have their own 180-request allowance; they do not share it with each other or with Post likers and Post commenters.
+
+Company lookalikes counts admitted search starts in a rolling 60-second window. Repeated POSTs count as new searches. A second active search or a full start allowance returns `429`; honor `Retry-After` when present. Every POST is independent and may incur another charge, so do not automatically retry a lost response.
 
 For bulk email, the allowance counts **input items**, not HTTP requests. An endpoint without a documented numeric limit should not be treated as unlimited; use bounded concurrency and handle `429` responses.
 
@@ -3049,6 +3052,86 @@ Each result has a display `label` and a request `value`. Copy `value` into the c
 ## Next step
 
 Copy the returned `value` into the matching filter on [Find companies](/api-reference/find-companies).
+
+---
+
+## Company lookalikes
+
+Source: https://docs.airscale.io/api-reference/company-lookalikes.md
+
+Description: Find companies similar to your reference domains. Rate limit: 5 requests per rolling minute per workspace. Maximum 1 active search per workspace.
+
+Find companies similar to one or more reference companies. The request waits for the search to finish and returns company data directly, without creating a table or importing records.
+
+<Note>
+Costs **0.5 credits per unique returned company**. Before searching, the API reserves `limit × 0.5` credits and refunds the unused amount afterward. Zero results cost zero credits. Each workspace can start **5 searches per rolling minute** and have **1 active search** at a time.
+</Note>
+
+Use a current-app workspace API key from [Authentication](/api-reference/authentication). Legacy Bubble-only keys are not supported. Send `Content-Type: application/json`; the request body limit is **128 KiB**.
+
+## Reference domains and result limits
+
+Send 1–10 company websites in `domains`. Domains and website URLs are normalized and deduplicated. LinkedIn URLs and IP addresses are not accepted. Reference companies and domains listed in `exclude.domains` are omitted from results.
+
+`limit` defaults to **2,000** and applies to the **entire response**:
+
+| Distinct reference domains | Maximum total results |
+| --- | --- |
+| 1 | 2,000 |
+| 2 | 4,000 |
+| 3–10 | 5,000 |
+
+For example, ten reference domains with `limit: 5000` request at most 5,000 unique companies in total. Results are deduplicated across references and may be fewer than requested. There is no pagination or polling endpoint.
+
+## Filters
+
+Use `include` and `exclude` to filter by country, city, and employee size. Country filters accept country names or ISO alpha-2 codes. A location filter that cannot be resolved can return `422`.
+
+Each country or city list accepts up to 100 values. Supported size bands are `1-10`, `11-50`, `51-200`, `201-500`, `501-1000`, `1001-5000`, `5001-10000`, and `10001+`. Use `exclude.domains` to omit up to 900 company websites.
+
+Use `founded.min` and `founded.max` for founding-year bounds from 1000 through 9999; the minimum cannot exceed the maximum. Unknown fields are rejected, including `limitPerCompany`.
+
+## Company fields
+
+The response contains `status`, `total_results`, `credits_used`, `data`, and `warnings`. Every company in `data` includes all of these fields:
+
+| Field | Meaning |
+| --- | --- |
+| `domain` | Normalized company domain. |
+| `name` | Company name; falls back to the domain when missing. |
+| `description` | Company description. |
+| `employee_count` | String, commonly an employee range rather than an exact headcount. |
+| `country`, `city` | Company location. |
+| `founded_year` | Integer founding year, or `null`. |
+| `linkedin_url` | LinkedIn company profile URL. |
+| `relevance_score` | Number or `null`; not a confidence percentage or guaranteed to be between 0 and 1. |
+| `matched_domains` | Normalized reference domains that matched this company. |
+
+Missing text fields are empty strings. Companies matching more reference domains appear first, followed by their best search rank. The relevance score does not override this order.
+
+Partial reference failures can return `200` with the remaining results and explanatory strings in `warnings`. If none of the reference companies can be found, the API returns `404` with `reference_company_not_found`. A completed search with no matching results returns `200`, an empty `data` array, and zero credits used.
+
+## Credits and repeated requests
+
+A request with `limit: 10` requires 5 available credits; `limit: 5000` requires 2,500. Insufficient available credits returns `402`. The final charge is based on the unique companies returned, and `credits_used` reports that amount.
+
+Every POST starts an independent search, even with an identical body. No idempotency key is required; `Idempotency-Key` is ignored.
+
+<Warning>
+Do not automatically retry this POST. A lost response or client timeout can belong to a completed, charged search. Sending the request again can cause another charge, and there is no result-retrieval or replay endpoint.
+</Warning>
+
+## Timing and errors
+
+Allow at least **100 seconds** for your client timeout. The server has a **90-second overall budget**, with up to 80 seconds for the search. Large requests are not guaranteed to finish within that time; a deadline failure returns `504` with `company_lookalikes_timeout`.
+
+A workspace rate or concurrency limit returns `429`. Read `Retry-After` when present and wait before deliberately starting another search. Search capacity limits can also return `429`. See [Rate limits](/api-reference/rate-limits).
+
+Errors return an `error` message and a stable `code`. A `503` can indicate temporary unavailability or pending credit settlement. Failures before a saved result release the credit reservation; interrupted refunds may take time to complete. The complete JSON response is limited to **32 MiB**; exceeding that limit returns `502` with a full refund. Request fewer results if this occurs.
+
+## Next step
+
+Use [Find people](/api-reference/find-people) to search for roles at matching companies, or [Find companies](/api-reference/find-companies) to search using firmographic filters instead of reference domains.
 
 ---
 
