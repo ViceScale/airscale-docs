@@ -30,6 +30,13 @@ export const companyLookalikesOperation = {
     description: "Finds companies similar to 1–10 reference domains and returns a synchronous JSON response. Authenticate with a current-app workspace API key. The JSON body is limited to 128 KiB. Every POST is an independent, potentially billable search; do not automatically retry after a lost response. There is no pagination, polling, or result-retrieval endpoint. Allow at least 100 seconds for the client timeout; the server has a 90-second overall budget.",
     "x-airscale-rate-limit": "5 requests per rolling minute per workspace. Maximum 1 active search per workspace.",
     "x-airscale-credit-cost": "0.5 credits per unique returned company. Reserves limit × 0.5 credits before searching and refunds the unused amount. Empty results cost zero credits.",
+    "x-codeSamples": [
+      {
+        "label": "cURL",
+        "lang": "bash",
+        "source": "curl --request POST \\\n  --url https://api.airscale.io/v1/company-lookalikes \\\n  --max-time 100 \\\n  --header \"Authorization: Bearer $AIRSCALE_API_KEY\" \\\n  --header \"Content-Type: application/json\" \\\n  --data '{\"domains\":[\"example.com\"],\"limit\":10}'"
+      }
+    ],
     requestBody: {
       required: true,
       content: { "application/json": {
