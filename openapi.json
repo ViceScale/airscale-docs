@@ -4726,7 +4726,7 @@
         ],
         "summary": "Find company lookalikes",
         "description": "Finds companies similar to 1–10 reference domains and returns all results in a single response. Use your workspace API key and allow at least 100 seconds for the client timeout. Do not automatically retry this request. A search may complete even when you receive an error or no response, and repeating it can cause another charge.",
-        "x-airscale-rate-limit": "5 requests per rolling minute per workspace. Maximum 1 active search per workspace.",
+        "x-airscale-rate-limit": "15 requests per rolling minute per workspace. Maximum 5 active searches per workspace.",
         "x-airscale-credit-cost": "0.5 credits per unique returned company. Reserves limit × 0.5 credits before searching and refunds the unused amount. Empty results cost zero credits.",
         "x-codeSamples": [
           {
@@ -5204,7 +5204,7 @@
             }
           },
           "429": {
-            "description": "The workspace has reached five starts per rolling minute, already has an active search, or search capacity is temporarily unavailable. Inspect Retry-After when present.",
+            "description": "The workspace has reached 15 starts per rolling minute, already has 5 active searches, or search capacity is temporarily unavailable. Inspect Retry-After when present.",
             "headers": {
               "Retry-After": {
                 "description": "Seconds to wait when present. A later POST starts a new search.",
