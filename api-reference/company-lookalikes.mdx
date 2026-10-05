@@ -60,7 +60,7 @@ Check `warnings` for any reference companies that could not be searched. No matc
 A request with `limit: 10` requires 5 available credits; `limit: 5000` requires 2,500. Insufficient available credits returns `402`. The final charge is based on the unique companies returned, and `credits_used` reports that amount.
 
 <Warning>
-Do not automatically retry after a lost response or client timeout: the search may have completed, and repeating it can cause another charge.
+Do not automatically retry this request. A search may complete even when you receive an error or no response, and repeating it can cause another charge.
 </Warning>
 
 ## Timing and errors

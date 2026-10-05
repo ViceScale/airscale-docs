@@ -39,7 +39,7 @@ test("company lookalikes navigation, rate limits, credits and retry guidance agr
   const page = readFileSync("api-reference/company-lookalikes.mdx", "utf8");
   const limits = readFileSync("api-reference/rate-limits.mdx", "utf8");
   for (const source of [page, limits]) assert.ok(source.includes(operation["x-airscale-rate-limit"]));
-  for (const pattern of [/Do not automatically retry/, /another charge/, /2,500/, /100 seconds/]) assert.match(page, pattern);
+  for (const pattern of [/Do not automatically retry/, /error or no response/, /another charge/, /2,500/, /100 seconds/]) assert.match(page, pattern);
   assert.equal(operation.parameters, undefined);
   assert.equal(operation.responses["202"], undefined);
   assert.ok(operation.responses["402"]);

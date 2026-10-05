@@ -4725,7 +4725,7 @@
           "Search and discovery"
         ],
         "summary": "Find company lookalikes",
-        "description": "Finds companies similar to 1–10 reference domains and returns all results in a single response. Use your workspace API key and allow at least 100 seconds for the client timeout. Repeating a request can cause another charge; do not automatically retry after a lost response.",
+        "description": "Finds companies similar to 1–10 reference domains and returns all results in a single response. Use your workspace API key and allow at least 100 seconds for the client timeout. Do not automatically retry this request. A search may complete even when you receive an error or no response, and repeating it can cause another charge.",
         "x-airscale-rate-limit": "5 requests per rolling minute per workspace. Maximum 1 active search per workspace.",
         "x-airscale-credit-cost": "0.5 credits per unique returned company. Reserves limit × 0.5 credits before searching and refunds the unused amount. Empty results cost zero credits.",
         "x-codeSamples": [
