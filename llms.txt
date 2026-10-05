@@ -86,6 +86,7 @@
 - [Leads Finder](https://docs.airscale.io/api-reference/leads-finder.md): Search people with Leads Finder filters and page-based pagination. Rate limit: 5 requests per second per workspace.
 - [Find companies](https://docs.airscale.io/api-reference/find-companies.md): Search companies using firmographic, location, event, intent, and technology filters. Rate limit: 6 requests per second per workspace.
 - [Company filter values](https://docs.airscale.io/api-reference/find-companies/filter-values.md): Search supported values for Find Companies filters. Rate limit: 6 requests per second per workspace.
+- [Company lookalikes](https://docs.airscale.io/api-reference/company-lookalikes.md): Find companies similar to your reference domains. Rate limit: 5 requests per rolling minute per workspace. Maximum 1 active search per workspace.
 - [Airsearch](https://docs.airscale.io/api-reference/airsearch.md): Research the web and return structured answers with Airsearch. Rate limit: 300 requests per minute per workspace.
 
 ## API Reference — Contact data

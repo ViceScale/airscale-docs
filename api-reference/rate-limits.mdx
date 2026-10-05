@@ -27,6 +27,7 @@ All numeric limits below apply per workspace. A shared limit is one combined all
 | [Count people](/api-reference/find-people/count) | 6 requests per second per workspace. |
 | [Find companies](/api-reference/find-companies) | 6 requests per second per workspace. |
 | [Company filter values](/api-reference/find-companies/filter-values) | 6 requests per second per workspace. |
+| [Company lookalikes](/api-reference/company-lookalikes) | 5 requests per rolling minute per workspace. Maximum 1 active search per workspace. |
 | [Airsearch](/api-reference/airsearch) | 300 requests per minute per workspace. |
 | [Post likers](/api-reference/post-likers) | 180 requests per fixed minute per workspace, shared by post-likers and post-commenters; pagination requests and retries count. |
 | [Post commenters](/api-reference/post-commenters) | 180 requests per fixed minute per workspace, shared by post-likers and post-commenters; pagination requests and retries count. |
@@ -43,6 +44,8 @@ All numeric limits below apply per workspace. A shared limit is one combined all
 | [DNC Checker](/api-reference/dnc-checker) | 5 requests per second per workspace. |
 
 Find people shares its **6 requests per second** with Count people. Find companies shares its **6 requests per second** with Company filter values. These are separate limits for the two endpoint families. Post search, Profile comments, Comment likers, Profile posts, and Company posts each have their own 180-request allowance; they do not share it with each other or with Post likers and Post commenters.
+
+Company lookalikes counts admitted search starts in a rolling 60-second window. Repeated POSTs count as new searches. A second active search or a full start allowance returns `429`; honor `Retry-After` when present. Every POST is independent and may incur another charge, so do not automatically retry a lost response.
 
 For bulk email, the allowance counts **input items**, not HTTP requests. An endpoint without a documented numeric limit should not be treated as unlimited; use bounded concurrency and handle `429` responses.
 
