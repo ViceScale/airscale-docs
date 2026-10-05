@@ -37,12 +37,13 @@ These guides contain the client-specific connection steps; this page keeps the s
 ## What you can do
 
 - **People and companies search:** discover prospects with bounded, structured searches.
+- **Company lookalikes:** find similar companies from 1–10 reference domains using `airscale_company_lookalikes`.
 - **Filter discovery:** inspect available filters and counts before requesting rows.
 - **Contact and profile enrichment:** add professional contact details or public person and company profiles.
 - **Airsearch:** answer natural-language research questions with structured results.
 - **Downloadable exports:** create bounded people, company, or managed contact files and retrieve them when complete.
 
-The [MCP tool catalog](/mcp/tools) is the schema reference for all 31 typed tools. Managed contact enrichment is a work-email-only flow; it does not add mobile numbers, personal emails, or profile enrichment.
+The [MCP tool catalog](/mcp/tools) is the schema reference for all 37 typed tools. Managed contact enrichment is a work-email-only flow; it does not add mobile numbers, personal emails, or profile enrichment.
 
 ## Export lifecycle
 
@@ -70,7 +71,8 @@ Both branches use one asynchronous lifecycle:
 
 - Free operations include the credit check, planning, people count or company filter discovery, export status polling, and completed file retrieval.
 - Find People and Find Companies each cost 0.1 credit per returned row.
-- Airsearch costs 2 credits per call.
+- Company lookalikes costs 0.5 credits per unique returned company and reserves `limit × 0.5` credits before searching.
+- Airsearch costs 1 credit per successful call.
 - The managed work-email-only contact enrichment phase costs up to 2 credits per contact.
 - Paid export starts fail closed until `confirm_credit_spend` is explicitly set after review.
 
@@ -89,6 +91,10 @@ For exact per-tool behavior, use the [MCP tool catalog](/mcp/tools).
 4. For optional enrichment, request separate approval with its own maximum and updated cumulative spend.
 5. Before exporting, perform a renewed export review of the final `query` or `filters`, fields, format, `max_rows`, additional maximum credits, and cumulative workflow maximum.
 6. Set `confirm_credit_spend` only after approval, then start once.
+
+### Company lookalikes
+
+Use `airscale_company_lookalikes` with 1–10 reference domains and an explicit small `limit`. All results return in one synchronous response. The tool shares 15 starts per rolling minute and 5 active searches per workspace with the API. Do not automatically retry; a lost response can still belong to a completed, charged search, and repeating it can cause another charge. See [Company lookalikes](/api-reference/company-lookalikes) for filters and total-result limits.
 
 ### Managed contact enrichment/export
 
@@ -121,7 +127,7 @@ Start once. While status is `queued` or `running`, poll status for the same expo
     For OAuth, restart browser sign-in and verify the intended workspace. For a header-capable developer client, confirm that its protected runtime can read the configured secret.
   </Accordion>
   <Accordion title="The Airschool tools do not appear">
-    Confirm that the server URL is exactly `https://mcp.airscale.io/mcp`, then disconnect and reconnect so the client refreshes all 31 tools.
+    Confirm that the server URL is exactly `https://mcp.airscale.io/mcp`, then disconnect and reconnect so the client refreshes all 37 tools.
   </Accordion>
   <Accordion title="A request reports insufficient credits">
     Run `airscale_check_credits`, reduce the paid scope, and review the maximum again. Do not repeatedly submit the same paid request.

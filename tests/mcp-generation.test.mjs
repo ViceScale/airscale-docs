@@ -60,8 +60,10 @@ const CATEGORY_GROUPS = [
       "airscale_count_find_people",
       "airscale_find_companies",
       "airscale_find_companies_filter_values",
+      "airscale_company_lookalikes",
       "airscale_airsearch",
-      "airscale_leads_finder"
+      "airscale_leads_finder",
+      "airscale_post_search"
     ]
   },
   {
@@ -79,7 +81,11 @@ const CATEGORY_GROUPS = [
       "airscale_reverse_phone",
       "airscale_domain_to_linkedin",
       "airscale_post_likers",
-      "airscale_post_commenters"
+      "airscale_post_commenters",
+      "airscale_profile_posts",
+      "airscale_company_posts",
+      "airscale_profile_comments",
+      "airscale_comment_likers"
     ]
   },
   {
@@ -241,6 +247,10 @@ function assertDocumentationSafeArguments(toolName, argumentsValue) {
   if (toolName === "airscale_find_companies") {
     assert.ok(Object.keys(argumentsValue.filters ?? {}).length > 0, "find companies needs a real filter");
     assert.equal(argumentsValue.size, 1, "find companies must minimize returned paid rows");
+  }
+  if (toolName === "airscale_company_lookalikes") {
+    assert.deepEqual(argumentsValue.domains, ["example.com"]);
+    assert.equal(argumentsValue.limit, 1, "lookalikes must cap paid results explicitly");
   }
   if (toolName === "airscale_find_email") {
     const hasProfile = typeof argumentsValue.linkedin_profile_url === "string";
@@ -429,12 +439,12 @@ function waitForChildExit(child, stdout, stderr) {
 test("catalog renderer emits the exact page framing, category order, headings, anchors, and summary links", () => {
   const contract = readContract();
   const source = renderCatalog(contract);
-  const expectedFrontmatter = `---\ntitle: "MCP tool catalog"\ndescription: "Browse all 31 typed tools exposed by the Airschool MCP server."\ncanonical: "https://airscale.mintlify.app/mcp/tools"\n---\n`;
+  const expectedFrontmatter = `---\ntitle: "MCP tool catalog"\ndescription: "Browse all 37 typed tools exposed by the Airschool MCP server."\ncanonical: "https://airscale.mintlify.app/mcp/tools"\n---\n`;
 
   assert.equal(source.startsWith(expectedFrontmatter), true);
   assert.match(
     source,
-    /Airschool MCP exposes 31 typed tools for workspace checks, search, enrichment, research, managed batches, and asynchronous exports\./
+    /Airschool MCP exposes 37 typed tools for workspace checks, search, enrichment, research, managed batches, and asynchronous exports\./
   );
   assert.match(source, /<Warning>[\s\S]*Review each tool's credit behavior[\s\S]*`confirm_credit_spend: true`[\s\S]*<\/Warning>/);
   assert.equal(source.endsWith("\n"), true);
@@ -493,7 +503,7 @@ test("catalog documents Airsearch cost, paid confirmations, core API links, and 
   const source = renderCatalog(contract);
   const toolsByName = new Map(contract.tools.map((tool) => [tool.name, tool]));
 
-  assert.match(toolBlock(source, toolsByName.get("airscale_airsearch"), toolsByName.get("airscale_find_email")), /2 credits per call/);
+  assert.match(toolBlock(source, toolsByName.get("airscale_airsearch"), toolsByName.get("airscale_find_email")), /1 credit per successful call/);
   for (const name of PAID_EXPORT_STARTS) {
     const index = contract.tools.findIndex((tool) => tool.name === name);
     const block = toolBlock(source, contract.tools[index], contract.tools[index + 1]);
@@ -502,7 +512,7 @@ test("catalog documents Airsearch cost, paid confirmations, core API links, and 
     assert.match(block, /credit_confirmation_required[\s\S]{0,180}(?:approval|approved)[\s\S]{0,180}(?:rerun|run the same request again)/i);
   }
 
-  assert.equal(occurrences(source, "**Related API reference:**"), 24);
+  assert.equal(occurrences(source, "**Related API reference:**"), 30);
   for (const tool of contract.tools) {
     const index = contract.tools.indexOf(tool);
     const block = toolBlock(source, tool, contract.tools[index + 1]);
@@ -524,7 +534,7 @@ test("every generated tools/call example parses, stays synthetic, and validates 
   const ajv = new Ajv2020({ strict: false });
   addFormats(ajv);
 
-  assert.equal(examples.length, 31);
+  assert.equal(examples.length, 37);
   for (const [index, example] of examples.entries()) {
     const tool = contract.tools[index];
     assert.deepEqual(
@@ -557,6 +567,7 @@ test("every generated tools/call example parses, stays synthetic, and validates 
     filters: { companyName: "Example Company" },
     size: 1
   });
+  assert.deepEqual(examplesByTool.get("airscale_company_lookalikes"), { domains: ["example.com"], limit: 1 });
   assert.deepEqual(examplesByTool.get("airscale_find_email"), {
     first_name: "Example",
     last_name: "Person",
@@ -652,7 +663,7 @@ test("escaped-pipe-aware parsing proves exact input and summary table cell count
     }
   }
   assert.ok(inputRows > 22, "input headers and rendered field rows were parsed");
-  assert.equal(summaryRows, 36, "five category headers plus thirty-one tool summary rows were parsed");
+  assert.equal(summaryRows, 42, "five category headers plus thirty-seven tool summary rows were parsed");
 
   const proseContract = readContract();
   proseContract.tools[0].description = "Backslash \\| pipe";
@@ -1211,11 +1222,11 @@ test("public manifest exposes only public metadata, exact schemas, and documenta
   ]);
   assert.equal(output.schemaVersion, "1.0");
   assert.equal(output.name, "Airschool MCP tools");
-  assert.equal(output.description, "Browse all 31 typed tools exposed by the Airschool MCP server.");
+  assert.equal(output.description, "Browse all 37 typed tools exposed by the Airschool MCP server.");
   assert.equal(output.serverUrl, "https://mcp.airscale.io/mcp");
-  assert.equal(output.toolCount, 31);
+  assert.equal(output.toolCount, 37);
   assert.equal(output.sourceSha, contract.sourceSha);
-  assert.equal(output.tools.length, 31);
+  assert.equal(output.tools.length, 37);
   assert.equal(Object.hasOwn(output, "sourceFiles"), false);
   assert.equal(Object.hasOwn(output, "sourceRepository"), false);
 
@@ -3020,7 +3031,7 @@ test("agent renderers publish only the platform-supported custom agent files", (
   assert.match(outputs["skill.md"], /version: "1\.0"/);
   assert.match(outputs["skill.md"], /source_sha: "c55176dba55f958f89048a51408f2170caef41de"/);
   assert.match(outputs["skill.md"], /API authentication[\s\S]*MCP authentication/i);
-  assert.match(outputs["skill.md"], /Airsearch costs 2 credits per call/);
+  assert.match(outputs["skill.md"], /Airsearch costs 1 credit per successful call/);
   assert.match(outputs["skill.md"], /confirm_credit_spend[\s\S]*explicit/i);
   assert.match(outputs["skill.md"], /documentation-scoped MCP/i);
   assert.match(outputs["skill.md"], /search and filesystem tools are read-only/i);

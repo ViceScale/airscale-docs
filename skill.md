@@ -3,7 +3,7 @@ name: airscale
 description: Search for people and companies, enrich professional contact data, run web research, and create asynchronous exports through the Airschool API or MCP server.
 metadata:
   version: "1.0"
-  source_sha: "c55176dba55f958f89048a51408f2170caef41de"
+  source_sha: "60df930f9da0f8e989b75cc3f90e8590a2b8b39b"
 ---
 
 # Airschool
@@ -37,7 +37,8 @@ Prefer browser OAuth in supported remote MCP clients. Header-capable local clien
 
 ## Credit and approval rules
 
-- Airsearch costs 2 credits per call.
+- Airsearch costs 1 credit per successful call.
+- Use airscale_company_lookalikes to find companies similar to 1–10 reference domains. Set an explicit small limit: each unique returned company costs 0.5 credits, and limit × 0.5 credits is reserved before searching. It returns synchronously and shares the API allowance of 15 starts per rolling minute and 5 active searches per workspace. Do not automatically retry; a repeated search can incur another charge.
 - Search and enrichment tools can consume credits according to their documented result-based pricing.
 - Paid export start tools require confirm_credit_spend. Set confirm_credit_spend to true only after explicit user confirmation of the bounded request and maximum spend.
 - Checking credits, counting people, discovering company filter values, polling export status, and retrieving a completed export file do not themselves start paid export work.

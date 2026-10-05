@@ -4,7 +4,7 @@ import { readFileSync } from "node:fs";
 import test from "node:test";
 import Ajv2020 from "ajv/dist/2020.js";
 
-const SOURCE_SHA = "c55176dba55f958f89048a51408f2170caef41de";
+const SOURCE_SHA = "60df930f9da0f8e989b75cc3f90e8590a2b8b39b";
 const GROUPS = {
   workspace: [
     "airscale_check_credits"
@@ -14,8 +14,10 @@ const GROUPS = {
     "airscale_count_find_people",
     "airscale_find_companies",
     "airscale_find_companies_filter_values",
+    "airscale_company_lookalikes",
     "airscale_airsearch",
-    "airscale_leads_finder"
+    "airscale_leads_finder",
+    "airscale_post_search"
   ],
   contact_and_profile_enrichment: [
     "airscale_find_email",
@@ -29,7 +31,11 @@ const GROUPS = {
     "airscale_reverse_phone",
     "airscale_domain_to_linkedin",
     "airscale_post_likers",
-    "airscale_post_commenters"
+    "airscale_post_commenters",
+    "airscale_profile_posts",
+    "airscale_company_posts",
+    "airscale_profile_comments",
+    "airscale_comment_likers"
   ],
   checks_and_signals: [
     "airscale_verify_email",
@@ -66,10 +72,16 @@ const EXPECTED_TOOL_KEYS = [
 // inputSchema, and transcribe descriptions verbatim. Confirm spend and async
 // semantics against the four sourceFiles at that same SHA before updating them.
 const EXPECTED_SCHEMA_HASHES = {
+  airscale_comment_likers: "c256827eaf3579a499e868bbdb831e63954be7d1e2a7a9c92f3cae0dcaa58dd7",
+  airscale_profile_comments: "1121c1d5d0a485a7b7d580299e56b9849db23ac80f5df5ff52c8d09b02478db9",
+  airscale_company_posts: "a12c105c1ee407451cc98120f6f9c5d81171924bddb33b9eb46a5f78851cc27f",
+  airscale_profile_posts: "242ddf0ed6be968351dbf2e6795c90abb60c493a7ab92c7990ae0bb40e94a42d",
+  airscale_post_search: "1ed7c583789c4f46fe7b2f5886b1209a14bf8e9d793c0f0ad3e4bdbb163c2c93",
+  airscale_company_lookalikes: "c64d361e0e6bda0be559fe8e3337351cfce2aa3ba8f37acc56363d6b899ca728",
   airscale_check_credits: "99334726611ccf58a148b0814696bfa6fe08c1b2d027e946beccf5a74331c9aa",
   airscale_find_people: "d6136bb30d27571f9454f31df26a347c77e730cc01a369f3d5b9c52c289ad3ea",
   airscale_count_find_people: "6f3574e0cb0bb88f34e0f5e2c7bffed5dee71fd08c6e11bc9849536e346432f0",
-  airscale_find_companies: "f8a1ed2c7fb7220166c4b9bacd93da7e1eaa653bfe2cde6acb52e1ce4558bd52",
+  airscale_find_companies: "1a5818d7d98bbcc6153baf28c6f8f17f704f8a6f2d51921780a929d630867dba",
   airscale_find_companies_filter_values: "bc868bbb5c9ee36188a6a05c716d18711e2072ad712f62d3ab0ece8849d6fdc7",
   airscale_airsearch: "03d1d9e646f17c1679efb8d051e055536dc26d355742693b02e85df56c8a9bd9",
   airscale_leads_finder: "8f87c9e74709c5aec2a29c27f06a23272549479e7b5663b4d72a2e3fea39a2dc",
@@ -90,7 +102,7 @@ const EXPECTED_SCHEMA_HASHES = {
   airscale_get_whatsapp_check: "4c22e7e7053682ee8bf072f6ad80953da71704cad71e7016f679e8888b694430",
   airscale_check_dnc: "20577c564c2a6df69f0f0e8bff927df2c2956c2371744ac13aca6d45da5c6afb",
   airscale_meta_ads: "db58d6fa77942cbe1c58cbf70fbb5f7ed5084306512193c254c7e14b27f47e86",
-  airscale_start_companies_export: "c79eda1cff8503b1df8f3f75b25a5b4fe3b10b08e4fef95c75c9a94be827fc78",
+  airscale_start_companies_export: "71124ef43e33824bbe03108ed31b52777dccca23781c213a37f3b57b9bb0ae9e",
   airscale_start_people_export: "97e7678c3f004746fbb202fb60ae742b9f84672ebc20f7de7f9849aff0dcf61a",
   airscale_create_contact_enrichment_batch: "aaea2244519a140712407406e62042a40d2cd7454224cc27f6ef9595322174f4",
   airscale_add_contacts_to_enrichment_batch: "8622df11336fb0e4b2b3ba435ddd772f0f61e744f49d38d06c9bef00a2b3afa6",
@@ -129,16 +141,28 @@ const EXPECTED_TOOL_METADATA = {
     spend: { kind: "free", summary: "Free; no credits charged" },
     asynchronous: false
   },
+  airscale_company_lookalikes: {
+    description:
+      "Find companies similar to 1–10 reference company websites, with optional location, employee-size and founding-year filters. Returns company data and warnings synchronously. Costs 0.5 credits per unique returned company; unused reserved credits are refunded. Limit defaults to 2000; use an explicit smaller limit for a small search. Maximum 15 searches per rolling minute and 5 concurrent searches per workspace, shared with the API. Allow at least 100 seconds. Do not automatically retry: repeating a search can cause another charge.",
+    spend: {"kind": "variable", "summary": "0.5 credits per unique returned company; reserves limit × 0.5 credits and refunds unused credits"},
+    asynchronous: false
+  },
   airscale_airsearch: {
     description:
-      "AI web research agent: ask a natural-language question and optionally specify structured fields to extract. Costs 2 credits per call.",
-    spend: { kind: "variable", summary: "2 credits per call" },
+      "AI web research agent: ask a natural-language question and optionally specify structured fields to extract. Costs 1 credit per successful call.",
+    spend: { kind: "variable", summary: "1 credit per successful call" },
     asynchronous: false
   },
   airscale_leads_finder: {
     description:
       "Search people with Leads Finder filters (job, company, location, seniority, skills, company size, funding, and more). Zero-based page pagination. Costs 0.1 credits per returned lead.",
     spend: { kind: "variable", summary: "0.1 credits per returned lead" },
+    asynchronous: false
+  },
+  airscale_post_search: {
+    description:
+      "Search LinkedIn posts by keywords, author, author's employer or industry, mentions, or group, newest first by default. Returns raw post rows (text, author, engagement counts, URL) one page at a time with pagination.next_cursor. Costs 1 credit per successful page, empty pages included; invalid input and failures are free.",
+    spend: {"kind": "variable", "summary": "1 credit per successful page, including empty pages; invalid input and failures are free"},
     asynchronous: false
   },
   airscale_find_email: {
@@ -203,14 +227,38 @@ const EXPECTED_TOOL_METADATA = {
   },
   airscale_post_likers: {
     description:
-      "List and enrich people who liked a LinkedIn post, one page (up to 25) at a time. Reserves 1 credit per requested slot and refunds unused, not-found, and failed slots.",
-    spend: { kind: "variable", summary: "1 credit per enriched profile; unused, not-found, and failed slots are refunded" },
+      "List and enrich people who liked a LinkedIn post, one page (up to 25) at a time. Reserves 0.2 credits per requested slot and refunds unused, not-found, and failed slots.",
+    spend: { kind: "variable", summary: "0.2 credits per enriched profile; unused, not-found, and failed slots are refunded" },
     asynchronous: false
   },
   airscale_post_commenters: {
     description:
-      "List and enrich people who commented on a LinkedIn post, one page (up to 25) at a time. Reserves 1 credit per requested slot and refunds unused, not-found, and failed slots.",
-    spend: { kind: "variable", summary: "1 credit per enriched profile; unused, not-found, and failed slots are refunded" },
+      "List and enrich people who commented on a LinkedIn post, one page (up to 25) at a time. Reserves 0.2 credits per requested slot and refunds unused, not-found, and failed slots.",
+    spend: { kind: "variable", summary: "0.2 credits per enriched profile; unused, not-found, and failed slots are refunded" },
+    asynchronous: false
+  },
+  airscale_profile_posts: {
+    description:
+      "List the recent LinkedIn posts published by one person (profile URL), one page at a time with pagination.next_cursor. Costs 1 credit per successful page, empty pages included; invalid input and failures are free.",
+    spend: {"kind": "variable", "summary": "1 credit per successful page, including empty pages; invalid input and failures are free"},
+    asynchronous: false
+  },
+  airscale_company_posts: {
+    description:
+      "List the recent LinkedIn posts published by one company page (company URL or numeric ID), one page at a time with pagination.next_cursor. Costs 1 credit per successful page, empty pages included; invalid input and failures are free.",
+    spend: {"kind": "variable", "summary": "1 credit per successful page, including empty pages; invalid input and failures are free"},
+    asynchronous: false
+  },
+  airscale_profile_comments: {
+    description:
+      "List the recent comments one person (profile URL) wrote on LinkedIn posts, with the comment and post URLs, one page at a time with pagination.next_cursor. Costs 1 credit per successful page, empty pages included; invalid input and failures are free.",
+    spend: {"kind": "variable", "summary": "1 credit per successful page, including empty pages; invalid input and failures are free"},
+    asynchronous: false
+  },
+  airscale_comment_likers: {
+    description:
+      "List the people who reacted to one LinkedIn comment (comment URL, e.g. from airscale_profile_comments), one page at a time with pagination.next_cursor. Returns raw rows, not enriched contacts. Costs 1 credit per successful page, empty pages included; invalid input and failures are free.",
+    spend: {"kind": "variable", "summary": "1 credit per successful page, including empty pages; invalid input and failures are free"},
     asynchronous: false
   },
   airscale_verify_email: {
@@ -292,8 +340,10 @@ const CORE_OPERATION_IDS = {
   airscale_count_find_people: "countPeople",
   airscale_find_companies: "findCompanies",
   airscale_find_companies_filter_values: "listFindCompanyFilterValues",
+  airscale_company_lookalikes: "findCompanyLookalikes",
   airscale_airsearch: "airsearch",
   airscale_leads_finder: "searchLeadsFinder",
+  airscale_post_search: "searchLinkedinPosts",
   airscale_find_email: "findProfessionalEmail",
   airscale_find_email_bulk: "findProfessionalEmailsBulk",
   airscale_find_mobile_phone: "findMobilePhone",
@@ -306,6 +356,10 @@ const CORE_OPERATION_IDS = {
   airscale_domain_to_linkedin: "findCompanyLinkedinUrl",
   airscale_post_likers: "listPostLikers",
   airscale_post_commenters: "listPostCommenters",
+  airscale_profile_posts: "listLinkedinProfilePosts",
+  airscale_company_posts: "listLinkedinCompanyPosts",
+  airscale_profile_comments: "listLinkedinProfileComments",
+  airscale_comment_likers: "listLinkedinCommentLikers",
   airscale_verify_email: "verifyEmail",
   airscale_check_whatsapp: "checkWhatsapp",
   airscale_get_whatsapp_check: "getWhatsappCheckOperation",
@@ -380,16 +434,16 @@ test("MCP contract is pinned to the approved Airscale source", () => {
   ]);
 });
 
-test("MCP contract contains the exact thirty-one tools in approved groups", () => {
+test("MCP contract contains the exact thirty-seven tools in approved groups", () => {
   const tools = contract().tools;
-  assert.equal(tools.length, 31);
-  assert.equal(new Set(tools.map(({ name }) => name)).size, 31);
+  assert.equal(tools.length, 37);
+  assert.equal(new Set(tools.map(({ name }) => name)).size, 37);
   assert.deepEqual(tools.map(({ name }) => name), EXPECTED_NAMES);
   assert.deepEqual(Object.keys(EXPECTED_TOOL_METADATA), EXPECTED_NAMES);
   assert.deepEqual(Object.keys(EXPECTED_SCHEMA_HASHES).sort(), [...EXPECTED_NAMES].sort());
   assert.deepEqual(
     Object.fromEntries(Object.keys(GROUPS).map((category) => [category, tools.filter((tool) => tool.category === category).length])),
-    { workspace: 1, search_and_research: 6, contact_and_profile_enrichment: 12, checks_and_signals: 5, async_exports_and_managed_batches: 7 }
+    { workspace: 1, search_and_research: 8, contact_and_profile_enrichment: 16, checks_and_signals: 5, async_exports_and_managed_batches: 7 }
   );
   for (const [category, names] of Object.entries(GROUPS)) {
     assert.deepEqual(tools.filter((tool) => tool.category === category).map(({ name }) => name), names);
@@ -477,9 +531,9 @@ test("core tools map one-to-one to approved OpenAPI operations and batch tools m
   const coreOperationIds = new Set(tools.map(({ operationId }) => operationId));
   const coreOperations = operations.filter(({ operationId }) => coreOperationIds.has(operationId));
 
-  assert.equal(tools.length, 24);
-  assert.equal(new Set(tools.map(({ operationId }) => operationId)).size, 24);
-  assert.equal(coreOperations.length, 24);
+  assert.equal(tools.length, 30);
+  assert.equal(new Set(tools.map(({ operationId }) => operationId)).size, 30);
+  assert.equal(coreOperations.length, 30);
   assert.deepEqual(Object.fromEntries(tools.map(({ name, operationId }) => [name, operationId])), CORE_OPERATION_IDS);
   assert.deepEqual(
     tools.map(({ operationId }) => operationId).sort(),
@@ -492,7 +546,7 @@ test("core tools map one-to-one to approved OpenAPI operations and batch tools m
   assert.ok(batchTools.every(({ operationId, apiPage }) => operationId === null && apiPage === null));
 });
 
-test("paid export starts require explicit confirmation and Airsearch costs two credits", () => {
+test("paid export starts require explicit confirmation and Airsearch costs one credit", () => {
   const tools = new Map(contract().tools.map((tool) => [tool.name, tool]));
   assert.deepEqual(
     contract().tools.filter(({ spend }) => spend.kind === "paid_export").map(({ name }) => name),
@@ -508,5 +562,5 @@ test("paid export starts require explicit confirmation and Airsearch costs two c
           : "Must be true to start a paid fresh-row export."
     });
   }
-  assert.deepEqual(tools.get("airscale_airsearch").spend, { kind: "variable", summary: "2 credits per call" });
+  assert.deepEqual(tools.get("airscale_airsearch").spend, { kind: "variable", summary: "1 credit per successful call" });
 });

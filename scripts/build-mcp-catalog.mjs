@@ -34,20 +34,27 @@ import {
 const DEFAULT_CONTRACT_PATH = fileURLToPath(new URL("../contracts/mcp-tools.json", import.meta.url));
 const DEFAULT_CATALOG_PATH = fileURLToPath(new URL("../mcp/tools.mdx", import.meta.url));
 const DEFAULT_PUBLIC_PATH = fileURLToPath(new URL("../mcp-tools.txt", import.meta.url));
-const PUBLIC_DESCRIPTION = "Browse all 31 typed tools exposed by the Airschool MCP server.";
+const PUBLIC_DESCRIPTION = "Browse all 37 typed tools exposed by the Airschool MCP server.";
 const CATEGORY_GROUPS = [
   { key: "workspace", title: "Workspace", count: 1 },
-  { key: "search_and_research", title: "Search and research", count: 6 },
-  { key: "contact_and_profile_enrichment", title: "Contact and profile enrichment", count: 12 },
+  { key: "search_and_research", title: "Search and research", count: 8 },
+  { key: "contact_and_profile_enrichment", title: "Contact and profile enrichment", count: 16 },
   { key: "checks_and_signals", title: "Checks and signals", count: 5 },
   { key: "async_exports_and_managed_batches", title: "Async exports and managed batches", count: 7 }
 ];
 const CATEGORY_TITLES = new Map(CATEGORY_GROUPS.map(({ key, title }) => [key, title]));
 const RESULT_BEHAVIOR = {
+  airscale_post_search: "Returns one page of LinkedIn posts matching the filters and a next cursor when more results are available.",
+  airscale_profile_posts: "Returns one page of recent LinkedIn posts from a person and a next cursor when more results are available.",
+  airscale_company_posts: "Returns one page of recent LinkedIn posts from a company and a next cursor when more results are available.",
+  airscale_profile_comments: "Returns one page of recent comments from a person, including comment and post URLs, with a next cursor when available.",
+  airscale_comment_likers: "Returns one page of raw people rows for reactions to a comment, with a next cursor when available. These are not enriched contacts.",
+
   airscale_check_credits: "Returns the workspace's current Airschool credit balance without spending credits.",
   airscale_find_people: "Returns one page of matching people and a cursor when another page is available.",
   airscale_count_find_people: "Returns the number of people matching the supplied query filters.",
   airscale_find_companies: "Returns one page of matching companies and pagination metadata for any remaining results.",
+  airscale_company_lookalikes: "Returns all unique matching companies synchronously with total_results, credits_used, and warnings. Costs 0.5 credits per unique returned company; reserves limit × 0.5 credits and refunds the unused amount. The total limit defaults to 2,000, with a maximum of 2,000 for one distinct reference, 4,000 for two, and 5,000 for three through ten. Shares 15 starts per rolling minute and 5 active searches per workspace with the API. Do not automatically retry: a completed search can still be charged when its response is lost, and repeating it can cause another charge.",
   airscale_find_companies_filter_values: "Returns accepted values for the selected company filter and search text.",
   airscale_airsearch: "Returns the research answer and any structured fields requested in the prompt schema.",
   airscale_find_email: "Returns a professional email result when found, or a documented not-found result.",
@@ -79,6 +86,12 @@ const RESULT_BEHAVIOR = {
 // JSON Schema cannot express every runtime cross-field rule or a safe paid
 // request size. Keep those examples intentionally narrow and synthetic.
 const SAFE_EXAMPLE_ARGUMENTS = Object.freeze({
+  airscale_post_search: {"keywords": "Example Company"},
+  airscale_profile_posts: {"profile_url": "https://www.linkedin.com/in/example-person"},
+  airscale_company_posts: {"company_url": "https://www.linkedin.com/company/example-company"},
+  airscale_profile_comments: {"profile_url": "https://www.linkedin.com/in/example-person"},
+  airscale_comment_likers: {"comment_url": "urn:li:comment:(activity:7376356221991178240,7376356221991178241)"},
+
   airscale_find_people: {
     query: { companyDomain: { include: ["example.com"] } },
     size: 1
@@ -87,6 +100,7 @@ const SAFE_EXAMPLE_ARGUMENTS = Object.freeze({
     filters: { companyName: "Example Company" },
     size: 1
   },
+  airscale_company_lookalikes: { domains: ["example.com"], limit: 1 },
   airscale_find_email: {
     first_name: "Example",
     last_name: "Person",
@@ -233,8 +247,8 @@ function validateContract(contract) {
   if (typeof contract.sourceSha !== "string" || contract.sourceSha.length === 0) {
     throw new Error("MCP contract must include a source SHA");
   }
-  if (!Array.isArray(contract.tools) || contract.tools.length !== 31) {
-    throw new Error("MCP contract must contain exactly 31 tools");
+  if (!Array.isArray(contract.tools) || contract.tools.length !== 37) {
+    throw new Error("MCP contract must contain exactly 37 tools");
   }
 
   const names = new Set();
@@ -311,7 +325,7 @@ function validateContract(contract) {
   }
 
   const apiMappedCount = contract.tools.filter(({ operationId }) => operationId !== null).length;
-  if (apiMappedCount !== 24) throw new Error("Exactly 24 core MCP tools must map to the API reference");
+  if (apiMappedCount !== 30) throw new Error("Exactly 30 core MCP tools must map to the API reference");
 }
 
 function decodePointerSegment(value) {
@@ -335,7 +349,7 @@ function resolveLocalReference(reference, rootSchema, toolName, path) {
 
 const MAX_SYNTHESIS_CANDIDATES = 128;
 const MAX_SYNTHESIS_RECURSION_DEPTH = 64;
-const MAX_SYNTHESIS_REFERENCE_DEPTH = 32;
+const MAX_SYNTHESIS_REFERENCE_DEPTH = 37;
 const MAX_SYNTHESIS_COMBINATOR_BRANCHES = 128;
 const MAX_SYNTHESIS_ENUM_VALUES = 128;
 const MAX_SYNTHESIS_ARRAY_ITEMS = 1_000;
@@ -1508,8 +1522,8 @@ function renderCategorySummary(tools) {
 export function renderCatalog(contract) {
   validateContract(contract);
   const sections = [
-    "---\ntitle: \"MCP tool catalog\"\ndescription: \"Browse all 31 typed tools exposed by the Airschool MCP server.\"\ncanonical: \"https://airscale.mintlify.app/mcp/tools\"\n---",
-    "Airschool MCP exposes 31 typed tools for workspace checks, search, enrichment, research, managed batches, and asynchronous exports.",
+    "---\ntitle: \"MCP tool catalog\"\ndescription: \"Browse all 37 typed tools exposed by the Airschool MCP server.\"\ncanonical: \"https://airscale.mintlify.app/mcp/tools\"\n---",
+    "Airschool MCP exposes 37 typed tools for workspace checks, search, enrichment, research, managed batches, and asynchronous exports.",
     "<Warning>\nReview each tool's credit behavior before approval. Paid export starts require `confirm_credit_spend: true`.\n</Warning>",
     "<Note>\nAuthenticate through the MCP connection. OAuth clients complete authentication in the browser; API keys never belong in tool arguments.\n</Note>"
   ];
@@ -1562,8 +1576,8 @@ function validateRenderedPair(contract, catalog, publicManifest) {
   } catch (error) {
     throw new Error(`Public MCP manifest is not valid JSON: ${error.message}`, { cause: error });
   }
-  if (parsed.toolCount !== 31 || !Array.isArray(parsed.tools) || parsed.tools.length !== 31) {
-    throw new Error("Public MCP manifest must contain exactly 31 tools");
+  if (parsed.toolCount !== 37 || !Array.isArray(parsed.tools) || parsed.tools.length !== 37) {
+    throw new Error("Public MCP manifest must contain exactly 37 tools");
   }
   if (Object.hasOwn(parsed, "sourceFiles") || Object.hasOwn(parsed, "sourceRepository")) {
     throw new Error("Public MCP manifest contains repository-only source metadata");
