@@ -195,7 +195,7 @@
       "page": "api-reference/company-lookalikes",
       "tag": "Search and discovery",
       "sourcePage": "company-lookalikes",
-      "sourceSha": "bcef60c41110e0d71d869956cff79c5813eb2511",
+      "sourceSha": "7c415424aa18e483922d7117bc80b3ae84a7af90",
       "sourceFiles": [
         "workers/public-api/company-lookalikes-worker.js",
         "api/src/lib/publicCompanyLookalikes.ts",

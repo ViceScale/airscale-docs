@@ -154,7 +154,7 @@ const EXPECTED_CONTRACTS = deepFreeze({
     sourceFiles: ["workers/public-api/find-companies-worker.js", "workers/public-api/find-companies-worker.test.mjs"]
   },
   "company-lookalikes": {
-    "sourceSha": "bcef60c41110e0d71d869956cff79c5813eb2511",
+    "sourceSha": "7c415424aa18e483922d7117bc80b3ae84a7af90",
     "endpoints": [
       {
         "method": "POST",
