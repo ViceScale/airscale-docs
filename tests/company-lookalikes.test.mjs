@@ -45,3 +45,11 @@ test("company lookalikes navigation, rate limits, credits and retry guidance agr
   assert.ok(operation.responses["402"]);
   assert.ok(operation.responses["429"].headers["Retry-After"]);
 });
+
+test("copyable curl keeps the explicit ten-result limit and sufficient timeout", () => {
+  const sample = operation["x-codeSamples"].find(({ label }) => label === "cURL");
+  assert.match(sample.source, /"limit":10/);
+  assert.match(sample.source, /--max-time 100/);
+  assert.match(sample.source, /\$AIRSCALE_API_KEY/);
+  assert.doesNotMatch(sample.source, /--retry/);
+});
