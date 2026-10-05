@@ -5,13 +5,13 @@ canonical: "https://airscale.mintlify.app/api-reference/company-lookalikes"
 openapi: "/openapi.json POST /v1/company-lookalikes"
 ---
 
-Find companies similar to one or more reference companies. The request waits for the search to finish and returns company data directly, without creating a table or importing records.
+Find companies similar to one or more reference companies. The request waits for the search to finish and returns company data directly.
 
 <Note>
 Costs **0.5 credits per unique returned company**. Before searching, the API reserves `limit × 0.5` credits and refunds the unused amount afterward. Zero results cost zero credits. Each workspace can start **5 searches per rolling minute** and have **1 active search** at a time.
 </Note>
 
-Use a current-app workspace API key from [Authentication](/api-reference/authentication). Legacy Bubble-only keys are not supported. Send `Content-Type: application/json`; the request body limit is **128 KiB**.
+Authenticate with your workspace API key. See [Authentication](/api-reference/authentication).
 
 ## Reference domains and result limits
 
@@ -25,7 +25,7 @@ Send 1–10 company websites in `domains`. Domains and website URLs are normaliz
 | 2 | 4,000 |
 | 3–10 | 5,000 |
 
-For example, ten reference domains with `limit: 5000` request at most 5,000 unique companies in total. Results are deduplicated across references and may be fewer than requested. There is no pagination or polling endpoint.
+For example, ten reference domains with `limit: 5000` request at most 5,000 unique companies in total. Results are deduplicated across references and may be fewer than requested. All results are returned in a single response.
 
 ## Filters
 
@@ -33,7 +33,7 @@ Use `include` and `exclude` to filter by country, city, and employee size. Count
 
 Each country or city list accepts up to 100 values. Supported size bands are `1-10`, `11-50`, `51-200`, `201-500`, `501-1000`, `1001-5000`, `5001-10000`, and `10001+`. Use `exclude.domains` to omit up to 900 company websites.
 
-Use `founded.min` and `founded.max` for founding-year bounds from 1000 through 9999; the minimum cannot exceed the maximum. Unknown fields are rejected, including `limitPerCompany`.
+Use `founded.min` and `founded.max` for founding-year bounds from 1000 through 9999; the minimum cannot exceed the maximum.
 
 ## Company fields
 
@@ -51,27 +51,23 @@ The response contains `status`, `total_results`, `credits_used`, `data`, and `wa
 | `relevance_score` | Number or `null`; not a confidence percentage or guaranteed to be between 0 and 1. |
 | `matched_domains` | Normalized reference domains that matched this company. |
 
-Missing text fields are empty strings. Companies matching more reference domains appear first, followed by their best search rank. The relevance score does not override this order.
+Missing text fields are empty strings. Companies matching more reference domains appear first.
 
-Partial reference failures can return `200` with the remaining results and explanatory strings in `warnings`. If none of the reference companies can be found, the API returns `404` with `reference_company_not_found`. A completed search with no matching results returns `200`, an empty `data` array, and zero credits used.
+Check `warnings` for any reference companies that could not be searched. No matches returns an empty `data` array and costs zero credits.
 
-## Credits and repeated requests
+## Credits
 
 A request with `limit: 10` requires 5 available credits; `limit: 5000` requires 2,500. Insufficient available credits returns `402`. The final charge is based on the unique companies returned, and `credits_used` reports that amount.
 
-Every POST starts an independent search, even with an identical body. No idempotency key is required; `Idempotency-Key` is ignored.
-
 <Warning>
-Do not automatically retry this POST. A lost response or client timeout can belong to a completed, charged search. Sending the request again can cause another charge, and there is no result-retrieval or replay endpoint.
+Do not automatically retry this request. A search may complete even when you receive an error or no response, and repeating it can cause another charge.
 </Warning>
 
 ## Timing and errors
 
-Allow at least **100 seconds** for your client timeout. The server has a **90-second overall budget**, with up to 80 seconds for the search. Large requests are not guaranteed to finish within that time; a deadline failure returns `504` with `company_lookalikes_timeout`.
+Allow at least **100 seconds** for your client timeout. If a search times out, try fewer reference companies or a lower result limit.
 
-A workspace rate or concurrency limit returns `429`. Read `Retry-After` when present and wait before deliberately starting another search. Search capacity limits can also return `429`. See [Rate limits](/api-reference/rate-limits).
-
-Errors return an `error` message and a stable `code`. A `503` can indicate temporary unavailability or pending credit settlement. Failures before a saved result release the credit reservation; interrupted refunds may take time to complete. The complete JSON response is limited to **32 MiB**; exceeding that limit returns `502` with a full refund. Request fewer results if this occurs.
+A rate or concurrency limit returns `429`. Wait for the number of seconds in `Retry-After` when present. See [Rate limits](/api-reference/rate-limits).
 
 ## Next step
 
