@@ -45,7 +45,7 @@ All numeric limits below apply per workspace. A shared limit is one combined all
 
 Find people shares its **6 requests per second** with Count people. Find companies shares its **6 requests per second** with Company filter values. These are separate limits for the two endpoint families. Post search, Profile comments, Comment likers, Profile posts, and Company posts each have their own 180-request allowance; they do not share it with each other or with Post likers and Post commenters.
 
-Company lookalikes counts admitted search starts in a rolling 60-second window. Repeated POSTs count as new searches. A second active search or a full start allowance returns `429`; honor `Retry-After` when present. Every POST is independent and may incur another charge, so do not automatically retry a lost response.
+Company lookalikes returns `429` when its rate or concurrency limit is reached. Honor `Retry-After` when present. Repeating a search can cause another charge; see the [endpoint guidance](/api-reference/company-lookalikes).
 
 For bulk email, the allowance counts **input items**, not HTTP requests. An endpoint without a documented numeric limit should not be treated as unlimited; use bounded concurrency and handle `429` responses.
 
