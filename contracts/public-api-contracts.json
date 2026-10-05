@@ -85,6 +85,23 @@
       ],
       "sourceFiles": ["workers/public-api/find-companies-worker.js", "workers/public-api/find-companies-worker.test.mjs"]
     },
+    "company-lookalikes": {
+      "sourceSha": "53a5f6f23daadbf892a6a0a27881fe7b9e1f6c6a",
+      "endpoints": [
+        {
+          "method": "POST",
+          "path": "/v1/company-lookalikes"
+        }
+      ],
+      "sourceFiles": [
+        "workers/public-api/company-lookalikes-worker.js",
+        "api/src/lib/publicCompanyLookalikes.ts",
+        "api/src/lib/companyLookalikes.ts",
+        "api/src/lib/publicCompanyLookalikesExecution.ts",
+        "workers/public-api/company-lookalikes-worker.test.mjs",
+        "api/src/lib/publicCompanyLookalikes.test.ts"
+      ]
+    },
     "airsearch": {
       "endpoints": [{ "method": "POST", "path": "/v1/airsearch" }],
       "sourceFiles": ["workers/public-api/airsearch-worker.js", "workers/public-api/airsearch-worker.test.mjs"]

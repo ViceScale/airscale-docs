@@ -18,6 +18,7 @@ const GROUPS = [
     "api-reference/leads-finder",
     "api-reference/find-companies",
     "api-reference/find-companies/filter-values",
+    "api-reference/company-lookalikes",
     "api-reference/airsearch"
   ]],
   ["Contact data", [
@@ -533,9 +534,9 @@ test("every public operation has one exact OpenAPI-backed wrapper", () => {
     assert.ok(body.split(/\n\s*\n/)[0].trim(), `${page} must retain a purpose statement`);
   }
 
-  assert.equal(expectedBindings.size, 29);
-  assert.equal(new Set(expectedBindings.values()).size, 29);
-  assert.equal(actualBindings.size, 29);
+  assert.equal(expectedBindings.size, 30);
+  assert.equal(new Set(expectedBindings.values()).size, 30);
+  assert.equal(actualBindings.size, 30);
   assert.deepEqual(actualBindings, expectedBindings);
 });
 
@@ -555,7 +556,7 @@ test("every wrapper binding resolves to its cataloged generated OpenAPI operatio
     resolved.push(`${method} ${path}`);
   }
 
-  assert.equal(new Set(resolved).size, 29);
+  assert.equal(new Set(resolved).size, 30);
   assert.deepEqual(resolved.sort(), catalog.operations.map(({ method, path }) => `${method} ${path}`).sort());
 });
 
@@ -636,6 +637,7 @@ const DURABLE_OPERATION_GUIDANCE = {
   "api-reference/find-people/count": [/Count is free/i, /same `query`/i, /no pagination fields/i, /6 requests per second/i],
   "api-reference/find-companies": [/6 requests per second/i, /0\.1 credits per returned company/i, /zero returned rows cost zero credits/i, /when `next_cursor` is not `null`.*send the exact value unchanged as `cursor`/is, /10,000 companies/i],
   "api-reference/find-companies/filter-values": [/free and has no request body/i, /6 requests per second/i, /`q` parameter takes precedence/i],
+  "api-reference/company-lookalikes": [/0\.5 credits per unique returned company/, /5 searches per rolling minute/, /1 active search/, /Do not automatically retry/, /another charge/, /90-second overall budget/, /Retry-After/],
   "api-reference/airsearch": [/300 requests per minute/i, /1 credit/i, /`not_found` and `timeout` are not charged/i, /Credits reserved.*are returned/i, /timeout.*`504 Gateway Timeout`/i],
   "api-reference/post-likers": [/synchronous/i, /one credit/i, /next_cursor/i, /same post URL and `limit`/i, /failed.*refunded/i, /Idempotency-Key/i, /202.*pending/is, /account_restart_required/, /reported_total/],
   "api-reference/post-commenters": [/synchronous/i, /one credit/i, /next_cursor/i, /same post URL and `limit`/i, /failed.*refunded/i, /Idempotency-Key/i, /202.*pending/is, /account_restart_required/, /reported_total/],
@@ -647,7 +649,7 @@ const DURABLE_OPERATION_GUIDANCE = {
 };
 
 test("operation wrappers retain durable rate, credit, retry, and asynchronous guidance", () => {
-  assert.equal(Object.keys(DURABLE_OPERATION_GUIDANCE).length, 29);
+  assert.equal(Object.keys(DURABLE_OPERATION_GUIDANCE).length, 30);
   for (const [page, patterns] of Object.entries(DURABLE_OPERATION_GUIDANCE)) {
     const { body } = readPage(page);
     for (const pattern of patterns) assert.match(body, pattern, `${page} must retain ${pattern}`);
