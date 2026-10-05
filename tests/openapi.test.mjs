@@ -1677,7 +1677,7 @@ test("all Search and discovery examples are schema-valid and structurally synthe
     assertContentExamplesValidate(operation.responses["200"].content["application/json"], `${entry.path} response`, examples);
   }
 
-  assert.equal(searchDiscoveryOperations.length, 5);
+  assert.equal(searchDiscoveryOperations.length, 6);
   assert.doesNotThrow(() => assertExamplePrivacy(examples));
   assert.doesNotThrow(() => assertNoExecutableExamples(examples));
   assert.doesNotThrow(() => assertExampleDataSafety(examples));
@@ -1853,7 +1853,7 @@ test("LinkedIn content operations model per-request billing, cursors, and unconf
   }
 });
 
-test("committed OpenAPI 3.1 artifact matches the pinned 29-operation catalog exactly", async () => {
+test("committed OpenAPI 3.1 artifact matches the pinned 30-operation catalog exactly", async () => {
   const parsed = await SwaggerParser.validate("openapi.json");
   const generated = buildSpec();
   const committed = committedSpec();
@@ -1864,7 +1864,7 @@ test("committed OpenAPI 3.1 artifact matches the pinned 29-operation catalog exa
   assert.deepEqual(committed.servers, baseSpec.servers);
   assert.deepEqual(committed.security, baseSpec.security);
   assert.equal(approvedCatalog.sourceSha, SOURCE_SHA);
-  assert.equal(approvedCatalog.operations.length, 29);
+  assert.equal(approvedCatalog.operations.length, 30);
 
   const actualOperations = [];
   for (const [path, pathItem] of Object.entries(committed.paths)) {
@@ -1872,8 +1872,8 @@ test("committed OpenAPI 3.1 artifact matches the pinned 29-operation catalog exa
       if (pathItem[method]) actualOperations.push({ method: method.toUpperCase(), path, operation: pathItem[method] });
     }
   }
-  assert.equal(actualOperations.length, 29);
-  assert.equal(actualOperations.filter(({ method }) => method === "POST").length, 27);
+  assert.equal(actualOperations.length, 30);
+  assert.equal(actualOperations.filter(({ method }) => method === "POST").length, 28);
   assert.equal(actualOperations.filter(({ method }) => method === "GET").length, 2);
   assert.equal(actualOperations.filter(({ method }) => method === "PATCH").length, 0);
   assert.equal(actualOperations.filter(({ method }) => method === "DELETE").length, 0);
@@ -1891,6 +1891,8 @@ test("committed OpenAPI 3.1 artifact matches the pinned 29-operation catalog exa
     assert.ok(operation.responses["200"] || operation.responses["201"] || operation.responses["202"]);
     if (expected.operationId === "verifyEmail") {
       assert.deepEqual(operation.responses[401].content["application/json"].schema, {});
+    } else if (expected.operationId === "findCompanyLookalikes") {
+      assert.deepEqual(operation.responses[401].content["application/json"].schema.required, ["error", "code"]);
     } else {
       assertUnauthorizedReference(operation);
     }

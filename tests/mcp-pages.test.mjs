@@ -33,6 +33,7 @@ const API_REFERENCE_TAB = {
         "api-reference/leads-finder",
         "api-reference/find-companies",
         "api-reference/find-companies/filter-values",
+        "api-reference/company-lookalikes",
         "api-reference/airsearch"
       ]
     },

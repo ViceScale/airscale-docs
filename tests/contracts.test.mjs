@@ -19,6 +19,7 @@ const EXPECTED_OPERATIONS = [
   ["POST", "/v1/find-people/count", "countPeople", "api-reference/find-people/count", "Search and discovery"],
   ["POST", "/v1/find-companies", "findCompanies", "api-reference/find-companies", "Search and discovery"],
   ["GET", "/v1/find-companies/filter-values", "listFindCompanyFilterValues", "api-reference/find-companies/filter-values", "Search and discovery"],
+  ["POST", "/v1/company-lookalikes", "findCompanyLookalikes", "api-reference/company-lookalikes", "Search and discovery"],
   ["POST", "/v1/airsearch", "airsearch", "api-reference/airsearch", "Search and discovery"],
   ["POST", "/v1/post-likers", "listPostLikers", "api-reference/post-likers", "Post engagement"],
   ["POST", "/v1/post-commenters", "listPostCommenters", "api-reference/post-commenters", "Post engagement"],
@@ -51,6 +52,7 @@ const EXPECTED_PAGES = [
   "reverse-phone",
   "find-people",
   "find-companies",
+  "company-lookalikes",
   "airsearch",
   "post-engagement",
   "linkedin-content",
@@ -150,6 +152,23 @@ const EXPECTED_CONTRACTS = deepFreeze({
       { method: "GET", path: "/v1/find-companies/filter-values" }
     ],
     sourceFiles: ["workers/public-api/find-companies-worker.js", "workers/public-api/find-companies-worker.test.mjs"]
+  },
+  "company-lookalikes": {
+    "sourceSha": "53a5f6f23daadbf892a6a0a27881fe7b9e1f6c6a",
+    "endpoints": [
+      {
+        "method": "POST",
+        "path": "/v1/company-lookalikes"
+      }
+    ],
+    "sourceFiles": [
+      "workers/public-api/company-lookalikes-worker.js",
+      "api/src/lib/publicCompanyLookalikes.ts",
+      "api/src/lib/companyLookalikes.ts",
+      "api/src/lib/publicCompanyLookalikesExecution.ts",
+      "workers/public-api/company-lookalikes-worker.test.mjs",
+      "api/src/lib/publicCompanyLookalikes.test.ts"
+    ]
   },
     airsearch: {
       endpoints: [{ method: "POST", path: "/v1/airsearch" }],
@@ -314,14 +333,14 @@ test("operation catalog preserves the approved operation order and routing metad
   const catalog = JSON.parse(readFileSync("contracts/public-api-operations.json", "utf8"));
   assert.equal(catalog.sourceRepository, "ViceScale/airscale-code");
   assert.equal(catalog.sourceSha, EXPECTED_SOURCE_SHA);
-  assert.equal(catalog.operations.length, 29);
+  assert.equal(catalog.operations.length, 30);
   assert.deepEqual(
     catalog.operations.map(({ method, path, operationId, page, tag }) => [method, path, operationId, page, tag]),
     EXPECTED_OPERATIONS
   );
-  assert.equal(new Set(catalog.operations.map(({ method, path }) => `${method} ${path}`)).size, 29);
-  assert.equal(new Set(catalog.operations.map(({ operationId }) => operationId)).size, 29);
-  assert.equal(new Set(catalog.operations.map(({ page }) => page)).size, 29);
+  assert.equal(new Set(catalog.operations.map(({ method, path }) => `${method} ${path}`)).size, 30);
+  assert.equal(new Set(catalog.operations.map(({ operationId }) => operationId)).size, 30);
+  assert.equal(new Set(catalog.operations.map(({ page }) => page)).size, 30);
 });
 
 test("operation catalog links each operation to matching source-page evidence", () => {

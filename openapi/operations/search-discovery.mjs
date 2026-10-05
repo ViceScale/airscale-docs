@@ -1,3 +1,5 @@
+import { companyLookalikesOperation } from "./company-lookalikes.mjs";
+
 const TAG = "Search and discovery";
 const SEARCH_RATE_LIMIT = "6 requests per second per workspace.";
 
@@ -812,6 +814,7 @@ export const searchDiscoveryOperations = [
       }
     }
   },
+  companyLookalikesOperation,
   {
     method: "POST",
     path: "/v1/airsearch",

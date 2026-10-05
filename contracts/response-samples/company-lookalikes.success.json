@@ -1,0 +1,30 @@
+{
+  "operation": "POST /v1/company-lookalikes",
+  "status": 200,
+  "source": "code",
+  "sourceRepository": "ViceScale/airscale-code",
+  "sourceSha": "53a5f6f23daadbf892a6a0a27881fe7b9e1f6c6a",
+  "evidence": "api/src/lib/publicCompanyLookalikes.test.ts:28-37; synthetic company identity substituted.",
+  "body": {
+    "status": "success",
+    "total_results": 1,
+    "credits_used": 0.5,
+    "data": [
+      {
+        "domain": "match.example.com",
+        "name": "Example Company",
+        "description": "Software for sales teams.",
+        "employee_count": "51-200",
+        "country": "France",
+        "city": "Paris",
+        "founded_year": null,
+        "linkedin_url": "",
+        "relevance_score": null,
+        "matched_domains": [
+          "example.com"
+        ]
+      }
+    ],
+    "warnings": []
+  }
+}
