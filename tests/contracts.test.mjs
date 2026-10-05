@@ -154,7 +154,7 @@ const EXPECTED_CONTRACTS = deepFreeze({
     sourceFiles: ["workers/public-api/find-companies-worker.js", "workers/public-api/find-companies-worker.test.mjs"]
   },
   "company-lookalikes": {
-    "sourceSha": "53a5f6f23daadbf892a6a0a27881fe7b9e1f6c6a",
+    "sourceSha": "bcef60c41110e0d71d869956cff79c5813eb2511",
     "endpoints": [
       {
         "method": "POST",
@@ -167,7 +167,11 @@ const EXPECTED_CONTRACTS = deepFreeze({
       "api/src/lib/companyLookalikes.ts",
       "api/src/lib/publicCompanyLookalikesExecution.ts",
       "workers/public-api/company-lookalikes-worker.test.mjs",
-      "api/src/lib/publicCompanyLookalikes.test.ts"
+      "api/src/lib/publicCompanyLookalikes.test.ts",
+      "api/src/lib/publicCompanyLookalikesRepository.ts",
+      "api/src/lib/publicCompanyLookalikesRepository.integration.test.ts",
+      "api/src/db/publicCompanyLookalikesSchema.ts",
+      "api/drizzle/0243_public_company_lookalikes_concurrency.sql"
     ]
   },
     airsearch: {

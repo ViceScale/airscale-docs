@@ -12,7 +12,7 @@ const errors = {
   402: "Not enough available credits to reserve limit × 0.5 credits.",
   404: "None of the reference companies could be found (reference_company_not_found).",
   422: "A location filter could not be resolved.",
-  429: "The workspace has reached five starts per rolling minute, already has an active search, or search capacity is temporarily unavailable. Inspect Retry-After when present.",
+  429: "The workspace has reached 15 starts per rolling minute, already has 5 active searches, or search capacity is temporarily unavailable. Inspect Retry-After when present.",
   502: "The search could not be completed.",
   503: "Company search is temporarily unavailable.",
   504: "The search deadline was exceeded (company_lookalikes_timeout)."
@@ -25,7 +25,7 @@ export const companyLookalikesOperation = {
     tags: ["Search and discovery"],
     summary: "Find company lookalikes",
     description: "Finds companies similar to 1–10 reference domains and returns all results in a single response. Use your workspace API key and allow at least 100 seconds for the client timeout. Do not automatically retry this request. A search may complete even when you receive an error or no response, and repeating it can cause another charge.",
-    "x-airscale-rate-limit": "5 requests per rolling minute per workspace. Maximum 1 active search per workspace.",
+    "x-airscale-rate-limit": "15 requests per rolling minute per workspace. Maximum 5 active searches per workspace.",
     "x-airscale-credit-cost": "0.5 credits per unique returned company. Reserves limit × 0.5 credits before searching and refunds the unused amount. Empty results cost zero credits.",
     "x-codeSamples": [
       {

@@ -195,14 +195,18 @@
       "page": "api-reference/company-lookalikes",
       "tag": "Search and discovery",
       "sourcePage": "company-lookalikes",
-      "sourceSha": "53a5f6f23daadbf892a6a0a27881fe7b9e1f6c6a",
+      "sourceSha": "bcef60c41110e0d71d869956cff79c5813eb2511",
       "sourceFiles": [
         "workers/public-api/company-lookalikes-worker.js",
         "api/src/lib/publicCompanyLookalikes.ts",
         "api/src/lib/companyLookalikes.ts",
         "api/src/lib/publicCompanyLookalikesExecution.ts",
         "workers/public-api/company-lookalikes-worker.test.mjs",
-        "api/src/lib/publicCompanyLookalikes.test.ts"
+        "api/src/lib/publicCompanyLookalikes.test.ts",
+        "api/src/lib/publicCompanyLookalikesRepository.ts",
+        "api/src/lib/publicCompanyLookalikesRepository.integration.test.ts",
+        "api/src/db/publicCompanyLookalikesSchema.ts",
+        "api/drizzle/0243_public_company_lookalikes_concurrency.sql"
       ]
     },
     {
