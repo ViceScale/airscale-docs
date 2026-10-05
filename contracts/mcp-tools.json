@@ -1,6 +1,6 @@
 {
   "sourceRepository": "ViceScale/airscale-code",
-  "sourceSha": "60df930f9da0f8e989b75cc3f90e8590a2b8b39b",
+  "sourceSha": "3a42948758f2c1b68052af8c405e842e487feee3",
   "sourceFiles": [
     "mcp/airscale-public-api/src/endpoints.ts",
     "mcp/airscale-public-api/src/exportJobs.ts",

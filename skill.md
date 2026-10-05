@@ -3,7 +3,7 @@ name: airscale
 description: Search for people and companies, enrich professional contact data, run web research, and create asynchronous exports through the Airschool API or MCP server.
 metadata:
   version: "1.0"
-  source_sha: "60df930f9da0f8e989b75cc3f90e8590a2b8b39b"
+  source_sha: "3a42948758f2c1b68052af8c405e842e487feee3"
 ---
 
 # Airschool
