@@ -38,7 +38,12 @@ test("company lookalikes navigation, rate limits, credits and retry guidance agr
   assert.ok(group.pages.includes("api-reference/company-lookalikes"));
   const page = readFileSync("api-reference/company-lookalikes.mdx", "utf8");
   const limits = readFileSync("api-reference/rate-limits.mdx", "utf8");
+  assert.equal(operation["x-airscale-rate-limit"], "15 requests per rolling minute per workspace. Maximum 5 active searches per workspace.");
   for (const source of [page, limits]) assert.ok(source.includes(operation["x-airscale-rate-limit"]));
+  assert.match(operation.responses["429"].description, /15 starts per rolling minute/);
+  assert.match(operation.responses["429"].description, /5 active searches/);
+  assert.match(page, /15 searches per rolling minute/);
+  assert.match(page, /5 active searches/);
   for (const pattern of [/Do not automatically retry/, /error or no response/, /another charge/, /2,500/, /100 seconds/]) assert.match(page, pattern);
   assert.equal(operation.parameters, undefined);
   assert.equal(operation.responses["202"], undefined);

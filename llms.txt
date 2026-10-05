@@ -86,7 +86,7 @@
 - [Leads Finder](https://airscale.mintlify.app/api-reference/leads-finder.md): Search people with Leads Finder filters and page-based pagination. Rate limit: 5 requests per second per workspace.
 - [Find companies](https://airscale.mintlify.app/api-reference/find-companies.md): Search companies using firmographic, location, event, intent, and technology filters. Rate limit: 6 requests per second per workspace.
 - [Company filter values](https://airscale.mintlify.app/api-reference/find-companies/filter-values.md): Search supported values for Find Companies filters. Rate limit: 6 requests per second per workspace.
-- [Company lookalikes](https://airscale.mintlify.app/api-reference/company-lookalikes.md): Find companies similar to your reference domains. Rate limit: 5 requests per rolling minute per workspace. Maximum 1 active search per workspace.
+- [Company lookalikes](https://airscale.mintlify.app/api-reference/company-lookalikes.md): Find companies similar to your reference domains. Rate limit: 15 requests per rolling minute per workspace. Maximum 5 active searches per workspace.
 - [Airsearch](https://airscale.mintlify.app/api-reference/airsearch.md): Research the web and return structured answers with Airsearch. Rate limit: 300 requests per minute per workspace.
 
 ## API Reference — Contact data

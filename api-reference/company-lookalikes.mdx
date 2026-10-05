@@ -1,6 +1,6 @@
 ---
 title: "Company lookalikes"
-description: "Find companies similar to your reference domains. Rate limit: 5 requests per rolling minute per workspace. Maximum 1 active search per workspace."
+description: "Find companies similar to your reference domains. Rate limit: 15 requests per rolling minute per workspace. Maximum 5 active searches per workspace."
 canonical: "https://airscale.mintlify.app/api-reference/company-lookalikes"
 openapi: "/openapi.json POST /v1/company-lookalikes"
 ---
@@ -8,7 +8,7 @@ openapi: "/openapi.json POST /v1/company-lookalikes"
 Find companies similar to one or more reference companies. The request waits for the search to finish and returns company data directly.
 
 <Note>
-Costs **0.5 credits per unique returned company**. Before searching, the API reserves `limit × 0.5` credits and refunds the unused amount afterward. Zero results cost zero credits. Each workspace can start **5 searches per rolling minute** and have **1 active search** at a time.
+Costs **0.5 credits per unique returned company**. Before searching, the API reserves `limit × 0.5` credits and refunds the unused amount afterward. Zero results cost zero credits. Each workspace can start **15 searches per rolling minute** and have **5 active searches** at a time.
 </Note>
 
 Authenticate with your workspace API key. See [Authentication](/api-reference/authentication).
