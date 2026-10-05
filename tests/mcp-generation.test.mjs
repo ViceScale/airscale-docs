@@ -923,6 +923,21 @@ test("example synthesis rejects deep nesting, local ref chains, and cycles", () 
   }), (error) => error instanceof ExampleSynthesisError && /recursive schema reference/i.test(error.message));
 });
 
+test("example synthesis keeps its 32-reference safety limit independent of tool count", () => {
+  const definitions = {};
+  for (let index = 0; index < 33; index += 1) {
+    definitions[`node${index}`] = index === 32
+      ? { type: "string" }
+      : { $ref: `#/$defs/node${index + 1}` };
+  }
+  assert.throws(() => synthesizeFixtureArguments({
+    type: "object",
+    required: ["value"],
+    properties: { value: { $ref: "#/$defs/node0" } },
+    $defs: definitions
+  }), (error) => error instanceof ExampleSynthesisError && /reference depth budget of 32/i.test(error.message));
+});
+
 test("example synthesis fails closed on a depth-18 binary local-ref DAG", () => {
   const definitions = {
     node0: {
@@ -3029,7 +3044,7 @@ test("agent renderers publish only the platform-supported custom agent files", (
 
   assert.match(outputs["skill.md"], /^---\nname: airscale\ndescription: Search for people and companies, enrich professional contact data, run web research, and create asynchronous exports through the Airschool API or MCP server\./);
   assert.match(outputs["skill.md"], /version: "1\.0"/);
-  assert.match(outputs["skill.md"], /source_sha: "c55176dba55f958f89048a51408f2170caef41de"/);
+  assert.match(outputs["skill.md"], /source_sha: "60df930f9da0f8e989b75cc3f90e8590a2b8b39b"/);
   assert.match(outputs["skill.md"], /API authentication[\s\S]*MCP authentication/i);
   assert.match(outputs["skill.md"], /Airsearch costs 1 credit per successful call/);
   assert.match(outputs["skill.md"], /confirm_credit_spend[\s\S]*explicit/i);
