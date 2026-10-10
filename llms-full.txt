@@ -2908,7 +2908,7 @@ At least one non-empty filter other than `searchMode` is required. Include only 
 | Tenure and experience | `yearsCurrentRole`, `yearsCurrentCompany`, `yearsWorkExperience`, `duration` |
 | Skills, languages, certifications | `skills`, `language`, `certification`, and their `Exclude` fields |
 | Profile text and badges | `profileKeywords`, `profileKeywordsExclude`, `profileBadge` |
-| Company industry, headquarters, type | `industry`, `hq`, `type`, and their `Exclude` fields |
+| Company industry, locations, type | `industry`, `hq`, `type`, and their `Exclude` fields |
 | Company size, revenue, founding year | `size`, `revenue`, `founded` |
 | Company text | `companyKeywords`, `companyKeywordsExclude` |
 | Funding | `funding`, `fundingAmount`, `fundingDateMonths` |
@@ -2928,6 +2928,844 @@ Textual tenure examples include `1 to 2 years`, `Less than 1 year`, and `More th
   },
   "page": 0,
   "size": 25
+}
+```
+
+## Expected filter values
+
+These values apply to `POST /v1/leads-finder` and the `airscale_leads_finder` MCP tool. [Find Companies filter values](/api-reference/find-companies/filter-values) belongs to a different search and does not list Leads Finder values.
+
+Use the identifiers below for preset filters. Include and exclude fields use the same vocabulary. For string fields, separate multiple values with a newline (`\n` in JSON). `jobFunction` and `jobFunctionExclude` also accept arrays, with at most 300 values in each field. Use exact job-function identifiers, such as `business_development`, rather than display labels such as `Business Development`.
+
+<Note>
+Some unsupported legacy values can be ignored instead of rejected. A successful response does not confirm that every supplied filter value was applied. Use the values and formats documented here.
+</Note>
+
+### Seniority
+
+For `seniority` and `seniorityExclude`, use these 12 values:
+
+```text
+founder
+owner
+partner
+c_suite
+vp
+director
+head
+manager
+senior
+mid-level
+entry
+intern
+```
+
+Example: `"seniority": "c_suite\nvp\ndirector"`.
+
+### Job function
+
+For `jobFunction` and `jobFunctionExclude`, use an identifier from the full list below. Common examples are `sales`, `business_development`, `software_development`, `demand_generation`, `human_resources`, and `accounting`.
+
+```json Job-function example
+{
+  "filters": {
+    "jobFunction": ["sales", "business_development"],
+    "jobFunctionExclude": ["sales_operations"],
+    "seniority": "c_suite\nvp"
+  },
+  "page": 0,
+  "size": 10
+}
+```
+
+<Accordion title="All 617 job-function values">
+
+```text
+accounting
+accounting_management
+accounts_payable
+accounts_receivable
+bookkeeping
+consolidation_accounting
+cost_accounting
+external_audit_and_assurance
+financial_reporting
+fixed_asset_accounting
+general_ledger_and_close
+other_accounting
+payroll_accounting
+revenue_accounting
+tax_accounting
+administrative
+administrative_assistant
+calendar_travel_coordination
+data_entry_and_clerical
+document_and_mail_services
+executive_assistant
+facility_administration
+front_desk_reception
+meeting_and_event_coordination
+office_management
+other_administrative
+personal_assistance
+records_management
+virtual_assistant_remote_admin
+agriculture_forestry_and_animal_care
+agricultural_operations
+crop_production
+environmental_and_natural_resource_management
+farming_and_ranching
+fisheries_and_aquaculture
+forestry_and_conservation
+livestock_and_animal_care
+other_agriculture_forestry_and_animal_care
+arts_entertainment_and_performance
+acting_and_performance
+cultural_and_museum_programming
+dance_and_choreography
+directing_and_producing
+film_and_screen_production
+live_entertainment_production
+music_and_singing
+other_arts_entertainment_and_performance
+talent_and_casting
+theatre_and_stage_production
+beauty_and_personal_care
+barbering
+cosmetology_general
+esthetics_and_skin_care
+hair_styling
+makeup_artistry
+massage_and_bodywork
+nail_care
+other_beauty_and_personal_care
+salon_and_spa_management
+business_development
+bids_proposals_and_capture_management
+channel_development
+corporate_development
+corporate_strategy
+country_management
+franchise_development
+international_expansion
+market_development
+new_ventures_and_corporate_innovation
+other_business_development
+partnerships_and_alliances
+strategic_business_development
+community_and_social_services
+advocacy_public_policy
+case_management
+child_family_services
+community_health_services
+community_outreach
+counseling
+crisis_intervention
+family_caregiving
+fundraising_development
+grants_management
+nonprofit_program_management
+other_community_and_social_services
+philanthropy_and_foundation_relations
+rehabilitation_services
+religious_spiritual_services
+social_work
+volunteer_coordination
+consulting
+financial_consulting
+human_capital_consulting
+implementation_consulting
+it_consulting
+management_consulting
+marketing_and_sales_consulting
+operations_consulting
+other_consulting
+risk_consulting
+solutions_consulting
+strategy_consulting
+supply_chain_consulting
+sustainability_esg_consulting
+transformation_consulting
+customer_success_and_support
+call_center
+customer_community_management
+customer_education
+customer_experience
+customer_onboarding
+customer_retention
+customer_success
+customer_success_operations
+customer_support
+customer_support_operations
+implementation_services
+other_customer_success_and_support
+professional_services_and_customer_delivery
+renewals_management
+technical_support
+design
+brand_design
+design_management
+design_operations
+fashion_and_apparel_design
+fine_arts_illustration
+floristry
+graphic_design
+industrial_design
+interaction_design
+interior_and_environmental_design
+lighting_design
+motion_design
+other_design
+photography_visual_storytelling
+product_design
+service_design
+ui_ux
+web_design
+education
+academic_affairs
+admissions_enrollment
+adult_and_continuing_education
+alumni_development
+assessment_and_accreditation
+career_services
+corporate_training_enablement
+curriculum_development
+early_childhood_education
+education_policy
+education_technology
+higher_education_faculty
+instructional_design
+k12_instruction
+library_services
+online_learning_and_elearning
+other_education
+school_leadership_and_administration
+special_education
+student_affairs
+tutoring_and_test_preparation
+vocational_and_technical_education
+energy_mining_and_utilities
+energy_and_utilities_operations
+grid_transmission_and_distribution_operations
+mining_and_extractive_operations
+oil_and_gas_operations
+other_energy_mining_and_utilities
+power_generation_operations
+water_and_waste_operations
+engineering_technical
+aerospace_engineering
+artificial_intelligence_machine_learning
+bioengineering
+business_intelligence
+cad_and_drafting
+chemical_engineering
+civil_and_structural_engineering
+data_engineering
+data_science
+devops
+electrical_engineering
+embedded_and_firmware_engineering
+engineering_management
+engineering_ops_sre
+engineering_technician
+environmental_engineering
+geospatial_and_gis
+hardware_engineering_electronics
+industrial_engineering
+manufacturing_and_process_engineering
+marine_and_naval_engineering
+materials_engineering
+mechanical_engineering
+mobile_development
+other_engineering_technical
+platform_engineering
+robotics_and_automation
+software_development
+surveying_and_geomatics
+systems_engineering
+finance
+asset_and_wealth_management
+commercial_banking
+corporate_finance
+credit_and_lending
+financial_planning_analysis
+financial_risk_management
+financial_strategy
+financial_systems
+fraud_and_financial_crime
+insurance_actuarial_and_underwriting
+internal_audit_control
+investment_banking_and_capital_markets
+investor_relations
+mergers_acquisitions
+other_finance
+pricing_and_revenue_management
+project_finance
+real_estate_finance
+securities_and_commodities_trading
+tax_strategy_and_planning
+treasury
+general_management
+executive_leadership_and_general_management
+hospitality_food_and_guest_services
+casino_and_gaming_operations
+culinary_and_kitchen_operations
+event_hospitality_and_catering
+food_and_beverage_service
+guest_services_and_concierge
+hospitality_management
+hospitality_revenue_management
+hotel_and_lodging_operations
+housekeeping_and_accommodation_services
+other_hospitality_food_and_guest_services
+restaurant_operations
+travel_and_tourism_services
+human_resources
+compensation_benefits
+diversity_equity_inclusion
+employee_experience
+employee_labor_relations
+employee_wellbeing
+employer_branding
+global_mobility
+hr_business_partner
+hr_compliance
+hr_generalist_and_administration
+human_resource_information_system
+leadership_development
+learning_development
+organizational_development
+other_human_resources
+people_analytics
+people_operations
+recruiting_talent_acquisition
+succession_planning
+talent_management
+workforce_management
+workforce_planning
+information_technology
+business_continuity_disaster_recovery
+business_service_management_itsm
+cloud_engineering
+cybersecurity
+cybersecurity_operations
+data_center
+data_governance
+data_warehouse
+database_administration
+digital_transformation
+emerging_technology_innovation
+end_user_support
+enterprise_applications_erp_crm
+enterprise_architecture
+identity_and_access_management
+infrastructure
+integration_and_middleware
+it_asset_management
+it_governance_risk_and_compliance
+it_strategy
+it_training
+it_vendor_management
+network_operations_center
+networking
+observability_and_monitoring
+other_information_technology
+retail_store_systems
+solution_architecture
+technology_operations
+telecommunications
+virtualization
+legal
+antitrust_and_competition
+claims_and_disputes
+commercial_transactions
+compliance
+contracts
+corporate_and_securities_law
+corporate_secretary
+ediscovery
+ethics_and_investigations
+governance
+immigration_law
+intellectual_property_patent
+judiciary_and_courts
+labor_and_employment_law
+legal_counsel
+legal_operations
+legal_support_and_paralegal
+litigation
+other_legal
+privacy
+regulatory_affairs
+regulatory_law
+manufacturing_and_production
+food_and_beverage_production
+industrial_production_management
+manufacturing_and_plant_operations
+materials_and_fabrication
+other_manufacturing_and_production
+process_and_machine_operations
+production_and_assembly
+marketing
+account_based_marketing
+advertising
+affiliate_marketing
+brand_management
+community_marketing
+content_marketing
+conversion_rate_optimization
+customer_marketing
+demand_generation
+digital_marketing
+ecommerce_marketing
+event_marketing
+field_marketing
+growth_marketing
+influencer_creator_marketing
+lead_generation
+lifecycle_and_crm_marketing
+marketing_analytics_insights
+marketing_automation
+marketing_communications
+marketing_management
+marketing_operations
+other_marketing
+paid_search_and_performance_marketing
+partner_and_channel_marketing
+product_marketing
+search_engine_optimization
+social_media_marketing
+technical_marketing
+media_and_communication
+broadcast_production
+content_strategy
+copywriting
+corporate_communications
+creative_writing_authoring
+crisis_communications
+digital_content_production
+editorial
+foreign_affairs
+government_affairs
+internal_communications
+journalism_reporting
+media_relations
+multimedia_audiovisual
+other_media_and_communication
+podcast_and_audio_production
+public_affairs
+public_relations
+publishing
+speechwriting
+technical_writing
+translation_localization
+medical_health
+anesthesiology
+athletic_training
+audiology
+behavioral_and_mental_health
+cardiology
+chiropractics
+clinical_systems
+complementary_and_alternative_medicine
+dentistry
+dermatology
+emergency_medicine
+epidemiology
+exercise_physiology
+gastroenterology
+health_information_management_and_medical_coding
+health_promotion_and_clinical_wellness
+healthcare_operations
+home_health_and_long_term_care
+infectious_disease
+laboratory_and_diagnostics
+medical_administration
+medical_education_training
+neurology
+nursing
+nutrition_dietetics
+obstetrics_gynecology
+occupational_health
+occupational_therapy
+oncology
+ophthalmology
+optometry
+orthopedics
+other_medical_health
+pathology
+patient_care_support
+pediatrics
+pharmacy
+physical_therapy
+physicians_and_general_medicine
+primary_care_family_and_internal_medicine
+psychiatry
+psychology
+public_health
+radiology
+respiratory_therapy
+speech_language_pathology
+sports_medicine
+surgery
+urology
+veterinary_medicine
+military_and_protective_services
+corrections
+customs_and_border_security
+emergency_management
+emergency_response
+enlisted_operations
+fire_and_rescue
+intelligence_security
+investigations
+law_enforcement
+loss_prevention
+officer_command
+other_military_and_protective_services
+private_security
+protective_intelligence
+security_operations
+operations
+business_operations
+event_management_production
+field_operations
+health_safety_and_environment
+inventory_and_materials_management
+operational_excellence_and_process_improvement
+other_operations
+service_delivery
+shared_services
+store_operations
+supply_chain
+product_management
+general_product_management
+growth_product_management
+other_product_management
+platform_product_management
+product_analytics
+product_development
+product_discovery
+product_operations
+product_owner
+product_portfolio_management
+product_strategy
+technical_product_management
+program_and_project_management
+change_management
+construction_project_management
+delivery_management
+implementation_project_management
+monitoring_evaluation_and_learning
+other_program_and_project_management
+pmo
+portfolio_management
+program_management
+project_controls_and_planning
+project_management
+scrum_master_agile_coach
+technical_program_management
+transformation_program_management
+public_administration_and_government
+defense_policy
+diplomacy_and_foreign_service
+elected_office_and_legislative_affairs
+government_program_administration
+other_public_administration_and_government
+public_administration_and_civil_service
+public_finance_and_tax_administration
+public_policy_and_policy_analysis
+regulatory_and_inspection_services
+urban_and_regional_planning
+purchasing
+category_management
+contract_management
+direct_materials_procurement
+indirect_procurement
+other_purchasing
+procurement
+procurement_analytics
+purchasing_operations
+spend_analysis
+strategic_sourcing
+supplier_relationship_management
+vendor_management
+quality_assurance
+manufacturing_quality
+other_quality_assurance
+quality_audit
+quality_control
+quality_management
+regulatory_quality
+software_testing
+supplier_quality
+test_automation
+test_engineering
+validation
+real_estate
+acquisitions_and_dispositions
+brokerage_and_real_estate_sales
+commercial_real_estate
+leasing
+other_real_estate
+property_management
+real_estate_asset_management
+real_estate_development
+real_estate_investment
+real_estate_operations
+residential_real_estate
+tenant_relations
+valuation_and_appraisal
+workplace_real_estate
+research
+academic_research
+clinical_research
+clinical_trials
+competitive_intelligence
+consumer_insights
+economic_affairs
+laboratory_research
+market_research
+medical_research
+operations_research
+other_research
+policy_research
+qualitative_research
+quantitative_research
+research_development
+research_operations
+scientific_research
+social_and_behavioral_research
+user_research
+sales
+account_executive_and_new_business_sales
+account_management
+channel_sales
+commercial_operations
+enterprise_sales
+field_outside_sales
+inside_sales
+insurance_sales_and_brokerage
+other_sales
+partner_sales
+retail_merchandising
+retail_sales
+revenue_operations
+sales_compensation_and_planning
+sales_development
+sales_enablement
+sales_engineering
+sales_management
+sales_operations
+sales_training
+strategic_and_key_accounts
+territory_sales
+skilled_trades_construction_and_maintenance
+automotive_service_and_repair
+building_and_grounds_services
+construction_estimating
+construction_operations
+construction_trades
+electrical_trades
+facilities_management
+field_service_technical
+heavy_equipment_operation
+installation_and_repair
+maintenance_reliability_and_mro
+mechanical_and_hvac_trades
+other_skilled_trades_construction_and_maintenance
+plumbing_and_pipefitting
+sports_and_recreation
+fitness_and_personal_training
+other_sports_and_recreation
+professional_athletes
+recreation_and_leisure_services
+sports_coaching
+sports_management_and_operations
+sports_officiating
+sports_science_and_performance_coaching
+transportation_and_logistics
+cabin_crew_and_inflight_services
+dispatch_and_transport_coordination
+fleet_management
+flight_operations_and_pilots
+import_export_and_customs
+logistics
+maritime_and_deck_operations
+order_management_and_fulfillment
+other_transportation_and_logistics
+road_and_rail_transport
+transportation_operations
+warehouse_operations
+unknown
+```
+
+</Accordion>
+
+### Funding round
+
+For `funding`, use these 30 values:
+
+```text
+PRE_SEED
+SEED
+SERIES_A
+SERIES_B
+SERIES_C
+SERIES_D
+SERIES_E
+SERIES_F
+SERIES_G
+SERIES_H
+SERIES_I
+SERIES_J
+VENTURE_ROUND
+ANGEL
+PRIVATE_EQUITY
+DEBT_FINANCING
+CONVERTIBLE_NOTE
+GRANT
+CORPORATE_ROUND
+EQUITY_CROWDFUNDING
+PRODUCT_CROWDFUNDING
+SECONDARY_MARKET
+POST_IPO_EQUITY
+POST_IPO_DEBT
+POST_IPO_SECONDARY
+NON_EQUITY_ASSISTANCE
+INITIAL_COIN_OFFERING
+UNDISCLOSED
+SERIES_UNKNOWN
+FUNDING_ROUND
+```
+
+Example: `"funding": "SEED\nSERIES_A"`. Use `fundingAmount` for a last-funding amount range and `fundingDateMonths` for the lookback period; these are separate fields described below.
+
+### Company type
+
+For `type` and `typeExclude`, use:
+
+```text
+PRIVATELY_HELD
+SELF_OWNED
+SELF_EMPLOYED
+PARTNERSHIP
+PUBLIC_COMPANY
+NON_PROFIT
+EDUCATIONAL
+GOVERNMENT_AGENCY
+```
+
+### Profile badge
+
+For `profileBadge`, use:
+
+```text
+VERIFIED
+PREMIUM
+OPEN_TO_WORK
+INFLUENCER
+CREATOR
+HIRING
+```
+
+### Search mode
+
+For `searchMode`, use `SMART`, `WORD`, or `STRICT`. The default is `SMART`. This controls text matching; it does not turn arbitrary text into a supported preset identifier.
+
+### Department headcount and growth
+
+`department` combines a department identifier and a headcount range on separate lines. `growth` combines a department identifier, a percentage range, and a lookback period on separate lines.
+
+| Field | Example JSON value | Meaning |
+| --- | --- | --- |
+| `department` | `"sales\n10-100"` | Between 10 and 100 employees in sales |
+| `growth` | `"sales\n20-80\n3 months"` | Sales headcount growth between 20% and 80% over three months |
+
+Use `1 month`, `3 months`, `6 months`, or `12 months` for the growth period. The default is three months; other periods currently fall back to three months.
+
+These metrics use the following 27 department identifiers, a smaller list than the person job-function catalogue:
+
+```text
+sales
+marketing
+engineering
+finance
+human_resources
+information_technology
+operations
+business_development
+customer_success_and_support
+product_management
+accounting
+legal
+consulting
+education
+research
+purchasing
+real_estate
+media_and_communication
+quality_assurance
+arts_and_design
+healthcare_services
+entrepreneurship
+community_and_social_services
+administrative
+military_and_protective_services
+program_and_project_management
+support
+```
+
+### Ranges and dates
+
+These fields take strings rather than preset identifiers. Use plain numbers without currency symbols or thousands separators.
+
+| Field | Expected value | Examples |
+| --- | --- | --- |
+| `size` | Company headcount range; newline-separated ranges are supported | `"11-50"`, `"10000+"` |
+| `revenue` | Annual revenue range in USD; newline-separated ranges are supported | `"1000000-10000000"` |
+| `founded` | One founding-year range | `"2015-2022"` |
+| `fundingAmount` | One last-funding amount range in USD | `"1000000-5000000"` |
+| `fundingDateMonths` | Positive integer number of months as a string | `"3"`, `"6"`, `"12"`, `"24"` |
+| `yearsCurrentRole` | Current-role tenure in years | `"1 to 2 years"` |
+| `yearsCurrentCompany` | Current-company tenure in years | `"3 to 5 years"` |
+| `yearsWorkExperience` | Total work experience in years | `"More than 10 years"` |
+
+The tenure presets are `Less than 1 year`, `1 to 2 years`, `3 to 5 years`, `6 to 10 years`, and `More than 10 years`. Custom continuous ranges such as `"2 to 4 years"` are also supported. If you combine tenure ranges, use adjacent ranges without gaps. For month-level bounds, use the structured `duration` fields described above.
+
+The company-size presets are `1-10`, `11-20`, `21-50`, `51-100`, `101-200`, `201-500`, `501-1000`, `1001-2000`, `2001-5000`, `5001-10000`, and `10000+`. Custom numeric ranges are also supported.
+
+### Text and location filters
+
+These fields accept search text rather than a closed preset list. The examples are starting points, not the only accepted values.
+
+| Fields | Expected input | Example |
+| --- | --- | --- |
+| `job`, `jobExclude` | Job titles; use arrays | `["VP Sales", "Head of Sales"]` |
+| `company` | Company names, domains, or LinkedIn company URLs | `["Example Company", "example.com"]` |
+| `companyUrl` | Company domains or LinkedIn company URLs | `["example.com", "https://www.linkedin.com/company/example-company"]` |
+| `peopleLocation`, `peopleLocationExclude` | Country, state, or city names | `["United States", "California"]` |
+| `hq`, `hqExclude` | Company locations; matches any office, not only headquarters | `"United States\nCanada"` |
+| `industry`, `industryExclude` | Industry names, as a string | `"software development\nfinancial services"` |
+| `skills`, `skillsExclude` | Skill names, as a string | `"negotiation\naccount management"` |
+| `language`, `languageExclude` | Language names, as a string | `"English\nFrench"` |
+| `certification`, `certificationExclude` | Certification names, as a string | `"PMP"` |
+| `profileKeywords`, `profileKeywordsExclude` | Person-profile search terms, as a string | `"revenue operations"` |
+| `companyKeywords`, `companyKeywordsExclude` | Company-profile search terms, as a string | `"cybersecurity"` |
+
+```json Preset-filter example
+{
+  "filters": {
+    "seniority": "c_suite\nvp",
+    "jobFunction": ["sales", "business_development"],
+    "funding": "SEED\nSERIES_A",
+    "type": "PRIVATELY_HELD",
+    "size": "11-50",
+    "fundingDateMonths": "12",
+    "searchMode": "SMART"
+  },
+  "page": 0,
+  "size": 10
 }
 ```
 
