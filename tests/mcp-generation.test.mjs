@@ -559,6 +559,7 @@ test("every generated tools/call example parses, stays synthetic, and validates 
   }
 
   const examplesByTool = new Map(examples.map((example) => [example.params.name, example.params.arguments]));
+  assert.deepEqual(examplesByTool.get("airscale_find_companies_filter_values"), { filter: "city", q: "Paris" }, "filter discovery examples must satisfy the runtime q-or-query rule");
   assert.deepEqual(examplesByTool.get("airscale_find_people"), {
     query: { companyDomain: { include: ["example.com"] } },
     size: 1

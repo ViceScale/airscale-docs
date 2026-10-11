@@ -86,6 +86,7 @@ const RESULT_BEHAVIOR = {
 // JSON Schema cannot express every runtime cross-field rule or a safe paid
 // request size. Keep those examples intentionally narrow and synthetic.
 const SAFE_EXAMPLE_ARGUMENTS = Object.freeze({
+  airscale_find_companies_filter_values: { filter: "city", q: "Paris" },
   airscale_post_search: {"keywords": "Example Company"},
   airscale_profile_posts: {"profile_url": "https://www.linkedin.com/in/example-person"},
   airscale_company_posts: {"company_url": "https://www.linkedin.com/company/example-company"},
