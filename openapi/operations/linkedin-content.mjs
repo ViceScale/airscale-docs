@@ -1,7 +1,7 @@
 const TAG = "LinkedIn content";
-const SOURCE_SHA = "6ec34a03d63308d639833e388d41488fb40c8df6";
+const SOURCE_SHA = "1dc01c0dcf5f10f0d24626fd2e669e3fc1138d98";
 const RATE_LIMIT = "180 requests per fixed minute per workspace, counted separately for each LinkedIn content endpoint; pagination requests and retries count.";
-const CREDIT_COST = "1 credit per successful request, including empty pages; invalid input and failed requests are not charged.";
+const CREDIT_COST = "1 credit per successful non-empty request; empty pages, invalid input and failed requests are not charged.";
 const CURSOR = "eyJ2IjoxLCJyIjoiZXhhbXBsZSJ9";
 const PROFILE_URL = "https://www.linkedin.com/in/example-person";
 const COMPANY_URL = "https://www.linkedin.com/company/example-company";
@@ -166,7 +166,7 @@ function pageSchema(itemSchema, itemDescription, totalDescription) {
         required: ["credits_consumed"],
         additionalProperties: false,
         properties: {
-          credits_consumed: { type: "integer", const: 1 }
+          credits_consumed: { type: "integer", enum: [0, 1] }
         }
       }
     }
@@ -225,7 +225,7 @@ const operations = [
     path: "/v1/post-search",
     operationId: "searchLinkedinPosts",
     summary: "Search LinkedIn posts",
-    description: "Returns one page of up to 50 LinkedIn posts matching keywords, author, mention, group, content-type, and date filters. Costs 1 credit per successful request.",
+    description: "Returns one page of up to 50 LinkedIn posts matching keywords, author, mention, group, content-type, and date filters. Costs 1 credit per successful non-empty request; empty pages are free.",
     requestSchema: postSearchRequestSchema,
     requestDescription: "Search filters and an optional cursor. The JSON body must not exceed 16 KiB.",
     requestExamples: {
@@ -255,7 +255,7 @@ const operations = [
     path: "/v1/profile-comments",
     operationId: "listLinkedinProfileComments",
     summary: "List a LinkedIn profile's comments",
-    description: "Returns one page of comments written by a LinkedIn profile, each with the post it was left on. Costs 1 credit per successful request.",
+    description: "Returns one page of comments written by a LinkedIn profile, each with the post it was left on. Costs 1 credit per successful non-empty request; empty pages are free.",
     requestSchema: {
       type: "object",
       required: ["profile_url"],
@@ -297,7 +297,7 @@ const operations = [
     path: "/v1/comment-likers",
     operationId: "listLinkedinCommentLikers",
     summary: "List LinkedIn comment likers",
-    description: "Returns one page of up to 100 people who reacted to one LinkedIn comment. Costs 1 credit per successful request.",
+    description: "Returns one page of up to 100 people who reacted to one LinkedIn comment. Costs 1 credit per successful non-empty request; empty pages are free.",
     requestSchema: {
       type: "object",
       required: ["comment_url"],
@@ -330,7 +330,7 @@ const operations = [
     path: "/v1/profile-posts",
     operationId: "listLinkedinProfilePosts",
     summary: "List a LinkedIn profile's posts",
-    description: "Returns one page of up to 50 posts from a LinkedIn profile's feed, newest first, including the person's posts and reposts. Costs 1 credit per successful request.",
+    description: "Returns one page of up to 50 posts from a LinkedIn profile's feed, newest first, including the person's posts and reposts. Costs 1 credit per successful non-empty request; empty pages are free.",
     requestSchema: {
       type: "object",
       required: ["profile_url"],
@@ -383,7 +383,7 @@ const operations = [
     path: "/v1/company-posts",
     operationId: "listLinkedinCompanyPosts",
     summary: "List a LinkedIn company's posts",
-    description: "Returns one page of up to 50 posts from a LinkedIn company page's feed, newest first. Costs 1 credit per successful request.",
+    description: "Returns one page of up to 50 posts from a LinkedIn company page's feed, newest first. Costs 1 credit per successful non-empty request; empty pages are free.",
     requestSchema: {
       type: "object",
       required: ["company_url"],

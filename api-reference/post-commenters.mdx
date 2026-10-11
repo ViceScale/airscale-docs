@@ -8,8 +8,16 @@ openapi: "/openapi.json POST /v1/post-commenters"
 Retrieve one synchronous page of people who commented on a LinkedIn post, with public profile fields enriched for each returned engagement.
 
 <Note>
-The API reserves one credit for each requested slot (`limit`) before retrieving the page. Unused slots are refunded. Each successfully enriched profile consumes one credit. Definitive `not_found` and failed `error` outcomes remain in the page and are refunded, so they have zero net credit cost. An uncertain response can retain its reservation until the same page finishes; it does not prove a refund.
+With `enrich_profiles` omitted or `true`, reserve `limit × 0.2` credits and charge **0.2 credits per successfully enriched profile**. Unused slots and definitive `not_found` or `error` outcomes are refunded. Uncertain work keeps its reservation until the identical request is reconciled.
 </Note>
+
+## Extraction-only mode
+
+Set `enrich_profiles: false` to return available engagement fields without profile lookups. Rows use `profile_status: "not_enriched"`. This works with V1 and V2 workspace keys.
+
+Extraction-only costs **1 credit per fresh native provider page**, including valid empty terminal pages. `limit` controls returned people; one response can consume several native pages. Cached remainder slices and identical same-key retries are free. Read `billing.credits_consumed` for the actual charge. V1 balances update asynchronously through its billing queue.
+
+Keep `enrich_profiles: false` and the returned cursor for continuation; use a new key for the next page. A response can preserve paid rows with `retrieval.status: "partial"` and `stop_reason: "insufficient_credits"` or `"provider_failure"`. Keep those rows, billing and cursor. An uncertain `page_attempt_pending` outcome must retain the original body and key for reconciliation; starting fresh can repeat work and charges.
 
 ## Rate limit
 
@@ -19,19 +27,19 @@ The counter uses a fixed minute window and resets at the next minute boundary. R
 
 ## Pagination
 
-Omit `cursor` on the first request. When `pagination.next_cursor` is not `null`, send it unchanged with the same post URL and `limit` to fetch the next page. The page size is 1–25 (default 25). New cursors expire after 10 minutes and are bound to the workspace, post, engagement type, and page size.
+Omit `cursor` on the first request. When `pagination.next_cursor` is not `null`, send it unchanged with the same post URL, `limit`, and `enrich_profiles` mode to fetch the next page. The page size is 1–25 (default 25). New cursors expire after 10 minutes and are bound to the workspace, post, engagement type, page size, and enrichment mode.
 
 Optional `retrieval` metadata contains `reported_total`, `returned_count`, `status`, and `stop_reason`, and can include `retrieved_total`. A `partial` status with `stop_reason: "provider_total_mismatch"` means fewer engagements could be retrieved than the post reports. A `provider_exhausted` status means there are no more pages available for this request; it does not guarantee that every LinkedIn engagement was accessible. Reported totals can change, and comment events are not the same count as unique authors. Public pagination does not promise every reply returned by the dashboard's background extraction.
 
 ## Safe retries
 
-Supply an optional UUID in the `Idempotency-Key` header. Save that key together with the endpoint and exact request body before sending the request. Reuse the same key with the identical `post_url`, `limit`, and `cursor` if the response is lost or processing is uncertain. Use a new key for the next page.
+Supply an optional UUID in the `Idempotency-Key` header. Save that key together with the endpoint and exact request body before sending the request. Reuse the same key with the identical `post_url`, `limit`, `cursor`, and `enrich_profiles` mode if the response is lost or processing is uncertain. Use a new key for the next page.
 
 The code examples read `AIRSCALE_PAGE_KEY` from your environment. Set it to a UUID once for each new page, and keep that value for every retry of that page. Replace the synthetic post URL and cursor with your own values.
 
 Omitting the header remains supported. However, an independent retry without the original key can reserve credits again. When a pending or uncertain response includes `idempotency_key`, retain and send that returned key even if your first request omitted the header.
 
-Completed results remain replayable for 24 hours after completion, including after the input cursor expires. A page whose results have already been saved can resume after cursor expiry. An expired cursor cannot fetch a new page. A reservation for unresolved work does not automatically become a refund after 24 hours.
+Completed enriched results remain replayable for 24 hours after completion, including after the input cursor expires. An expired cursor cannot fetch a new extraction-only page; an exact saved retry can finish an outstanding refund before returning `invalid_cursor`. A reservation for unresolved work does not automatically become a refund after 24 hours.
 
 ## Pending and error responses
 

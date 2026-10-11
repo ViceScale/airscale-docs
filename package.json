@@ -18,7 +18,8 @@
     "check:live-ai-discovery": "node scripts/check-live-ai-discovery.mjs",
     "publication:check": "node scripts/prepare-publication.mjs --check",
     "publication:prepare": "node scripts/prepare-publication.mjs",
-    "seo:check": "node scripts/check-seo.mjs"
+    "seo:check": "node scripts/check-seo.mjs",
+    "mcp:check-live": "node scripts/check-mcp-parity.mjs --live"
   },
   "dependencies": {
     "@xmldom/xmldom": "0.9.12"

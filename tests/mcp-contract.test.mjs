@@ -4,7 +4,7 @@ import { readFileSync } from "node:fs";
 import test from "node:test";
 import Ajv2020 from "ajv/dist/2020.js";
 
-const SOURCE_SHA = "3a42948758f2c1b68052af8c405e842e487feee3";
+const SOURCE_SHA = "ecfcce702922de61cb2f42bebbe0425fbf578159";
 const GROUPS = {
   workspace: [
     "airscale_check_credits"
@@ -74,17 +74,17 @@ const EXPECTED_TOOL_KEYS = [
 const EXPECTED_SCHEMA_HASHES = {
   airscale_comment_likers: "c256827eaf3579a499e868bbdb831e63954be7d1e2a7a9c92f3cae0dcaa58dd7",
   airscale_profile_comments: "1121c1d5d0a485a7b7d580299e56b9849db23ac80f5df5ff52c8d09b02478db9",
-  airscale_company_posts: "a12c105c1ee407451cc98120f6f9c5d81171924bddb33b9eb46a5f78851cc27f",
+  airscale_company_posts: "f6e6ebd490a8499cb7d9142f51677a68fa92fe52fa10cb4a250a69ac62a41926",
   airscale_profile_posts: "242ddf0ed6be968351dbf2e6795c90abb60c493a7ab92c7990ae0bb40e94a42d",
   airscale_post_search: "1ed7c583789c4f46fe7b2f5886b1209a14bf8e9d793c0f0ad3e4bdbb163c2c93",
   airscale_company_lookalikes: "c64d361e0e6bda0be559fe8e3337351cfce2aa3ba8f37acc56363d6b899ca728",
   airscale_check_credits: "99334726611ccf58a148b0814696bfa6fe08c1b2d027e946beccf5a74331c9aa",
   airscale_find_people: "d6136bb30d27571f9454f31df26a347c77e730cc01a369f3d5b9c52c289ad3ea",
   airscale_count_find_people: "6f3574e0cb0bb88f34e0f5e2c7bffed5dee71fd08c6e11bc9849536e346432f0",
-  airscale_find_companies: "1a5818d7d98bbcc6153baf28c6f8f17f704f8a6f2d51921780a929d630867dba",
-  airscale_find_companies_filter_values: "bc868bbb5c9ee36188a6a05c716d18711e2072ad712f62d3ab0ece8849d6fdc7",
+  airscale_find_companies: "50e836cd3b0d2b2e73dd24166e96f668a38e1845e84c9d1743bcf87c3350f3a4",
+  airscale_find_companies_filter_values: "fed97ae64a8c1d6116fa22e76bf8bcc644ded3fe9b5444bce330649e7f560959",
   airscale_airsearch: "03d1d9e646f17c1679efb8d051e055536dc26d355742693b02e85df56c8a9bd9",
-  airscale_leads_finder: "8f87c9e74709c5aec2a29c27f06a23272549479e7b5663b4d72a2e3fea39a2dc",
+  airscale_leads_finder: "647beac975f39fd5a14af19f86ae39b129edb9922441c9fc1da47cb10a6c576e",
   airscale_find_email: "d585708df6024251db2bba2f87c355219725c2393b91f0e4b559f3c7579de0de",
   airscale_find_email_bulk: "3e0b3f975f4bcb181c9a04fca2edba5375ffa8bf1d2aa02e6edce327267ee946",
   airscale_find_mobile_phone: "fa383c5f1537d9487c87885da08613bafe384bd948cd91350c03dc72be07d85b",
@@ -95,14 +95,14 @@ const EXPECTED_SCHEMA_HASHES = {
   airscale_reverse_email: "7c0ea69aa350c308dabbba3750fed1e6c07aea598cf1adbb9ea66ac2fbb81518",
   airscale_reverse_phone: "a3424cfa9178070316011d4cfabb8cb711341a8a0ba578177f99e137d7c38df6",
   airscale_domain_to_linkedin: "0ac14042faaf256fa8af6bf7fe594ae08ab784679800fcdb7aa86506289127d6",
-  airscale_post_likers: "44c947583313acae67e35f6770b505c225f7c92b45939010b0367e83fb1410f0",
-  airscale_post_commenters: "44c947583313acae67e35f6770b505c225f7c92b45939010b0367e83fb1410f0",
+  airscale_post_likers: "f6c4cf43e1f61e02e877568e1942af2f4a76641eea560660b545cc08a05184c3",
+  airscale_post_commenters: "f6c4cf43e1f61e02e877568e1942af2f4a76641eea560660b545cc08a05184c3",
   airscale_verify_email: "5ba9e393315b7e9db111616b59d749c8c2531b1ca09f43cbdebe786105b8d3fa",
   airscale_check_whatsapp: "132fdf7765fb26691d3b88ac3417489ae587db69b2dbc6565b67a4172f3bae2b",
   airscale_get_whatsapp_check: "4c22e7e7053682ee8bf072f6ad80953da71704cad71e7016f679e8888b694430",
   airscale_check_dnc: "20577c564c2a6df69f0f0e8bff927df2c2956c2371744ac13aca6d45da5c6afb",
   airscale_meta_ads: "db58d6fa77942cbe1c58cbf70fbb5f7ed5084306512193c254c7e14b27f47e86",
-  airscale_start_companies_export: "71124ef43e33824bbe03108ed31b52777dccca23781c213a37f3b57b9bb0ae9e",
+  airscale_start_companies_export: "21e0066feefee5df60aca10e12964a7a84b109b809892e93435a07779c806fc3",
   airscale_start_people_export: "97e7678c3f004746fbb202fb60ae742b9f84672ebc20f7de7f9849aff0dcf61a",
   airscale_create_contact_enrichment_batch: "aaea2244519a140712407406e62042a40d2cd7454224cc27f6ef9595322174f4",
   airscale_add_contacts_to_enrichment_batch: "8622df11336fb0e4b2b3ba435ddd772f0f61e744f49d38d06c9bef00a2b3afa6",
@@ -161,8 +161,8 @@ const EXPECTED_TOOL_METADATA = {
   },
   airscale_post_search: {
     description:
-      "Search LinkedIn posts by keywords, author, author's employer or industry, mentions, or group, newest first by default. Returns raw post rows (text, author, engagement counts, URL) one page at a time with pagination.next_cursor. Costs 1 credit per successful page, empty pages included; invalid input and failures are free.",
-    spend: {"kind": "variable", "summary": "1 credit per successful page, including empty pages; invalid input and failures are free"},
+      "Search LinkedIn posts by keywords, author, author's employer or industry, mentions, or group, newest first by default. Returns raw post rows (text, author, engagement counts, URL) one page at a time with pagination.next_cursor. Costs 1 credit per successful non-empty page; empty pages, invalid input and failures are free.",
+    spend: {"kind": "variable", "summary": "1 credit per successful non-empty page; empty pages, invalid input and failures are free"},
     asynchronous: false
   },
   airscale_find_email: {
@@ -227,38 +227,38 @@ const EXPECTED_TOOL_METADATA = {
   },
   airscale_post_likers: {
     description:
-      "List and enrich people who liked a LinkedIn post, one page (up to 25) at a time. Reserves 0.2 credits per requested slot and refunds unused, not-found, and failed slots.",
-    spend: { kind: "variable", summary: "0.2 credits per enriched profile; unused, not-found, and failed slots are refunded" },
+      "List people who liked a LinkedIn post, up to 25 per response. Set enrich_profiles:false for extraction-only at 1 credit per fresh provider page on V1 and V2, including empty terminal pages; cached slices and identical retries are free. V1 balance updates through its billing queue. Omitted/true enriches profiles at 0.2 credits per successful profile; unused, not-found and failed slots refund.",
+    spend: { kind: "variable", summary: "Default enrichment: 0.2 credits per successful profile, unused slots refunded. Extraction-only: 1 credit per fresh provider page, including empty terminal pages; cached slices and identical retries are free." },
     asynchronous: false
   },
   airscale_post_commenters: {
     description:
-      "List and enrich people who commented on a LinkedIn post, one page (up to 25) at a time. Reserves 0.2 credits per requested slot and refunds unused, not-found, and failed slots.",
-    spend: { kind: "variable", summary: "0.2 credits per enriched profile; unused, not-found, and failed slots are refunded" },
+      "List people who commented on a LinkedIn post, up to 25 per response. Set enrich_profiles:false for extraction-only at 1 credit per fresh provider page on V1 and V2, including empty terminal pages; cached slices and identical retries are free. V1 balance updates through its billing queue. Omitted/true enriches profiles at 0.2 credits per successful profile; unused, not-found and failed slots refund.",
+    spend: { kind: "variable", summary: "Default enrichment: 0.2 credits per successful profile, unused slots refunded. Extraction-only: 1 credit per fresh provider page, including empty terminal pages; cached slices and identical retries are free." },
     asynchronous: false
   },
   airscale_profile_posts: {
     description:
-      "List the recent LinkedIn posts published by one person (profile URL), one page at a time with pagination.next_cursor. Costs 1 credit per successful page, empty pages included; invalid input and failures are free.",
-    spend: {"kind": "variable", "summary": "1 credit per successful page, including empty pages; invalid input and failures are free"},
+      "List the recent LinkedIn posts published by one person (profile URL), one page at a time with pagination.next_cursor. Costs 1 credit per successful non-empty page; empty pages, invalid input and failures are free.",
+    spend: {"kind": "variable", "summary": "1 credit per successful non-empty page; empty pages, invalid input and failures are free"},
     asynchronous: false
   },
   airscale_company_posts: {
     description:
-      "List the recent LinkedIn posts published by one company page (company URL or numeric ID), one page at a time with pagination.next_cursor. Costs 1 credit per successful page, empty pages included; invalid input and failures are free.",
-    spend: {"kind": "variable", "summary": "1 credit per successful page, including empty pages; invalid input and failures are free"},
+      "List the recent LinkedIn posts published by one company page (company URL or numeric ID), one page at a time with pagination.next_cursor. Costs 1 credit per successful non-empty page; empty pages, invalid input and failures are free.",
+    spend: {"kind": "variable", "summary": "1 credit per successful non-empty page; empty pages, invalid input and failures are free"},
     asynchronous: false
   },
   airscale_profile_comments: {
     description:
-      "List the recent comments one person (profile URL) wrote on LinkedIn posts, with the comment and post URLs, one page at a time with pagination.next_cursor. Costs 1 credit per successful page, empty pages included; invalid input and failures are free.",
-    spend: {"kind": "variable", "summary": "1 credit per successful page, including empty pages; invalid input and failures are free"},
+      "List the recent comments one person (profile URL) wrote on LinkedIn posts, with the comment and post URLs, one page at a time with pagination.next_cursor. Costs 1 credit per successful non-empty page; empty pages, invalid input and failures are free.",
+    spend: {"kind": "variable", "summary": "1 credit per successful non-empty page; empty pages, invalid input and failures are free"},
     asynchronous: false
   },
   airscale_comment_likers: {
     description:
-      "List the people who reacted to one LinkedIn comment (comment URL, e.g. from airscale_profile_comments), one page at a time with pagination.next_cursor. Returns raw rows, not enriched contacts. Costs 1 credit per successful page, empty pages included; invalid input and failures are free.",
-    spend: {"kind": "variable", "summary": "1 credit per successful page, including empty pages; invalid input and failures are free"},
+      "List the people who reacted to one LinkedIn comment (comment URL, e.g. from airscale_profile_comments), one page at a time with pagination.next_cursor. Returns raw rows, not enriched contacts. Costs 1 credit per successful non-empty page; empty pages, invalid input and failures are free.",
+    spend: {"kind": "variable", "summary": "1 credit per successful non-empty page; empty pages, invalid input and failures are free"},
     asynchronous: false
   },
   airscale_verify_email: {

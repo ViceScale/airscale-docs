@@ -639,13 +639,13 @@ const DURABLE_OPERATION_GUIDANCE = {
   "api-reference/find-companies/filter-values": [/free and has no request body/i, /6 requests per second/i, /`q` parameter takes precedence/i],
   "api-reference/company-lookalikes": [/0\.5 credits per unique returned company/, /15 searches per rolling minute/, /5 active searches/, /Do not automatically retry/, /another charge/, /100 seconds/, /Retry-After/],
   "api-reference/airsearch": [/300 requests per minute/i, /1 credit/i, /`not_found` and `timeout` are not charged/i, /Credits reserved.*are returned/i, /timeout.*`504 Gateway Timeout`/i],
-  "api-reference/post-likers": [/synchronous/i, /one credit/i, /next_cursor/i, /same post URL and `limit`/i, /failed.*refunded/i, /Idempotency-Key/i, /202.*pending/is, /account_restart_required/, /reported_total/],
-  "api-reference/post-commenters": [/synchronous/i, /one credit/i, /next_cursor/i, /same post URL and `limit`/i, /failed.*refunded/i, /Idempotency-Key/i, /202.*pending/is, /account_restart_required/, /reported_total/],
-  "api-reference/post-search": [/1 credit/, /empty page is also charged/i, /up to 50 posts/i, /180 requests per minute per workspace/, /separate/i, /same filters/i, /charged again/i, /Retry-After: 5/, /V1 and V2/],
-  "api-reference/profile-comments": [/1 credit/, /empty page is also charged/i, /100 comments/i, /180 requests per minute per workspace/, /separate/i, /`pagination.total` is always `null`/, /charged again/i, /Retry-After: 5/, /V1 and V2/],
-  "api-reference/comment-likers": [/1 credit/, /empty page is also charged/i, /up to 100 people/i, /180 requests per minute per workspace/, /separate/i, /member-ID URL/, /charged again/i, /Retry-After: 5/, /V1 and V2/],
-  "api-reference/profile-posts": [/1 credit/, /empty page is also charged/i, /up to 50 posts/i, /reposts/i, /180 requests per minute per workspace/, /separate/i, /`pagination.total` is always `null`/, /fewer than 50 posts/i, /feed_context/, /charged again/i, /Retry-After: 5/, /V1 and V2/],
-  "api-reference/company-posts": [/1 credit/, /empty page is also charged/i, /up to 50 posts/i, /numeric LinkedIn company ID/i, /180 requests per minute per workspace/, /separate/i, /fewer than 50 posts/i, /feed_context/, /charged again/i, /Retry-After: 5/, /V1 and V2/],
+  "api-reference/post-likers": [/synchronous/i, /0\.2 credits per successfully enriched profile/i, /1 credit per fresh native provider page/i, /next_cursor/i, /same post URL, `limit`, and `enrich_profiles` mode/i, /`not_found` or `error` outcomes are refunded/i, /Idempotency-Key/i, /202.*pending/is, /account_restart_required/, /reported_total/],
+  "api-reference/post-commenters": [/synchronous/i, /0\.2 credits per successfully enriched profile/i, /1 credit per fresh native provider page/i, /next_cursor/i, /same post URL, `limit`, and `enrich_profiles` mode/i, /`not_found` or `error` outcomes are refunded/i, /Idempotency-Key/i, /202.*pending/is, /account_restart_required/, /reported_total/],
+  "api-reference/post-search": [/1 credit/, /empty page is not charged/i, /up to 50 posts/i, /180 requests per minute per workspace/, /separate/i, /same filters/i, /charged again/i, /Retry-After: 5/, /V1 and V2/],
+  "api-reference/profile-comments": [/1 credit/, /empty page is not charged/i, /100 comments/i, /180 requests per minute per workspace/, /separate/i, /`pagination.total` is always `null`/, /charged again/i, /Retry-After: 5/, /V1 and V2/],
+  "api-reference/comment-likers": [/1 credit/, /empty page is not charged/i, /up to 100 people/i, /180 requests per minute per workspace/, /separate/i, /member-ID URL/, /charged again/i, /Retry-After: 5/, /V1 and V2/],
+  "api-reference/profile-posts": [/1 credit/, /empty page is not charged/i, /up to 50 posts/i, /reposts/i, /180 requests per minute per workspace/, /separate/i, /`pagination.total` is always `null`/, /fewer than 50 posts/i, /feed_context/, /charged again/i, /Retry-After: 5/, /V1 and V2/],
+  "api-reference/company-posts": [/1 credit/, /empty page is not charged/i, /up to 50 posts/i, /numeric LinkedIn company ID/i, /180 requests per minute per workspace/, /separate/i, /fewer than 50 posts/i, /feed_context/, /charged again/i, /Retry-After: 5/, /V1 and V2/],
 };
 
 test("operation wrappers retain durable rate, credit, retry, and asynchronous guidance", () => {
@@ -659,7 +659,7 @@ test("operation wrappers retain durable rate, credit, retry, and asynchronous gu
 test("post engagement pages explain safe retries, expiry and account restart boundaries", () => {
   for (const page of ["api-reference/post-likers", "api-reference/post-commenters"]) {
     const { body } = readPage(page);
-    for (const pattern of [/UUID/, /same key/i, /new key.*next page/i, /Retry-After/, /409/, /24 hours/, /expired cursor.*fetch a new page/i, /deduplicate/i, /reservation.*refund/is]) {
+    for (const pattern of [/UUID/, /same key/i, /new key.*next page/i, /Retry-After/, /409/, /24 hours/, /expired cursor cannot fetch a new extraction-only page/i, /deduplicate/i, /reservation.*refund/is]) {
       assert.match(body, pattern, `${page} must explain ${pattern}`);
     }
     assert.doesNotMatch(body, /If a response is lost, retrying the request can run the page again and reserve credits again\./);

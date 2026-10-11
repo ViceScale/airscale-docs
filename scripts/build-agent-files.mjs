@@ -20,7 +20,7 @@ import {
 const PROJECT_ROOT = fileURLToPath(new URL("..", import.meta.url));
 const PREVIEW_ORIGIN = "https://airscale.mintlify.app";
 const OPERATIONAL_MCP_URL = "https://mcp.airscale.io/mcp";
-const SOURCE_SHA = "3a42948758f2c1b68052af8c405e842e487feee3";
+const SOURCE_SHA = "ecfcce702922de61cb2f42bebbe0425fbf578159";
 const SKILL_DESCRIPTION = "Search for people and companies, enrich professional contact data, run web research, and create asynchronous exports through the Airschool API or MCP server.";
 const OUTPUT_PATHS = Object.freeze([
   "llms.txt",
