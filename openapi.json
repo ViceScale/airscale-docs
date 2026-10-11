@@ -4065,7 +4065,8 @@
                             "enum": [
                               "30 days",
                               "60 days",
-                              "90 days"
+                              "90 days",
+                              "120 days"
                             ]
                           },
                           {
@@ -5598,9 +5599,9 @@
         ],
         "summary": "List LinkedIn post likers",
         "description": "Retrieves one synchronous, cursor-paginated page of people who liked a LinkedIn post and enriches each returned profile.",
-        "x-airscale-source-sha": "4a60fa48ae0f7b3f50f77516fdf80dc9d998e457",
+        "x-airscale-source-sha": "1dc01c0dcf5f10f0d24626fd2e669e3fc1138d98",
         "x-airscale-rate-limit": "180 requests per fixed minute per workspace, shared by post-likers and post-commenters; pagination requests and retries count.",
-        "x-airscale-credit-cost": "1 credit reserved upfront per requested slot (limit); unused slots and definitive not_found/error outcomes are refunded; only successful profile enrichments are consumed.",
+        "x-airscale-credit-cost": "Default enrichment: reserve limit × 0.2 credits, charge 0.2 per successful profile and refund unused or definitive failed slots. Extraction-only: 1 credit per fresh native provider page, including empty terminal pages; cached slices and identical retries are free.",
         "x-codeSamples": [
           {
             "label": "firstPage",
@@ -5642,7 +5643,7 @@
               "type": "string",
               "format": "uuid"
             },
-            "description": "Create a UUID for this page and reuse it with the identical endpoint, post_url, limit and cursor on every retry. Use a new key for the next page. Completed results are replayable for 24 hours after completion. Omitting the header is supported, but an independent retry without the original key can reserve credits again."
+            "description": "Create a UUID for this page and reuse it with the identical endpoint, post_url, limit, cursor and enrich_profiles mode on every retry. Use a new key for the next page. Completed results are replayable for 24 hours after completion. Omitting the header is supported, but an independent retry without the original key can reserve credits again."
           }
         ],
         "requestBody": {
@@ -5670,6 +5671,11 @@
                     "maximum": 25,
                     "default": 25,
                     "description": "Number of engagements to request on this page."
+                  },
+                  "enrich_profiles": {
+                    "type": "boolean",
+                    "default": true,
+                    "description": "Omitted or true enriches profiles at 0.2 credits per successful profile. False returns available engagement fields without profile lookups and costs 1 credit per fresh native provider page, including empty terminal pages; cached slices and identical retries are free. Keep the mode unchanged when continuing a cursor."
                   },
                   "cursor": {
                     "type": [
@@ -5704,7 +5710,7 @@
         },
         "responses": {
           "200": {
-            "description": "A page of enriched LinkedIn post engagements.",
+            "description": "A page of LinkedIn post engagements with profile enrichment or extraction-only fields, depending on enrich_profiles.",
             "content": {
               "application/json": {
                 "schema": {
@@ -5743,9 +5749,10 @@
                             "enum": [
                               "success",
                               "not_found",
-                              "error"
+                              "error",
+                              "not_enriched"
                             ],
-                            "description": "Profile enrichment outcome for this engagement."
+                            "description": "Profile enrichment outcome; not_enriched means extraction-only mode."
                           },
                           "linkedin_url": {
                             "type": [
@@ -5901,7 +5908,9 @@
                             "page_limit",
                             "provider_exhausted",
                             "request_budget",
-                            "provider_total_mismatch"
+                            "provider_total_mismatch",
+                            "insufficient_credits",
+                            "provider_failure"
                           ]
                         }
                       }
@@ -5916,14 +5925,14 @@
                       "additionalProperties": false,
                       "properties": {
                         "credits_consumed": {
-                          "type": "integer",
+                          "type": "number",
                           "minimum": 0,
-                          "maximum": 25
+                          "description": "Credit amount, rounded to two decimals. Raw mode counts paid native pages, not returned people."
                         },
                         "credits_refunded": {
-                          "type": "integer",
+                          "type": "number",
                           "minimum": 0,
-                          "maximum": 25
+                          "description": "Credit amount refunded, rounded to two decimals."
                         },
                         "outcomes": {
                           "type": "object",
@@ -5948,6 +5957,12 @@
                               "type": "integer",
                               "minimum": 0,
                               "maximum": 25
+                            },
+                            "not_enriched": {
+                              "type": "integer",
+                              "minimum": 0,
+                              "maximum": 25,
+                              "description": "Returned extraction-only rows; not the number of paid native pages."
                             }
                           }
                         }
@@ -5990,8 +6005,8 @@
                         "stop_reason": "page_limit"
                       },
                       "billing": {
-                        "credits_consumed": 1,
-                        "credits_refunded": 24,
+                        "credits_consumed": 0.2,
+                        "credits_refunded": 4.8,
                         "outcomes": {
                           "success": 1,
                           "not_found": 0,
@@ -6106,7 +6121,7 @@
             "$ref": "#/components/responses/Unauthorized"
           },
           "402": {
-            "description": "The workspace does not have enough credits to reserve profile enrichment for this page.",
+            "description": "The workspace does not have enough credits to reserve profile enrichment or a fresh extraction page.",
             "content": {
               "application/json": {
                 "schema": {
@@ -6354,9 +6369,9 @@
         ],
         "summary": "List LinkedIn post commenters",
         "description": "Retrieves one synchronous, cursor-paginated page of people who commented on a LinkedIn post and enriches each returned profile.",
-        "x-airscale-source-sha": "4a60fa48ae0f7b3f50f77516fdf80dc9d998e457",
+        "x-airscale-source-sha": "1dc01c0dcf5f10f0d24626fd2e669e3fc1138d98",
         "x-airscale-rate-limit": "180 requests per fixed minute per workspace, shared by post-likers and post-commenters; pagination requests and retries count.",
-        "x-airscale-credit-cost": "1 credit reserved upfront per requested slot (limit); unused slots and definitive not_found/error outcomes are refunded; only successful profile enrichments are consumed.",
+        "x-airscale-credit-cost": "Default enrichment: reserve limit × 0.2 credits, charge 0.2 per successful profile and refund unused or definitive failed slots. Extraction-only: 1 credit per fresh native provider page, including empty terminal pages; cached slices and identical retries are free.",
         "x-codeSamples": [
           {
             "label": "firstPage",
@@ -6398,7 +6413,7 @@
               "type": "string",
               "format": "uuid"
             },
-            "description": "Create a UUID for this page and reuse it with the identical endpoint, post_url, limit and cursor on every retry. Use a new key for the next page. Completed results are replayable for 24 hours after completion. Omitting the header is supported, but an independent retry without the original key can reserve credits again."
+            "description": "Create a UUID for this page and reuse it with the identical endpoint, post_url, limit, cursor and enrich_profiles mode on every retry. Use a new key for the next page. Completed results are replayable for 24 hours after completion. Omitting the header is supported, but an independent retry without the original key can reserve credits again."
           }
         ],
         "requestBody": {
@@ -6426,6 +6441,11 @@
                     "maximum": 25,
                     "default": 25,
                     "description": "Number of engagements to request on this page."
+                  },
+                  "enrich_profiles": {
+                    "type": "boolean",
+                    "default": true,
+                    "description": "Omitted or true enriches profiles at 0.2 credits per successful profile. False returns available engagement fields without profile lookups and costs 1 credit per fresh native provider page, including empty terminal pages; cached slices and identical retries are free. Keep the mode unchanged when continuing a cursor."
                   },
                   "cursor": {
                     "type": [
@@ -6460,7 +6480,7 @@
         },
         "responses": {
           "200": {
-            "description": "A page of enriched LinkedIn post engagements.",
+            "description": "A page of LinkedIn post engagements with profile enrichment or extraction-only fields, depending on enrich_profiles.",
             "content": {
               "application/json": {
                 "schema": {
@@ -6499,9 +6519,10 @@
                             "enum": [
                               "success",
                               "not_found",
-                              "error"
+                              "error",
+                              "not_enriched"
                             ],
-                            "description": "Profile enrichment outcome for this engagement."
+                            "description": "Profile enrichment outcome; not_enriched means extraction-only mode."
                           },
                           "linkedin_url": {
                             "type": [
@@ -6657,7 +6678,9 @@
                             "page_limit",
                             "provider_exhausted",
                             "request_budget",
-                            "provider_total_mismatch"
+                            "provider_total_mismatch",
+                            "insufficient_credits",
+                            "provider_failure"
                           ]
                         }
                       }
@@ -6672,14 +6695,14 @@
                       "additionalProperties": false,
                       "properties": {
                         "credits_consumed": {
-                          "type": "integer",
+                          "type": "number",
                           "minimum": 0,
-                          "maximum": 25
+                          "description": "Credit amount, rounded to two decimals. Raw mode counts paid native pages, not returned people."
                         },
                         "credits_refunded": {
-                          "type": "integer",
+                          "type": "number",
                           "minimum": 0,
-                          "maximum": 25
+                          "description": "Credit amount refunded, rounded to two decimals."
                         },
                         "outcomes": {
                           "type": "object",
@@ -6704,6 +6727,12 @@
                               "type": "integer",
                               "minimum": 0,
                               "maximum": 25
+                            },
+                            "not_enriched": {
+                              "type": "integer",
+                              "minimum": 0,
+                              "maximum": 25,
+                              "description": "Returned extraction-only rows; not the number of paid native pages."
                             }
                           }
                         }
@@ -6746,8 +6775,8 @@
                         "stop_reason": "page_limit"
                       },
                       "billing": {
-                        "credits_consumed": 1,
-                        "credits_refunded": 24,
+                        "credits_consumed": 0.2,
+                        "credits_refunded": 4.8,
                         "outcomes": {
                           "success": 1,
                           "not_found": 0,
@@ -6862,7 +6891,7 @@
             "$ref": "#/components/responses/Unauthorized"
           },
           "402": {
-            "description": "The workspace does not have enough credits to reserve profile enrichment for this page.",
+            "description": "The workspace does not have enough credits to reserve profile enrichment or a fresh extraction page.",
             "content": {
               "application/json": {
                 "schema": {
@@ -7109,10 +7138,10 @@
           "LinkedIn content"
         ],
         "summary": "Search LinkedIn posts",
-        "description": "Returns one page of up to 50 LinkedIn posts matching keywords, author, mention, group, content-type, and date filters. Costs 1 credit per successful request.",
-        "x-airscale-source-sha": "6ec34a03d63308d639833e388d41488fb40c8df6",
+        "description": "Returns one page of up to 50 LinkedIn posts matching keywords, author, mention, group, content-type, and date filters. Costs 1 credit per successful non-empty request; empty pages are free.",
+        "x-airscale-source-sha": "1dc01c0dcf5f10f0d24626fd2e669e3fc1138d98",
         "x-airscale-rate-limit": "180 requests per fixed minute per workspace, counted separately for each LinkedIn content endpoint; pagination requests and retries count.",
-        "x-airscale-credit-cost": "1 credit per successful request, including empty pages; invalid input and failed requests are not charged.",
+        "x-airscale-credit-cost": "1 credit per successful non-empty request; empty pages, invalid input and failed requests are not charged.",
         "requestBody": {
           "required": true,
           "description": "Search filters and an optional cursor. The JSON body must not exceed 16 KiB.",
@@ -7512,7 +7541,10 @@
                       "properties": {
                         "credits_consumed": {
                           "type": "integer",
-                          "const": 1
+                          "enum": [
+                            0,
+                            1
+                          ]
                         }
                       }
                     }
@@ -7650,10 +7682,10 @@
           "LinkedIn content"
         ],
         "summary": "List a LinkedIn profile's comments",
-        "description": "Returns one page of comments written by a LinkedIn profile, each with the post it was left on. Costs 1 credit per successful request.",
-        "x-airscale-source-sha": "6ec34a03d63308d639833e388d41488fb40c8df6",
+        "description": "Returns one page of comments written by a LinkedIn profile, each with the post it was left on. Costs 1 credit per successful non-empty request; empty pages are free.",
+        "x-airscale-source-sha": "1dc01c0dcf5f10f0d24626fd2e669e3fc1138d98",
         "x-airscale-rate-limit": "180 requests per fixed minute per workspace, counted separately for each LinkedIn content endpoint; pagination requests and retries count.",
-        "x-airscale-credit-cost": "1 credit per successful request, including empty pages; invalid input and failed requests are not charged.",
+        "x-airscale-credit-cost": "1 credit per successful non-empty request; empty pages, invalid input and failed requests are not charged.",
         "requestBody": {
           "required": true,
           "description": "A LinkedIn profile URL, an optional period, and an optional cursor. The JSON body must not exceed 16 KiB.",
@@ -7908,7 +7940,10 @@
                       "properties": {
                         "credits_consumed": {
                           "type": "integer",
-                          "const": 1
+                          "enum": [
+                            0,
+                            1
+                          ]
                         }
                       }
                     }
@@ -8047,10 +8082,10 @@
           "LinkedIn content"
         ],
         "summary": "List LinkedIn comment likers",
-        "description": "Returns one page of up to 100 people who reacted to one LinkedIn comment. Costs 1 credit per successful request.",
-        "x-airscale-source-sha": "6ec34a03d63308d639833e388d41488fb40c8df6",
+        "description": "Returns one page of up to 100 people who reacted to one LinkedIn comment. Costs 1 credit per successful non-empty request; empty pages are free.",
+        "x-airscale-source-sha": "1dc01c0dcf5f10f0d24626fd2e669e3fc1138d98",
         "x-airscale-rate-limit": "180 requests per fixed minute per workspace, counted separately for each LinkedIn content endpoint; pagination requests and retries count.",
-        "x-airscale-credit-cost": "1 credit per successful request, including empty pages; invalid input and failed requests are not charged.",
+        "x-airscale-credit-cost": "1 credit per successful non-empty request; empty pages, invalid input and failed requests are not charged.",
         "requestBody": {
           "required": true,
           "description": "A LinkedIn comment URL and an optional cursor. The JSON body must not exceed 16 KiB.",
@@ -8199,7 +8234,10 @@
                       "properties": {
                         "credits_consumed": {
                           "type": "integer",
-                          "const": 1
+                          "enum": [
+                            0,
+                            1
+                          ]
                         }
                       }
                     }
@@ -8324,10 +8362,10 @@
           "LinkedIn content"
         ],
         "summary": "List a LinkedIn profile's posts",
-        "description": "Returns one page of up to 50 posts from a LinkedIn profile's feed, newest first, including the person's posts and reposts. Costs 1 credit per successful request.",
-        "x-airscale-source-sha": "6ec34a03d63308d639833e388d41488fb40c8df6",
+        "description": "Returns one page of up to 50 posts from a LinkedIn profile's feed, newest first, including the person's posts and reposts. Costs 1 credit per successful non-empty request; empty pages are free.",
+        "x-airscale-source-sha": "1dc01c0dcf5f10f0d24626fd2e669e3fc1138d98",
         "x-airscale-rate-limit": "180 requests per fixed minute per workspace, counted separately for each LinkedIn content endpoint; pagination requests and retries count.",
-        "x-airscale-credit-cost": "1 credit per successful request, including empty pages; invalid input and failed requests are not charged.",
+        "x-airscale-credit-cost": "1 credit per successful non-empty request; empty pages, invalid input and failed requests are not charged.",
         "requestBody": {
           "required": true,
           "description": "A LinkedIn profile URL, an optional period, and an optional cursor. The JSON body must not exceed 16 KiB.",
@@ -8572,7 +8610,10 @@
                       "properties": {
                         "credits_consumed": {
                           "type": "integer",
-                          "const": 1
+                          "enum": [
+                            0,
+                            1
+                          ]
                         }
                       }
                     }
@@ -8728,10 +8769,10 @@
           "LinkedIn content"
         ],
         "summary": "List a LinkedIn company's posts",
-        "description": "Returns one page of up to 50 posts from a LinkedIn company page's feed, newest first. Costs 1 credit per successful request.",
-        "x-airscale-source-sha": "6ec34a03d63308d639833e388d41488fb40c8df6",
+        "description": "Returns one page of up to 50 posts from a LinkedIn company page's feed, newest first. Costs 1 credit per successful non-empty request; empty pages are free.",
+        "x-airscale-source-sha": "1dc01c0dcf5f10f0d24626fd2e669e3fc1138d98",
         "x-airscale-rate-limit": "180 requests per fixed minute per workspace, counted separately for each LinkedIn content endpoint; pagination requests and retries count.",
-        "x-airscale-credit-cost": "1 credit per successful request, including empty pages; invalid input and failed requests are not charged.",
+        "x-airscale-credit-cost": "1 credit per successful non-empty request; empty pages, invalid input and failed requests are not charged.",
         "requestBody": {
           "required": true,
           "description": "A LinkedIn company URL or numeric company ID, an optional period, and an optional cursor. The JSON body must not exceed 16 KiB.",
@@ -8977,7 +9018,10 @@
                       "properties": {
                         "credits_consumed": {
                           "type": "integer",
-                          "const": 1
+                          "enum": [
+                            0,
+                            1
+                          ]
                         }
                       }
                     }

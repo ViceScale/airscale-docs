@@ -8,7 +8,7 @@ openapi: "/openapi.json POST /v1/profile-comments"
 Retrieve one synchronous page of comments written by a LinkedIn profile, with each comment's text, date, like and reply counts, and the post it was left on. Rows are returned as found on LinkedIn, without profile enrichment.
 
 <Note>
-Each successful request costs **1 credit**, whatever the number of comments returned. A successful empty page is also charged. Invalid input and failed requests are not charged. The workspace needs at least 1 credit to start a request.
+Each successful non-empty request costs **1 credit**, whatever the number of comments returned. A successful empty page is not charged. Invalid input and failed requests are not charged. The workspace needs at least 1 credit to start a request.
 </Note>
 
 ## Authentication
@@ -33,7 +33,7 @@ A page holds up to about 100 comments. Omit `cursor` on the first request. When 
 
 ## Retries
 
-This endpoint does not accept an idempotency key. Retrying a request fetches the page again and is charged again. Retry only responses that were not charged:
+This endpoint does not accept an idempotency key. Retrying a request fetches the page again; a non-empty page is charged again. Retry only responses that were not charged:
 
 | Response | Next action |
 | --- | --- |
