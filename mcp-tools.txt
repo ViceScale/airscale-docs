@@ -4,7 +4,7 @@
   "description": "Browse all 37 typed tools exposed by the Airschool MCP server.",
   "serverUrl": "https://mcp.airscale.io/mcp",
   "toolCount": 37,
-  "sourceSha": "ecfcce702922de61cb2f42bebbe0425fbf578159",
+  "sourceSha": "9897e98c26f70d03075af29eefa024d265a8560a",
   "tools": [
     {
       "name": "airscale_check_credits",
