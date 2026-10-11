@@ -41,4 +41,9 @@ The **MCP catalog parity** GitHub workflow runs this check on relevant docs PRs
 and supports manual dispatch. Release the MCP before opening the final catalog
 refresh PR; a snapshot ahead of production is expected to fail live parity.
 Publish the docs after those checks pass, then verify the served catalog and API
-reference. Keep the canonical `airscale.mintlify.app` URLs used by this repo.
+reference. Public MCP guidance links use the live documentation origin,
+`https://docs.airscale.io`, as declared in `contracts/publication-policy.json`.
+The source site's page canonicals and generated navigation remain on the
+`airscale.mintlify.app` preview origin until publication. Live documentation
+links inside tool descriptions and page bodies are valid in either build;
+do not rewrite a source-pinned MCP description just to satisfy preview metadata.

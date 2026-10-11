@@ -27,7 +27,7 @@ test("Leads Finder preset guidance includes every documented identifier", () => 
       for (const value of list) assert.ok(tokens.has(value), `${field} MCP guidance omits documented ${value}`);
     }
   }
-  assert.match(properties.jobFunction.description, /https:\/\/airscale\.mintlify\.app\/api-reference\/leads-finder/);
+  assert.match(properties.jobFunction.description, /https:\/\/docs\.airscale\.io\/api-reference\/leads-finder#expected-filter-values/);
   assert.match(properties.jobFunction.description, /300/);
 });
 
