@@ -4,7 +4,7 @@ import { readFileSync } from "node:fs";
 import test from "node:test";
 import Ajv2020 from "ajv/dist/2020.js";
 
-const SOURCE_SHA = "ecfcce702922de61cb2f42bebbe0425fbf578159";
+const SOURCE_SHA = "9897e98c26f70d03075af29eefa024d265a8560a";
 const GROUPS = {
   workspace: [
     "airscale_check_credits"
@@ -84,7 +84,7 @@ const EXPECTED_SCHEMA_HASHES = {
   airscale_find_companies: "50e836cd3b0d2b2e73dd24166e96f668a38e1845e84c9d1743bcf87c3350f3a4",
   airscale_find_companies_filter_values: "fed97ae64a8c1d6116fa22e76bf8bcc644ded3fe9b5444bce330649e7f560959",
   airscale_airsearch: "03d1d9e646f17c1679efb8d051e055536dc26d355742693b02e85df56c8a9bd9",
-  airscale_leads_finder: "647beac975f39fd5a14af19f86ae39b129edb9922441c9fc1da47cb10a6c576e",
+  airscale_leads_finder: "6ace35fca86a6a24f4ee3c13b011fea378292fe82a6af4099120f7b1b0dcd651",
   airscale_find_email: "d585708df6024251db2bba2f87c355219725c2393b91f0e4b559f3c7579de0de",
   airscale_find_email_bulk: "3e0b3f975f4bcb181c9a04fca2edba5375ffa8bf1d2aa02e6edce327267ee946",
   airscale_find_mobile_phone: "fa383c5f1537d9487c87885da08613bafe384bd948cd91350c03dc72be07d85b",

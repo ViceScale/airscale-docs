@@ -3079,7 +3079,7 @@ test("agent renderers publish only the platform-supported custom agent files", (
 
   assert.match(outputs["skill.md"], /^---\nname: airscale\ndescription: Search for people and companies, enrich professional contact data, run web research, and create asynchronous exports through the Airschool API or MCP server\./);
   assert.match(outputs["skill.md"], /version: "1\.0"/);
-  assert.match(outputs["skill.md"], /source_sha: "ecfcce702922de61cb2f42bebbe0425fbf578159"/);
+  assert.match(outputs["skill.md"], /source_sha: "9897e98c26f70d03075af29eefa024d265a8560a"/);
   assert.match(outputs["skill.md"], /API authentication[\s\S]*MCP authentication/i);
   assert.match(outputs["skill.md"], /Airsearch costs 1 credit per successful call/);
   assert.match(outputs["skill.md"], /confirm_credit_spend[\s\S]*explicit/i);

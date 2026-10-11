@@ -1,6 +1,6 @@
 {
   "sourceRepository": "ViceScale/airscale-code",
-  "sourceSha": "ecfcce702922de61cb2f42bebbe0425fbf578159",
+  "sourceSha": "9897e98c26f70d03075af29eefa024d265a8560a",
   "sourceFiles": [
     "mcp/airscale-public-api/src/endpoints.ts",
     "mcp/airscale-public-api/src/exportJobs.ts",
@@ -2209,7 +2209,7 @@
                     }
                   }
                 ],
-                "description": "Exact job-function identifiers, e.g. sales, business_development, software_development, demand_generation, human_resources, accounting. Array or newline-separated string; at most 300 non-empty values. Full catalog: https://airscale.mintlify.app/api-reference/leads-finder#expected-filter-values. Do not use display labels such as Business Development or the Find Companies filter-values tool"
+                "description": "Exact job-function identifiers, e.g. sales, business_development, software_development, demand_generation, human_resources, accounting. Array or newline-separated string; at most 300 non-empty values. Full catalog: https://docs.airscale.io/api-reference/leads-finder#expected-filter-values. Do not use display labels such as Business Development or the Find Companies filter-values tool"
               },
               "jobFunctionExclude": {
                 "anyOf": [
@@ -2223,7 +2223,7 @@
                     }
                   }
                 ],
-                "description": "Exclude: Exact job-function identifiers, e.g. sales, business_development, software_development, demand_generation, human_resources, accounting. Array or newline-separated string; at most 300 non-empty values. Full catalog: https://airscale.mintlify.app/api-reference/leads-finder#expected-filter-values. Do not use display labels such as Business Development or the Find Companies filter-values tool"
+                "description": "Exclude: Exact job-function identifiers, e.g. sales, business_development, software_development, demand_generation, human_resources, accounting. Array or newline-separated string; at most 300 non-empty values. Full catalog: https://docs.airscale.io/api-reference/leads-finder#expected-filter-values. Do not use display labels such as Business Development or the Find Companies filter-values tool"
               },
               "seniority": {
                 "type": "string",
