@@ -8,7 +8,7 @@ openapi: "/openapi.json POST /v1/comment-likers"
 Retrieve one synchronous page of up to 100 people who reacted to a LinkedIn comment, with their name, headline, profile picture, and reaction type. Rows are returned as found on LinkedIn, without profile enrichment.
 
 <Note>
-Each successful request costs **1 credit**, whatever the number of people returned. A successful empty page is also charged. Invalid input and failed requests are not charged. The workspace needs at least 1 credit to start a request.
+Each successful non-empty request costs **1 credit**, whatever the number of people returned. A successful empty page is not charged. Invalid input and failed requests are not charged. The workspace needs at least 1 credit to start a request.
 </Note>
 
 ## Authentication
@@ -33,7 +33,7 @@ Omit `cursor` on the first request. When `pagination.next_cursor` is not `null`,
 
 ## Retries
 
-This endpoint does not accept an idempotency key. Retrying a request fetches the page again and is charged again. Retry only responses that were not charged:
+This endpoint does not accept an idempotency key. Retrying a request fetches the page again; a non-empty page is charged again. Retry only responses that were not charged:
 
 | Response | Next action |
 | --- | --- |
