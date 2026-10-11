@@ -1260,7 +1260,7 @@ test("public manifest exposes only public metadata, exact schemas, and documenta
     ]);
     assert.deepEqual(tool.inputSchema, contract.tools[index].inputSchema);
   }
-  assert.doesNotMatch(serialized, /sourceFiles|mcp\/airscale-public-api|docs\.airscale\.io/);
+  assert.doesNotMatch(serialized, /sourceFiles|mcp\/airscale-public-api/);
   for (const tool of output.tools.filter(({ apiPage }) => apiPage !== null)) {
     assert.match(tool.apiPage, /^\/api-reference\//);
   }
@@ -1309,6 +1309,41 @@ test("pure renderers are deterministic and do not mutate deeply frozen input", (
   assert.equal(renderCatalog(contract), firstCatalog);
   assert.equal(renderPublicManifest(contract), firstManifest);
   assert.equal(JSON.stringify(contract), before);
+});
+
+test("canonical live documentation links survive catalog and agent generation", async () => {
+  const canonicalLink = "https://docs.airscale.io/api-reference/leads-finder#expected-filter-values";
+  const contract = readContract();
+  const leads = contract.tools.find(({ name }) => name === "airscale_leads_finder");
+  const properties = leads.inputSchema.properties.filters.properties;
+  properties.jobFunction.description = `Use the accepted identifiers at ${canonicalLink}`;
+  leads.description += ` Documentation: ${canonicalLink}`;
+  const before = JSON.stringify(contract);
+  await inTemporaryDirectory(async (directory) => {
+    const contractPath = join(directory, "contract.json");
+    const catalogPath = join(directory, "tools.mdx");
+    const publicPath = join(directory, "mcp-tools.json");
+    writeFileSync(contractPath, JSON.stringify(contract));
+    const args = ["--contract", contractPath, "--catalog", catalogPath, "--public", publicPath];
+    await run(["--write", ...args]);
+    await run(["--check", ...args]);
+    const catalog = readFileSync(catalogPath, "utf8");
+    const publicManifest = readFileSync(publicPath, "utf8");
+    assert.ok(catalog.includes(canonicalLink));
+    assert.ok(publicManifest.includes(canonicalLink));
+    const inputs = agentFixtureInputs();
+    inputs.mcpContract = contract;
+    inputs.mcpTools = JSON.parse(publicManifest);
+    inputs.pageSources["mcp/how-to-use-the-airscale-mcp"] += `\n${leads.description}\n`;
+    assert.ok(renderAgentFiles(inputs)["llms-full.txt"].includes(canonicalLink));
+    assert.equal(JSON.stringify(contract), before, "generation must preserve the source contract");
+  });
+});
+
+test("agent page bodies accept live documentation links while retaining preview canonicals", () => {
+  const inputs = agentFixtureInputs();
+  inputs.pageSources["mcp/how-to-use-the-airscale-mcp"] += "\nRead https://docs.airscale.io/mcp for more.\n";
+  assert.ok(renderAgentFiles(inputs)["llms-full.txt"].includes("https://docs.airscale.io/mcp"));
 });
 
 test("check mode rejects missing and byte-stale outputs and accepts exact bytes", async () => {
@@ -3016,7 +3051,6 @@ test("agent renderers publish only the platform-supported custom agent files", (
   assert.deepEqual(Object.keys(outputs), AGENT_OUTPUT_PATHS);
   for (const [path, contents] of Object.entries(outputs)) {
     assert.equal(contents.endsWith("\n"), true, `${path} must end with one newline`);
-    assert.doesNotMatch(contents, /https:\/\/docs\.airscale\.io/i, `${path} must not advertise the retained Framer domain`);
   }
 
   assert.equal(outputs["llms.txt"], renderLlmsIndex(inputs));
@@ -3136,10 +3170,6 @@ test("agent renderers escape compact-index metadata and reject unsafe or incompl
   wrongCanonical.pageSources["mcp/how-to-use-the-airscale-mcp"] = wrongCanonical.pageSources["mcp/how-to-use-the-airscale-mcp"]
     .replace("https://airscale.mintlify.app/mcp/how-to-use-the-airscale-mcp", "https://docs.airscale.io/mcp/how-to-use-the-airscale-mcp");
   assert.throws(() => renderAgentFiles(wrongCanonical), /canonical.*preview/i);
-
-  const retainedDomain = agentFixtureInputs();
-  retainedDomain.pageSources["mcp/how-to-use-the-airscale-mcp"] += "\nRead https://docs.airscale.io/mcp for more.\n";
-  assert.throws(() => renderAgentFiles(retainedDomain), /retained Framer domain/i);
 });
 
 test("agent renderers require the public MCP manifest to match the complete source-pinned contract", () => {

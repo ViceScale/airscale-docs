@@ -105,9 +105,6 @@ function parsePage(path, source) {
   }
   const body = match[2].replace(/^\s+|\s+$/gu, "");
   if (!body) throw new Error(`${path} body must not be empty`);
-  if (/https:\/\/docs\.airscale\.io(?:[/:?#]|$)/iu.test(body)) {
-    throw new Error(`${path} body contains the retained Framer domain`);
-  }
   return { path, title, description, body };
 }
 

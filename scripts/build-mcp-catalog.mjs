@@ -1565,7 +1565,6 @@ function validateRenderedPair(contract, catalog, publicManifest) {
   for (const [label, contents] of [["MCP catalog", catalog], ["public MCP manifest", publicManifest]]) {
     if (typeof contents !== "string") throw new Error(`${label} renderer must return a string`);
     if (!contents.endsWith("\n") || contents.endsWith("\n\n")) throw new Error(`${label} must end with one final newline`);
-    if (contents.includes("docs.airscale.io")) throw new Error(`${label} contains a forbidden legacy documentation link`);
   }
   for (const tool of contract.tools) {
     if (countOccurrences(catalog, `<a id="${tool.anchor}"></a>`) !== 1) throw new Error(`Rendered catalog anchor drift: ${tool.anchor}`);
