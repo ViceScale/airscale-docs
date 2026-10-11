@@ -79,7 +79,7 @@ Returns the workspace's current Airschool credit balance without spending credit
 | [`airscale_company_lookalikes`](#airscale-company-lookalikes) | Find companies similar to 1–10 reference company websites, with optional location, employee-size and founding-year filters. Returns company data and warnings synchronously. Costs 0.5 credits per unique returned company; unused reserved credits are refunded. Limit defaults to 2000; use an explicit smaller limit for a small search. Maximum 15 searches per rolling minute and 5 concurrent searches per workspace, shared with the API. Allow at least 100 seconds. Do not automatically retry: repeating a search can cause another charge. | 0.5 credits per unique returned company; reserves limit × 0.5 credits and refunds unused credits | Sync |
 | [`airscale_airsearch`](#airscale-airsearch) | AI web research agent: ask a natural-language question and optionally specify structured fields to extract. Costs 1 credit per successful call. | 1 credit per successful call | Sync |
 | [`airscale_leads_finder`](#airscale-leads-finder) | Search people with Leads Finder filters (job, company, location, seniority, skills, company size, funding, and more). Zero-based page pagination. Costs 0.1 credits per returned lead. | 0.1 credits per returned lead | Sync |
-| [`airscale_post_search`](#airscale-post-search) | Search LinkedIn posts by keywords, author, author's employer or industry, mentions, or group, newest first by default. Returns raw post rows (text, author, engagement counts, URL) one page at a time with pagination.next_cursor. Costs 1 credit per successful page, empty pages included; invalid input and failures are free. | 1 credit per successful page, including empty pages; invalid input and failures are free | Sync |
+| [`airscale_post_search`](#airscale-post-search) | Search LinkedIn posts by keywords, author, author's employer or industry, mentions, or group, newest first by default. Returns raw post rows (text, author, engagement counts, URL) one page at a time with pagination.next_cursor. Costs 1 credit per successful non-empty page; empty pages, invalid input and failures are free. | 1 credit per successful non-empty page; empty pages, invalid input and failures are free | Sync |
 
 <a id="airscale-find-people"></a>
 
@@ -279,7 +279,8 @@ Credit behavior: Free; no credits charged.
 | Field | Type | Required | Description | Constraints |
 | --- | --- | --- | --- | --- |
 | `filter` | `string` | Yes | Filter to discover values for | allowed values: `"city"`, `"region"`, `"industry"`, `"topics"`, `"techStack"` |
-| `q` | `string` | Yes | Search text, at least 2 characters | minimum length: 2 |
+| `q` | `string` | No | Search text, 2..120 characters after trimming. Required unless query is supplied. When present, takes precedence over query; blank q is invalid | — |
+| `query` | `string` | No | Alias for q; used only when q is absent. Search text must contain 2..120 characters after trimming | — |
 | `limit` | `integer` | No | 1..100. Defaults to 20 | minimum: 1; maximum: 100 |
 | `country` | `string` | No | Country name or ISO code to narrow location results | — |
 | `region` | `string` | No | Region code or value to narrow city results, e.g. "us-ca" | — |
@@ -295,7 +296,7 @@ Credit behavior: Free; no credits charged.
     "name": "airscale_find_companies_filter_values",
     "arguments": {
       "filter": "city",
-      "q": "ex"
+      "q": "Paris"
     }
   }
 }
@@ -480,20 +481,20 @@ Returns one zero-based page of nested Leads Finder person records with total, pa
 
 **MCP tool**
 
-Search LinkedIn posts by keywords, author, author's employer or industry, mentions, or group, newest first by default. Returns raw post rows (text, author, engagement counts, URL) one page at a time with pagination.next_cursor. Costs 1 credit per successful page, empty pages included; invalid input and failures are free.
+Search LinkedIn posts by keywords, author, author's employer or industry, mentions, or group, newest first by default. Returns raw post rows (text, author, engagement counts, URL) one page at a time with pagination.next_cursor. Costs 1 credit per successful non-empty page; empty pages, invalid input and failures are free.
 
 - **Category:** Search and research
 
 - **Spend classification:** Variable credit cost
 
-- **Credit behavior:** 1 credit per successful page, including empty pages; invalid input and failures are free
+- **Credit behavior:** 1 credit per successful non-empty page; empty pages, invalid input and failures are free
 
 - **Execution:** Synchronous
 
 - **Authentication:** Uses the credentials configured on the MCP connection; never include an API key in tool arguments.
 
 <Note>
-Credit behavior: 1 credit per successful page, including empty pages; invalid input and failures are free.
+Credit behavior: 1 credit per successful non-empty page; empty pages, invalid input and failures are free.
 </Note>
 
 #### Inputs
@@ -550,12 +551,12 @@ Returns one page of LinkedIn posts matching the filters and a next cursor when m
 | [`airscale_reverse_email`](#airscale-reverse-email) | Resolve an email address to a LinkedIn profile. Returns the entire enriched profile, not only the URL. | 2 credits per returned profile | Sync |
 | [`airscale_reverse_phone`](#airscale-reverse-phone) | Resolve a phone number to a LinkedIn profile. Returns the entire enriched profile, not only the URL. | 10 credits per returned profile | Sync |
 | [`airscale_domain_to_linkedin`](#airscale-domain-to-linkedin) | Find a company's LinkedIn company URL from its domain. Costs 0.5 credits on success; no-result lookups are free. Allow up to 130 seconds. | 0.5 credits on success; no-result lookups are free | Sync |
-| [`airscale_post_likers`](#airscale-post-likers) | List and enrich people who liked a LinkedIn post, one page (up to 25) at a time. Reserves 0.2 credits per requested slot and refunds unused, not-found, and failed slots. | 0.2 credits per enriched profile; unused, not-found, and failed slots are refunded | Sync |
-| [`airscale_post_commenters`](#airscale-post-commenters) | List and enrich people who commented on a LinkedIn post, one page (up to 25) at a time. Reserves 0.2 credits per requested slot and refunds unused, not-found, and failed slots. | 0.2 credits per enriched profile; unused, not-found, and failed slots are refunded | Sync |
-| [`airscale_profile_posts`](#airscale-profile-posts) | List the recent LinkedIn posts published by one person (profile URL), one page at a time with pagination.next_cursor. Costs 1 credit per successful page, empty pages included; invalid input and failures are free. | 1 credit per successful page, including empty pages; invalid input and failures are free | Sync |
-| [`airscale_company_posts`](#airscale-company-posts) | List the recent LinkedIn posts published by one company page (company URL or numeric ID), one page at a time with pagination.next_cursor. Costs 1 credit per successful page, empty pages included; invalid input and failures are free. | 1 credit per successful page, including empty pages; invalid input and failures are free | Sync |
-| [`airscale_profile_comments`](#airscale-profile-comments) | List the recent comments one person (profile URL) wrote on LinkedIn posts, with the comment and post URLs, one page at a time with pagination.next_cursor. Costs 1 credit per successful page, empty pages included; invalid input and failures are free. | 1 credit per successful page, including empty pages; invalid input and failures are free | Sync |
-| [`airscale_comment_likers`](#airscale-comment-likers) | List the people who reacted to one LinkedIn comment (comment URL, e.g. from airscale_profile_comments), one page at a time with pagination.next_cursor. Returns raw rows, not enriched contacts. Costs 1 credit per successful page, empty pages included; invalid input and failures are free. | 1 credit per successful page, including empty pages; invalid input and failures are free | Sync |
+| [`airscale_post_likers`](#airscale-post-likers) | List people who liked a LinkedIn post, up to 25 per response. Set enrich_profiles:false for extraction-only at 1 credit per fresh provider page on V1 and V2, including empty terminal pages; cached slices and identical retries are free. V1 balance updates through its billing queue. Omitted/true enriches profiles at 0.2 credits per successful profile; unused, not-found and failed slots refund. | Default enrichment: 0.2 credits per successful profile, unused slots refunded. Extraction-only: 1 credit per fresh provider page, including empty terminal pages; cached slices and identical retries are free. | Sync |
+| [`airscale_post_commenters`](#airscale-post-commenters) | List people who commented on a LinkedIn post, up to 25 per response. Set enrich_profiles:false for extraction-only at 1 credit per fresh provider page on V1 and V2, including empty terminal pages; cached slices and identical retries are free. V1 balance updates through its billing queue. Omitted/true enriches profiles at 0.2 credits per successful profile; unused, not-found and failed slots refund. | Default enrichment: 0.2 credits per successful profile, unused slots refunded. Extraction-only: 1 credit per fresh provider page, including empty terminal pages; cached slices and identical retries are free. | Sync |
+| [`airscale_profile_posts`](#airscale-profile-posts) | List the recent LinkedIn posts published by one person (profile URL), one page at a time with pagination.next_cursor. Costs 1 credit per successful non-empty page; empty pages, invalid input and failures are free. | 1 credit per successful non-empty page; empty pages, invalid input and failures are free | Sync |
+| [`airscale_company_posts`](#airscale-company-posts) | List the recent LinkedIn posts published by one company page (company URL or numeric ID), one page at a time with pagination.next_cursor. Costs 1 credit per successful non-empty page; empty pages, invalid input and failures are free. | 1 credit per successful non-empty page; empty pages, invalid input and failures are free | Sync |
+| [`airscale_profile_comments`](#airscale-profile-comments) | List the recent comments one person (profile URL) wrote on LinkedIn posts, with the comment and post URLs, one page at a time with pagination.next_cursor. Costs 1 credit per successful non-empty page; empty pages, invalid input and failures are free. | 1 credit per successful non-empty page; empty pages, invalid input and failures are free | Sync |
+| [`airscale_comment_likers`](#airscale-comment-likers) | List the people who reacted to one LinkedIn comment (comment URL, e.g. from airscale_profile_comments), one page at a time with pagination.next_cursor. Returns raw rows, not enriched contacts. Costs 1 credit per successful non-empty page; empty pages, invalid input and failures are free. | 1 credit per successful non-empty page; empty pages, invalid input and failures are free | Sync |
 
 <a id="airscale-find-email"></a>
 
@@ -1084,26 +1085,27 @@ Returns the LinkedIn company URL for the domain, or a not-found error when none 
 
 **MCP tool**
 
-List and enrich people who liked a LinkedIn post, one page (up to 25) at a time. Reserves 0.2 credits per requested slot and refunds unused, not-found, and failed slots.
+List people who liked a LinkedIn post, up to 25 per response. Set enrich_profiles:false for extraction-only at 1 credit per fresh provider page on V1 and V2, including empty terminal pages; cached slices and identical retries are free. V1 balance updates through its billing queue. Omitted/true enriches profiles at 0.2 credits per successful profile; unused, not-found and failed slots refund.
 
 - **Category:** Contact and profile enrichment
 
 - **Spend classification:** Variable credit cost
 
-- **Credit behavior:** 0.2 credits per enriched profile; unused, not-found, and failed slots are refunded
+- **Credit behavior:** Default enrichment: 0.2 credits per successful profile, unused slots refunded. Extraction-only: 1 credit per fresh provider page, including empty terminal pages; cached slices and identical retries are free.
 
 - **Execution:** Synchronous
 
 - **Authentication:** Uses the credentials configured on the MCP connection; never include an API key in tool arguments.
 
 <Note>
-Credit behavior: 0.2 credits per enriched profile; unused, not-found, and failed slots are refunded.
+Credit behavior: Default enrichment: 0.2 credits per successful profile, unused slots refunded. Extraction-only: 1 credit per fresh provider page, including empty terminal pages; cached slices and identical retries are free..
 </Note>
 
 #### Inputs
 
 | Field | Type | Required | Description | Constraints |
 | --- | --- | --- | --- | --- |
+| `enrich_profiles` | `boolean` | No | False returns engagement fields without profile lookups for 1 credit per fresh provider page on V1 and V2 workspaces. V1 balance updates through its existing billing queue. Omitted/true keeps enriched mode at 0.2 credits per successful profile. Keep the same mode with a cursor. | — |
 | `post_url` | `string` | Yes | LinkedIn post URL | format: `uri`; maximum length: 2048 |
 | `limit` | `integer` | No | People per page, 1..25. Defaults to 25 | minimum: 1; maximum: 25 |
 | `cursor` | `string` | No | pagination.next_cursor from the previous page | minimum length: 1; maximum length: 8192 |
@@ -1128,7 +1130,7 @@ Credit behavior: 0.2 credits per enriched profile; unused, not-found, and failed
 
 #### Expected result
 
-Returns one page of enriched post likers, pagination with a next cursor, and the page's credit outcome.
+Returns one page of post likers, pagination with a next cursor, and billing. Omitted/true enrich_profiles enriches profiles; false returns extraction-only rows with profile_status not_enriched. Keep the mode unchanged on continuation.
 
 **Related API reference:** [listPostLikers](/api-reference/post-likers)
 
@@ -1138,26 +1140,27 @@ Returns one page of enriched post likers, pagination with a next cursor, and the
 
 **MCP tool**
 
-List and enrich people who commented on a LinkedIn post, one page (up to 25) at a time. Reserves 0.2 credits per requested slot and refunds unused, not-found, and failed slots.
+List people who commented on a LinkedIn post, up to 25 per response. Set enrich_profiles:false for extraction-only at 1 credit per fresh provider page on V1 and V2, including empty terminal pages; cached slices and identical retries are free. V1 balance updates through its billing queue. Omitted/true enriches profiles at 0.2 credits per successful profile; unused, not-found and failed slots refund.
 
 - **Category:** Contact and profile enrichment
 
 - **Spend classification:** Variable credit cost
 
-- **Credit behavior:** 0.2 credits per enriched profile; unused, not-found, and failed slots are refunded
+- **Credit behavior:** Default enrichment: 0.2 credits per successful profile, unused slots refunded. Extraction-only: 1 credit per fresh provider page, including empty terminal pages; cached slices and identical retries are free.
 
 - **Execution:** Synchronous
 
 - **Authentication:** Uses the credentials configured on the MCP connection; never include an API key in tool arguments.
 
 <Note>
-Credit behavior: 0.2 credits per enriched profile; unused, not-found, and failed slots are refunded.
+Credit behavior: Default enrichment: 0.2 credits per successful profile, unused slots refunded. Extraction-only: 1 credit per fresh provider page, including empty terminal pages; cached slices and identical retries are free..
 </Note>
 
 #### Inputs
 
 | Field | Type | Required | Description | Constraints |
 | --- | --- | --- | --- | --- |
+| `enrich_profiles` | `boolean` | No | False returns engagement fields without profile lookups for 1 credit per fresh provider page on V1 and V2 workspaces. V1 balance updates through its existing billing queue. Omitted/true keeps enriched mode at 0.2 credits per successful profile. Keep the same mode with a cursor. | — |
 | `post_url` | `string` | Yes | LinkedIn post URL | format: `uri`; maximum length: 2048 |
 | `limit` | `integer` | No | People per page, 1..25. Defaults to 25 | minimum: 1; maximum: 25 |
 | `cursor` | `string` | No | pagination.next_cursor from the previous page | minimum length: 1; maximum length: 8192 |
@@ -1182,7 +1185,7 @@ Credit behavior: 0.2 credits per enriched profile; unused, not-found, and failed
 
 #### Expected result
 
-Returns one page of enriched post commenters, pagination with a next cursor, and the page's credit outcome.
+Returns one page of post commenters, pagination with a next cursor, and billing. Omitted/true enrich_profiles enriches profiles; false returns extraction-only rows with profile_status not_enriched. Keep the mode unchanged on continuation.
 
 **Related API reference:** [listPostCommenters](/api-reference/post-commenters)
 
@@ -1192,20 +1195,20 @@ Returns one page of enriched post commenters, pagination with a next cursor, and
 
 **MCP tool**
 
-List the recent LinkedIn posts published by one person (profile URL), one page at a time with pagination.next_cursor. Costs 1 credit per successful page, empty pages included; invalid input and failures are free.
+List the recent LinkedIn posts published by one person (profile URL), one page at a time with pagination.next_cursor. Costs 1 credit per successful non-empty page; empty pages, invalid input and failures are free.
 
 - **Category:** Contact and profile enrichment
 
 - **Spend classification:** Variable credit cost
 
-- **Credit behavior:** 1 credit per successful page, including empty pages; invalid input and failures are free
+- **Credit behavior:** 1 credit per successful non-empty page; empty pages, invalid input and failures are free
 
 - **Execution:** Synchronous
 
 - **Authentication:** Uses the credentials configured on the MCP connection; never include an API key in tool arguments.
 
 <Note>
-Credit behavior: 1 credit per successful page, including empty pages; invalid input and failures are free.
+Credit behavior: 1 credit per successful non-empty page; empty pages, invalid input and failures are free.
 </Note>
 
 #### Inputs
@@ -1244,27 +1247,27 @@ Returns one page of recent LinkedIn posts from a person and a next cursor when m
 
 **MCP tool**
 
-List the recent LinkedIn posts published by one company page (company URL or numeric ID), one page at a time with pagination.next_cursor. Costs 1 credit per successful page, empty pages included; invalid input and failures are free.
+List the recent LinkedIn posts published by one company page (company URL or numeric ID), one page at a time with pagination.next_cursor. Costs 1 credit per successful non-empty page; empty pages, invalid input and failures are free.
 
 - **Category:** Contact and profile enrichment
 
 - **Spend classification:** Variable credit cost
 
-- **Credit behavior:** 1 credit per successful page, including empty pages; invalid input and failures are free
+- **Credit behavior:** 1 credit per successful non-empty page; empty pages, invalid input and failures are free
 
 - **Execution:** Synchronous
 
 - **Authentication:** Uses the credentials configured on the MCP connection; never include an API key in tool arguments.
 
 <Note>
-Credit behavior: 1 credit per successful page, including empty pages; invalid input and failures are free.
+Credit behavior: 1 credit per successful non-empty page; empty pages, invalid input and failures are free.
 </Note>
 
 #### Inputs
 
 | Field | Type | Required | Description | Constraints |
 | --- | --- | --- | --- | --- |
-| `company_url` | `string` | Yes | LinkedIn company URL (linkedin.com/company/...) or numeric company ID | minimum length: 1; maximum length: 2048 |
+| `company_url` | `string or integer` | Yes | LinkedIn company URL (linkedin.com/company/...) or numeric company ID | — |
 | `posted_within` | `string` | No | Only posts from this window; pages can come back short or empty | allowed values: `"1h"`, `"24h"`, `"week"`, `"month"`, `"3months"`, `"6months"`, `"year"` |
 | `cursor` | `string` | No | pagination.next_cursor from the previous page; send the same other inputs | minimum length: 1; maximum length: 2048 |
 
@@ -1296,20 +1299,20 @@ Returns one page of recent LinkedIn posts from a company and a next cursor when 
 
 **MCP tool**
 
-List the recent comments one person (profile URL) wrote on LinkedIn posts, with the comment and post URLs, one page at a time with pagination.next_cursor. Costs 1 credit per successful page, empty pages included; invalid input and failures are free.
+List the recent comments one person (profile URL) wrote on LinkedIn posts, with the comment and post URLs, one page at a time with pagination.next_cursor. Costs 1 credit per successful non-empty page; empty pages, invalid input and failures are free.
 
 - **Category:** Contact and profile enrichment
 
 - **Spend classification:** Variable credit cost
 
-- **Credit behavior:** 1 credit per successful page, including empty pages; invalid input and failures are free
+- **Credit behavior:** 1 credit per successful non-empty page; empty pages, invalid input and failures are free
 
 - **Execution:** Synchronous
 
 - **Authentication:** Uses the credentials configured on the MCP connection; never include an API key in tool arguments.
 
 <Note>
-Credit behavior: 1 credit per successful page, including empty pages; invalid input and failures are free.
+Credit behavior: 1 credit per successful non-empty page; empty pages, invalid input and failures are free.
 </Note>
 
 #### Inputs
@@ -1348,20 +1351,20 @@ Returns one page of recent comments from a person, including comment and post UR
 
 **MCP tool**
 
-List the people who reacted to one LinkedIn comment (comment URL, e.g. from airscale_profile_comments), one page at a time with pagination.next_cursor. Returns raw rows, not enriched contacts. Costs 1 credit per successful page, empty pages included; invalid input and failures are free.
+List the people who reacted to one LinkedIn comment (comment URL, e.g. from airscale_profile_comments), one page at a time with pagination.next_cursor. Returns raw rows, not enriched contacts. Costs 1 credit per successful non-empty page; empty pages, invalid input and failures are free.
 
 - **Category:** Contact and profile enrichment
 
 - **Spend classification:** Variable credit cost
 
-- **Credit behavior:** 1 credit per successful page, including empty pages; invalid input and failures are free
+- **Credit behavior:** 1 credit per successful non-empty page; empty pages, invalid input and failures are free
 
 - **Execution:** Synchronous
 
 - **Authentication:** Uses the credentials configured on the MCP connection; never include an API key in tool arguments.
 
 <Note>
-Credit behavior: 1 credit per successful page, including empty pages; invalid input and failures are free.
+Credit behavior: 1 credit per successful non-empty page; empty pages, invalid input and failures are free.
 </Note>
 
 #### Inputs

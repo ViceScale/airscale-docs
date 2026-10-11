@@ -309,7 +309,7 @@ const findCompaniesFiltersSchema = {
     eventWindow: {
       description: findCompaniesFilterDescriptions.eventWindow,
       oneOf: [
-        { type: "string", enum: ["30 days", "60 days", "90 days"] },
+        { type: "string", enum: ["30 days", "60 days", "90 days", "120 days"] },
         { type: "null" },
         { type: "string", pattern: "^\\s*$" }
       ],

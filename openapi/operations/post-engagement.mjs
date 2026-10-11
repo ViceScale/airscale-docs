@@ -4,7 +4,7 @@ const CODE_SAMPLE_POST_URL = "https://example.com/linkedin-post-example";
 
 const errorDescriptions = {
   400: "The JSON body, LinkedIn post URL, or cursor is invalid.",
-  402: "The workspace does not have enough credits to reserve profile enrichment for this page.",
+  402: "The workspace does not have enough credits to reserve profile enrichment or a fresh extraction page.",
   409: "replay_in_progress: wait and retry the identical page with the same key. replay_request_mismatch: the key was already used with different request fields.",
   413: "The JSON request body exceeds the 128 KiB limit.",
   429: "The workspace has exceeded the 180 requests per minute limit shared by post-likers and post-commenters. Wait until the next minute boundary, then retry the identical page with the same idempotency key using bounded backoff.",
@@ -72,6 +72,11 @@ const postEngagementRequestSchema = {
       default: 25,
       description: "Number of engagements to request on this page."
     },
+    enrich_profiles: {
+      type: "boolean",
+      default: true,
+      description: "Omitted or true enriches profiles at 0.2 credits per successful profile. False returns available engagement fields without profile lookups and costs 1 credit per fresh native provider page, including empty terminal pages; cached slices and identical retries are free. Keep the mode unchanged when continuing a cursor."
+    },
     cursor: {
       type: ["string", "null"],
       minLength: 1,
@@ -103,8 +108,8 @@ const postEngagementItemSchema = {
   properties: {
     profile_status: {
       type: "string",
-      enum: ["success", "not_found", "error"],
-      description: "Profile enrichment outcome for this engagement."
+      enum: ["success", "not_found", "error", "not_enriched"],
+      description: "Profile enrichment outcome; not_enriched means extraction-only mode."
     },
     linkedin_url: { type: ["string", "null"] },
     profile_picture_url: { type: ["string", "null"], description: "Profile picture URL, or null when unavailable." },
@@ -159,7 +164,7 @@ const postEngagementResponseSchema = {
           enum: ["more_available", "provider_exhausted", "partial"],
           description: "partial means fewer engagements could be retrieved than the post reports."
         },
-        stop_reason: { type: "string", enum: ["page_limit", "provider_exhausted", "request_budget", "provider_total_mismatch"] }
+        stop_reason: { type: "string", enum: ["page_limit", "provider_exhausted", "request_budget", "provider_total_mismatch", "insufficient_credits", "provider_failure"] }
       }
     },
     billing: {
@@ -167,8 +172,8 @@ const postEngagementResponseSchema = {
       required: ["credits_consumed", "credits_refunded", "outcomes"],
       additionalProperties: false,
       properties: {
-        credits_consumed: { type: "integer", minimum: 0, maximum: 25 },
-        credits_refunded: { type: "integer", minimum: 0, maximum: 25 },
+        credits_consumed: { type: "number", minimum: 0, description: "Credit amount, rounded to two decimals. Raw mode counts paid native pages, not returned people." },
+        credits_refunded: { type: "number", minimum: 0, description: "Credit amount refunded, rounded to two decimals." },
         outcomes: {
           type: "object",
           required: ["success", "not_found", "error"],
@@ -176,7 +181,8 @@ const postEngagementResponseSchema = {
           properties: {
             success: { type: "integer", minimum: 0, maximum: 25 },
             not_found: { type: "integer", minimum: 0, maximum: 25 },
-            error: { type: "integer", minimum: 0, maximum: 25 }
+            error: { type: "integer", minimum: 0, maximum: 25 },
+            not_enriched: { type: "integer", minimum: 0, maximum: 25, description: "Returned extraction-only rows; not the number of paid native pages." }
           }
         }
       }
@@ -300,8 +306,8 @@ function responseExample(engagementType) {
       stop_reason: "page_limit"
     },
     billing: {
-      credits_consumed: 1,
-      credits_refunded: 24,
+      credits_consumed: 0.2,
+      credits_refunded: 4.8,
       outcomes: { success: 1, not_found: 0, error: 0 }
     }
   };
@@ -316,14 +322,14 @@ function operation({ path, operationId, engagementType, summary, description }) 
       tags: [TAG],
       summary,
       description,
-      "x-airscale-source-sha": "4a60fa48ae0f7b3f50f77516fdf80dc9d998e457",
+      "x-airscale-source-sha": "1dc01c0dcf5f10f0d24626fd2e669e3fc1138d98",
       "x-airscale-rate-limit": "180 requests per fixed minute per workspace, shared by post-likers and post-commenters; pagination requests and retries count.",
-      "x-airscale-credit-cost": "1 credit reserved upfront per requested slot (limit); unused slots and definitive not_found/error outcomes are refunded; only successful profile enrichments are consumed.",
+      "x-airscale-credit-cost": "Default enrichment: reserve limit × 0.2 credits, charge 0.2 per successful profile and refund unused or definitive failed slots. Extraction-only: 1 credit per fresh native provider page, including empty terminal pages; cached slices and identical retries are free.",
       "x-codeSamples": postEngagementCodeSamples(path),
       parameters: [{
         name: "Idempotency-Key", in: "header", required: false,
         schema: { type: "string", format: "uuid" },
-        description: "Create a UUID for this page and reuse it with the identical endpoint, post_url, limit and cursor on every retry. Use a new key for the next page. Completed results are replayable for 24 hours after completion. Omitting the header is supported, but an independent retry without the original key can reserve credits again."
+        description: "Create a UUID for this page and reuse it with the identical endpoint, post_url, limit, cursor and enrich_profiles mode on every retry. Use a new key for the next page. Completed results are replayable for 24 hours after completion. Omitting the header is supported, but an independent retry without the original key can reserve credits again."
       }],
       requestBody: requestBody(
         postEngagementRequestSchema,
@@ -332,7 +338,7 @@ function operation({ path, operationId, engagementType, summary, description }) 
       ),
       responses: {
         200: {
-          description: "A page of enriched LinkedIn post engagements.",
+          description: "A page of LinkedIn post engagements with profile enrichment or extraction-only fields, depending on enrich_profiles.",
           content: {
             "application/json": {
               schema: postEngagementResponseSchema,

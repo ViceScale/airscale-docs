@@ -68,8 +68,8 @@ const RESULT_BEHAVIOR = {
   airscale_reverse_phone: "Returns the enriched person profile resolved from the phone number, not only a profile URL.",
   airscale_leads_finder: "Returns one zero-based page of nested Leads Finder person records with total, page, and size.",
   airscale_domain_to_linkedin: "Returns the LinkedIn company URL for the domain, or a not-found error when none matches.",
-  airscale_post_likers: "Returns one page of enriched post likers, pagination with a next cursor, and the page's credit outcome.",
-  airscale_post_commenters: "Returns one page of enriched post commenters, pagination with a next cursor, and the page's credit outcome.",
+  airscale_post_likers: "Returns one page of post likers, pagination with a next cursor, and billing. Omitted/true enrich_profiles enriches profiles; false returns extraction-only rows with profile_status not_enriched. Keep the mode unchanged on continuation.",
+  airscale_post_commenters: "Returns one page of post commenters, pagination with a next cursor, and billing. Omitted/true enrich_profiles enriches profiles; false returns extraction-only rows with profile_status not_enriched. Keep the mode unchanged on continuation.",
   airscale_verify_email: "Returns the deliverability result, score, and address checks for the email.",
   airscale_check_whatsapp: "Returns yes or no with an operation_id, or a pending or unknown status to look up later.",
   airscale_get_whatsapp_check: "Returns the stored state of a previous WhatsApp check without starting a new one.",
@@ -86,6 +86,7 @@ const RESULT_BEHAVIOR = {
 // JSON Schema cannot express every runtime cross-field rule or a safe paid
 // request size. Keep those examples intentionally narrow and synthetic.
 const SAFE_EXAMPLE_ARGUMENTS = Object.freeze({
+  airscale_find_companies_filter_values: { filter: "city", q: "Paris" },
   airscale_post_search: {"keywords": "Example Company"},
   airscale_profile_posts: {"profile_url": "https://www.linkedin.com/in/example-person"},
   airscale_company_posts: {"company_url": "https://www.linkedin.com/company/example-company"},

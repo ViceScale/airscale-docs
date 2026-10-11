@@ -147,6 +147,7 @@ const EXPECTED_CONTRACTS = deepFreeze({
     sourceFiles: ["workers/public-api/icypeas-find-people.js", "workers/public-api/icypeas-find-people.test.mjs"]
   },
   "find-companies": {
+    sourceSha: "1dc01c0dcf5f10f0d24626fd2e669e3fc1138d98",
     endpoints: [
       { method: "POST", path: "/v1/find-companies" },
       { method: "GET", path: "/v1/find-companies/filter-values" }
@@ -179,7 +180,7 @@ const EXPECTED_CONTRACTS = deepFreeze({
       sourceFiles: ["workers/public-api/airsearch-worker.js", "workers/public-api/airsearch-worker.test.mjs"]
     },
     "post-engagement": {
-      sourceSha: "4a60fa48ae0f7b3f50f77516fdf80dc9d998e457",
+      sourceSha: "1dc01c0dcf5f10f0d24626fd2e669e3fc1138d98",
       endpoints: [
         { method: "POST", path: "/v1/post-likers" },
         { method: "POST", path: "/v1/post-commenters" }
@@ -196,7 +197,7 @@ const EXPECTED_CONTRACTS = deepFreeze({
       ]
     },
     "linkedin-content": {
-      sourceSha: "6ec34a03d63308d639833e388d41488fb40c8df6",
+      sourceSha: "1dc01c0dcf5f10f0d24626fd2e669e3fc1138d98",
       endpoints: [
         { method: "POST", path: "/v1/post-search" },
         { method: "POST", path: "/v1/profile-comments" },

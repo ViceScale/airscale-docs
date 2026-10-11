@@ -1336,7 +1336,7 @@ test("Find Companies models public filters, cursor precedence, and stable result
     "isPublicCompany"
   ]);
   assert.deepEqual(filters.properties.eventWindow.oneOf, [
-    { type: "string", enum: ["30 days", "60 days", "90 days"] },
+    { type: "string", enum: ["30 days", "60 days", "90 days", "120 days"] },
     { type: "null" },
     { type: "string", pattern: "^\\s*$" }
   ]);
@@ -1419,7 +1419,7 @@ test("Find Companies models canonical public coercions and fixed presets", () =>
   for (const eventWindow of [null, "", "   ", "30 days", "60 days", "90 days"]) {
     assert.equal(validate({ filters: { country: "FR", eventWindow } }), true, `eventWindow ${JSON.stringify(eventWindow)}`);
   }
-  assert.equal(validate({ filters: { country: "FR", eventWindow: "120 days" } }), false);
+  assert.equal(validate({ filters: { country: "FR", eventWindow: "120 days" } }), true);
   for (const locationMatch of [null, "", "   ", "hqOnly", "hqOperating"]) {
     assert.equal(validate({ filters: { country: "FR", locationMatch } }), true, `locationMatch ${JSON.stringify(locationMatch)}`);
   }
@@ -1715,9 +1715,9 @@ test("Post engagement operations model synchronous cursor pagination and enrichm
     assert.match(operation.responses["429"].description, /180 requests per minute.*shared/i);
     assert.equal(
       operation["x-airscale-credit-cost"],
-      "1 credit reserved upfront per requested slot (limit); unused slots and definitive not_found/error outcomes are refunded; only successful profile enrichments are consumed."
+      "Default enrichment: reserve limit × 0.2 credits, charge 0.2 per successful profile and refund unused or definitive failed slots. Extraction-only: 1 credit per fresh native provider page, including empty terminal pages; cached slices and identical retries are free."
     );
-    assert.equal(operation["x-airscale-source-sha"], "4a60fa48ae0f7b3f50f77516fdf80dc9d998e457");
+    assert.equal(operation["x-airscale-source-sha"], "1dc01c0dcf5f10f0d24626fd2e669e3fc1138d98");
     assert.equal(operation.parameters.length, 1);
     assert.equal(operation.parameters[0].name, "Idempotency-Key");
     assert.equal(operation.parameters[0].in, "header");
@@ -1778,12 +1778,12 @@ test("Post engagement operations model synchronous cursor pagination and enrichm
     assert.deepEqual(response.schema.properties.items.items.properties.profile_picture_url, { type: ["string", "null"], description: "Profile picture URL, or null when unavailable." });
     assert.deepEqual(response.schema.properties.retrieval.required, ["reported_total", "returned_count", "status", "stop_reason"]);
     assert.equal(response.schema.required.includes("retrieval"), false);
-    assert.deepEqual(response.schema.properties.retrieval.properties.stop_reason.enum, ["page_limit", "provider_exhausted", "request_budget", "provider_total_mismatch"]);
+    assert.deepEqual(response.schema.properties.retrieval.properties.stop_reason.enum, ["page_limit", "provider_exhausted", "request_budget", "provider_total_mismatch", "insufficient_credits", "provider_failure"]);
     assert.deepEqual(response.schema.properties.retrieval.properties.status.enum, ["more_available", "provider_exhausted", "partial"]);
     assert.deepEqual(response.schema.properties.retrieval.properties.retrieved_total.type, ["integer", "null"]);
     assert.deepEqual(response.schema.properties.pagination.required, ["next_cursor", "has_more"]);
     assert.deepEqual(response.schema.properties.billing.required, ["credits_consumed", "credits_refunded", "outcomes"]);
-    assert.equal(response.examples.page.value.billing.credits_refunded, 24);
+    assert.equal(response.examples.page.value.billing.credits_refunded, 4.8);
     assert.match(response.schema.properties.pagination.properties.next_cursor.description, /does not prove complete/);
     assert.deepEqual(response.examples.page.value.items[0], {
       profile_status: "success",
@@ -1817,9 +1817,9 @@ test("LinkedIn content operations model per-request billing, cursors, and unconf
   for (const entry of linkedinContentOperations) {
     const operation = entry.operation;
     assert.equal(operation.tags[0], "LinkedIn content");
-    assert.equal(operation["x-airscale-source-sha"], "6ec34a03d63308d639833e388d41488fb40c8df6");
+    assert.equal(operation["x-airscale-source-sha"], "1dc01c0dcf5f10f0d24626fd2e669e3fc1138d98");
     assert.equal(operation["x-airscale-rate-limit"], "180 requests per fixed minute per workspace, counted separately for each LinkedIn content endpoint; pagination requests and retries count.");
-    assert.match(operation["x-airscale-credit-cost"], /^1 credit per successful request, including empty pages/);
+    assert.match(operation["x-airscale-credit-cost"], /^1 credit per successful non-empty request; empty pages/);
     assert.equal(operation.parameters, undefined, "there is no caller idempotency header");
     const request = requestSchema(operation);
     assert.equal(request.additionalProperties, false);
@@ -1829,7 +1829,7 @@ test("LinkedIn content operations model per-request billing, cursors, and unconf
     const response = operation.responses["200"].content["application/json"];
     assert.deepEqual(response.schema.required, ["items", "pagination", "billing"]);
     assert.deepEqual(response.schema.properties.pagination.required, ["has_more", "next_cursor", "total"]);
-    assert.deepEqual(response.schema.properties.billing.properties.credits_consumed, { type: "integer", const: 1 });
+    assert.deepEqual(response.schema.properties.billing.properties.credits_consumed, { type: "integer", enum: [0, 1] });
     assert.equal(response.examples.page.value.billing.credits_consumed, 1);
     assert.doesNotMatch(JSON.stringify(operation), /harvest/i, "the public contract never names the data source");
     assertUnauthorizedReference(operation);

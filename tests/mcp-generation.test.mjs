@@ -559,6 +559,7 @@ test("every generated tools/call example parses, stays synthetic, and validates 
   }
 
   const examplesByTool = new Map(examples.map((example) => [example.params.name, example.params.arguments]));
+  assert.deepEqual(examplesByTool.get("airscale_find_companies_filter_values"), { filter: "city", q: "Paris" }, "filter discovery examples must satisfy the runtime q-or-query rule");
   assert.deepEqual(examplesByTool.get("airscale_find_people"), {
     query: { companyDomain: { include: ["example.com"] } },
     size: 1
@@ -3044,7 +3045,7 @@ test("agent renderers publish only the platform-supported custom agent files", (
 
   assert.match(outputs["skill.md"], /^---\nname: airscale\ndescription: Search for people and companies, enrich professional contact data, run web research, and create asynchronous exports through the Airschool API or MCP server\./);
   assert.match(outputs["skill.md"], /version: "1\.0"/);
-  assert.match(outputs["skill.md"], /source_sha: "3a42948758f2c1b68052af8c405e842e487feee3"/);
+  assert.match(outputs["skill.md"], /source_sha: "ecfcce702922de61cb2f42bebbe0425fbf578159"/);
   assert.match(outputs["skill.md"], /API authentication[\s\S]*MCP authentication/i);
   assert.match(outputs["skill.md"], /Airsearch costs 1 credit per successful call/);
   assert.match(outputs["skill.md"], /confirm_credit_spend[\s\S]*explicit/i);
