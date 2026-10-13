@@ -142,6 +142,19 @@
         "workers/public-api/linkedin-content-worker.test.mjs"
       ]
     },
+    "website-technologies": {
+      "sourceSha": "63c8ec7d0011d2310d6a9eb22987d40dd059590f",
+      "endpoints": [
+        {
+          "method": "POST",
+          "path": "/v1/technologies"
+        }
+      ],
+      "sourceFiles": [
+        "workers/public-api/technologies.js",
+        "workers/public-api/technologies.test.mjs"
+      ]
+    },
     "whatsapp-check": {
       "sourceSha": "282e64878898b4f7082e6ce00b740d76aca787f1",
       "endpoints": [

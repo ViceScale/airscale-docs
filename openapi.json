@@ -40,7 +40,7 @@
     },
     {
       "name": "Miscellaneous",
-      "description": "Check WhatsApp availability, Meta ads, and email deliverability."
+      "description": "Find website technologies and check WhatsApp availability, Meta ads, and email deliverability."
     }
   ],
   "security": [
@@ -9146,6 +9146,302 @@
                 "schema": {
                   "$ref": "#/components/schemas/Error"
                 }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/technologies": {
+      "post": {
+        "tags": [
+          "Miscellaneous"
+        ],
+        "x-airscale-source-sha": "63c8ec7d0011d2310d6a9eb22987d40dd059590f",
+        "operationId": "findWebsiteTechnologies",
+        "summary": "Find website technologies",
+        "description": "Find technology names for one website. A balance of at least 0.5 credits is required before lookup. A nonempty result costs 0.5 credits; an empty result costs zero. Duplicate names are removed without regard to case. No caller idempotency key is supported; retrying can run and charge another lookup, including when the original response was lost.",
+        "x-airscale-rate-limit": "10 requests per second per workspace.",
+        "x-airscale-credit-cost": "0.5 credits when one or more technologies are found; otherwise 0.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "domain": {
+                    "type": "string",
+                    "minLength": 1,
+                    "pattern": "\\S",
+                    "description": "Bare website hostname or HTTP(S) URL. Whitespace is trimmed; the hostname is lowercased and leading www. and a trailing dot are removed. Paths and queries are ignored. IP literals, localhost, credentials, non-default ports, non-HTTP(S) schemes, and invalid domain labels are rejected. Send exactly one domain field. Maximum JSON body size: 16 KiB."
+                  }
+                },
+                "required": [
+                  "domain"
+                ],
+                "additionalProperties": false
+              },
+              "examples": {
+                "request": {
+                  "value": {
+                    "domain": "example.com"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Normalized domain, technology names, and credit cost.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "type": "object",
+                      "properties": {
+                        "domain": {
+                          "type": "string"
+                        },
+                        "technologies": {
+                          "type": "array",
+                          "minItems": 1,
+                          "items": {
+                            "type": "string",
+                            "minLength": 1
+                          }
+                        },
+                        "credits_consumed": {
+                          "type": "number",
+                          "const": 0.5
+                        }
+                      },
+                      "required": [
+                        "domain",
+                        "technologies",
+                        "credits_consumed"
+                      ],
+                      "additionalProperties": false
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "domain": {
+                          "type": "string"
+                        },
+                        "technologies": {
+                          "type": "array",
+                          "maxItems": 0,
+                          "items": {
+                            "type": "string"
+                          }
+                        },
+                        "credits_consumed": {
+                          "type": "number",
+                          "const": 0
+                        }
+                      },
+                      "required": [
+                        "domain",
+                        "technologies",
+                        "credits_consumed"
+                      ],
+                      "additionalProperties": false
+                    }
+                  ]
+                },
+                "examples": {
+                  "found": {
+                    "value": {
+                      "domain": "example.com",
+                      "technologies": [
+                        "React",
+                        "Vite"
+                      ],
+                      "credits_consumed": 0.5
+                    }
+                  },
+                  "noTechnologies": {
+                    "value": {
+                      "domain": "example.com",
+                      "technologies": [],
+                      "credits_consumed": 0
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid JSON, domain, or additional body fields.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    },
+                    "operation_id": {
+                      "type": "string",
+                      "format": "uuid",
+                      "description": "Operation UUID."
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ],
+                  "additionalProperties": true
+                },
+                "examples": {}
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "description": "Insufficient credits. At least 0.5 credits are required before lookup.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    },
+                    "operation_id": {
+                      "type": "string",
+                      "format": "uuid",
+                      "description": "Operation UUID."
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ],
+                  "additionalProperties": true
+                },
+                "examples": {}
+              }
+            }
+          },
+          "413": {
+            "description": "JSON body exceeds 16 KiB.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    },
+                    "operation_id": {
+                      "type": "string",
+                      "format": "uuid",
+                      "description": "Operation UUID."
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ],
+                  "additionalProperties": true
+                },
+                "examples": {}
+              }
+            }
+          },
+          "429": {
+            "description": "Workspace rate limit exceeded: 10 requests per fixed UTC second.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    },
+                    "operation_id": {
+                      "type": "string",
+                      "format": "uuid",
+                      "description": "Operation UUID."
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ],
+                  "additionalProperties": true
+                },
+                "examples": {}
+              }
+            }
+          },
+          "502": {
+            "description": "The technology lookup failed or exceeded its 60-second lookup timeout. Allow additional client time for authentication and billing.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    },
+                    "operation_id": {
+                      "type": "string",
+                      "format": "uuid",
+                      "description": "Operation UUID."
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ],
+                  "additionalProperties": true
+                },
+                "examples": {}
+              }
+            }
+          },
+          "503": {
+            "description": "Lookup capacity, authentication, or billing is unavailable. Retry with bounded backoff. A retry is a new lookup and can incur another charge.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    },
+                    "operation_id": {
+                      "type": "string",
+                      "format": "uuid",
+                      "description": "Operation UUID."
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ],
+                  "additionalProperties": true
+                },
+                "examples": {}
               }
             }
           }

@@ -1,0 +1,16 @@
+{
+  "operation": "POST /v1/technologies",
+  "status": 200,
+  "source": "code",
+  "sourceRepository": "ViceScale/airscale-code",
+  "sourceSha": "63c8ec7d0011d2310d6a9eb22987d40dd059590f",
+  "evidence": "workers/public-api/technologies.test.mjs:28-51; domain replaced with example.com. No live paid request.",
+  "body": {
+    "domain": "example.com",
+    "technologies": [
+      "React",
+      "Vite"
+    ],
+    "credits_consumed": 0.5
+  }
+}

@@ -14,6 +14,22 @@ const operation = (path, method = 'post') => {
 const response = (op, code) => ajv.compile(op.responses[code].content['application/json'].schema);
 const id = '00000000-0000-4000-8000-000000000001';
 
+test('Website Technologies accepts only a domain and ties billing to nonempty results', () => {
+  const op = operation('/v1/technologies');
+  const request = ajv.compile(op.requestBody.content['application/json'].schema);
+  assert.ok(request({ domain: 'example.com' }));
+  assert.ok(request({ domain: 'https://www.example.com/about' }));
+  for (const body of [{}, { domain: '' }, { domain: '   ' }, { domain: null }, { domain: ['example.com'] }, { domain: 'example.com', extra: true }]) assert.equal(request(body), false);
+  const success = response(op, 200);
+  assert.ok(success({ domain: 'example.com', technologies: ['React', 'Vite'], credits_consumed: 0.5 }));
+  assert.ok(success({ domain: 'example.com', technologies: [], credits_consumed: 0 }));
+  assert.equal(success({ domain: 'example.com', technologies: [], credits_consumed: 0.5 }), false);
+  assert.equal(success({ domain: 'example.com', technologies: ['React'], credits_consumed: 0 }), false);
+  assert.equal(success({ domain: 'example.com', technologies: [{ name: 'React' }], credits_consumed: 0.5 }), false);
+  assert.equal(op.parameters, undefined);
+  assert.deepEqual(Object.keys(op.responses), ['200', '400', '401', '403', '413', '429', '502', '503']);
+});
+
 test('every authored API page binding resolves, including pages absent from the catalog', () => {
   for (const path of readdirSync('api-reference', { recursive: true }).filter(p => p.endsWith('.mdx'))) {
     const text = readFileSync(`api-reference/${path}`, 'utf8');

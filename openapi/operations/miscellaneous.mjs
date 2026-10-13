@@ -155,6 +155,32 @@ const verificationSuccess = verifierJson('A verification result, either at the t
         });
 export const miscellaneousOperations = [
   {
+    method: 'POST', path: '/v1/technologies', operation: {
+      ...common, operationId: 'findWebsiteTechnologies', summary: 'Find website technologies',
+      'x-airscale-source-sha': '63c8ec7d0011d2310d6a9eb22987d40dd059590f',
+      description: 'Find technology names for one website. A balance of at least 0.5 credits is required before lookup. A nonempty result costs 0.5 credits; an empty result costs zero. Duplicate names are removed without regard to case. No caller idempotency key is supported; retrying can run and charge another lookup, including when the original response was lost.',
+      'x-airscale-rate-limit': '10 requests per second per workspace.',
+      'x-airscale-credit-cost': '0.5 credits when one or more technologies are found; otherwise 0.',
+      requestBody: request(object({ domain: { type: 'string', minLength: 1, pattern: '\\S', description: 'Bare website hostname or HTTP(S) URL. Whitespace is trimmed; the hostname is lowercased and leading www. and a trailing dot are removed. Paths and queries are ignored. IP literals, localhost, credentials, non-default ports, non-HTTP(S) schemes, and invalid domain labels are rejected. Send exactly one domain field. Maximum JSON body size: 16 KiB.' } }), { domain: 'example.com' }),
+      responses: {
+        200: json('Normalized domain, technology names, and credit cost.', { oneOf: [
+          object({ domain: { type: 'string' }, technologies: { type: 'array', minItems: 1, items: { type: 'string', minLength: 1 } }, credits_consumed: { type: 'number', const: 0.5 } }),
+          object({ domain: { type: 'string' }, technologies: { type: 'array', maxItems: 0, items: { type: 'string' } }, credits_consumed: { type: 'number', const: 0 } })
+        ] }, {
+          found: { domain: 'example.com', technologies: ['React', 'Vite'], credits_consumed: 0.5 },
+          noTechnologies: { domain: 'example.com', technologies: [], credits_consumed: 0 }
+        }),
+        400: error('Invalid JSON, domain, or additional body fields.'),
+        401: { $ref: '#/components/responses/Unauthorized' },
+        403: error('Insufficient credits. At least 0.5 credits are required before lookup.'),
+        413: error('JSON body exceeds 16 KiB.'),
+        429: error('Workspace rate limit exceeded: 10 requests per fixed UTC second.'),
+        502: error('The technology lookup failed or exceeded its 60-second lookup timeout. Allow additional client time for authentication and billing.'),
+        503: error('Lookup capacity, authentication, or billing is unavailable. Retry with bounded backoff. A retry is a new lookup and can incur another charge.')
+      }
+    }
+  },
+  {
     method: 'POST', path: '/v1/whatsapp-check', operation: {
       ...common, operationId: 'checkWhatsapp', summary: 'Check WhatsApp availability',
       description: 'Check one phone number. Definitive yes and no outcomes both cost one credit. An optional Idempotency-Key makes retries of the same phone reuse the operation; a different phone with the same key returns 409. When omitted, the server generates an operation ID. Save the returned ID for reconciliation.',

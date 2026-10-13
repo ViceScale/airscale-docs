@@ -117,6 +117,7 @@
 
 ## API Reference — Miscellaneous
 
+- [Website Technologies](https://airscale.mintlify.app/api-reference/miscellaneous/website-technologies.md): Find the technologies used by a website. Rate limit: 10 requests per second per workspace.
 - [WhatsApp checker](https://airscale.mintlify.app/api-reference/miscellaneous/whatsapp-check.md): Check whether one phone number is available on WhatsApp. Rate limit: 60 requests per minute per workspace for POST, including replays.
 - [WhatsApp check status](https://airscale.mintlify.app/api-reference/miscellaneous/whatsapp-check/status.md): Reconcile a WhatsApp check using its operation ID. Rate limit: No endpoint-specific GET throttle.
 - [Meta Ads](https://airscale.mintlify.app/api-reference/miscellaneous/meta-ads.md): Look up Meta ads for a company domain. Rate limit: 60 requests per minute per workspace.
