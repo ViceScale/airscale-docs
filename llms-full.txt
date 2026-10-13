@@ -2750,6 +2750,7 @@ All numeric limits below apply per workspace. A shared limit is one combined all
 | [Comment likers](/api-reference/comment-likers) | 180 requests per fixed minute per workspace, counted separately for each LinkedIn content endpoint; pagination requests and retries count. |
 | [Profile posts](/api-reference/profile-posts) | 180 requests per fixed minute per workspace, counted separately for each LinkedIn content endpoint; pagination requests and retries count. |
 | [Company posts](/api-reference/company-posts) | 180 requests per fixed minute per workspace, counted separately for each LinkedIn content endpoint; pagination requests and retries count. |
+| [Website Technologies](/api-reference/miscellaneous/website-technologies) | 10 requests per second per workspace. |
 | [WhatsApp checker](/api-reference/miscellaneous/whatsapp-check) | 60 requests per minute per workspace for POST, including replays. |
 | [WhatsApp check status](/api-reference/miscellaneous/whatsapp-check/status) | No endpoint-specific GET throttle. |
 | [Meta Ads](/api-reference/miscellaneous/meta-ads) | 60 requests per minute per workspace. |
@@ -4687,6 +4688,36 @@ This endpoint does not accept an idempotency key. Retrying a request fetches the
 ## Next step
 
 Use [Post likers](/api-reference/post-likers) or [Post commenters](/api-reference/post-commenters) to retrieve enriched people who engaged with one of the returned posts.
+
+---
+
+## Website Technologies
+
+Source: https://docs.airscale.io/api-reference/miscellaneous/website-technologies.md
+
+Description: Find the technologies used by a website. Rate limit: 10 requests per second per workspace.
+
+Find the technologies used by one website, such as its CMS, analytics tools, or JavaScript frameworks. Authenticate with your Airscale workspace API key and send exactly one `domain` field containing a bare hostname or HTTP(S) URL.
+
+The domain is normalized to lowercase without a leading `www.` or trailing dot. Paths and queries are ignored. IP addresses, localhost, URL credentials, non-default ports, and non-HTTP(S) schemes are rejected. The JSON body must fit within **16 KiB**; additional fields are not accepted.
+
+## Usage and credits
+
+You need at least **0.5 credits** before a lookup can start. A response with one or more technology names costs **0.5 credits**. An empty result returns `technologies: []` and `credits_consumed: 0`.
+
+Read `domain` for the normalized hostname and `technologies` for the list of names. Duplicate names are removed without regard to case. An empty list means no technologies were found for that lookup; it does not prove the website uses no technologies.
+
+## Rate limits and retries
+
+The limit is **10 requests per second per workspace**, measured in fixed UTC-second windows. Lookup capacity is also shared across workspaces, so actual throughput can be lower. A workspace rate limit returns `429`; unavailable lookup capacity returns `503`.
+
+Allow more than **60 seconds** for a request: the lookup itself can take up to 60 seconds, with additional time for authentication and billing. A failed or timed-out lookup returns `502`. Authentication or billing services can also return `503`.
+
+Use bounded backoff for temporary errors. This endpoint does not support caller idempotency keys. Retrying can run and charge another lookup, including when the original response was lost. A client timeout does not confirm that no credits were charged.
+
+## Next step
+
+Check your [credit balance](/api-reference/credit-count) or review [rate limits](/api-reference/rate-limits) before scheduling more lookups.
 
 ---
 
