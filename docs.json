@@ -225,6 +225,7 @@
           {
             "group": "Miscellaneous",
             "pages": [
+              "api-reference/miscellaneous/website-technologies",
               "api-reference/miscellaneous/whatsapp-check",
               "api-reference/miscellaneous/whatsapp-check/status",
               "api-reference/miscellaneous/meta-ads",

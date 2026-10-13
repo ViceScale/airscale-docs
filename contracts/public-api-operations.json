@@ -328,6 +328,19 @@
     },
     {
       "method": "POST",
+      "path": "/v1/technologies",
+      "operationId": "findWebsiteTechnologies",
+      "page": "api-reference/miscellaneous/website-technologies",
+      "tag": "Miscellaneous",
+      "sourcePage": "website-technologies",
+      "sourceSha": "63c8ec7d0011d2310d6a9eb22987d40dd059590f",
+      "sourceFiles": [
+        "workers/public-api/technologies.js",
+        "workers/public-api/technologies.test.mjs"
+      ]
+    },
+    {
+      "method": "POST",
       "path": "/v1/whatsapp-check",
       "operationId": "checkWhatsapp",
       "page": "api-reference/miscellaneous/whatsapp-check",

@@ -332,7 +332,7 @@ test("base spec identifies the Airscale public API", () => {
     { name: "Post engagement", description: "Retrieve and enrich people who liked or commented on LinkedIn posts." },
     { name: "LinkedIn content", description: "Search LinkedIn posts, read profile and company feeds, and retrieve profile comments and comment reactions." },
     { name: "Account", description: "Inspect workspace account state." },
-    { name: "Miscellaneous", description: "Check WhatsApp availability, Meta ads, and email deliverability." }
+    { name: "Miscellaneous", description: "Find website technologies and check WhatsApp availability, Meta ads, and email deliverability." }
   ]);
   assert.deepEqual(baseSpec.components.securitySchemes.bearerAuth, {
     type: "http",
@@ -1853,7 +1853,7 @@ test("LinkedIn content operations model per-request billing, cursors, and unconf
   }
 });
 
-test("committed OpenAPI 3.1 artifact matches the pinned 30-operation catalog exactly", async () => {
+test("committed OpenAPI 3.1 artifact matches the pinned 31-operation catalog exactly", async () => {
   const parsed = await SwaggerParser.validate("openapi.json");
   const generated = buildSpec();
   const committed = committedSpec();
@@ -1864,7 +1864,7 @@ test("committed OpenAPI 3.1 artifact matches the pinned 30-operation catalog exa
   assert.deepEqual(committed.servers, baseSpec.servers);
   assert.deepEqual(committed.security, baseSpec.security);
   assert.equal(approvedCatalog.sourceSha, SOURCE_SHA);
-  assert.equal(approvedCatalog.operations.length, 30);
+  assert.equal(approvedCatalog.operations.length, 31);
 
   const actualOperations = [];
   for (const [path, pathItem] of Object.entries(committed.paths)) {
@@ -1872,8 +1872,8 @@ test("committed OpenAPI 3.1 artifact matches the pinned 30-operation catalog exa
       if (pathItem[method]) actualOperations.push({ method: method.toUpperCase(), path, operation: pathItem[method] });
     }
   }
-  assert.equal(actualOperations.length, 30);
-  assert.equal(actualOperations.filter(({ method }) => method === "POST").length, 28);
+  assert.equal(actualOperations.length, 31);
+  assert.equal(actualOperations.filter(({ method }) => method === "POST").length, 29);
   assert.equal(actualOperations.filter(({ method }) => method === "GET").length, 2);
   assert.equal(actualOperations.filter(({ method }) => method === "PATCH").length, 0);
   assert.equal(actualOperations.filter(({ method }) => method === "DELETE").length, 0);

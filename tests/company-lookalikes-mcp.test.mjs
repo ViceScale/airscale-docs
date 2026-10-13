@@ -16,7 +16,7 @@ test("MCP lookalikes maps to the existing synchronous paid company search operat
   assert.equal(tool.spend.kind, "variable");
   assert.match(tool.spend.summary, /0\.5 credits per unique returned company/);
   const operations = JSON.parse(readFileSync("contracts/public-api-operations.json", "utf8")).operations;
-  assert.equal(operations.length, 30, "MCP reuses the existing API operation");
+  assert.equal(operations.length, 31, "MCP reuses the existing API operation");
 });
 
 test("MCP lookalikes schema includes bounded references, total results, and strict filters", () => {
