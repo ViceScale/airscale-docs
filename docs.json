@@ -186,7 +186,6 @@
               "api-reference/leads-finder",
               "api-reference/find-companies",
               "api-reference/find-companies/filter-values",
-              "api-reference/business-intent-topics",
               "api-reference/company-lookalikes",
               "api-reference/airsearch"
             ]
@@ -227,6 +226,7 @@
           {
             "group": "Miscellaneous",
             "pages": [
+              "api-reference/business-intent-topics",
               "api-reference/miscellaneous/website-technologies",
               "api-reference/miscellaneous/whatsapp-check",
               "api-reference/miscellaneous/whatsapp-check/status",

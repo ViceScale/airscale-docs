@@ -3902,48 +3902,6 @@ Copy the returned `value` into the matching filter on [Find companies](/api-refe
 
 ---
 
-## Business intent topics
-
-Source: https://docs.airscale.io/api-reference/business-intent-topics.md
-
-Description: Check a LinkedIn company for selected business intent topics. A matched result costs 3 credits. Rate limit: 6 requests per second per workspace.
-
-Check a company LinkedIn URL against one or more business intent topics. Submit only a LinkedIn **company** URL; a domain or personal profile URL is not accepted.
-
-## Find topic values
-
-Call [Company filter values](/api-reference/find-companies/filter-values) with `filter=topics` and a search term of at least two characters. This lookup uses the same API key and is free.
-
-```bash Search topics
-curl --get 'https://api.airscale.io/v1/find-companies/filter-values' \
-  -H "Authorization: Bearer $AIRSCALE_API_KEY" \
-  --data-urlencode 'filter=topics' \
-  --data-urlencode 'q=customer relationship'
-```
-
-The response contains `values` with a display `label` and a request `value`. For example, a result can be `{"label":"crm: customer relationship management (crm)","value":"crm: customer relationship management (crm)"}`. Copy the complete `value` string into the `topics` array. Search again with another term to find more topics; send 1–20 values per intent request.
-
-## Check a company
-
-```bash Check business intent
-curl 'https://api.airscale.io/v1/business-intent-topics' \
-  -H "Authorization: Bearer $AIRSCALE_API_KEY" \
-  -H 'Content-Type: application/json' \
-  --data '{"linkedin_company_url":"https://www.linkedin.com/company/example-company/","topics":["crm: customer relationship management (crm)"]}'
-```
-
-Use an HTTPS `linkedin.com/company/<slug>/` URL without a query or fragment. The request body accepts only `linkedin_company_url` and `topics` and is limited to 16 KiB. Topic strings are trimmed, must be nonempty, and can be at most 150 characters each.
-
-When `matched` is `true`, the response includes `intent_topics`, `level_of_intent`, `date_stamp`, company details when available, and `credits_consumed: 3`. When the company is not matched, `matched` is `false`, `intent_topics` is empty, and `credits_consumed` is `0`. A result with no usable intent topics is treated as an error rather than a paid match. Keep at least 3 credits available before calling this endpoint, including for a possible no-match result.
-
-The limit is 6 requests per second per workspace, shared with Find companies and Company filter values. For `429`, wait and retry with bounded backoff. A repeated POST is a new lookup and can cost another 3 credits. If a `503` response includes `operation_id`, credit settlement is uncertain; contact Airscale support with that ID before retrying.
-
-## Next step
-
-Use the returned `intent_topics` and `level_of_intent` in your workflow, or [search for more topic values](/api-reference/find-companies/filter-values) to run another check.
-
----
-
 ## Company lookalikes
 
 Source: https://docs.airscale.io/api-reference/company-lookalikes.md
@@ -4738,6 +4696,48 @@ This endpoint does not accept an idempotency key. Retrying a request fetches the
 ## Next step
 
 Use [Post likers](/api-reference/post-likers) or [Post commenters](/api-reference/post-commenters) to retrieve enriched people who engaged with one of the returned posts.
+
+---
+
+## Business intent topics
+
+Source: https://docs.airscale.io/api-reference/business-intent-topics.md
+
+Description: Check a LinkedIn company for selected business intent topics. A matched result costs 3 credits. Rate limit: 6 requests per second per workspace.
+
+Check a company LinkedIn URL against one or more business intent topics. Submit only a LinkedIn **company** URL; a domain or personal profile URL is not accepted.
+
+## Find topic values
+
+Call [Company filter values](/api-reference/find-companies/filter-values) with `filter=topics` and a search term of at least two characters. This lookup uses the same API key and is free.
+
+```bash Search topics
+curl --get 'https://api.airscale.io/v1/find-companies/filter-values' \
+  -H "Authorization: Bearer $AIRSCALE_API_KEY" \
+  --data-urlencode 'filter=topics' \
+  --data-urlencode 'q=customer relationship'
+```
+
+The response contains `values` with a display `label` and a request `value`. For example, a result can be `{"label":"crm: customer relationship management (crm)","value":"crm: customer relationship management (crm)"}`. Copy the complete `value` string into the `topics` array. Search again with another term to find more topics; send 1–20 values per intent request.
+
+## Check a company
+
+```bash Check business intent
+curl 'https://api.airscale.io/v1/business-intent-topics' \
+  -H "Authorization: Bearer $AIRSCALE_API_KEY" \
+  -H 'Content-Type: application/json' \
+  --data '{"linkedin_company_url":"https://www.linkedin.com/company/example-company/","topics":["crm: customer relationship management (crm)"]}'
+```
+
+Use an HTTPS `linkedin.com/company/<slug>/` URL without a query or fragment. The request body accepts only `linkedin_company_url` and `topics` and is limited to 16 KiB. Topic strings are trimmed, must be nonempty, and can be at most 150 characters each.
+
+When `matched` is `true`, the response includes `intent_topics`, `level_of_intent`, `date_stamp`, company details when available, and `credits_consumed: 3`. When the company is not matched, `matched` is `false`, `intent_topics` is empty, and `credits_consumed` is `0`. A result with no usable intent topics is treated as an error rather than a paid match. Keep at least 3 credits available before calling this endpoint, including for a possible no-match result.
+
+The limit is 6 requests per second per workspace, shared with Find companies and Company filter values. For `429`, wait and retry with bounded backoff. A repeated POST is a new lookup and can cost another 3 credits. If a `503` response includes `operation_id`, credit settlement is uncertain; contact Airscale support with that ID before retrying.
+
+## Next step
+
+Use the returned `intent_topics` and `level_of_intent` in your workflow, or [search for more topic values](/api-reference/find-companies/filter-values) to run another check.
 
 ---
 
