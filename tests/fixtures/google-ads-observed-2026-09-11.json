@@ -1,0 +1,57 @@
+{
+  "ads": [
+    {
+      "start": "2025-08-06",
+      "variants": [
+        {
+          "image": "https://tpc.googlesyndication.com/archive/simgad/11796833182641500615",
+          "format": "Image",
+          "content": "<img src=\"https://tpc.googlesyndication.com/archive/simgad/11796833182641500615\" height=\"245\" width=\"364\">"
+        }
+      ],
+      "last_seen": "2026-09-11",
+      "creative_id": "CR15904393828438638593",
+      "format_type": "Image",
+      "original_url": "https://adstransparency.google.com/advertiser/AR15495076796520464385/creative/CR15904393828438638593?region=US",
+      "advertiser_id": "AR15495076796520464385",
+      "advertiser_name": "Microsoft Corporation"
+    },
+    {
+      "start": "2024-08-05",
+      "variants": [
+        {
+          "image": "https://tpc.googlesyndication.com/archive/simgad/3964577549383120043",
+          "format": "Image",
+          "content": "<img src=\"https://tpc.googlesyndication.com/archive/simgad/3964577549383120043\" height=\"160\" width=\"348\">"
+        }
+      ],
+      "last_seen": "2026-09-11",
+      "creative_id": "CR13342225899689345025",
+      "format_type": "Image",
+      "original_url": "https://adstransparency.google.com/advertiser/AR15495076796520464385/creative/CR13342225899689345025?region=US",
+      "advertiser_id": "AR15495076796520464385",
+      "advertiser_name": "Microsoft Corporation"
+    },
+    {
+      "start": "2026-04-30",
+      "variants": [
+        {
+          "image": "https://tpc.googlesyndication.com/archive/simgad/5563321716965314248",
+          "format": "Image",
+          "content": "<img src=\"https://tpc.googlesyndication.com/archive/simgad/5563321716965314248\" height=\"130\" width=\"348\">"
+        }
+      ],
+      "last_seen": "2026-09-11",
+      "creative_id": "CR11874874984713158657",
+      "format_type": "Image",
+      "original_url": "https://adstransparency.google.com/advertiser/AR15495076796520464385/creative/CR11874874984713158657?region=US",
+      "advertiser_id": "AR15495076796520464385",
+      "advertiser_name": "Microsoft Corporation"
+    }
+  ],
+  "cached": false,
+  "status": "success",
+  "country_code": "US",
+  "total_ad_count": "4000",
+  "available_ads_in_response": 20
+}

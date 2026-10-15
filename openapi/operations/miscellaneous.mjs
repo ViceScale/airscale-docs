@@ -58,8 +58,23 @@ const metaAdsBody = object({
   results: { type: 'array', description: 'Ads found for the page, when there are any. Ad fields vary; check for missing or null values before using them.', items: metaAd }
 }, ['credits_consumed'], true);
 const googleAdsBody = object({
-  total_ad_count: { description: 'Total ad count. Can exceed the first-page ads array length and may be returned as a numeric string.' },
-  ads: { type: 'array', description: 'First page of up to 20 ads. Ad fields may vary.', items: { type: 'object', properties: { id: { description: 'Ad identifier, when present.' } }, additionalProperties: true } },
+  status: { type: 'string', description: 'Lookup status, when supplied.' },
+  country_code: { type: 'string', description: 'Country code used for the returned ads, when supplied.' },
+  total_ad_count: { oneOf: [{ type: 'string', pattern: '^\\d+$' }, { type: 'integer', minimum: 0 }], description: 'Total matching ads. Often returned as a numeric string and can exceed the number of ads in this response.' },
+  available_ads_in_response: { type: 'integer', minimum: 0, description: 'Number of ads available in this response, when supplied.' },
+  ads: { type: 'array', description: 'First page of up to 20 ads. Fields can vary by ad format.', items: { type: 'object', properties: {
+    advertiser_id: { type: 'string', description: 'Advertiser identifier.' },
+    advertiser_name: { type: 'string', description: 'Advertiser name.' },
+    creative_id: { type: 'string', description: 'Ad creative identifier.' },
+    original_url: { type: 'string', description: 'Ad detail URL.' },
+    start: { type: 'string', description: 'First seen date, when supplied.' },
+    last_seen: { type: 'string', description: 'Last seen date, when supplied.' },
+    format_type: { type: 'string', description: 'Creative format, when supplied.' },
+    variants: { type: 'array', description: 'Creative variants, when supplied.', items: { type: 'object', properties: {
+      format: { type: 'string' }, image: { type: 'string' }, content: { type: 'string', description: 'Creative markup or text; treat HTML as untrusted.' }
+    }, additionalProperties: true } }
+  }, additionalProperties: true } },
+  cached: { type: 'boolean', description: 'Whether the lookup result was cached, when supplied.' },
   next_page_token: { type: 'string', description: 'Continuation token, when present. This endpoint does not fetch another page.' },
   credits_consumed: { type: 'integer', enum: [0, 1] }
 }, ['credits_consumed'], true);
@@ -260,7 +275,7 @@ export const miscellaneousOperations = [
       requestBody: request(object({ domain: { type: 'string', minLength: 1, description: 'Bare company hostname or HTTP(S) URL. Whitespace is trimmed; hostname is lowercased and leading www. and trailing dot are removed. Paths and queries are ignored. IP literals, credentials, non-default ports, and invalid domain labels are rejected. Maximum JSON body size: 16 KiB (oversize returns 400).' } }), { domain: 'example.com' }),
       responses: {
         200: json('First-page ad lookup result and credit cost. Additional fields may be present.', googleAdsBody, {
-          ads: { total_ad_count: 2, ads: [{ id: 'ad-1' }], next_page_token: 'next', credits_consumed: 1 },
+          ads: { status: 'success', country_code: 'US', total_ad_count: '1', available_ads_in_response: 1, ads: [{ advertiser_id: 'AR123', advertiser_name: 'Example Company', creative_id: 'CR456', original_url: 'https://example.com/ads/CR456', start: '2026-01-01', last_seen: '2026-01-15', format_type: 'Image', variants: [{ format: 'Image', image: 'https://example.com/ad-image.png', content: '<img src="https://example.com/ad-image.png">' }] }], cached: false, credits_consumed: 1 },
           noAds: { total_ad_count: 0, ads: [], credits_consumed: 0 }
         }),
         400: error('Invalid JSON, domain, extra fields, or body larger than 16 KiB.'),

@@ -13,6 +13,8 @@ The limit is **2 requests per rolling second and 120 requests per rolling minute
 
 The endpoint returns the first page of up to 20 ads. `total_ad_count` can be larger than the returned `ads` array. If `next_page_token` is present, it is returned, but this endpoint does not accept a token or fetch later pages.
 
+The response is a JSON object. Common fields are `status`, `country_code`, `total_ad_count` (often a numeric string), `available_ads_in_response`, `ads`, `cached`, and `credits_consumed`. Each ad can include `advertiser_id`, `advertiser_name`, `creative_id`, `original_url`, `start`, `last_seen`, `format_type`, and a `variants` array with creative content or image URLs. Fields may be absent or vary by ad format. Treat any HTML in `variants[].content` as untrusted.
+
 ## Errors and retries
 
 Invalid input returns `400`; insufficient credits returns `403`; the workspace limit returns `429`. Lookup failures return `502`, configuration or settlement failures return `503`, and lookup timeouts return `504`. Failed lookups and valid zero-ad results do not consume credits.
