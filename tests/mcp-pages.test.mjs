@@ -33,7 +33,6 @@ const API_REFERENCE_TAB = {
         "api-reference/leads-finder",
         "api-reference/find-companies",
         "api-reference/find-companies/filter-values",
-        "api-reference/business-intent-topics",
         "api-reference/company-lookalikes",
         "api-reference/airsearch"
       ]
@@ -74,6 +73,7 @@ const API_REFERENCE_TAB = {
     {
       group: "Miscellaneous",
       pages: [
+        "api-reference/business-intent-topics",
         "api-reference/miscellaneous/website-technologies",
         "api-reference/miscellaneous/whatsapp-check",
         "api-reference/miscellaneous/whatsapp-check/status",

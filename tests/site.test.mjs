@@ -18,7 +18,6 @@ const GROUPS = [
     "api-reference/leads-finder",
     "api-reference/find-companies",
     "api-reference/find-companies/filter-values",
-    "api-reference/business-intent-topics",
     "api-reference/company-lookalikes",
     "api-reference/airsearch"
   ]],
@@ -37,7 +36,7 @@ const GROUPS = [
     "api-reference/reverse-phone"
   ]],
   ["Post engagement", ["api-reference/post-likers", "api-reference/post-commenters", "api-reference/post-search", "api-reference/profile-comments", "api-reference/comment-likers", "api-reference/profile-posts", "api-reference/company-posts"], { expanded: false }],
-  ["Miscellaneous", ["api-reference/miscellaneous/website-technologies", "api-reference/miscellaneous/whatsapp-check", "api-reference/miscellaneous/whatsapp-check/status", "api-reference/miscellaneous/meta-ads", "api-reference/miscellaneous/email-verifier", "api-reference/dnc-checker"], { expanded: false }]
+  ["Miscellaneous", ["api-reference/business-intent-topics", "api-reference/miscellaneous/website-technologies", "api-reference/miscellaneous/whatsapp-check", "api-reference/miscellaneous/whatsapp-check/status", "api-reference/miscellaneous/meta-ads", "api-reference/miscellaneous/email-verifier", "api-reference/dnc-checker"], { expanded: false }]
 ];
 
 // Keep the legacy Count URL covered even though it is no longer in navigation.
