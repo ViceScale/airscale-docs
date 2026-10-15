@@ -86,7 +86,6 @@
 - [Leads Finder](https://docs.airscale.io/api-reference/leads-finder.md): Search people with Leads Finder filters and page-based pagination. Rate limit: 5 requests per second per workspace.
 - [Find companies](https://docs.airscale.io/api-reference/find-companies.md): Search companies using firmographic, location, event, intent, and technology filters. Rate limit: 6 requests per second per workspace.
 - [Company filter values](https://docs.airscale.io/api-reference/find-companies/filter-values.md): Search supported values for Find Companies filters. Rate limit: 6 requests per second per workspace.
-- [Business intent topics](https://docs.airscale.io/api-reference/business-intent-topics.md): Check a LinkedIn company for selected business intent topics. A matched result costs 3 credits. Rate limit: 6 requests per second per workspace.
 - [Company lookalikes](https://docs.airscale.io/api-reference/company-lookalikes.md): Find companies similar to your reference domains. Rate limit: 15 requests per rolling minute per workspace. Maximum 5 active searches per workspace.
 - [Airsearch](https://docs.airscale.io/api-reference/airsearch.md): Research the web and return structured answers with Airsearch. Rate limit: 300 requests per minute per workspace.
 
@@ -118,6 +117,7 @@
 
 ## API Reference — Miscellaneous
 
+- [Business intent topics](https://docs.airscale.io/api-reference/business-intent-topics.md): Check a LinkedIn company for selected business intent topics. A matched result costs 3 credits. Rate limit: 6 requests per second per workspace.
 - [Website Technologies](https://docs.airscale.io/api-reference/miscellaneous/website-technologies.md): Find the technologies used by a website. Rate limit: 10 requests per second per workspace.
 - [WhatsApp checker](https://docs.airscale.io/api-reference/miscellaneous/whatsapp-check.md): Check whether one phone number is available on WhatsApp. Rate limit: 60 requests per minute per workspace for POST, including replays.
 - [WhatsApp check status](https://docs.airscale.io/api-reference/miscellaneous/whatsapp-check/status.md): Reconcile a WhatsApp check using its operation ID. Rate limit: No endpoint-specific GET throttle.
