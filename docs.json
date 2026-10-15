@@ -231,6 +231,7 @@
               "api-reference/miscellaneous/whatsapp-check",
               "api-reference/miscellaneous/whatsapp-check/status",
               "api-reference/miscellaneous/meta-ads",
+              "api-reference/miscellaneous/google-ads",
               "api-reference/miscellaneous/email-verifier",
               "api-reference/dnc-checker"
             ],
