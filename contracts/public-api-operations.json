@@ -396,6 +396,19 @@
     },
     {
       "method": "POST",
+      "path": "/v1/google-ads",
+      "operationId": "lookupGoogleAds",
+      "page": "api-reference/miscellaneous/google-ads",
+      "tag": "Miscellaneous",
+      "sourcePage": "google-ads",
+      "sourceSha": "6ef5b0ac2c662bedfbe792e5df56054697854701",
+      "sourceFiles": [
+        "workers/public-api/google-ads-checker.js",
+        "workers/public-api/google-ads-checker.test.mjs"
+      ]
+    },
+    {
+      "method": "POST",
       "path": "/v1/email-verifier",
       "operationId": "verifyEmail",
       "page": "api-reference/miscellaneous/email-verifier",

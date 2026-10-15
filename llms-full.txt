@@ -2755,6 +2755,7 @@ All numeric limits below apply per workspace. A shared limit is one combined all
 | [WhatsApp checker](/api-reference/miscellaneous/whatsapp-check) | 60 requests per minute per workspace for POST, including replays. |
 | [WhatsApp check status](/api-reference/miscellaneous/whatsapp-check/status) | No endpoint-specific GET throttle. |
 | [Meta Ads](/api-reference/miscellaneous/meta-ads) | 60 requests per minute per workspace. |
+| [Google Ads](/api-reference/miscellaneous/google-ads) | 2 requests per rolling second and 120 per rolling minute per workspace. |
 | [Email verifier](/api-reference/miscellaneous/email-verifier) | No endpoint-specific throttle. |
 | [Leads Finder](/api-reference/leads-finder) | 5 requests per second per workspace. |
 | [DNC Checker](/api-reference/dnc-checker) | 5 requests per second per workspace. |
@@ -4838,6 +4839,32 @@ Read `credits_consumed` for the cost of the lookup. Fields such as `page_id` and
 The lookup can take up to **90 seconds**. HTTP `504` means that lookup timed out without a debit. Use bounded backoff for temporary errors and rate limits.
 
 This endpoint does not support caller idempotency keys. Retrying a successful lookup can run and bill another lookup, including when the original response was lost.
+
+## Next step
+
+Review [credit balance](/api-reference/credit-count) or [rate limits](/api-reference/rate-limits) before scheduling more lookups.
+
+---
+
+## Google Ads
+
+Source: https://airscale.mintlify.app/api-reference/miscellaneous/google-ads.md
+
+Description: Look up Google ads for a company domain. Rate limit: 2 requests per rolling second and 120 per rolling minute per workspace.
+
+Look up Google ads for one company. Send exactly one `domain` field: a bare hostname or HTTP(S) URL. Paths and queries are ignored after normalization. IP literals, credentials, non-default ports, and invalid domain labels are rejected. The JSON body must fit within 16 KiB.
+
+## Usage and credits
+
+The limit is **2 requests per rolling second and 120 requests per rolling minute per workspace**. You need at least **1 credit** before a lookup can start. A valid result with a positive `total_ad_count` or a nonempty `ads` array costs **1 credit**. A valid zero-ad result costs **0 credits**. Read `credits_consumed` for the charge.
+
+The Worker makes one RapidAPI Google Ads Library request with `format=ALL&limit=20`. It returns only the first page of up to 20 ads. `total_ad_count` can be larger than the returned `ads` array. A `next_page_token`, when the provider supplies one, is included in the response, but this endpoint does not accept a token or fetch later pages.
+
+## Errors and retries
+
+Invalid input returns `400`; insufficient credits returns `403`; the workspace limit returns `429`. Provider failures return `502`, configuration or settlement failures return `503`, and a provider timeout returns `504`. Provider failures and valid zero-ad results do not consume credits.
+
+There is no caller idempotency key. A retry can run another lookup and charge another credit if ads are found. A `503` after the provider result can mean credit settlement is uncertain; check your balance or contact support before retrying.
 
 ## Next step
 

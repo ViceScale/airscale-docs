@@ -389,7 +389,7 @@ function assertCodeSampleShapes(operation, label) {
 test("all public operation examples validate against their dereferenced schemas", (t) => {
   assertAuthoredExampleShapes(rawDocument);
   const operations = operationsFrom(document);
-  assert.equal(operations.length, 32, "expected exactly 32 public operations");
+  assert.equal(operations.length, 33, "expected exactly 33 public operations");
 
   const exampleValues = [];
   const seenSchemas = new Set();

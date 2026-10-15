@@ -191,6 +191,19 @@
         "workers/public-api/meta-ads-checker.test.mjs"
       ]
     },
+    "google-ads": {
+      "sourceSha": "6ef5b0ac2c662bedfbe792e5df56054697854701",
+      "endpoints": [
+        {
+          "method": "POST",
+          "path": "/v1/google-ads"
+        }
+      ],
+      "sourceFiles": [
+        "workers/public-api/google-ads-checker.js",
+        "workers/public-api/google-ads-checker.test.mjs"
+      ]
+    },
     "email-verifier": {
       "sourceSha": "282e64878898b4f7082e6ce00b740d76aca787f1",
       "endpoints": [

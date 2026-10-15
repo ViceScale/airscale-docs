@@ -33,6 +33,7 @@ const EXPECTED_OPERATIONS = [
   ["POST", "/v1/whatsapp-check", "checkWhatsapp", "api-reference/miscellaneous/whatsapp-check", "Miscellaneous"],
   ["GET", "/v1/whatsapp-check/operations/{operation_id}", "getWhatsappCheckOperation", "api-reference/miscellaneous/whatsapp-check/status", "Miscellaneous"],
   ["POST", "/v1/meta-ads", "lookupMetaAds", "api-reference/miscellaneous/meta-ads", "Miscellaneous"],
+  ["POST", "/v1/google-ads", "lookupGoogleAds", "api-reference/miscellaneous/google-ads", "Miscellaneous"],
   ["POST", "/v1/email-verifier", "verifyEmail", "api-reference/miscellaneous/email-verifier", "Miscellaneous"],
   ["POST", "/v1/leads-finder", "searchLeadsFinder", "api-reference/leads-finder", "Search and discovery"],
   ["POST", "/v1/dnc-check", "checkDnc", "api-reference/dnc-checker", "Miscellaneous"]
@@ -59,7 +60,7 @@ const EXPECTED_PAGES = [
   "airsearch",
   "post-engagement",
   "linkedin-content",
-  "website-technologies", "whatsapp-check", "meta-ads", "email-verifier",
+  "website-technologies", "whatsapp-check", "meta-ads", "google-ads", "email-verifier",
   "leads-finder", "dnc-checker"
 ];
 
@@ -262,6 +263,11 @@ const EXPECTED_CONTRACTS = deepFreeze({
       "workers/public-api/meta-ads-checker.test.mjs"
     ]
   },
+  "google-ads": {
+    "sourceSha": "6ef5b0ac2c662bedfbe792e5df56054697854701",
+    "endpoints": [{ "method": "POST", "path": "/v1/google-ads" }],
+    "sourceFiles": ["workers/public-api/google-ads-checker.js", "workers/public-api/google-ads-checker.test.mjs"]
+  },
   "email-verifier": {
     "sourceSha": "282e64878898b4f7082e6ce00b740d76aca787f1",
     "endpoints": [
@@ -359,14 +365,14 @@ test("operation catalog preserves the approved operation order and routing metad
   const catalog = JSON.parse(readFileSync("contracts/public-api-operations.json", "utf8"));
   assert.equal(catalog.sourceRepository, "ViceScale/airscale-code");
   assert.equal(catalog.sourceSha, EXPECTED_SOURCE_SHA);
-  assert.equal(catalog.operations.length, 32);
+  assert.equal(catalog.operations.length, 33);
   assert.deepEqual(
     catalog.operations.map(({ method, path, operationId, page, tag }) => [method, path, operationId, page, tag]),
     EXPECTED_OPERATIONS
   );
-  assert.equal(new Set(catalog.operations.map(({ method, path }) => `${method} ${path}`)).size, 32);
-  assert.equal(new Set(catalog.operations.map(({ operationId }) => operationId)).size, 32);
-  assert.equal(new Set(catalog.operations.map(({ page }) => page)).size, 32);
+  assert.equal(new Set(catalog.operations.map(({ method, path }) => `${method} ${path}`)).size, 33);
+  assert.equal(new Set(catalog.operations.map(({ operationId }) => operationId)).size, 33);
+  assert.equal(new Set(catalog.operations.map(({ page }) => page)).size, 33);
 });
 
 test("operation catalog links each operation to matching source-page evidence", () => {

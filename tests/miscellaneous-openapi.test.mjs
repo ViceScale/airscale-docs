@@ -64,6 +64,18 @@ test('Meta Ads preserves provider fields and documents timeout and zero-cost res
   assert.equal(validate({ number_of_ads: 4 }), false);
   assert.equal(validate({ credits_consumed: 2 }), false);
 });
+test('Google Ads documents strict input, first-page results, both rate windows, and one-credit billing', () => {
+  const op = operation('/v1/google-ads');
+  assert.match(op['x-airscale-rate-limit'], /2 requests per rolling second and 120 per rolling minute/);
+  assert.ok(op.responses[504]);
+  const input = ajv.compile(op.requestBody.content['application/json'].schema);
+  assert.ok(input({ domain: 'example.com' }));
+  assert.equal(input({ domain: 'example.com', extra: true }), false);
+  const validate = response(op, 200);
+  assert.ok(validate({ total_ad_count: 2, ads: [{ id: 'ad-1' }], next_page_token: 'next', credits_consumed: 1 }));
+  assert.ok(validate({ total_ad_count: 0, ads: [], credits_consumed: 0 }));
+  assert.equal(validate({ ads: [], credits_consumed: 2 }), false);
+});
 test('Email verifier models direct and wrapped results with passthrough responses', () => {
   const op = operation('/v1/email-verifier');
   const validate = response(op, 200);
