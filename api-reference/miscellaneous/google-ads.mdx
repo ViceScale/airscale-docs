@@ -11,13 +11,13 @@ Look up Google ads for one company. Send exactly one `domain` field: a bare host
 
 The limit is **2 requests per rolling second and 120 requests per rolling minute per workspace**. You need at least **1 credit** before a lookup can start. A valid result with a positive `total_ad_count` or a nonempty `ads` array costs **1 credit**. A valid zero-ad result costs **0 credits**. Read `credits_consumed` for the charge.
 
-The Worker makes one RapidAPI Google Ads Library request with `format=ALL&limit=20`. It returns only the first page of up to 20 ads. `total_ad_count` can be larger than the returned `ads` array. A `next_page_token`, when the provider supplies one, is included in the response, but this endpoint does not accept a token or fetch later pages.
+The endpoint returns the first page of up to 20 ads. `total_ad_count` can be larger than the returned `ads` array. If `next_page_token` is present, it is returned, but this endpoint does not accept a token or fetch later pages.
 
 ## Errors and retries
 
-Invalid input returns `400`; insufficient credits returns `403`; the workspace limit returns `429`. Provider failures return `502`, configuration or settlement failures return `503`, and a provider timeout returns `504`. Provider failures and valid zero-ad results do not consume credits.
+Invalid input returns `400`; insufficient credits returns `403`; the workspace limit returns `429`. Lookup failures return `502`, configuration or settlement failures return `503`, and lookup timeouts return `504`. Failed lookups and valid zero-ad results do not consume credits.
 
-There is no caller idempotency key. A retry can run another lookup and charge another credit if ads are found. A `503` after the provider result can mean credit settlement is uncertain; check your balance or contact support before retrying.
+There is no caller idempotency key. A retry can run another lookup and charge another credit if ads are found. A `503` after a completed lookup can mean credit settlement is uncertain; check your balance or contact support before retrying.
 
 ## Next step
 
