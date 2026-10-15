@@ -72,9 +72,36 @@ test('Google Ads documents strict input, first-page results, both rate windows, 
   assert.ok(input({ domain: 'example.com' }));
   assert.equal(input({ domain: 'example.com', extra: true }), false);
   const validate = response(op, 200);
-  assert.ok(validate({ total_ad_count: 2, ads: [{ id: 'ad-1' }], next_page_token: 'next', credits_consumed: 1 }));
+  assert.ok(validate({ total_ad_count: '2', ads: [{ creative_id: 'CR456' }], next_page_token: 'next', credits_consumed: 1 }));
   assert.ok(validate({ total_ad_count: 0, ads: [], credits_consumed: 0 }));
   assert.equal(validate({ ads: [], credits_consumed: 2 }), false);
+});
+test('Google Ads response schema and displayed example match a captured successful lookup', () => {
+  // Archived 2026-09-11 Bubble enrichment output; the audit saved three of the 20 returned ads.
+  const captured = JSON.parse(readFileSync('tests/fixtures/google-ads-observed-2026-09-11.json', 'utf8'));
+  const op = operation('/v1/google-ads');
+  const validate = response(op, 200);
+  assert.equal(validate({ ...captured, credits_consumed: 1 }), true, ajv.errorsText(validate.errors));
+  const schema = op.responses[200].content['application/json'].schema;
+  const adSchema = schema.properties.ads.items;
+  for (const field of ['status', 'country_code', 'total_ad_count', 'available_ads_in_response', 'ads', 'cached', 'credits_consumed']) {
+    assert.ok(Object.hasOwn(schema.properties, field), `response schema is missing ${field}`);
+  }
+  for (const field of ['advertiser_id', 'advertiser_name', 'creative_id', 'original_url', 'start', 'last_seen', 'format_type', 'variants']) {
+    assert.ok(Object.hasOwn(adSchema.properties, field), `ad schema is missing ${field}`);
+  }
+  for (const field of ['format', 'image', 'content']) {
+    assert.ok(Object.hasOwn(adSchema.properties.variants.items.properties, field), `creative variant schema is missing ${field}`);
+  }
+  const example = op.responses[200].content['application/json'].examples.ads.value;
+  for (const field of ['status', 'country_code', 'total_ad_count', 'available_ads_in_response', 'ads', 'cached', 'credits_consumed']) {
+    assert.ok(Object.hasOwn(example, field), `displayed example is missing ${field}`);
+  }
+  for (const field of ['advertiser_id', 'advertiser_name', 'creative_id', 'original_url', 'start', 'last_seen', 'format_type', 'variants']) {
+    assert.ok(Object.hasOwn(example.ads[0], field), `displayed ad is missing ${field}`);
+  }
+  assert.equal(typeof example.total_ad_count, 'string');
+  assert.equal(Object.hasOwn(example.ads[0], 'id'), false, 'the captured ads use creative_id, not id');
 });
 test('Google Ads public descriptions do not disclose data sources', () => {
   const op = operation('/v1/google-ads');

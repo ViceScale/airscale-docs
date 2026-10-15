@@ -4,11 +4,23 @@
   "source": "code",
   "sourceRepository": "ViceScale/airscale-code",
   "sourceSha": "6ef5b0ac2c662bedfbe792e5df56054697854701",
-  "evidence": "workers/public-api/google-ads-checker.test.mjs:70-79",
+  "evidence": "workers/public-api/google-ads-checker.js:154-174; archived successful enrichment sample 2026-09-11",
   "body": {
-    "total_ad_count": 2,
-    "ads": [{ "id": "ad-1" }],
-    "next_page_token": "next",
+    "status": "success",
+    "country_code": "US",
+    "total_ad_count": "1",
+    "available_ads_in_response": 1,
+    "ads": [{
+      "advertiser_id": "AR123",
+      "advertiser_name": "Example Company",
+      "creative_id": "CR456",
+      "original_url": "https://example.com/ads/CR456",
+      "start": "2026-01-01",
+      "last_seen": "2026-01-15",
+      "format_type": "Image",
+      "variants": [{ "format": "Image", "image": "https://example.com/ad-image.png", "content": "<img src=\"https://example.com/ad-image.png\">" }]
+    }],
+    "cached": false,
     "credits_consumed": 1
   }
 }
