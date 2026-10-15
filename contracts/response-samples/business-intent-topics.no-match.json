@@ -1,0 +1,19 @@
+{
+  "operation": "POST /v1/business-intent-topics",
+  "status": 200,
+  "source": "code",
+  "sourceRepository": "ViceScale/airscale-code",
+  "sourceSha": "45c232f17848ba04a4358b000f7af8d79708c46e",
+  "evidence": "workers/public-api/business-intent-topics.test.mjs:94-102; synthetic company identity substituted.",
+  "body": {
+    "linkedin_company_url": "https://www.linkedin.com/company/example-company/",
+    "matched": false,
+    "company_name": null,
+    "company_website": null,
+    "date_stamp": null,
+    "intent_topics": [],
+    "level_of_intent": null,
+    "topic_count": 0,
+    "credits_consumed": 0
+  }
+}

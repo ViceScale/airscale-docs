@@ -1,0 +1,19 @@
+{
+  "operation": "POST /v1/business-intent-topics",
+  "status": 200,
+  "source": "code",
+  "sourceRepository": "ViceScale/airscale-code",
+  "sourceSha": "45c232f17848ba04a4358b000f7af8d79708c46e",
+  "evidence": "workers/public-api/business-intent-topics.test.mjs:42-66; synthetic company identity substituted.",
+  "body": {
+    "linkedin_company_url": "https://www.linkedin.com/company/example-company/",
+    "matched": true,
+    "company_name": "Example Company",
+    "company_website": "example.com",
+    "date_stamp": "2026-10-01",
+    "intent_topics": ["CRM"],
+    "level_of_intent": "high",
+    "topic_count": 1,
+    "credits_consumed": 3
+  }
+}

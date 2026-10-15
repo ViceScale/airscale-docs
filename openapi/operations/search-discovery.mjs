@@ -442,6 +442,44 @@ const airsearchResponseSchema = {
   additionalProperties: { type: ["string", "null"] }
 };
 
+const businessIntentRequestSchema = {
+  type: "object",
+  additionalProperties: false,
+  required: ["linkedin_company_url", "topics"],
+  properties: {
+    linkedin_company_url: {
+      type: "string",
+      format: "uri",
+      pattern: "^https://(?:www\\.)?linkedin\\.com/company/[A-Za-z0-9_-]+/?$",
+      description: "HTTPS LinkedIn company URL. Domains, person profiles, query strings, and fragments are not accepted."
+    },
+    topics: {
+      type: "array",
+      minItems: 1,
+      maxItems: 20,
+      description: "Copy complete topic value strings from GET /v1/find-companies/filter-values?filter=topics&q=... .",
+      items: { type: "string", minLength: 1, maxLength: 150 }
+    }
+  }
+};
+
+const businessIntentResponseSchema = {
+  type: "object",
+  additionalProperties: false,
+  required: ["linkedin_company_url", "matched", "company_name", "company_website", "date_stamp", "intent_topics", "level_of_intent", "topic_count", "credits_consumed"],
+  properties: {
+    linkedin_company_url: { type: "string", format: "uri", description: "Normalized LinkedIn company URL." },
+    matched: { type: "boolean", description: "Whether the company was matched and usable intent topics were found." },
+    company_name: { type: ["string", "null"] },
+    company_website: { type: ["string", "null"] },
+    date_stamp: { type: ["string", "null"], description: "Intent data date, when provided." },
+    intent_topics: { type: "array", items: { type: "string" }, description: "Business intent topics returned for the company; empty on no match." },
+    level_of_intent: { type: ["string", "null"] },
+    topic_count: { type: "number", minimum: 0 },
+    credits_consumed: { type: "integer", enum: [0, 3], description: "3 for a usable matched result; 0 for no match." }
+  }
+};
+
 export const searchDiscoveryOperations = [
   {
     method: "POST",
@@ -788,6 +826,16 @@ export const searchDiscoveryOperations = [
                     ]
                   }
                 },
+                topics: {
+                  summary: "Business intent topic value",
+                  value: {
+                    filter: "topics",
+                    query: "customer relationship",
+                    values: [
+                      { label: "crm: customer relationship management (crm)", value: "crm: customer relationship management (crm)" }
+                    ]
+                  }
+                },
                 city: {
                   summary: "Synthetic city values",
                   value: {
@@ -811,6 +859,86 @@ export const searchDiscoveryOperations = [
           }
         },
         ...errorResponses([400, 401, 403, 413, 429, 500, 502, 503])
+      }
+    }
+  },
+  {
+    method: "POST",
+    path: "/v1/business-intent-topics",
+    operation: {
+      operationId: "getBusinessIntentTopics",
+      tags: [TAG],
+      summary: "Check business intent topics for a LinkedIn company",
+      description: "Checks selected business intent topic values for one LinkedIn company URL. Search valid topic values with the free GET /v1/find-companies/filter-values endpoint. The JSON request body is limited to 16 KiB.",
+      "x-airscale-rate-limit": SEARCH_RATE_LIMIT,
+      "x-airscale-credit-cost": "3 credits for a usable matched result; no match costs 0 credits. At least 3 credits must be available before the lookup.",
+      "x-codeSamples": [
+        {
+          label: "cURL",
+          lang: "bash",
+          source: [
+            "curl 'https://api.airscale.io/v1/business-intent-topics' \\",
+            '  --header "Authorization: Bearer $AIRSCALE_API_KEY" \\',
+            "  --header 'Content-Type: application/json' \\",
+            '  --data \'{"linkedin_company_url":"https://www.linkedin.com/company/example-company/","topics":["crm: customer relationship management (crm)"]}\''
+          ].join("\n")
+        }
+      ],
+      requestBody: requestBody(
+        businessIntentRequestSchema,
+        {
+          selectedTopic: {
+            summary: "Check a synthetic company for a discovered topic",
+            value: {
+              linkedin_company_url: "https://www.linkedin.com/company/example-company/",
+              topics: ["crm: customer relationship management (crm)"]
+            }
+          }
+        },
+        "Provide one LinkedIn company URL and 1–20 complete topic value strings from the free filter-values lookup."
+      ),
+      responses: {
+        200: {
+          description: "Matched intent data (3 credits) or a no-match result (0 credits).",
+          content: {
+            "application/json": {
+              schema: businessIntentResponseSchema,
+              examples: {
+                matched: {
+                  summary: "Synthetic matched company",
+                  value: {
+                    linkedin_company_url: "https://www.linkedin.com/company/example-company/",
+                    matched: true,
+                    company_name: "Example Company",
+                    company_website: "example.com",
+                    date_stamp: "2026-10-01",
+                    intent_topics: ["crm: customer relationship management (crm)"],
+                    level_of_intent: "high",
+                    topic_count: 1,
+                    credits_consumed: 3
+                  }
+                },
+                noMatch: {
+                  summary: "No matching company",
+                  value: {
+                    linkedin_company_url: "https://www.linkedin.com/company/example-company/",
+                    matched: false,
+                    company_name: null,
+                    company_website: null,
+                    date_stamp: null,
+                    intent_topics: [],
+                    level_of_intent: null,
+                    topic_count: 0,
+                    credits_consumed: 0
+                  }
+                }
+              }
+            }
+          }
+        },
+        ...errorResponses([400, 401, 403, 429, 502, 503]),
+        413: jsonError("The JSON request body exceeds the 16 KiB limit."),
+        504: jsonError("The business intent lookup timed out."),
       }
     }
   },

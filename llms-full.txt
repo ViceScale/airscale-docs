@@ -2741,6 +2741,7 @@ All numeric limits below apply per workspace. A shared limit is one combined all
 | [Count people](/api-reference/find-people/count) | 6 requests per second per workspace. |
 | [Find companies](/api-reference/find-companies) | 6 requests per second per workspace. |
 | [Company filter values](/api-reference/find-companies/filter-values) | 6 requests per second per workspace. |
+| [Business intent topics](/api-reference/business-intent-topics) | 6 requests per second per workspace. |
 | [Company lookalikes](/api-reference/company-lookalikes) | 15 requests per rolling minute per workspace. Maximum 5 active searches per workspace. |
 | [Airsearch](/api-reference/airsearch) | 300 requests per minute per workspace. |
 | [Post likers](/api-reference/post-likers) | 180 requests per fixed minute per workspace, shared by post-likers and post-commenters; pagination requests and retries count. |
@@ -2758,7 +2759,7 @@ All numeric limits below apply per workspace. A shared limit is one combined all
 | [Leads Finder](/api-reference/leads-finder) | 5 requests per second per workspace. |
 | [DNC Checker](/api-reference/dnc-checker) | 5 requests per second per workspace. |
 
-Find people shares its **6 requests per second** with Count people. Find companies shares its **6 requests per second** with Company filter values. These are separate limits for the two endpoint families. Post search, Profile comments, Comment likers, Profile posts, and Company posts each have their own 180-request allowance; they do not share it with each other or with Post likers and Post commenters.
+Find people shares its **6 requests per second** with Count people. Find companies shares its **6 requests per second** with Company filter values and Business intent topics. These are separate limits for the two endpoint families. Post search, Profile comments, Comment likers, Profile posts, and Company posts each have their own 180-request allowance; they do not share it with each other or with Post likers and Post commenters.
 
 Company lookalikes returns `429` when its rate or concurrency limit is reached. Honor `Retry-After` when present. Repeating a search can cause another charge; see the [endpoint guidance](/api-reference/company-lookalikes).
 
@@ -3884,13 +3885,62 @@ curl --get 'https://api.airscale.io/v1/find-companies/filter-values' \
   --data-urlencode 'q=software'
 ```
 
+```bash Business intent topic suggestions
+curl --get 'https://api.airscale.io/v1/find-companies/filter-values' \
+  -H "Authorization: Bearer $AIRSCALE_API_KEY" \
+  --data-urlencode 'filter=topics' \
+  --data-urlencode 'q=customer relationship'
+```
+
 Each result has a display `label` and a request `value`. Copy `value` into the corresponding search filter. For locations, preserve the returned country/region context instead of assembling a city value from its display label. Search accepts recognized pipe-form and comma-form city values; autocomplete supplies the value to reuse.
 
 `q` or its `query` alias must contain 2–120 characters after trimming. `q` takes precedence even when blank. The optional `limit` defaults to 20; integer values are clamped to 1–100, while non-numeric or non-integer values use the default.
 
 ## Next step
 
-Copy the returned `value` into the matching filter on [Find companies](/api-reference/find-companies).
+Copy the returned `value` into the matching filter on [Find companies](/api-reference/find-companies), or into `topics` on [Business intent topics](/api-reference/business-intent-topics).
+
+---
+
+## Business intent topics
+
+Source: https://airscale.mintlify.app/api-reference/business-intent-topics.md
+
+Description: Check a LinkedIn company for selected business intent topics. A matched result costs 3 credits. Rate limit: 6 requests per second per workspace.
+
+Check a company LinkedIn URL against one or more business intent topics. Submit only a LinkedIn **company** URL; a domain or personal profile URL is not accepted.
+
+## Find topic values
+
+Call [Company filter values](/api-reference/find-companies/filter-values) with `filter=topics` and a search term of at least two characters. This lookup uses the same API key and is free.
+
+```bash Search topics
+curl --get 'https://api.airscale.io/v1/find-companies/filter-values' \
+  -H "Authorization: Bearer $AIRSCALE_API_KEY" \
+  --data-urlencode 'filter=topics' \
+  --data-urlencode 'q=customer relationship'
+```
+
+The response contains `values` with a display `label` and a request `value`. For example, a result can be `{"label":"crm: customer relationship management (crm)","value":"crm: customer relationship management (crm)"}`. Copy the complete `value` string into the `topics` array. Search again with another term to find more topics; send 1–20 values per intent request.
+
+## Check a company
+
+```bash Check business intent
+curl 'https://api.airscale.io/v1/business-intent-topics' \
+  -H "Authorization: Bearer $AIRSCALE_API_KEY" \
+  -H 'Content-Type: application/json' \
+  --data '{"linkedin_company_url":"https://www.linkedin.com/company/example-company/","topics":["crm: customer relationship management (crm)"]}'
+```
+
+Use an HTTPS `linkedin.com/company/<slug>/` URL without a query or fragment. The request body accepts only `linkedin_company_url` and `topics` and is limited to 16 KiB. Topic strings are trimmed, must be nonempty, and can be at most 150 characters each.
+
+When `matched` is `true`, the response includes `intent_topics`, `level_of_intent`, `date_stamp`, company details when available, and `credits_consumed: 3`. When the company is not matched, `matched` is `false`, `intent_topics` is empty, and `credits_consumed` is `0`. A result with no usable intent topics is treated as an error rather than a paid match. Keep at least 3 credits available before calling this endpoint, including for a possible no-match result.
+
+The limit is 6 requests per second per workspace, shared with Find companies and Company filter values. For `429`, wait and retry with bounded backoff. A repeated POST is a new lookup and can cost another 3 credits. If a `503` response includes `operation_id`, credit settlement is uncertain; contact Airscale support with that ID before retrying.
+
+## Next step
+
+Use the returned `intent_topics` and `level_of_intent` in your workflow, or [search for more topic values](/api-reference/find-companies/filter-values) to run another check.
 
 ---
 
