@@ -10768,7 +10768,7 @@
         "x-airscale-source-sha": "6ef5b0ac2c662bedfbe792e5df56054697854701",
         "operationId": "lookupGoogleAds",
         "summary": "Look up Google ads",
-        "description": "Look up the first page of Google Ads Library results for one company domain using RapidAPI, with format=ALL and limit=20. A valid positive count or nonempty ads array costs one credit; a valid zero-ad result costs zero. A balance of at least one credit is required before lookup. No caller idempotency key is supported.",
+        "description": "Look up the first page of up to 20 Google ads for one company domain. A valid positive count or nonempty ads array costs one credit; a valid zero-ad result costs zero. A balance of at least one credit is required before lookup. No caller idempotency key is supported.",
         "x-airscale-rate-limit": "2 requests per rolling second and 120 per rolling minute per workspace.",
         "x-airscale-credit-cost": "1 credit when ads are found; 0 for a valid zero-ad result.",
         "requestBody": {
@@ -10801,23 +10801,23 @@
         },
         "responses": {
           "200": {
-            "description": "First-page ad lookup result and credit cost. Additional provider fields may be present.",
+            "description": "First-page ad lookup result and credit cost. Additional fields may be present.",
             "content": {
               "application/json": {
                 "schema": {
                   "type": "object",
                   "properties": {
                     "total_ad_count": {
-                      "description": "Provider-reported total ad count. Can exceed the first-page ads array length; the provider may return a numeric string."
+                      "description": "Total ad count. Can exceed the first-page ads array length and may be returned as a numeric string."
                     },
                     "ads": {
                       "type": "array",
-                      "description": "First page of up to 20 ads. Ad fields vary by provider response.",
+                      "description": "First page of up to 20 ads. Ad fields may vary.",
                       "items": {
                         "type": "object",
                         "properties": {
                           "id": {
-                            "description": "Provider ad identifier, when present."
+                            "description": "Ad identifier, when present."
                           }
                         },
                         "additionalProperties": true
@@ -10825,7 +10825,7 @@
                     },
                     "next_page_token": {
                       "type": "string",
-                      "description": "Provider continuation token, when present. This endpoint does not fetch another page."
+                      "description": "Continuation token, when present. This endpoint does not fetch another page."
                     },
                     "credits_consumed": {
                       "type": "integer",
@@ -10952,7 +10952,7 @@
             }
           },
           "502": {
-            "description": "RapidAPI lookup failed or returned an invalid result. No debit is made.",
+            "description": "Lookup failed or returned an invalid result. No debit is made.",
             "content": {
               "application/json": {
                 "schema": {
@@ -10980,7 +10980,7 @@
             }
           },
           "503": {
-            "description": "Authentication, rate limiting, configuration, or credit settlement is unavailable. Settlement can be uncertain after a successful provider lookup.",
+            "description": "Authentication, rate limiting, configuration, or credit settlement is unavailable. Settlement can be uncertain after a completed lookup.",
             "content": {
               "application/json": {
                 "schema": {

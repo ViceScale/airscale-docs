@@ -58,9 +58,9 @@ const metaAdsBody = object({
   results: { type: 'array', description: 'Ads found for the page, when there are any. Ad fields vary; check for missing or null values before using them.', items: metaAd }
 }, ['credits_consumed'], true);
 const googleAdsBody = object({
-  total_ad_count: { description: 'Provider-reported total ad count. Can exceed the first-page ads array length; the provider may return a numeric string.' },
-  ads: { type: 'array', description: 'First page of up to 20 ads. Ad fields vary by provider response.', items: { type: 'object', properties: { id: { description: 'Provider ad identifier, when present.' } }, additionalProperties: true } },
-  next_page_token: { type: 'string', description: 'Provider continuation token, when present. This endpoint does not fetch another page.' },
+  total_ad_count: { description: 'Total ad count. Can exceed the first-page ads array length and may be returned as a numeric string.' },
+  ads: { type: 'array', description: 'First page of up to 20 ads. Ad fields may vary.', items: { type: 'object', properties: { id: { description: 'Ad identifier, when present.' } }, additionalProperties: true } },
+  next_page_token: { type: 'string', description: 'Continuation token, when present. This endpoint does not fetch another page.' },
   credits_consumed: { type: 'integer', enum: [0, 1] }
 }, ['credits_consumed'], true);
 const metaAdsExample = {
@@ -254,12 +254,12 @@ export const miscellaneousOperations = [
     method: 'POST', path: '/v1/google-ads', operation: {
       ...common, 'x-airscale-source-sha': '6ef5b0ac2c662bedfbe792e5df56054697854701',
       operationId: 'lookupGoogleAds', summary: 'Look up Google ads',
-      description: 'Look up the first page of Google Ads Library results for one company domain using RapidAPI, with format=ALL and limit=20. A valid positive count or nonempty ads array costs one credit; a valid zero-ad result costs zero. A balance of at least one credit is required before lookup. No caller idempotency key is supported.',
+      description: 'Look up the first page of up to 20 Google ads for one company domain. A valid positive count or nonempty ads array costs one credit; a valid zero-ad result costs zero. A balance of at least one credit is required before lookup. No caller idempotency key is supported.',
       'x-airscale-rate-limit': '2 requests per rolling second and 120 per rolling minute per workspace.',
       'x-airscale-credit-cost': '1 credit when ads are found; 0 for a valid zero-ad result.',
       requestBody: request(object({ domain: { type: 'string', minLength: 1, description: 'Bare company hostname or HTTP(S) URL. Whitespace is trimmed; hostname is lowercased and leading www. and trailing dot are removed. Paths and queries are ignored. IP literals, credentials, non-default ports, and invalid domain labels are rejected. Maximum JSON body size: 16 KiB (oversize returns 400).' } }), { domain: 'example.com' }),
       responses: {
-        200: json('First-page ad lookup result and credit cost. Additional provider fields may be present.', googleAdsBody, {
+        200: json('First-page ad lookup result and credit cost. Additional fields may be present.', googleAdsBody, {
           ads: { total_ad_count: 2, ads: [{ id: 'ad-1' }], next_page_token: 'next', credits_consumed: 1 },
           noAds: { total_ad_count: 0, ads: [], credits_consumed: 0 }
         }),
@@ -267,8 +267,8 @@ export const miscellaneousOperations = [
         401: { $ref: '#/components/responses/Unauthorized' },
         403: error('Insufficient credits.'),
         429: error('Workspace rate limit exceeded.'),
-        502: error('RapidAPI lookup failed or returned an invalid result. No debit is made.'),
-        503: error('Authentication, rate limiting, configuration, or credit settlement is unavailable. Settlement can be uncertain after a successful provider lookup.'),
+        502: error('Lookup failed or returned an invalid result. No debit is made.'),
+        503: error('Authentication, rate limiting, configuration, or credit settlement is unavailable. Settlement can be uncertain after a completed lookup.'),
         504: error('The lookup exceeded its 90-second timeout. No debit is made for this timeout.')
       }
     }

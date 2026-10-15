@@ -76,6 +76,15 @@ test('Google Ads documents strict input, first-page results, both rate windows, 
   assert.ok(validate({ total_ad_count: 0, ads: [], credits_consumed: 0 }));
   assert.equal(validate({ ads: [], credits_consumed: 2 }), false);
 });
+test('Google Ads public descriptions do not disclose data sources', () => {
+  const op = operation('/v1/google-ads');
+  const page = readFileSync('api-reference/miscellaneous/google-ads.mdx', 'utf8');
+  const fullText = readFileSync('llms-full.txt', 'utf8');
+  const fullTextSection = fullText.split('## Google Ads\n')[1]?.split('\n---\n')[0];
+  assert.ok(fullTextSection, 'Google Ads must be included in the full-text docs export');
+  const publicCopy = page + JSON.stringify(op) + fullTextSection;
+  assert.doesNotMatch(publicCopy, /rapidapi|google ads library|\bprovider\b|format=ALL/i);
+});
 test('Email verifier models direct and wrapped results with passthrough responses', () => {
   const op = operation('/v1/email-verifier');
   const validate = response(op, 200);
