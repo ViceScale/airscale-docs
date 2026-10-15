@@ -1,0 +1,14 @@
+{
+  "operation": "POST /v1/google-ads",
+  "status": 200,
+  "source": "code",
+  "sourceRepository": "ViceScale/airscale-code",
+  "sourceSha": "6ef5b0ac2c662bedfbe792e5df56054697854701",
+  "evidence": "workers/public-api/google-ads-checker.test.mjs:70-79",
+  "body": {
+    "total_ad_count": 2,
+    "ads": [{ "id": "ad-1" }],
+    "next_page_token": "next",
+    "credits_consumed": 1
+  }
+}

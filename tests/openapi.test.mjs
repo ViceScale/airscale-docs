@@ -1864,7 +1864,7 @@ test("committed OpenAPI 3.1 artifact matches the pinned 32-operation catalog exa
   assert.deepEqual(committed.servers, baseSpec.servers);
   assert.deepEqual(committed.security, baseSpec.security);
   assert.equal(approvedCatalog.sourceSha, SOURCE_SHA);
-  assert.equal(approvedCatalog.operations.length, 32);
+  assert.equal(approvedCatalog.operations.length, 33);
 
   const actualOperations = [];
   for (const [path, pathItem] of Object.entries(committed.paths)) {
@@ -1872,8 +1872,8 @@ test("committed OpenAPI 3.1 artifact matches the pinned 32-operation catalog exa
       if (pathItem[method]) actualOperations.push({ method: method.toUpperCase(), path, operation: pathItem[method] });
     }
   }
-  assert.equal(actualOperations.length, 32);
-  assert.equal(actualOperations.filter(({ method }) => method === "POST").length, 30);
+  assert.equal(actualOperations.length, 33);
+  assert.equal(actualOperations.filter(({ method }) => method === "POST").length, 31);
   assert.equal(actualOperations.filter(({ method }) => method === "GET").length, 2);
   assert.equal(actualOperations.filter(({ method }) => method === "PATCH").length, 0);
   assert.equal(actualOperations.filter(({ method }) => method === "DELETE").length, 0);
