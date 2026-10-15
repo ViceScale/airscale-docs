@@ -19,6 +19,7 @@ const EXPECTED_OPERATIONS = [
   ["POST", "/v1/find-people/count", "countPeople", "api-reference/find-people/count", "Search and discovery"],
   ["POST", "/v1/find-companies", "findCompanies", "api-reference/find-companies", "Search and discovery"],
   ["GET", "/v1/find-companies/filter-values", "listFindCompanyFilterValues", "api-reference/find-companies/filter-values", "Search and discovery"],
+  ["POST", "/v1/business-intent-topics", "getBusinessIntentTopics", "api-reference/business-intent-topics", "Search and discovery"],
   ["POST", "/v1/company-lookalikes", "findCompanyLookalikes", "api-reference/company-lookalikes", "Search and discovery"],
   ["POST", "/v1/airsearch", "airsearch", "api-reference/airsearch", "Search and discovery"],
   ["POST", "/v1/post-likers", "listPostLikers", "api-reference/post-likers", "Post engagement"],
@@ -53,6 +54,7 @@ const EXPECTED_PAGES = [
   "reverse-phone",
   "find-people",
   "find-companies",
+  "business-intent-topics",
   "company-lookalikes",
   "airsearch",
   "post-engagement",
@@ -154,6 +156,11 @@ const EXPECTED_CONTRACTS = deepFreeze({
       { method: "GET", path: "/v1/find-companies/filter-values" }
     ],
     sourceFiles: ["workers/public-api/find-companies-worker.js", "workers/public-api/find-companies-worker.test.mjs"]
+  },
+  "business-intent-topics": {
+    sourceSha: "45c232f17848ba04a4358b000f7af8d79708c46e",
+    endpoints: [{ method: "POST", path: "/v1/business-intent-topics" }],
+    sourceFiles: ["workers/public-api/find-companies-worker.js", "workers/public-api/business-intent-topics.test.mjs", "workers/find-companies-gateway/explorium-bubble-v2.js"]
   },
   "company-lookalikes": {
     "sourceSha": "7c415424aa18e483922d7117bc80b3ae84a7af90",
@@ -352,14 +359,14 @@ test("operation catalog preserves the approved operation order and routing metad
   const catalog = JSON.parse(readFileSync("contracts/public-api-operations.json", "utf8"));
   assert.equal(catalog.sourceRepository, "ViceScale/airscale-code");
   assert.equal(catalog.sourceSha, EXPECTED_SOURCE_SHA);
-  assert.equal(catalog.operations.length, 31);
+  assert.equal(catalog.operations.length, 32);
   assert.deepEqual(
     catalog.operations.map(({ method, path, operationId, page, tag }) => [method, path, operationId, page, tag]),
     EXPECTED_OPERATIONS
   );
-  assert.equal(new Set(catalog.operations.map(({ method, path }) => `${method} ${path}`)).size, 31);
-  assert.equal(new Set(catalog.operations.map(({ operationId }) => operationId)).size, 31);
-  assert.equal(new Set(catalog.operations.map(({ page }) => page)).size, 31);
+  assert.equal(new Set(catalog.operations.map(({ method, path }) => `${method} ${path}`)).size, 32);
+  assert.equal(new Set(catalog.operations.map(({ operationId }) => operationId)).size, 32);
+  assert.equal(new Set(catalog.operations.map(({ page }) => page)).size, 32);
 });
 
 test("operation catalog links each operation to matching source-page evidence", () => {

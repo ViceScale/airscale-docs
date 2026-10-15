@@ -192,6 +192,20 @@
     },
     {
       "method": "POST",
+      "path": "/v1/business-intent-topics",
+      "operationId": "getBusinessIntentTopics",
+      "page": "api-reference/business-intent-topics",
+      "tag": "Search and discovery",
+      "sourcePage": "business-intent-topics",
+      "sourceSha": "45c232f17848ba04a4358b000f7af8d79708c46e",
+      "sourceFiles": [
+        "workers/public-api/find-companies-worker.js",
+        "workers/public-api/business-intent-topics.test.mjs",
+        "workers/find-companies-gateway/explorium-bubble-v2.js"
+      ]
+    },
+    {
+      "method": "POST",
       "path": "/v1/company-lookalikes",
       "operationId": "findCompanyLookalikes",
       "page": "api-reference/company-lookalikes",

@@ -86,6 +86,11 @@
       ],
       "sourceFiles": ["workers/public-api/find-companies-worker.js", "workers/public-api/find-companies-worker.test.mjs"]
     },
+    "business-intent-topics": {
+      "sourceSha": "45c232f17848ba04a4358b000f7af8d79708c46e",
+      "endpoints": [{ "method": "POST", "path": "/v1/business-intent-topics" }],
+      "sourceFiles": ["workers/public-api/find-companies-worker.js", "workers/public-api/business-intent-topics.test.mjs", "workers/find-companies-gateway/explorium-bubble-v2.js"]
+    },
     "company-lookalikes": {
       "sourceSha": "7c415424aa18e483922d7117bc80b3ae84a7af90",
       "endpoints": [

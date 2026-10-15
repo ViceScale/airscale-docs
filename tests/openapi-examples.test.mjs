@@ -360,7 +360,8 @@ function assertSafeCodeSampleSource(source, label) {
   for (const match of source.matchAll(/https?:\/\/[^\s'"`]+/gi)) {
     const parsed = new URL(match[0]);
     assert.ok(
-      parsed.hostname === "api.airscale.io" || isReservedExampleHost(parsed.hostname),
+      parsed.hostname === "api.airscale.io" || isReservedExampleHost(parsed.hostname)
+        || (parsed.hostname === "www.linkedin.com" && parsed.pathname === "/company/example-company/" && !parsed.search && !parsed.hash),
       `${label}: URL origin ${parsed.hostname} is not an approved code-sample origin`
     );
   }
@@ -388,7 +389,7 @@ function assertCodeSampleShapes(operation, label) {
 test("all public operation examples validate against their dereferenced schemas", (t) => {
   assertAuthoredExampleShapes(rawDocument);
   const operations = operationsFrom(document);
-  assert.equal(operations.length, 31, "expected exactly 31 public operations");
+  assert.equal(operations.length, 32, "expected exactly 32 public operations");
 
   const exampleValues = [];
   const seenSchemas = new Set();
